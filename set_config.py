@@ -13,7 +13,6 @@ path_axonseg = args["path_axonseg"]
 config = cp.RawConfigParser()
 
 config.read('./data/config.cfg')
-config.add_section('paths')
 config.set('paths', 'path_axonseg',path_axonseg )
 
 config.write(open('./data/config.cfg','w'))
