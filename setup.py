@@ -62,7 +62,7 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords='muse polycortex fft eeg openbci',
+    keywords='',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
@@ -92,7 +92,7 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    package_data={'AxonDeepSeg': ['myelin.m']},
+    package_data={'AxonDeepSeg': ['myelin.m'], 'AxonDeepSeg': ['./data/config.cfg']},
 
     include_package_data=True,
 

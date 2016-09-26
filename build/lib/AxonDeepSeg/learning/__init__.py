@@ -1,2 +1,1 @@
-from config import *
-from mrf import *
+from AxonDeepSeg.config import *

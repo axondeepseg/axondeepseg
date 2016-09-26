@@ -10,12 +10,12 @@ args = vars(ap.parse_args())
 
 path_axonseg = args["path_axonseg"]
 
+path_cfg = './AxonDeepSeg/data/config.cfg'
 config = cp.RawConfigParser()
+config.read(path_cfg)
+config.set('paths', 'path_axonseg', path_axonseg )
 
-config.read('./data/config.cfg')
-config.set('paths', 'path_axonseg',path_axonseg )
-
-config.write(open('./data/config.cfg','w'))
+config.write(open(path_cfg,'w'))
 
 
 
