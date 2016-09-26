@@ -1,4 +1,4 @@
-# AxonSegmentation
+# AxonDeepSeg
 
 Axon segmentation with microscopic images and based on deep convolutional neural networks.
 The U-Net from ([ Ronneberger et al.](https://arxiv.org/abs/1505.04597)) is used as a pixel classifier model.
