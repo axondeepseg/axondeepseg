@@ -22,9 +22,7 @@ AxonDeepSeg:
   3. run: ```python setup.py install```
 
 Example dataset:
-~~~
 https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
-~~~
 
 ## Guideline
 * [Guideline presentation](https://docs.google.com/presentation/d/1gtp8UiqJJF7pRaBctTryoGQPACMeu29DhCMYn6k6PXQ/edit?usp=sharing)
