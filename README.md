@@ -6,7 +6,7 @@ Then an MRF is applied for the post-processing.
 
 The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi et al.](http://journal.frontiersin.org/article/10.3389/fninf.2016.00037/full))
 
-<img src="https://github.com/vherman3/AxonSegmentation/blob/master/doc/schema.jpg" width="600px" align="middle" />
+<img src="https://github.com/neuropoly/axondeepseg/blob/master/doc/schema.jpg" width="600px" align="middle" />
 
 ## Installation
 Prerequisites : 
