@@ -33,7 +33,7 @@ learn_model(path_training, path_model,path_model_init, learning_rate=0.002)
 
 # OPTION 2: Train on GPU
 # copy training data + model (in case you start from an existing model) onto neuropoly@ssh
-scp -r AxonDeepSeg neuropoly@bireli.neuro.polymtl.ca:
+scp -r AxonDeepSeg neuropoly@bireli.neuro.polymtl.ca
 scp -r path_training neuropoly@bireli.neuro.polymtl.ca:my_project #path on bireli : path_bireli_training
 scp -r path_model_init neuropoly@bireli.neuro.polymtl.ca:my_project # path on bireli : path_bireli_model_init
 # Connect to bireli using ssh neuropoly@ssh
@@ -71,9 +71,3 @@ pipeline(path_my_data, path_model, path_mrf)
 #----------------------Visualization of the results--------------------#
 from AxonDeepSeg.evaluation.visualization import visualize_results
 visualize_results(path_my_data)
-
-
-
-
-
-
