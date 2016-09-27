@@ -26,7 +26,7 @@ https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
 ## Guideline
 * [Guideline presentation](https://docs.google.com/presentation/d/1gtp8UiqJJF7pRaBctTryoGQPACMeu29DhCMYn6k6PXQ/edit?usp=sharing)
-* [Guideline to run](https://github.com/vherman3/AxonSegmentation/blob/master/guideline.py)
+* [Guideline to run](https://github.com/neuropoly/axondeepseg/blob/master/guideline.py)
 
 
 Copyright (c) 2016 NeuroPoly (Polytechnique Montreal)
