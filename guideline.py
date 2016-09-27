@@ -3,19 +3,19 @@
 #-------------------------------- Variables ---------------------------#
 
 # input to build the training set
-path_data = '/Users/viherm/Desktop/CARS'
-path_training = '/Users/viherm/Desktop/trainingset'
+path_data = '/Users/viherm/Desktop/data_test/data'
+path_training = '/Users/viherm/Desktop/data_test/trainingset'
 
 # input to train the U-Net
-path_model = '/Users/viherm/Desktop/data/models/model_init'
-path_model_new = '/Users/viherm/Desktop/data/models/model_new'
+path_model = '/Users/viherm/Desktop/data_test/models/model_new'
+path_model_init = '/Users/viherm/Desktop/data_test/models/model_parameters1'
 
 # input to train the mrf
-paths_training = ['/Users/viherm/Desktop/CARS/data1','/Users/viherm/Desktop/CARS/data2', '/Users/viherm/Desktop/CARS/data3']
-path_mrf = '/Users/viherm/Desktop/data/models/mrf'
+path_mrf_training = ['/Users/viherm/Desktop/data_test/data/data2','/Users/viherm/Desktop/data_test/data/data4']
+path_mrf = '/Users/viherm/Desktop/data_test/models/mrf'
 
 # input to segment an image
-path_my_data = '/Users/viherm/Desktop/data2segment/mydata'
+path_my_data = '/Users/viherm/Desktop/data_test/my_data/data4'
 
 # Generate training path
 from AxonDeepSeg.learning.data_construction import build_data
@@ -26,27 +26,32 @@ build_data(path_data, path_training, trainRatio=0.80)
 from AxonDeepSeg.learn_model import learn_model
 learn_model(path_training, path_model, learning_rate=0.005)
 #Initialize the training
-learn_model(path_training, path_model_new, path_model, learning_rate=0.002)
-#Visualization of the training
-from AxonDeepSeg.evaluation.visualization import visualize_learning
-visualize_learning(path_model)
+learn_model(path_training, path_model,path_model_init, learning_rate=0.002)
 
 # OPTION 2: Train on GPU
-# copy training data + model (in case you start from an existing model) onto neuropoly@ssh 
-scp path_training neuropoly@bireli.neuro.polymtl.ca:my_project
-scp path_model neuropoly@bireli.neuro.polymtl.ca:my_project
+# copy training data + model (in case you start from an existing model) onto neuropoly@ssh
+scp -r AxonDeepSeg neuropoly@bireli.neuro.polymtl.ca:
+scp -r path_training neuropoly@bireli.neuro.polymtl.ca:my_project #path on bireli : path_bireli_training
+scp -r path_model_init neuropoly@bireli.neuro.polymtl.ca:my_project # path on bireli : path_bireli_model_init
 # Connect to bireli using ssh neuropoly@ssh
-cd AxonSegmentation/AxonDeepSeg
+cd AxonDeepSeg
 # sub-option1: if you don't have an initial model:
-python learn_model.py -p path_bireli_training -m path_bireli_model_new -lr 0.0005
+python learn_model.py -p path_bireli_training -m path_bireli_model -lr 0.0005 # result : path_bireli_model
 # sub-option2: if you do have an initial model:
-python learn_model.py -p path_bireli_training -m path_bireli_model_new -m_init path_bireli_model_init  -lr 0.0005
+python learn_model.py -p path_bireli_training -m path_bireli_model -m_init path_bireli_model_init  -lr 0.0005
 # In a local Terminal window, visualize to visualize the training performances:
-scp -r path_bireli_model_new path_model_new
+scp -r path_bireli_model path_model
+
+#Visualization of the training
+from AxonDeepSeg.evaluation.visualization import visualize_learning
+# OPTION 1 : if you do not have an initial model
+visualize_learning(path_model)
+# OPTION 2 if you do not have an initial model
+visualize_learning(path_model, path_model_init)
 
 # Training the MRF from the paths_training
 from AxonDeepSeg.mrf import learn_mrf
-learn_mrf(paths_training, path_mrf)
+learn_mrf(path_mrf_training, path_model, path_mrf)
 
 #----------------------Axon segmentation with a trained model and trained mrf---------------------#
 from AxonDeepSeg.apply_model import axon_segmentation
@@ -58,11 +63,12 @@ myelin(path_my_data)
 
 #----------------------Axon and Myelin segmentation--------------------#
 from AxonDeepSeg.apply_model import pipeline
-pipeline(path_my_data,path_model,path_mrf)
+pipeline(path_my_data, path_model, path_mrf)
 
 #----------------------Visualization of the results--------------------#
 from AxonDeepSeg.evaluation.visualization import visualize_results
 visualize_results(path_my_data)
+
 
 
 
