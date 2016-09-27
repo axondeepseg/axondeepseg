@@ -11,7 +11,7 @@ The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi e
 ## Installation
   * **Python 2.7**
   * **PIP** 
-  * **Tensorflow ** :(Mac OS X, GPU enabled, Python 2.7)
+  * **Tensorflow** :(Mac OS X, GPU enabled, Python 2.7)
 
 ## Guideline
 * [Guideline presentation](https://docs.google.com/presentation/d/1gtp8UiqJJF7pRaBctTryoGQPACMeu29DhCMYn6k6PXQ/edit?usp=sharing)
