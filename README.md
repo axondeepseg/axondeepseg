@@ -17,10 +17,9 @@ Prerequisites :
 
 AxonDeepSeg :
 
-  1. Create a folder : ./AxonSegmentation
-  2. In ./AxonSegmentation run : $ git clone https://github.com/neuropoly/axondeepseg.git
-  3. In ./AxonSegmentation run  $ python set_config.py -p AxonSeg_path (AxonSeg_path contains the AxonSeg Toolbox) 
-  4. In ./AxonSegmentation run $ python setup.py install
+  1. clone repository: ```git clone https://github.com/neuropoly/axondeepseg.git```
+  2. cd into axondeepseg, then run: ```python set_config.py -p PATH_AXONSEG``` (PATH_AXONSEG contains the AxonSeg Toolbox)
+  3. run: ```python setup.py install```
 
 ## Guideline
 * [Guideline presentation](https://docs.google.com/presentation/d/1gtp8UiqJJF7pRaBctTryoGQPACMeu29DhCMYn6k6PXQ/edit?usp=sharing)
