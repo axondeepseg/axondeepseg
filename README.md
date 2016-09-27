@@ -15,11 +15,16 @@ Prerequisites :
   * **Tensorflow** :(Mac OS X, GPU enabled, Python 2.7)
   * **AxonSeg (Matlab)**
 
-AxonDeepSeg :
+AxonDeepSeg:
 
   1. clone repository: ```git clone https://github.com/neuropoly/axondeepseg.git```
   2. cd into axondeepseg, then run: ```python set_config.py -p PATH_AXONSEG``` (PATH_AXONSEG contains the AxonSeg Toolbox)
   3. run: ```python setup.py install```
+
+Example dataset:
+~~~
+https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
+~~~
 
 ## Guideline
 * [Guideline presentation](https://docs.google.com/presentation/d/1gtp8UiqJJF7pRaBctTryoGQPACMeu29DhCMYn6k6PXQ/edit?usp=sharing)
