@@ -1,21 +1,24 @@
 # This explains how to train, visualize and segment on a new image
 
-#-------------------------------- Variables ---------------------------#
+# download + unzip example data
+# https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
-# input to build the training set
-path_data = '/Users/viherm/Desktop/data_test/data'
-path_training = '/Users/viherm/Desktop/data_test/trainingset'
+# input data to build the training set
+path_data = './victor/data'
 
-# input to train the U-Net
-path_model = '/Users/viherm/Desktop/data_test/models/model_new'
-path_model_init = '/Users/viherm/Desktop/data_test/models/model_parameters1'
+# output path of training data
+path_training = './trainingset'
 
-# input to train the mrf
-path_mrf_training = ['/Users/viherm/Desktop/data_test/data/data2','/Users/viherm/Desktop/data_test/data/data4']
-path_mrf = '/Users/viherm/Desktop/data_test/models/mrf'
+# output path for trained U-Net
+path_model = './models/Unet_new'
+path_model_init = './models/Unet_parameters1'
+
+# input to train the mrf. Here we don't use all data for the MRF for faster results and redundancy.
+path_mrf_training = ['./victor/data/data2', './victor/data/data4']
+path_mrf = './models/mrf'
 
 # input to segment an image
-path_my_data = '/Users/viherm/Desktop/data_test/my_data/data4'
+path_my_data = './victor/my_data/data4'
 
 # Generate training path
 from AxonDeepSeg.learning.data_construction import build_data
