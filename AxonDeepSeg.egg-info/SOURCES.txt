@@ -4,7 +4,6 @@ AxonDeepSeg/apply_model.py
 AxonDeepSeg/config.py
 AxonDeepSeg/learn_model.py
 AxonDeepSeg/mrf.py
-AxonDeepSeg/test.py
 AxonDeepSeg.egg-info/PKG-INFO
 AxonDeepSeg.egg-info/SOURCES.txt
 AxonDeepSeg.egg-info/dependency_links.txt

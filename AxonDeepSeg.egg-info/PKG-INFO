@@ -19,7 +19,6 @@ Description: # AxonDeepSeg
         * [Guideline presentation](https://docs.google.com/presentation/d/1gtp8UiqJJF7pRaBctTryoGQPACMeu29DhCMYn6k6PXQ/edit?usp=sharing)
         * [Guideline to run](https://github.com/vherman3/AxonSegmentation/blob/master/guideline.py)
         
-Keywords: muse polycortex fft eeg openbci
 Platform: UNKNOWN
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers

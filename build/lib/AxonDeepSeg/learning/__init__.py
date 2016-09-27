@@ -1,1 +1,0 @@
-from AxonDeepSeg.config import *
