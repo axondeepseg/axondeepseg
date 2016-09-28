@@ -29,12 +29,12 @@ https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
 ##  Data Structure
 ### To train : 
-\path_data __
-\path_data __
-\data_1 __
-		\image.jpg
-		\mask.jpg
-		\pixel_size_in_micrometer.txt → example: 0.2
+\path_data <br />
+\path_data <br />
+\data_1 <br />
+		\image.jpg <br />
+		\mask.jpg <br />
+		\pixel_size_in_micrometer.txt → example: 0.2 <br />
 		
 \data_n
 \image.jpg
