@@ -1,8 +1,9 @@
-function [] = myelin(path, PixelSize )
+function [] = myelin(path, PixelSize)
 
 %addpath(genpath('/Users/viherm/axon_segmentation/code'))
 
 cd (path)
+
 
 path_Mask = 'AxonMask';
 path_img = 'image.jpg';
@@ -26,7 +27,7 @@ axonlist = as_myelinseg2axonlist(im_out,PixelSize)
 
 save axonlist.mat axonlist
 
-imwrite(sum(im_out,3),'myelin.jpg')
+imwrite(sum(im_out,3),'MyelinSeg.jpg')
 
 end
 

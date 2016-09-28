@@ -24,11 +24,11 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version='0.1',
 
-    description='Python tool for automatic axon segmentation',
+    description='Python tool for automatic axon and myelin segmentation',
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/vherman3/AxonSegmentation',
+    url='https://github.com/neuropoly/axondeepseg',
 
     # Author details
     author='Neuropoly - Victor Herman',

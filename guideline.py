@@ -63,7 +63,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 # Ground Truth need to be in path_my_data
 axon_segmentation(path_my_data, path_model, path_mrf)
 # Outputs :
-# Axon segmentation masks AxonMask.mat and AxonSeg.jpeg
+# Axon segmentation mask AxonSeg.jpeg
 # Segmentation array after and before mrf in results.pkl
 
 #----------------------Myelin segmentation from axon segmentation--------------------#
@@ -71,7 +71,7 @@ from AxonDeepSeg.apply_model import myelin
 # Axon_segmentation() has to be already runned
 myelin(path_my_data)
 # Outputs in (path_my_data) :
-# Myelin segmentation mask, myelin.jpg
+# Myelin segmentation mask, MyelinSeg.jpg
 # Metrics evalution of the segmentation, axonlist.mat
 
 #----------------------Axon and Myelin segmentation--------------------#

@@ -301,12 +301,23 @@ def myelin(path):
     file = open(path+'/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
 
+    file = open(path+"/results.pkl",'r')
+    results = pickle.load(file)
+
+
     print '\n\n ---START MYELIN DETECTION---'
+
+    io.savemat(path+'/AxonMask.mat', mdict={'prediction': results["img_mrf"]})
     current_path = os.path.dirname(os.path.abspath(__file__))
-    print path_axonseg
-    command = "/Applications/MATLAB_R2014a.app/bin/matlab -nodisplay -nosplash -r \"addpath(\'"+current_path+"\');" \
+
+    command = "/Applications/MATLAB_R2014a.app/bin/matlab -nodisplay -nosplash -r \"clear all;addpath(\'"+current_path+"\');" \
             "addpath(genpath(\'"+path_axonseg+"/code\')); myelin(\'%s\',%s);exit()\""%(path,pixel_size)
     os.system(command)
+
+    os.remove(path+'/AxonMask.mat')
+
+
+myelin('/Users/viherm/Desktop/CARS/data6')
 
 
 def pipeline(image_path, model_path, mrf_path, visualize=False):
