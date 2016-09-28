@@ -1,7 +1,7 @@
 # AxonDeepSeg : Axon Deep Segmentation Toolbox
 Segment axon and myelin from microscopy data. Written in Python.
 Methods based on deep convolutional neural networks.
-The U-Net from ([ Ronneberger et al.](https://arxiv.org/abs/1505.04597)) is used as a pixel classifier model.
+The U-Net from ([Ronneberger et al.](https://arxiv.org/abs/1505.04597)) is used as a pixel classifier model.
 Then an MRF is applied for the post-processing.
 
 The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi et al.](http://journal.frontiersin.org/article/10.3389/fninf.2016.00037/full))
@@ -10,10 +10,10 @@ The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi e
 
 ## Installation
 Prerequisites : 
-  * **Python 2.7**
-  * **PIP** 
-  * **Tensorflow** :(Mac OS X, GPU enabled, Python 2.7)
-  * **AxonSeg (Matlab)**
+  * **Python 2.7** : https://www.python.org/download/releases/2.7/
+  * **PIP** : https://pip.pypa.io/en/stable/installing/
+  * **Tensorflow** (GPU enabled, Python 2.7) : http://tflearn.org/installation/
+  * **AxonSeg (Matlab)** : https://github.com/neuropoly/axonseg
 
 AxonDeepSeg:
 
@@ -24,9 +24,12 @@ AxonDeepSeg:
 Example dataset:
 https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
+##  Data Structure 
+
+
 ## Guideline
-* [Guideline presentation](https://docs.google.com/presentation/d/1gtp8UiqJJF7pRaBctTryoGQPACMeu29DhCMYn6k6PXQ/edit?usp=sharing)
 * [Guideline to run](https://github.com/neuropoly/axondeepseg/blob/master/guideline.py)
+
 
 
 Copyright (c) 2016 NeuroPoly (Polytechnique Montreal)
