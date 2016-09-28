@@ -13,11 +13,12 @@ The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi e
   * **Python 2.7** : https://www.python.org/download/releases/2.7/
   * **PIP** : https://pip.pypa.io/en/stable/installing/
   * **Tensorflow** (GPU enabled, Python 2.7) : http://tflearn.org/installation/
-### Preauisites only for myelin segmentation
+  
+### Prerequisites only for myelin segmentation :
   * **Matlab** : https://www.mathworks.com/products/matlab/
   * **AxonSeg (Matlab)** : https://github.com/neuropoly/axonseg
 
-### AxonDeepSeg:
+### AxonDeepSeg :
 
   1. clone repository: ```git clone https://github.com/neuropoly/axondeepseg.git```
   2. cd into axondeepseg, then run: ```python set_config.py -p PATH_AXONSEG``` (PATH_AXONSEG contains the AxonSeg Toolbox)
