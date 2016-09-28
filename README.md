@@ -29,9 +29,9 @@ https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
 ##  Data Structure
 ### To train : 
-\path_data__
-\path_data__
-\data_1__
+\path_data __
+\path_data __
+\data_1 __
 		\image.jpg
 		\mask.jpg
 		\pixel_size_in_micrometer.txt → example: 0.2
