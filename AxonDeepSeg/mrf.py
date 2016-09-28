@@ -141,7 +141,7 @@ def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, thre
     return weight
 
 
-def learn_mrf(image_paths, model_path, mrf_path):
+def learn_mrf(image_paths, model_path, mrf_path, verbose =0):
     """
     :param image_path : folder of the data to train the mrf, must include image.jpg
     :param model_path : folder of the model to bring an initial segmentation
@@ -234,11 +234,10 @@ def learn_mrf(image_paths, model_path, mrf_path):
         score_1_mrf_list.append(score_mrf[1])
         score_2_mrf_list.append(score_mrf[2])
 
-
     subtitle_1 = '\n\n\n---Parameters---\n'
     parameters= '\n threshold_learning :%s'%(threshold_learning)
     parameters+= '\n threshold_error :%s'%(threshold_error)
-    parameters+= '\n threshold_error :%s'%(threshold_sensitivity)
+    parameters+= '\n threshold_sensitivity :%s'%(threshold_sensitivity)
 
     subtitle_2 = '\n\n\n---Average scores on the training images : ' + str(image_paths) + '\n\n'
     headers = ["MRF", "accuracy", "sensitivity", "errors", "diffusion"]
@@ -253,6 +252,11 @@ def learn_mrf(image_paths, model_path, mrf_path):
     file = open(folder_mrf+"/report_mrf.txt", 'w')
     file.write(Report)
     file.close()
+    
+    if verbose == 1 :
+        'plot something'
+
+
 
 
 

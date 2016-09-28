@@ -69,7 +69,7 @@ def apply_convnet(path, model_path):
     :return: prediction, the mask of the segmentation
     """
 
-    print '\n\n ---START AXON SEGMENTATION---'
+    print '\n\n ---Start axon segmentation on %s---'%path
 
     path_img = path+'/image.jpg'
     img = imread(path_img, flatten=False, mode='L')
@@ -216,7 +216,7 @@ def apply_convnet(path, model_path):
     saver.restore(sess, folder_model+"/model.ckpt")
 
     for i in range(len(data)):
-        print 'iteration %s on %s'%(i, len(data))
+        print 'processing patch %s on %s'%(i, len(data))
         batch_x = np.asarray([data[i]])
         start = time.time()
         p = sess.run(pred, feed_dict={x: batch_x})
