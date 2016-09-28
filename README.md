@@ -29,9 +29,9 @@ https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
 ##  Data Structure
 ### To train
-<img src="https://github.com/neuropoly/axondeepseg/blob/master/doc/struc_train.png" width="600px" align="middle" />
+<img src="https://github.com/neuropoly/axondeepseg/blob/master/doc/struc_train.png" width="300px" align="middle" />
 ###  To segment 
-<img src="https://github.com/neuropoly/axondeepseg/blob/master/doc/stru_seg.png" width="600px" align="middle" />
+<img src="https://github.com/neuropoly/axondeepseg/blob/master/doc/stru_seg.png" width="300px" align="middle" />
 
 
 ## Guideline
