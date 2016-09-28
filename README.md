@@ -30,6 +30,8 @@ https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 ##  Data Structure
 ### To train
 <img src="https://github.com/neuropoly/axondeepseg/blob/master/doc/stru_train.png" width="300px" align="middle" />
+**Mask properties:** axons: 255 ; background and myelin : 0  <br\>
+N.B. the image needs to have the file name “image.jpg” and it needs to be jpg format. The mask needs to have the name “mask.jpg”. 
 ###  To segment 
 <img src="https://github.com/neuropoly/axondeepseg/blob/master/doc/stru_seg.png" width="300px" align="middle" />
 
