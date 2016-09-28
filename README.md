@@ -38,6 +38,8 @@ Mask properties: axons: 255 ; background and myelin : 0
 
 ### N.B.
 * the image needs to have the file name “image.jpg” and it needs to be jpg format. The mask needs to have the name “mask.jpg”. 
+* Mask properties: axons: 255 ; background and myelin : 0  
+
 
 ## Guideline
 * [Guideline to run](https://github.com/neuropoly/axondeepseg/blob/master/guideline.py)
