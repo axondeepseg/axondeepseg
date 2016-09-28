@@ -27,7 +27,20 @@ The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi e
 Example dataset:
 https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
-##  Data Structure 
+##  Data Structure
+### To train : 
+\path_data
+\path_data
+\data_1 
+		\image.jpg
+		\mask.jpg
+		\pixel_size_in_micrometer.txt → example: 0.2
+     	 …. 
+      		 \data_n
+\image.jpg
+		\mask.jpg
+		\pixel_size_in_micrometer.txt → example: 0.4
+
 
 
 ## Guideline
