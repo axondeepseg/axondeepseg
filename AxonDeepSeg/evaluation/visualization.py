@@ -92,19 +92,16 @@ def visualize_results(path) :
     image_init = imread(path_img, flatten=False, mode='L')
 
 
-    plt.figure(1)
-    plt.title('With MRF')
+    i_figure = 1
+
+    plt.figure(i_figure)
+    plt.title('Axon Segmentation mask')
     plt.imshow(image_init, cmap=plt.get_cmap('gray'))
     plt.hold(True)
     plt.imshow(img_mrf, alpha=0.7)
 
 
-    plt.figure(2)
-    plt.title('Without MRF')
-    plt.imshow(image_init, cmap=plt.get_cmap('gray'))
-    plt.hold(True)
-    plt.imshow(prediction, alpha=0.7)
-
+    i_figure+=1
     if 'mask.jpg' in os.listdir(path):
         Mask = True
         path_mask = path+'/mask.jpg'
@@ -135,20 +132,23 @@ def visualize_results(path) :
         myelin = preprocessing.binarize(imread(path_myelin, flatten=False, mode='L'), threshold=125)
 
 
-        plt.figure(3)
-        plt.title('Myelin')
-        plt.imshow(image_init, cmap=plt.get_cmap('gray'))
-        plt.hold(True)
-        plt.imshow(myelin, alpha=0.7)
+        fig = plt.figure(i_figure)
+        ax1 = fig.add_subplot(1,2,1)
+        ax1.set_title('Myelin')
+        ax1.imshow(image_init, cmap=plt.get_cmap('gray'))
+        ax1.hold(True)
+        ax1.imshow(myelin, alpha=0.7)
 
-        plt.figure(4)
-        plt.title('Myelin - Axon')
-        plt.imshow(img_mrf, cmap=plt.get_cmap('gray'))
-        plt.hold(True)
-        plt.imshow(myelin, alpha=0.7)
+        ax2 = fig.add_subplot(1,2,2)
+        ax2.set_title('Myelin Segmentation - Axon Segmentation')
+        ax2.imshow(img_mrf, cmap=plt.get_cmap('gray'))
+        ax2.hold(True)
+        ax2.imshow(myelin, alpha=0.7)
+
+        i_figure+=1
 
         if Mask :
-            plt.figure(5)
+            plt.figure(i_figure)
             plt.title('Myelin - GroundTruth')
             plt.imshow(mask, cmap=plt.get_cmap('gray'))
             plt.hold(True)

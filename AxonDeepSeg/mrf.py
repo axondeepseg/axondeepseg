@@ -141,7 +141,7 @@ def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, thre
     return weight
 
 
-def learn_mrf(image_paths, model_path, mrf_path, verbose =0):
+def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
     """
     :param image_path : folder of the data to train the mrf, must include image.jpg
     :param model_path : folder of the model to bring an initial segmentation
@@ -157,6 +157,9 @@ def learn_mrf(image_paths, model_path, mrf_path, verbose =0):
     from sklearn import preprocessing
     from skimage.transform import rescale
     from scipy.misc import imread
+
+    if visualize :
+        import matplotlib.pyplot as plt
 
 
     nb_class = 2
@@ -215,6 +218,7 @@ def learn_mrf(image_paths, model_path, mrf_path, verbose =0):
     score_1_mrf_list = []
     score_2_mrf_list = []
 
+    i_figure = 1
     for label_field, image_init, label_true,image_path in zip(label_fields, images_init, labels_true, image_paths):
         img_mrf = run_mrf(label_field, image_init, nb_class, max_map_iter, weight)
         img_mrf = img_mrf == 1
@@ -225,7 +229,7 @@ def learn_mrf(image_paths, model_path, mrf_path, verbose =0):
         acc_mrf_list.append(accuracy_score(img_mrf.reshape(-1, 1), label_true))
 
         score = rejectOne_score(image_init, label_true, label_field, visualization=False, min_area=1, show_diffusion = True)
-        score_0_list.append((score)[0])
+        score_0_list.append(score[0])
         score_1_list.append(score[1])
         score_2_list.append(score[2])
 
@@ -233,6 +237,24 @@ def learn_mrf(image_paths, model_path, mrf_path, verbose =0):
         score_0_mrf_list.append(score_mrf[0])
         score_1_mrf_list.append(score_mrf[1])
         score_2_mrf_list.append(score_mrf[2])
+
+        h, w = img_mrf.shape
+
+        if visualize :
+            fig = plt.figure(i_figure)
+            ax1 = fig.add_subplot(1,2,1)
+            ax1.set_title('Without MRF')
+            ax1.imshow(image_init, cmap=plt.get_cmap('gray'))
+            ax1.hold(True)
+            ax1.imshow(label_field.reshape(h,w), alpha=0.7)
+
+            ax2 = fig.add_subplot(1,2,2)
+            ax2.set_title('With MRF')
+            ax2.imshow(image_init, cmap=plt.get_cmap('gray'))
+            ax2.hold(True)
+            ax2.imshow(img_mrf, alpha=0.7)
+
+            i_figure+=1
 
     subtitle_1 = '\n\n\n---Parameters---\n'
     parameters= '\n threshold_learning :%s'%(threshold_learning)
@@ -252,9 +274,10 @@ def learn_mrf(image_paths, model_path, mrf_path, verbose =0):
     file = open(folder_mrf+"/report_mrf.txt", 'w')
     file.write(Report)
     file.close()
-    
-    if verbose == 1 :
-        'plot something'
+
+    if visualize : plt.show()
+
+
 
 
 

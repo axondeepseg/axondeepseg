@@ -317,9 +317,6 @@ def myelin(path):
     os.remove(path+'/AxonMask.mat')
 
 
-myelin('/Users/viherm/Desktop/CARS/data6')
-
-
 def pipeline(image_path, model_path, mrf_path, visualize=False):
     """
     :param image_path: : folder of the data, must include image.jpg
