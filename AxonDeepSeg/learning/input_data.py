@@ -243,15 +243,19 @@ def random_rotation(patch):
 
     img = np.pad(patch[0],180,mode = "reflect")
     mask = np.pad(patch[1],180,mode = "reflect")
+
     angle = np.random.uniform(5, 89, 1)
 
     image_size = (img.shape[1], img.shape[0])
     image_center = tuple(np.array(image_size) / 2)
 
+    #image_rotated = rotate(img, angle, resize=True, center=image_center, preserve_range=True)
+    #gt_rotated = rotate(mask, angle, resize=True, center=image_center, preserve_range=True)
+    #gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5)).astype(int)
+
     image_rotated = rotate_image(img, angle)
-    #gt_rotated = rotate(mask, angle, resize=True, center=image_center)
-    #image_rotated = rotate(img,angle, resize=True, center=image_center)
     gt_rotated = rotate_image(mask, angle)
+
     s_p = image_rotated.shape[0]
     center = int(float(s_p)/2)
 
