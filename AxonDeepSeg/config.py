@@ -4,7 +4,6 @@ Set the config variable.
 
 import ConfigParser as cp
 import os
-import AxonDeepSeg
 
 config = cp.RawConfigParser()
 #config.read(os.path.dirname(AxonDeepSeg.__file__)+'/data/config.cfg')

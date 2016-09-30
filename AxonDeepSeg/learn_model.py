@@ -8,9 +8,11 @@ from learning.input_data import input_data
 import sys
 
 def learn_model(trainingset_path, model_path, model_restored_path = None, learning_rate = None, verbose = 1):
+
     if not learning_rate :
         learning_rate = 0.0005
 
+    save_trainable = False
 
     # Divers variables
     Loss = []
@@ -176,6 +178,8 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
 
     index = tf.Variable(0, trainable=False)
 
+    temp = set(tf.all_variables())
+
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
     # Evaluate model
@@ -184,9 +188,11 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
     init = tf.initialize_all_variables()
-    saver = tf.train.Saver(tf.all_variables())
+    if save_trainable :
+        saver = tf.train.Saver(tf.trainable_variables())
 
-    summary_op = tf.merge_all_summaries()
+    else :
+        saver = tf.train.Saver(tf.all_variables())
 
     # Launch the graph
     Report += '\n\n---Intermediary results---\n'
@@ -196,6 +202,9 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
         if model_restored_path :
             folder_restored_model = model_restored_path
             saver.restore(sess, folder_restored_model+"/model.ckpt")
+
+            if save_trainable:
+                sess.run(tf.initialize_variables(set(tf.all_variables()) - temp))
 
             file = open(folder_restored_model+'/evolution.pkl','r')
             evolution_restored = pickle.load(file)

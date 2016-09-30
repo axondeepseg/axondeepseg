@@ -155,3 +155,15 @@ def visualize_results(path) :
             plt.imshow(myelin, alpha=0.7)
 
     plt.show()
+
+if __name__ == "__main__":
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-m", "--path_model", required=True, help="")
+    ap.add_argument("-m_init", "--path_model_init", required=False, help="")
+
+    args = vars(ap.parse_args())
+    path_model = args["path_model"]
+    path_model_init = args["path_model_init"]
+
+    visualize_learning(path_model, path_model_init)

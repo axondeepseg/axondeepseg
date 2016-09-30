@@ -15,7 +15,7 @@ config = cp.RawConfigParser()
 config.read(path_cfg)
 config.set('paths', 'path_axonseg', path_axonseg )
 
-config.write(open(path_cfg,'w'))
+config.write(open(path_cfg, 'w'))
 
 
 

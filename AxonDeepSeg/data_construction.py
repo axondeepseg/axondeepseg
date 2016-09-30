@@ -4,8 +4,8 @@ from scipy.misc import imread, imsave
 from sklearn import preprocessing
 from skimage.transform import rescale
 import random
-from AxonDeepSeg.config import *
-path_axonseg
+from config import *
+
 
 def extract_patch(img, mask, size):
     """

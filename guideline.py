@@ -22,7 +22,7 @@ path_mrf = './models/mrf'
 path_my_data = './victor/my_data/data4'
 
 # Generate training path
-from AxonDeepSeg.learning.data_construction import build_data
+from AxonDeepSeg.data_construction import build_data
 build_data(path_data, path_training, trainRatio=0.80)
 
 # OPTION 1: Local Train
