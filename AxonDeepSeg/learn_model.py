@@ -258,11 +258,10 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
                 Loss.append(np.mean(L))
                 Epoch.append(epoch)
 
-                output_2 = '\n----\n Epoch: ' + str(epoch)
+                output_2 = '\n----\n Last epoch: ' + str(epoch)
                 output_2+= '\n Accuracy: ' + str(np.mean(A))+';'
                 output_2+= '\n Loss: ' + str(np.mean(L))+';'
                 print '\n\n----Scores on test:---' + output_2
-                Report+= output_2
                 epoch+=1
 
             if step % save_step == 0:
@@ -273,7 +272,7 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
 
                 print("Model saved in file: %s" % save_path)
                 file = open(folder_model+"/report.txt", 'w')
-                file.write(Report)
+                file.write(Report + output_2)
                 file.close()
 
             step += 1

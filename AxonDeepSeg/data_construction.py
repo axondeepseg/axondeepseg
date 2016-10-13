@@ -60,27 +60,29 @@ def build_data(path_data, trainingset_path, trainRatio = 0.80):
     """
 
     i = 0
-    for root in os.listdir(path_data)[1:]:
-        subpath_data = os.path.join(path_data, root)
+    for root in os.listdir(path_data)[:]:
 
-        file = open(subpath_data+'/pixel_size_in_micrometer.txt', 'r')
-        pixel_size = float(file.read())
-        rescale_coeff = pixel_size/general_pixel_size
+        if '.DS_Store' not in root :
+            subpath_data = os.path.join(path_data, root)
 
-        for data in os.listdir(subpath_data):
-            if 'image' in data:
-                img = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
-                img = (rescale(img, rescale_coeff)*256).astype(int)
-            elif 'mask' in data:
-                mask_init = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
-                mask_rescaled = (rescale(mask_init, rescale_coeff)*256).astype(int)
-                mask = preprocessing.binarize(mask_rescaled, threshold=125)
+            file = open(subpath_data+'/pixel_size_in_micrometer.txt', 'r')
+            pixel_size = float(file.read())
+            rescale_coeff = pixel_size/general_pixel_size
 
-        if i ==0:
-            patches = extract_patch(img, mask, 256)
-        else:
-            patches += extract_patch(img, mask, 256)
-        i+=1
+            for data in os.listdir(subpath_data):
+                if 'image' in data:
+                    img = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
+                    img = (rescale(img, rescale_coeff)*256).astype(int)
+                elif 'mask' in data:
+                    mask_init = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
+                    mask_rescaled = (rescale(mask_init, rescale_coeff)*256).astype(int)
+                    mask = preprocessing.binarize(mask_rescaled, threshold=125)
+
+            if i ==0:
+                patches = extract_patch(img, mask, 256)
+            else:
+                patches += extract_patch(img, mask, 256)
+            i+=1
 
     testRatio = 1-trainRatio
     size_test = int(testRatio*len(patches))
