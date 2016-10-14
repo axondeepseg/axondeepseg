@@ -108,13 +108,13 @@ def visualize_results(path) :
         mask = preprocessing.binarize(imread(path_mask, flatten=False, mode='L'), threshold=125)
 
         acc = accuracy_score(prediction.reshape(-1,1), mask.reshape(-1,1))
-        score = rejectOne_score(image_init, mask.reshape(-1, 1), prediction.reshape(-1,1), visualization=False, min_area=1, show_diffusion = True)
+        score = rejectOne_score(image_init, mask.reshape(-1, 1), prediction.reshape(-1,1))
         Dice = dice(image_init, mask.reshape(-1, 1), prediction.reshape(-1,1))['dice'].mean()
         acc_mrf = accuracy_score(img_mrf.reshape(-1, 1), mask.reshape(-1, 1))
-        score_mrf = rejectOne_score(image_init, mask.reshape(-1,1), img_mrf.reshape(-1,1), visualization=False, min_area=1, show_diffusion = True)
+        score_mrf = rejectOne_score(image_init, mask.reshape(-1,1), img_mrf.reshape(-1,1))
         Dice_mrf = dice(image_init, mask.reshape(-1, 1), img_mrf.reshape(-1,1))['dice'].mean()
 
-        headers = ["MRF", "accuracy", "sensitivity", "errors", "diffusion", "Dice"]
+        headers = ["MRF", "accuracy", "sensitivity", "precision", "diffusion", "Dice"]
         table = [["False", acc, score[0], score[1], score[2], Dice],
         ["True", acc_mrf, score_mrf[0], score_mrf[1], score_mrf[2], Dice_mrf]]
 

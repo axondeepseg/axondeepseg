@@ -80,7 +80,7 @@ def run_mrf(label_field, feature_field, nb_class, max_map_iter, weight):
     return mrf_map(X, Y, mu, sigma, nb_class, max_map_iter, weight[0], weight[1])
 
 
-def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, threshold_learning, labels_true, threshold_sensitivity, threshold_error=1.0):
+def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, threshold_learning, labels_true, threshold_sensitivity, threshold_precision):
     """
         Goal:       Weight Learning by maximizing the pixel accuracy + sensitivity condition
         Input:      - label_field = SVM outputted labels
@@ -118,13 +118,13 @@ def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, thre
             for label_field, feature_field, label_true in zip(label_fields, feature_fields, labels_true):
                 res = run_mrf(label_field, feature_field, nb_class, max_map_iter, weight_cur)
                 acc_mrf_list.append(accuracy_score(label_true, res.reshape((-1, 1))))
-                scores_0_list.append(rejectOne_score(feature_field, label_true, res.reshape((-1,1)), visualization=False, show_diffusion=True, min_area = 0)[0])
-                scores_1_list.append(rejectOne_score(feature_field, label_true, res.reshape((-1,1)), visualization=False, show_diffusion=True, min_area = 0)[1])
+                scores_0_list.append(rejectOne_score(feature_field, label_true, res.reshape((-1,1)))[0])
+                scores_1_list.append(rejectOne_score(feature_field, label_true, res.reshape((-1,1)))[1])
             acc_mrf = np.mean(acc_mrf_list)
             scores_0 = np.mean(scores_0_list)
             scores_1 = np.mean(scores_1_list)
 
-            if acc_mrf > best_score and scores_0 > threshold_sensitivity and scores_1 < threshold_error:
+            if acc_mrf > best_score and scores_0 > threshold_sensitivity and scores_1 > threshold_precision:
                 best_score = acc_mrf
                 weight[i] = weight_cur[i]
 
@@ -169,7 +169,7 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
     sigma_blur = 1.0
     threshold_learning = 0.1
     threshold_sensitivity = 0.55
-    threshold_error = 0.15
+    threshold_precision = 0.81
 
 
     folder_mrf = mrf_path
@@ -197,10 +197,11 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
         prediction = apply_convnet(image_path, model_path)
         label_fields.append(prediction.reshape(-1, 1))
 
-    weight = train_mrf(label_fields, images_init, nb_class, max_map_iter, [alpha, beta, sigma_blur], threshold_learning, labels_true, threshold_sensitivity)
+    weight = train_mrf(label_fields, images_init, nb_class, max_map_iter, [alpha, beta, sigma_blur], threshold_learning, labels_true, threshold_sensitivity,
+                       threshold_precision=threshold_precision)
 
     mrf_coef = {'weight': weight, "nb_class": nb_class, 'max_map_iter': max_map_iter, 'alpha': alpha, 'beta': beta,
-                'sigma_blur': sigma_blur, 'threshold_error': threshold_error,
+                'sigma_blur': sigma_blur, 'threshold_precision': threshold_precision,
                 'threshold_sensitivity': threshold_sensitivity, 'threshold_learning': threshold_learning}
 
     with open(folder_mrf+'/mrf_parameter.pkl', 'wb') as handle:
@@ -228,12 +229,12 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
         acc_list.append(accuracy_score(label_field, label_true))
         acc_mrf_list.append(accuracy_score(img_mrf.reshape(-1, 1), label_true))
 
-        score = rejectOne_score(image_init, label_true, label_field, visualization=False, min_area=1, show_diffusion = True)
+        score = rejectOne_score(image_init, label_true, label_field)
         score_0_list.append(score[0])
         score_1_list.append(score[1])
         score_2_list.append(score[2])
 
-        score_mrf = rejectOne_score(image_init, label_true, img_mrf.reshape(-1,1), visualization=False, min_area=1, show_diffusion = True)
+        score_mrf = rejectOne_score(image_init, label_true, img_mrf.reshape(-1,1))
         score_0_mrf_list.append(score_mrf[0])
         score_1_mrf_list.append(score_mrf[1])
         score_2_mrf_list.append(score_mrf[2])
@@ -258,11 +259,11 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
 
     subtitle_1 = '\n\n\n---Parameters---\n'
     parameters= '\n threshold_learning :%s'%(threshold_learning)
-    parameters+= '\n threshold_error :%s'%(threshold_error)
+    parameters+= '\n threshold_error :%s'%(threshold_precision)
     parameters+= '\n threshold_sensitivity :%s'%(threshold_sensitivity)
 
     subtitle_2 = '\n\n\n---Average scores on the training images : ' + str(image_paths) + '\n\n'
-    headers = ["MRF", "accuracy", "sensitivity", "errors", "diffusion"]
+    headers = ["MRF", "accuracy", "sensitivity", "precision", "diffusion"]
     table = [["False", np.mean(acc_list), np.mean(score_0_list), np.mean(score_1_list),  np.mean(score_2_list)],
     ["True", np.mean(acc_mrf_list), np.mean(score_0_mrf_list), np.mean(score_1_mrf_list), np.mean(score_2_mrf_list)]]
 

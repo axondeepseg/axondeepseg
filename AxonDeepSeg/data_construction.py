@@ -51,12 +51,13 @@ def build_data(path_data, trainingset_path, trainRatio = 0.80):
     :param path_data: folder including all images used for the training. Each image is represented by a a folder
     including image.jpg and mask.jpg (ground truth)
     :param trainingset_path: path of the resulting trainingset
-    :param trainRatio: ratio of the train over the test. (High ratio : good learning but poor estimation of the performance)
+    :param trainRatio: ratio of the training patches over the total . (High ratio : good learning but poor estimation of the performance)
     :return: no return
 
     Every 256 by 256 patches are extracted from the images with a very low overlapping.
     They are regrouped by category folder : \Train and \Test.
     Each data is represented by the patch, image_i.jpg, and its groundtruth, classes_i.jpg
+    A rescaling is also added to set the pixel size at the value of the general_pixel_size
     """
 
     i = 0
