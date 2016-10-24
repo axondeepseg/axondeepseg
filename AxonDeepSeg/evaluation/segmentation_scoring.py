@@ -8,8 +8,8 @@ import pandas as pd
 def rejectOne_score(img, y_true, y_pred, visualization=False, min_area=2):
     """
     Calculates segmentation score by keeping an only true centroids as TP.
-    Excess of centroids is counted by diffusion (Excess/P)
-    Returns sensitivity (TP/P), errors (FP/P) and diffusion
+    Excess of centroids is counted by diffusion (Excess/TP+FN)
+    Returns sensitivity (TP/P), precision (FP/TP+FN) and diffusion
     """
 
     h, w = img.shape
@@ -60,7 +60,7 @@ def rejectOne_score(img, y_true, y_pred, visualization=False, min_area=2):
 
     sensitivity = round(float(TP) / P, 3)
     errors = round(float(FP) / P, 3)
-    diffusion = float(n_extra)/TP
+    diffusion = float(n_extra)/(TP+FP)
     precision = round(float(TP)/(TP+FP), 3)
 
     if visualization:
@@ -92,6 +92,13 @@ def rejectOne_score(img, y_true, y_pred, visualization=False, min_area=2):
 
 
 def dice(img,y_true, y_pred, min_area = 9):
+    """
+    :param img: image to segment
+    :param y_true: ground truth vectorized
+    :param y_pred: prediction vectorized
+    :param min_area: minimum area of the predicted object to measure dice
+    :return: dataframe with the object, its size and its dice score
+    """
 
     h, w = img.shape
     im_true = y_true.reshape(h, w)

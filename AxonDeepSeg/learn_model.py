@@ -7,12 +7,10 @@ import time
 from learning.input_data import input_data
 import sys
 
-def learn_model(trainingset_path, model_path, model_restored_path = None, learning_rate = None, verbose = 1):
+def learn_model(trainingset_path, model_path, model_restored_path = None, learning_rate = None, save_trainable = True, verbose = 1):
 
     if not learning_rate :
         learning_rate = 0.0005
-
-    save_trainable = False
 
     # Divers variables
     Loss = []
@@ -20,9 +18,6 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
     Accuracy = []
     Report = ''
     verbose = 1
-
-    # Training or Predicting
-    restore = True
 
     # Results and Models
     folder_model = model_path
@@ -40,7 +35,7 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
     depth = 6
 
     hyperparameters = {'depth': depth,'dropout': dropout, 'image_size': image_size,
-                       'model_restored_path': model_restored_path, 'restore': restore}
+                       'model_restored_path': model_restored_path, 'learning_rate': learning_rate}
 
     with open(folder_model+'/hyperparameters.pkl', 'wb') as handle :
             pickle.dump(hyperparameters, handle)
@@ -56,7 +51,7 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
 
     Report += '\n\n---PARAMETERS---\n'
     Report += 'learning_rate : '+ str(learning_rate)+'; \n batch_size :  ' + str(batch_size) +';\n depth :  ' + str(depth) \
-            +';\n epoch_size: ' + str(epoch_size)+';\n dropout :  ' + str(dropout)+';\n restore :  ' + str(restore)\
+            +';\n epoch_size: ' + str(epoch_size)+';\n dropout :  ' + str(dropout)\
             +';\n (if model restored) restored_model :' + str(model_restored_path)
 
     data_train = input_data(trainingset_path=trainingset_path, type='train')
@@ -188,6 +183,7 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
     init = tf.initialize_all_variables()
+
     if save_trainable :
         saver = tf.train.Saver(tf.trainable_variables())
 
@@ -203,7 +199,7 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
             folder_restored_model = model_restored_path
             saver.restore(sess, folder_restored_model+"/model.ckpt")
 
-            if save_trainable:
+            if save_trainable :
                 sess.run(tf.initialize_variables(set(tf.all_variables()) - temp))
 
             file = open(folder_restored_model+'/evolution.pkl','r')
@@ -241,10 +237,8 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
                 start = time.time()
                 A = []
                 L = []
-                print epoch
 
                 data_test.set_batch_start()
-                print data_test.batch_start
                 for i in range(data_test.set_size):
                     batch_x, batch_y = data_test.next_batch(batch_size, rnd=False, augmented_data= False)
                     loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})

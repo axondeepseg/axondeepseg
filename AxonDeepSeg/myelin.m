@@ -1,9 +1,6 @@
 function [] = myelin(path, PixelSize)
 
-%addpath(genpath('/Users/viherm/axon_segmentation/code'))
-
 cd (path)
-
 
 path_Mask = 'AxonMask';
 path_img = 'image.jpg';

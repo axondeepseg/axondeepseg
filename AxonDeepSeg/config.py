@@ -10,5 +10,6 @@ config = cp.RawConfigParser()
 # full name
 config.read(os.path.dirname(__file__)+'/data/config.cfg')
 path_axonseg = config.get("paths", "path_axonseg")
+path_matlab = config.get("paths", "path_matlab")
 general_pixel_size = float(config.get("variables", "general_pixel_size"))
 

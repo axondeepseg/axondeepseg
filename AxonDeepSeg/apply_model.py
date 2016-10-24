@@ -264,9 +264,8 @@ def axon_segmentation(image_path, model_path, mrf_path):
     # ------ Apply mrf ------- #
     nb_class = 2
     max_map_iter = 10
-    y_pred = prediction.reshape(-1, 1)
     image_init = (rescale(imread(image_path+'/image.jpg', flatten=False, mode='L'),rescale_coeff)*256).astype(int)
-
+    y_pred = (preprocessing.binarize((rescale(prediction.astype(float), rescale_coeff) * 256).astype(int), threshold=125)).reshape(-1, 1)
 
     folder_mrf = mrf_path
     mrf_parameters = pickle.load(open(folder_mrf +'/mrf_parameter.pkl', "rb"))
@@ -309,8 +308,9 @@ def myelin(path):
 
     io.savemat(path+'/AxonMask.mat', mdict={'prediction': results["img_mrf"]})
     current_path = os.path.dirname(os.path.abspath(__file__))
+    print current_path
 
-    command = "/Applications/MATLAB_R2014a.app/bin/matlab -nodisplay -nosplash -r \"clear all;addpath(\'"+current_path+"\');" \
+    command = path_matlab+"/bin/matlab -nodisplay -nosplash -r \"clear all;addpath(\'"+current_path+"\');" \
             "addpath(genpath(\'"+path_axonseg+"/code\')); myelin(\'%s\',%s);exit()\""%(path,pixel_size)
     os.system(command)
 
@@ -322,7 +322,7 @@ def pipeline(image_path, model_path, mrf_path, visualize=False):
     :param image_path: : folder of the data, must include image.jpg
     :param model_path :  folder of the model of segmentation. Must contain model.ckpt
     :param mrf_path: folder of the mrf parameters.  Must contain mrf_parameter.pkl
-    :param visualize: if True, visualization of the results is runned. (If a groundtruth is in image_path, scores are calculated)
+    :param visualize: if True, visualization of the results is runned. (and If a groundtruth is in image_path, scores are calculated)
     :return:
     """
 
