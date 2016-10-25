@@ -21,7 +21,7 @@ The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi e
 ### AxonDeepSeg :
 
   1. clone repository: ```git clone https://github.com/neuropoly/axondeepseg.git```
-  2. cd into axondeepseg, then run: ```python set_config.py -p PATH_AXONSEG``` (PATH_AXONSEG contains the AxonSeg Toolbox)
+  2. cd into axondeepseg, then run: ```python set_config.py -p PATH_AXONSEG -m PATH_MATLAB``` (PATH_AXONSEG contains the AxonSeg Toolbox)
   3. run: ```python setup.py install```
 
 Example dataset:
