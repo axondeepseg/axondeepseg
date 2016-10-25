@@ -36,7 +36,7 @@ def visualize_learning(model_path, model_restored_path = None, start_visu=0):
         evolution_restored = pickle.load(file_restored)
         last_epoch = evolution_restored['steps'][-1]
 
-        evolution_merged = {}
+        evolution_merged = {} # Merging the two plots : learning of the init and learning of the model
         for key in ['steps','accuracy','loss'] :
             evolution_merged[key] = evolution_restored[key]+evolution[key]
 
@@ -91,7 +91,6 @@ def visualize_results(path) :
     prediction = res['prediction']
     image_init = imread(path_img, flatten=False, mode='L')
 
-
     i_figure = 1
 
     plt.figure(i_figure)
@@ -100,8 +99,7 @@ def visualize_results(path) :
     plt.hold(True)
     plt.imshow(img_mrf, alpha=0.7)
 
-
-    i_figure+=1
+    i_figure += 1
     if 'mask.jpg' in os.listdir(path):
         Mask = True
         path_mask = path+'/mask.jpg'
@@ -130,7 +128,6 @@ def visualize_results(path) :
     if 'myelin.jpg' in os.listdir(path):
         path_myelin = path + '/myelin.jpg'
         myelin = preprocessing.binarize(imread(path_myelin, flatten=False, mode='L'), threshold=125)
-
 
         fig = plt.figure(i_figure)
         ax1 = fig.add_subplot(1,2,1)

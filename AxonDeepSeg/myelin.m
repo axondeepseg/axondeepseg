@@ -18,8 +18,7 @@ AxSeg = prediction;
 backBW=AxSeg & ~AxSeg_rb; % backBW = axons that have been removed by RemoveBorder
 [im_out] = myelinInitialSegmention(im_in, AxSeg_rb, backBW,0,1,PixelSize);
 
-im_out = myelinCleanConflict(im_out, im_in,0.5); % 
-
+im_out = myelinCleanConflict(im_out, im_in,0.5);
 axonlist = as_myelinseg2axonlist(im_out,PixelSize)
 
 save axonlist.mat axonlist

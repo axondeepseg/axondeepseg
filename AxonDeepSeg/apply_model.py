@@ -15,9 +15,9 @@ from config import*
 
 def im2batch(img, size=256):
     """
-    :param path_image: path of the folder with the image to segment. It must include image.jpg and optionaly mask.jpg (the ground truth)
+    :param img: image to segment.
     :param size: size of the patches to extract (must be the same as used in the learning)
-    :return:
+    :return: [img, patches, positions of the patches]
     """
     h, w = img.shape
 
@@ -56,6 +56,13 @@ def im2batch(img, size=256):
 
 
 def batch2im(predictions, positions, h_size, w_size):
+    """
+    :param predictions: list of the segmentation masks on the patches
+    :param positions: positions of the patches
+    :param h_size: height of the image to reconstruct
+    :param w_size: width of the image to reconstruct
+    :return: reconstructed segmentation on the full image
+    """
     image = np.zeros((h_size, w_size))
     for pred, pos in zip(predictions, positions):
         image[pos[0]:pos[0]+256,pos[1]:pos[1]+256] = pred
@@ -77,6 +84,7 @@ def apply_convnet(path, model_path):
     file = open(path+'/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
 
+    #set the resolution to the general_pixel_size
     rescale_coeff = pixel_size/general_pixel_size
     img = (rescale(img,rescale_coeff)*256).astype(int)
 
@@ -111,7 +119,6 @@ def apply_convnet(path, model_path):
 
 
     def maxpool2d(x, k=2):
-        # MaxPool2D wrapper
         return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1],
                               padding='SAME')
 
@@ -205,6 +212,7 @@ def apply_convnet(path, model_path):
     # Construct model
     pred = conv_net(x, weights, biases, keep_prob)
 
+
     saver = tf.train.Saver(tf.all_variables())
 
     # Image to batch
@@ -283,7 +291,6 @@ def axon_segmentation(image_path, model_path, mrf_path):
     with open(image_path+'/results.pkl', 'wb') as handle :
             pickle.dump(results, handle)
 
-    io.savemat(image_path+'/AxonMask.mat', mdict={'prediction': img_mrf})
     imsave(image_path+'/AxonDeepSeg.jpeg', img_mrf, 'jpeg')
 
 #---------------------------------------------------------------------------------------------------------

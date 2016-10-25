@@ -68,7 +68,7 @@ def build_data(path_data, trainingset_path, trainRatio = 0.80):
 
             file = open(subpath_data+'/pixel_size_in_micrometer.txt', 'r')
             pixel_size = float(file.read())
-            rescale_coeff = pixel_size/general_pixel_size
+            rescale_coeff = pixel_size/general_pixel_size # Used to set the resolution to the general_pixel_size
 
             for data in os.listdir(subpath_data):
                 if 'image' in data:
@@ -92,7 +92,6 @@ def build_data(path_data, trainingset_path, trainRatio = 0.80):
     patches_train = patches[:-size_test]
     patches_test = patches[-size_test:]
 
-
     if not os.path.exists(trainingset_path):
         os.makedirs(trainingset_path)
 
@@ -110,18 +109,17 @@ def build_data(path_data, trainingset_path, trainRatio = 0.80):
     if not os.path.exists(folder_test):
         os.makedirs(folder_test)
 
-
     j = 0
     for patch in patches_train:
         imsave(folder_train+'/image_%s.jpeg'%j, patch[0],'jpeg')
         imsave(folder_train+'/classes_%s.jpeg'%j, patch[1].astype(int),'jpeg')
-        j+=1
+        j += 1
 
     k=0
     for patch in patches_test:
-        imsave(folder_test+'/image_%s.jpeg'%k, patch[0],'jpeg')
-        imsave(folder_test+'/classes_%s.jpeg'%k, patch[1].astype(int),'jpeg')
-        k+=1
+        imsave(folder_test+'/image_%s.jpeg'%k, patch[0], 'jpeg')
+        imsave(folder_test+'/classes_%s.jpeg'%k, patch[1].astype(int), 'jpeg')
+        k += 1
 
 
 
