@@ -223,10 +223,6 @@ def learn_model(trainingset_path, model_path, model_restored_path = None, learni
                 loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: batch_x,
                                                                   y: batch_y,
                                                                   keep_prob: 1., index: step*batch_size})
-
-                prediction = data_train.read_batch(p, batch_size)[0, :, :, 0]
-                ground_truth = data_train.read_batch(batch_y, batch_size)[0, :, :, 0]
-
                 if verbose == 2:
                     outputs = "Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
                         "{:.6f}".format(loss) + ", Training Accuracy= " + \

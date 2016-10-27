@@ -2,7 +2,7 @@ import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 import scipy
 import math
-from evaluation.segmentation_scoring import rejectOne_score
+from evaluation.segmentation_scoring import score_analysis
 from sklearn.metrics import accuracy_score
 import copy
 import pickle
@@ -116,10 +116,11 @@ def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, thre
             scores_0_list = []
             scores_1_list = []
             for label_field, feature_field, label_true in zip(label_fields, feature_fields, labels_true):
+                h, w = feature_field.shape
                 res = run_mrf(label_field, feature_field, nb_class, max_map_iter, weight_cur)
                 acc_mrf_list.append(accuracy_score(label_true, res.reshape((-1, 1))))
-                scores_0_list.append(rejectOne_score(feature_field, label_true, res.reshape((-1,1)))[0])
-                scores_1_list.append(rejectOne_score(feature_field, label_true, res.reshape((-1,1)))[1])
+                scores_0_list.append(score_analysis(feature_field, label_true.reshape((h,w)), res)[0])
+                scores_1_list.append(score_analysis(feature_field, label_true.reshape((h,w)), res)[1])
             acc_mrf = np.mean(acc_mrf_list)
             scores_0 = np.mean(scores_0_list)
             scores_1 = np.mean(scores_1_list)
@@ -221,6 +222,7 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
 
     i_figure = 1
     for label_field, image_init, label_true,image_path in zip(label_fields, images_init, labels_true, image_paths):
+        h,w = image_init.shape
         img_mrf = run_mrf(label_field, image_init, nb_class, max_map_iter, weight)
         img_mrf = img_mrf == 1
 
@@ -229,12 +231,12 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
         acc_list.append(accuracy_score(label_field, label_true))
         acc_mrf_list.append(accuracy_score(img_mrf.reshape(-1, 1), label_true))
 
-        score = rejectOne_score(image_init, label_true, label_field)
+        score = score_analysis(image_init, label_true.reshape(h,w), label_field.reshape(h,w))
         score_0_list.append(score[0])
         score_1_list.append(score[1])
         score_2_list.append(score[2])
 
-        score_mrf = rejectOne_score(image_init, label_true, img_mrf.reshape(-1,1))
+        score_mrf = score_analysis(image_init, label_true.reshape(h,w), img_mrf)
         score_0_mrf_list.append(score_mrf[0])
         score_1_mrf_list.append(score_mrf[1])
         score_2_mrf_list.append(score_mrf[2])

@@ -5,18 +5,21 @@ import numpy as np
 import pandas as pd
 
 
-def rejectOne_score(img, y_true, y_pred, visualization=False, min_area=2):
+def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2):
     """
     Calculates segmentation score by keeping an only true centroids as TP.
     Excess of centroids detected for a unique object is counted by diffusion (Excess/TP+FN)
     Returns sensitivity (TP/P), precision (FP/TP+FN) and diffusion
+
+    :param img: image to segment
+    :param groundtruth: groundtruth of the image
+    :param prediction: segmentation
+    :param visualization: if True, FP and TP are displayed on the image
+    :param min_area: minimal area of the predicted axon to count.
+    :return: [sensitivity, precision, diffusion]
     """
 
-    h, w = img.shape
-    im_true = y_true.reshape(h, w)
-    im_pred = y_pred.reshape(h, w)
-
-    labels_pred = measure.label(im_pred)
+    labels_pred = measure.label(prediction)
     regions_pred = regionprops(labels_pred)
 
     centroids = np.array([list(x.centroid) for x in regions_pred])
@@ -24,7 +27,7 @@ def rejectOne_score(img, y_true, y_pred, visualization=False, min_area=2):
     areas = np.array([x.area for x in regions_pred])
     centroids = centroids[areas > min_area]
 
-    labels_true = measure.label(im_true)
+    labels_true = measure.label(groundtruth)
     regions_true = regionprops(labels_true)
 
     centroid_candidates = set([tuple(row) for row in centroids])
@@ -68,46 +71,44 @@ def rejectOne_score(img, y_true, y_pred, visualization=False, min_area=2):
         plt.figure(1)
         plt.imshow(img, cmap=plt.get_cmap('gray'))
         plt.hold(True)
-        plt.imshow(im_pred, alpha=0.7)
+        plt.imshow(prediction, alpha=0.7)
         plt.hold(True)
         plt.scatter(centroids_T[:, 1], centroids_T[:, 0], color='g')
         plt.hold(True)
         plt.scatter(centroids_F[:, 1], centroids_F[:, 0], color='r')
         plt.hold(True)
         plt.scatter(notDetected[:, 1], notDetected[:, 0], color='y')
-        plt.title('Prediction, Sensitivity : %s , Errors : %s ' % (sensitivity, errors))
+        plt.title('Prediction, Sensitivity : %s , Precision : %s ' % (sensitivity, precision))
 
         plt.figure(2)
         plt.imshow(img, cmap=plt.get_cmap('gray'))
         plt.hold(True)
-        plt.imshow(im_true, alpha=0.7)
+        plt.imshow(groundtruth, alpha=0.7)
         plt.hold(True)
         plt.scatter(centroids_T[:, 1], centroids_T[:, 0], color='g')
         plt.hold(True)
         plt.scatter(centroids_F[:, 1], centroids_F[:, 0], color='r')
-        plt.title('Ground Truth, Sensitivity : %s , Errors : %s ' % (sensitivity, errors))
+        plt.title('Ground Truth, Sensitivity : %s , Precision : %s ' % (sensitivity, precision))
         plt.show()
 
-    return [sensitivity, precision, round(diffusion,4)]
+    return [sensitivity, precision, round(diffusion, 4)]
 
 
-def dice(img,y_true, y_pred, min_area = 9):
+def dice(img, groundtruth, prediction, min_area=3):
     """
     :param img: image to segment
-    :param y_true: ground truth vectorized
-    :param y_pred: prediction vectorized
+    :param y_true: groundtruth
+    :param y_pred: prediction
     :param min_area: minimum area of the predicted object to measure dice
-    :return: dataframe with the object, its size and its dice score
+    :return: pandas dataframe associating the axon predicted, its size and its dice score
     """
 
     h, w = img.shape
-    im_true = y_true.reshape(h, w)
-    im_pred = y_pred.reshape(h, w)
 
-    labels_true = measure.label(im_true)
+    labels_true = measure.label(groundtruth)
     regions_true = regionprops(labels_true)
 
-    labels_pred = measure.label(im_pred)
+    labels_pred = measure.label(prediction)
     regions_pred = regionprops(labels_pred)
     features = ['coords','area','dice']
     df = pd.DataFrame(columns=features)
@@ -115,20 +116,20 @@ def dice(img,y_true, y_pred, min_area = 9):
     i=0
     for x_pred in regions_pred :
         centroid = (np.array(x_pred.centroid)).astype(int)
-        if im_true[(centroid[0], centroid[1])] == 1:
+        if groundtruth[(centroid[0], centroid[1])] == 1:
             for x_true in regions_true:
 
                if [centroid[0], centroid[1]] in x_true.coords.tolist():
 
-                   A = np.zeros((img.shape[0], img.shape[1]))
-                   B = np.zeros((img.shape[0], img.shape[1]))
+                   Axon_predicted = np.zeros((h, w))
+                   Axon_true = np.zeros((h, w))
 
-                   A[x_pred.coords[:, 0], x_pred.coords[:, 1]] = 1
-                   B[x_true.coords[:, 0], x_true.coords[:, 1]] = 1
-                   intersect = A*B
+                   Axon_predicted[x_pred.coords[:, 0], x_pred.coords[:, 1]] = 1
+                   Axon_true[x_true.coords[:, 0], x_true.coords[:, 1]] = 1
+                   intersect = Axon_predicted*Axon_true
 
-                   D = 2*float(sum(sum(intersect)))/(sum(sum(B))+sum(sum(A)))
-                   df.loc[i] = [x_pred.coords, x_pred.area, D]
+                   Dice = 2*float(sum(sum(intersect)))/(sum(sum(Axon_predicted))+sum(sum(Axon_true)))
+                   df.loc[i] = [x_pred.coords, x_pred.area, Dice]
                    break
-        i+=1
-    return df[df['area']>min_area]
+        i += 1
+    return df[df['area'] > min_area]

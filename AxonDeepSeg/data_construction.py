@@ -112,13 +112,13 @@ def build_data(path_data, trainingset_path, trainRatio = 0.80):
     j = 0
     for patch in patches_train:
         imsave(folder_train+'/image_%s.jpeg'%j, patch[0],'jpeg')
-        imsave(folder_train+'/classes_%s.jpeg'%j, patch[1].astype(int),'jpeg')
+        imsave(folder_train+'/mask_%s.jpeg'%j, patch[1].astype(int),'jpeg')
         j += 1
 
     k=0
     for patch in patches_test:
         imsave(folder_test+'/image_%s.jpeg'%k, patch[0], 'jpeg')
-        imsave(folder_test+'/classes_%s.jpeg'%k, patch[1].astype(int), 'jpeg')
+        imsave(folder_test+'/mask_%s.jpeg'%k, patch[1].astype(int), 'jpeg')
         k += 1
 
 

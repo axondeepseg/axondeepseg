@@ -2,43 +2,36 @@ import pickle
 import matplotlib.pyplot as plt
 from scipy.misc import imread
 from sklearn.metrics import accuracy_score
-from segmentation_scoring import rejectOne_score, dice
+from segmentation_scoring import score_analysis, dice
 from sklearn import preprocessing
 import os
 from tabulate import tabulate
 from os.path import dirname, abspath
 
 
-def visualize_learning(model_path, model_restored_path = None, start_visu=0):
+def visualize_learning(path_model, path_model_init = None, start_visu=0):
     """
-    :param model_path: path of the folder including the model parameters .ckpt
-    :param model_restored_path: if the model is initialized by another, path of its folder
-    :param start_visu: first iterations can reach extreme values, start_visu set the start of the visualization
+    :param path_model: path of the folder with the model parameters .ckpt
+    :param path_model_init: if the model is initialized by another, path of its folder
+    :param start_visu: first iterations can reach extreme values, start_visu set another start than epoch 0
     :return: no return
 
     figure(1) represent the evolution of the loss and the accuracy evaluated on the test set along the learning process
-    figure(2) if learning initialized by another, merging of the two representations
+    figure(2) if learning initialized by another, evolution of the model of initialisation and of the new are merged
 
     """
 
-    current_path = dirname(abspath(__file__))
-    parent_path = dirname(current_path)
-
-    folder_model = model_path
-
-    folder_restored_model = model_restored_path
-
-    file = open(folder_model+'/evolution.pkl','r') # learning variables : loss, accuracy, epoch
+    file = open(path_model + '/evolution.pkl', 'r') # learning variables : loss, accuracy, epoch
     evolution = pickle.load(file)
 
-    if model_restored_path:
-        file_restored = open(folder_restored_model+'/evolution.pkl','r')
-        evolution_restored = pickle.load(file_restored)
-        last_epoch = evolution_restored['steps'][-1]
+    if path_model_init:
+        file_init = open(path_model_init + '/evolution.pkl', 'r')
+        evolution_init = pickle.load(file_init)
+        last_epoch = evolution_init['steps'][-1]
 
         evolution_merged = {} # Merging the two plots : learning of the init and learning of the model
         for key in ['steps','accuracy','loss'] :
-            evolution_merged[key] = evolution_restored[key]+evolution[key]
+            evolution_merged[key] = evolution_init[key]+evolution[key]
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
@@ -47,7 +40,7 @@ def visualize_learning(model_path, model_restored_path = None, start_visu=0):
         plt.ylim(ymin = 0.7)
         ax2 = ax.twinx()
         ax2.axvline(last_epoch, color='k', linestyle='--')
-        plt.title('Evolution merged (before and after restauration')
+        plt.title('Evolution merged (before and after restoration')
         ax2.plot(evolution_merged['steps'][start_visu:], evolution_merged['loss'][start_visu:], '-r', label = 'loss')
         plt.ylabel('Loss')
         plt.ylim(ymax = 100)
@@ -79,7 +72,7 @@ def visualize_results(path) :
     """
 
     path_img = path+'/image.jpg'
-    Mask = False
+    mask = False
 
     if not 'results.pkl' in os.listdir(path):
         print 'results not present'
@@ -105,12 +98,12 @@ def visualize_results(path) :
         path_mask = path+'/mask.jpg'
         mask = preprocessing.binarize(imread(path_mask, flatten=False, mode='L'), threshold=125)
 
-        acc = accuracy_score(prediction.reshape(-1,1), mask.reshape(-1,1))
-        score = rejectOne_score(image_init, mask.reshape(-1, 1), prediction.reshape(-1,1))
-        Dice = dice(image_init, mask.reshape(-1, 1), prediction.reshape(-1,1))['dice'].mean()
-        acc_mrf = accuracy_score(img_mrf.reshape(-1, 1), mask.reshape(-1, 1))
-        score_mrf = rejectOne_score(image_init, mask.reshape(-1,1), img_mrf.reshape(-1,1))
-        Dice_mrf = dice(image_init, mask.reshape(-1, 1), img_mrf.reshape(-1,1))['dice'].mean()
+        acc = accuracy_score(prediction, mask)
+        score = score_analysis(image_init, mask, prediction)
+        Dice = dice(image_init, mask, prediction)['dice'].mean()
+        acc_mrf = accuracy_score(img_mrf, mask)
+        score_mrf = score_analysis(image_init, mask, img_mrf)
+        Dice_mrf = dice(image_init, mask, img_mrf)['dice'].mean()
 
         headers = ["MRF", "accuracy", "sensitivity", "precision", "diffusion", "Dice"]
         table = [["False", acc, score[0], score[1], score[2], Dice],
@@ -152,6 +145,7 @@ def visualize_results(path) :
             plt.imshow(myelin, alpha=0.7)
 
     plt.show()
+
 
 if __name__ == "__main__":
     import argparse

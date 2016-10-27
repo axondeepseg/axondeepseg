@@ -141,7 +141,6 @@ def resc(patch):
     --- Rescaling reinforces axons size diversity ---
     """
 
-
     s = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
     data_rescale=[]
     for scale in s:
@@ -170,8 +169,6 @@ def rotate_image(image, angle):
     (in degrees). The returned image will be large enough to hold the entire
     new image, with a black background
     """
-
-
 
     # Get the image size
     # No that's not an error - NumPy stores image matricies backwards
@@ -308,7 +305,7 @@ class input_data:
         self.batch_start = start
 
 
-    def next_batch(self, batch_size, rnd = False, augmented_data = True):
+    def next_batch(self, batch_size = 1, rnd = False, augmented_data = True):
         """
         :param batch_size: size of the batch to feed the network
         :param rnd: if True, batch is randomly taken into the training set
@@ -328,10 +325,10 @@ class input_data:
             image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
 
             #-----PreProcessing --------
-            image = exposure.equalize_hist(image) # histogram equalization
-            image = (image - np.mean(image))/np.std(image) # data whitening
+            image = exposure.equalize_hist(image) #histogram equalization
+            image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
-            category = preprocessing.binarize(imread(self.path + 'classes_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
+            category = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
 
             if augmented_data :
                 [image, category] = augmentation([image, category])

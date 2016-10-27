@@ -13,7 +13,7 @@ from sklearn import preprocessing
 from config import*
 
 
-def im2batch(img, size=256):
+def im2patches(img, size=256):
     """
     :param img: image to segment.
     :param size: size of the patches to extract (must be the same as used in the learning)
@@ -55,15 +55,15 @@ def im2batch(img, size=256):
     return [img, np.asarray(dataset), positions]
 
 
-def batch2im(predictions, positions, h_size, w_size):
+def patches2im(predictions, positions, image_height, image_width):
     """
     :param predictions: list of the segmentation masks on the patches
-    :param positions: positions of the patches
+    :param positions: positions of the segmentations masks
     :param h_size: height of the image to reconstruct
     :param w_size: width of the image to reconstruct
-    :return: reconstructed segmentation on the full image
+    :return: reconstructed segmentation on the full image from the masks and their positions
     """
-    image = np.zeros((h_size, w_size))
+    image = np.zeros((image_height, image_width))
     for pred, pos in zip(predictions, positions):
         image[pos[0]:pos[0]+256,pos[1]:pos[1]+256] = pred
     return image
@@ -84,10 +84,9 @@ def apply_convnet(path, model_path):
     file = open(path+'/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
 
-    #set the resolution to the general_pixel_size
+    # set the resolution to the general_pixel_size
     rescale_coeff = pixel_size/general_pixel_size
     img = (rescale(img,rescale_coeff)*256).astype(int)
-
 
     batch_size = 1
     depth = 6
@@ -216,7 +215,7 @@ def apply_convnet(path, model_path):
     saver = tf.train.Saver(tf.all_variables())
 
     # Image to batch
-    image_init, data, positions = im2batch(img, 256)
+    image_init, data, positions = im2patches(img, 256)
     predictions = []
 
     # Launch the graph
@@ -239,7 +238,7 @@ def apply_convnet(path, model_path):
     tf.reset_default_graph()
 
     h_size, w_size = image_init.shape
-    prediction_rescaled = batch2im(predictions, positions, h_size, w_size)
+    prediction_rescaled = patches2im(predictions, positions, h_size, w_size)
     prediction = (preprocessing.binarize(rescale(prediction_rescaled, 1/rescale_coeff),threshold=0.5)).astype(int)
 
     return prediction
@@ -297,7 +296,7 @@ def axon_segmentation(image_path, model_path, mrf_path):
 
 def myelin(path):
     """
-    :param path: folder of the data, must include the segmentation mask AxonMask.mat
+    :param path: folder of the data, must include the segmentation results results.pkl
     :return: no return
 
     Myelin is Segmented by the AxonSegmentation Toolbox (NeuroPoly)
