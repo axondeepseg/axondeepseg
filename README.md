@@ -31,7 +31,6 @@ https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
 ### To train
 <img align="middle" src="https://github.com/neuropoly/axondeepseg/blob/master/doc/stru_train.png" width="300px" />
-Mask properties: axons: 255 ; background and myelin : 0  
 
 ###  To segment 
 <img align="middle" src="https://github.com/neuropoly/axondeepseg/blob/master/doc/stru_seg.png" width="300px"  />
