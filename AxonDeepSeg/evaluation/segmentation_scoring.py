@@ -8,7 +8,7 @@ import pandas as pd
 def rejectOne_score(img, y_true, y_pred, visualization=False, min_area=2):
     """
     Calculates segmentation score by keeping an only true centroids as TP.
-    Excess of centroids is counted by diffusion (Excess/TP+FN)
+    Excess of centroids detected for a unique object is counted by diffusion (Excess/TP+FN)
     Returns sensitivity (TP/P), precision (FP/TP+FN) and diffusion
     """
 

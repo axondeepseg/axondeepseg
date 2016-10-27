@@ -5,7 +5,6 @@ import math
 from evaluation.segmentation_scoring import rejectOne_score
 from sklearn.metrics import accuracy_score
 import copy
-import os
 import pickle
 from tabulate import tabulate
 from config import*
@@ -66,7 +65,7 @@ def run_mrf(label_field, feature_field, nb_class, max_map_iter, weight):
     sigma = []
 
     blurred = gaussian_filter(feature_field, sigma=weight[2])
-    y = blurred.reshape((-1,1))
+    y = blurred.reshape((-1, 1))
 
     for i in range(nb_class):
         yy = y[np.where(label_field == i)[0], 0]
@@ -80,10 +79,11 @@ def run_mrf(label_field, feature_field, nb_class, max_map_iter, weight):
     return mrf_map(X, Y, mu, sigma, nb_class, max_map_iter, weight[0], weight[1])
 
 
-def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, threshold_learning, labels_true, threshold_sensitivity, threshold_precision):
+def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, threshold_learning, labels_true,
+              threshold_sensitivity, threshold_precision):
     """
         Goal:       Weight Learning by maximizing the pixel accuracy + sensitivity condition
-        Input:      - label_field = SVM outputted labels
+        Input:      - label_fields = SVM outputted labels
                     - feature_field = extracted features
                     - nb_class
                     - max_map_iter = maximum number of iteration to run

@@ -7,8 +7,9 @@ path_img = 'image.jpg';
 
 load (path_Mask)
 
-im_in = imread(path_img);
-size(im_in) 
+im_in = rgb2gray(imread(path_img));
+size(im_in)
+size(prediction)
 
 AxSeg = prediction;
 
