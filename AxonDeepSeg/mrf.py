@@ -53,7 +53,7 @@ def mrf_map(X, Y, mu, sigma, nb_class, max_map_iter, alpha, beta):
 def run_mrf(label_field, feature_field, nb_class, max_map_iter, weight):
     """
         Goal:       Run the MRF_MAP_ICM process
-        Input:      - label_field = SVM outputted labels
+        Input:      - label_field = U-Net outputted segmentation
                     - feature_field = extracted features
                     - nb_class
                     - max_map_iter = maximum number of iteration to run
@@ -142,11 +142,11 @@ def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, thre
     return weight
 
 
-def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
+def learn_mrf(path_mrf_training, model_path, path_mrf, threshold_sensitivity = 0.9, threshold_precision = 0.81, visualize = False):
     """
     :param image_path : folder of the data to train the mrf, must include image.jpg
     :param model_path : folder of the model to bring an initial segmentation
-    :param mrf_path : folder to put the weights learned for the mrf
+    :param path_mrf : folder to put the weights learned for the mrf
     :return: no return
 
     Weights are saved in mrf_parameter.pkl
@@ -169,18 +169,15 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
     beta = 1.0
     sigma_blur = 1.0
     threshold_learning = 0.1
-    threshold_sensitivity = 0.55
-    threshold_precision = 0.81
 
-
-    folder_mrf = mrf_path
+    folder_mrf = path_mrf
     if not os.path.exists(folder_mrf):
         os.makedirs(folder_mrf)
 
     images_init = []
     label_fields = []
     labels_true = []
-    for image_path in image_paths :
+    for image_path in path_mrf_training :
 
         path_img = image_path+'/image.jpg'
         path_mask = image_path+'/mask.jpg'
@@ -221,7 +218,7 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
     score_2_mrf_list = []
 
     i_figure = 1
-    for label_field, image_init, label_true,image_path in zip(label_fields, images_init, labels_true, image_paths):
+    for label_field, image_init, label_true,image_path in zip(label_fields, images_init, labels_true, path_mrf_training):
         h,w = image_init.shape
         img_mrf = run_mrf(label_field, image_init, nb_class, max_map_iter, weight)
         img_mrf = img_mrf == 1
@@ -264,7 +261,7 @@ def learn_mrf(image_paths, model_path, mrf_path, visualize = False):
     parameters+= '\n threshold_error :%s'%(threshold_precision)
     parameters+= '\n threshold_sensitivity :%s'%(threshold_sensitivity)
 
-    subtitle_2 = '\n\n\n---Average scores on the training images : ' + str(image_paths) + '\n\n'
+    subtitle_2 = '\n\n\n---Average scores on the training images : ' + str(path_mrf_training) + '\n\n'
     headers = ["MRF", "accuracy", "sensitivity", "precision", "diffusion"]
     table = [["False", np.mean(acc_list), np.mean(score_0_list), np.mean(score_1_list),  np.mean(score_2_list)],
     ["True", np.mean(acc_mrf_list), np.mean(score_0_mrf_list), np.mean(score_1_mrf_list), np.mean(score_2_mrf_list)]]

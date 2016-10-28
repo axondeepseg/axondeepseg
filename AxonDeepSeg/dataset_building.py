@@ -22,8 +22,6 @@ def extract_patch(img, mask, size):
 
     r2_h = size-r_h
     r2_w = size-r_w
-    q2_h = q_h + 1
-    q2_w = q_w + 1
 
     q3_h, r3_h = divmod(r2_h,q_h)
     q3_w, r3_w = divmod(r2_w,q_w)
@@ -46,7 +44,7 @@ def extract_patch(img, mask, size):
     return dataset
 
 
-def build_data(path_data, trainingset_path, trainRatio = 0.80):
+def build_dataset(path_data, trainingset_path, trainRatio = 0.80):
     """
     :param path_data: folder including all images used for the training. Each image is represented by a a folder
     including image.jpg and mask.jpg (ground truth)

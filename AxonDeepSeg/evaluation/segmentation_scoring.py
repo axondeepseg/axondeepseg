@@ -97,10 +97,12 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
 def dice(img, groundtruth, prediction, min_area=3):
     """
     :param img: image to segment
-    :param y_true: groundtruth
-    :param y_pred: prediction
+    :param groundtruth : True segmentation
+    :param prediction : Segmentation predicted by the algorithm
     :param min_area: minimum area of the predicted object to measure dice
-    :return: pandas dataframe associating the axon predicted, its size and its dice score
+    :return dice_scores: pandas dataframe associating the axon predicted, its size and its dice score
+
+    To get the global dice score of the prediction,
     """
 
     h, w = img.shape
@@ -114,22 +116,23 @@ def dice(img, groundtruth, prediction, min_area=3):
     df = pd.DataFrame(columns=features)
 
     i=0
-    for x_pred in regions_pred :
-        centroid = (np.array(x_pred.centroid)).astype(int)
+    for axon_predicted in regions_pred :
+        centroid = (np.array(axon_predicted.centroid)).astype(int)
         if groundtruth[(centroid[0], centroid[1])] == 1:
-            for x_true in regions_true:
+            for axon_true in regions_true:
 
-               if [centroid[0], centroid[1]] in x_true.coords.tolist():
+               if [centroid[0], centroid[1]] in axon_true.coords.tolist():
 
-                   Axon_predicted = np.zeros((h, w))
-                   Axon_true = np.zeros((h, w))
+                   surface_pred = np.zeros((h, w))
+                   surface_true = np.zeros((h, w))
 
-                   Axon_predicted[x_pred.coords[:, 0], x_pred.coords[:, 1]] = 1
-                   Axon_true[x_true.coords[:, 0], x_true.coords[:, 1]] = 1
-                   intersect = Axon_predicted*Axon_true
+                   surface_pred[axon_predicted.coords[:, 0], axon_predicted.coords[:, 1]] = 1
+                   surface_true[axon_true.coords[:, 0], axon_true.coords[:, 1]] = 1
+                   intersect = surface_pred*surface_true
 
-                   Dice = 2*float(sum(sum(intersect)))/(sum(sum(Axon_predicted))+sum(sum(Axon_true)))
-                   df.loc[i] = [x_pred.coords, x_pred.area, Dice]
+                   Dice = 2*float(sum(sum(intersect)))/(sum(sum(surface_pred))+sum(sum(surface_true)))
+                   df.loc[i] = [axon_predicted.coords, axon_predicted.area, Dice]
                    break
         i += 1
-    return df[df['area'] > min_area]
+    dice_scores = df[df['area'] > min_area]
+    return dice_scores

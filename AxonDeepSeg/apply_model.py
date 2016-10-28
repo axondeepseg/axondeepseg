@@ -52,7 +52,9 @@ def im2patches(img, size=256):
         if pos + size > h:
             pos = pos - r3_h
 
-    return [img, np.asarray(dataset), positions]
+    patches = np.asarray(dataset)
+
+    return [img, patches, positions]
 
 
 def patches2im(predictions, positions, image_height, image_width):
@@ -65,28 +67,28 @@ def patches2im(predictions, positions, image_height, image_width):
     """
     image = np.zeros((image_height, image_width))
     for pred, pos in zip(predictions, positions):
-        image[pos[0]:pos[0]+256,pos[1]:pos[1]+256] = pred
+        image[pos[0]:pos[0]+256, pos[1]:pos[1]+256] = pred
     return image
 
 
-def apply_convnet(path, model_path):
+def apply_convnet(path_my_data, path_model):
     """
-    :param path: folder of the image to segment. Must contain image.jpg
-    :param model_path: folder of the model of segmentation. Must contain model.ckpt
+    :param path_my_data: folder of the image to segment. Must contain image.jpg
+    :param path_model: folder of the model of segmentation. Must contain model.ckpt
     :return: prediction, the mask of the segmentation
     """
 
-    print '\n\n ---Start axon segmentation on %s---'%path
+    print '\n\n ---Start axon segmentation on %s---' % path_my_data
 
-    path_img = path+'/image.jpg'
+    path_img = path_my_data + '/image.jpg'
     img = imread(path_img, flatten=False, mode='L')
 
-    file = open(path+'/pixel_size_in_micrometer.txt', 'r')
+    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
 
     # set the resolution to the general_pixel_size
     rescale_coeff = pixel_size/general_pixel_size
-    img = (rescale(img,rescale_coeff)*256).astype(int)
+    img = (rescale(img, rescale_coeff)*256).astype(int)
 
     batch_size = 1
     depth = 6
@@ -94,7 +96,7 @@ def apply_convnet(path, model_path):
     n_input = image_size * image_size
     n_classes = 2
 
-    folder_model = model_path
+    folder_model = path_model
     if not os.path.exists(folder_model):
         os.makedirs(folder_model)
 
@@ -211,7 +213,6 @@ def apply_convnet(path, model_path):
     # Construct model
     pred = conv_net(x, weights, biases, keep_prob)
 
-
     saver = tf.train.Saver(tf.all_variables())
 
     # Image to batch
@@ -247,11 +248,11 @@ def apply_convnet(path, model_path):
     #                                            Mrf                                                                      #
     #######################################################################################################################
 
-def axon_segmentation(image_path, model_path, mrf_path):
+def axon_segmentation(path_my_data, path_model, path_mrf):
     """
-    :param image_path: folder of the image to segment. Must contain image.jpg
-    :param model_path: folder of the model of segmentation. Must contain model.ckpt
-    :param mrf_path: folder of the mrf parameters.  Must contain mrf_parameter.pkl
+    :param path_my_data: folder of the image to segment. Must contain image.jpg
+    :param path_model: folder of the model of segmentation. Must contain model.ckpt
+    :param path_mrf: folder of the mrf parameters.  Must contain mrf_parameter.pkl
     :return: no return
 
     Results including the prediction and the prediction associated with the mrf are saved in the image_path
@@ -260,21 +261,22 @@ def axon_segmentation(image_path, model_path, mrf_path):
 
     """
 
-    file = open(image_path+'/pixel_size_in_micrometer.txt', 'r')
+    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
     rescale_coeff = pixel_size/general_pixel_size
 
 
     # ------ Apply ConvNets ------- #
-    prediction = apply_convnet(image_path, model_path)
+    prediction = apply_convnet(path_my_data, path_model)
 
     # ------ Apply mrf ------- #
     nb_class = 2
     max_map_iter = 10
-    image_init = (rescale(imread(image_path+'/image.jpg', flatten=False, mode='L'),rescale_coeff)*256).astype(int)
-    y_pred = (preprocessing.binarize((rescale(prediction.astype(float), rescale_coeff) * 256).astype(int), threshold=125)).reshape(-1, 1)
+    image_init = (rescale(imread(path_my_data + '/image.jpg', flatten=False, mode='L'), rescale_coeff) * 256).astype(int)
+    prediction = (preprocessing.binarize((rescale(prediction.astype(float), rescale_coeff) * 256).astype(int), threshold=125))
+    y_pred = prediction.reshape(-1, 1)
 
-    folder_mrf = mrf_path
+    folder_mrf = path_mrf
     mrf_parameters = pickle.load(open(folder_mrf +'/mrf_parameter.pkl', "rb"))
     weight = mrf_parameters['weight']
 
@@ -287,59 +289,59 @@ def axon_segmentation(image_path, model_path, mrf_path):
     results['img_mrf'] = img_mrf
     results['prediction'] = prediction
 
-    with open(image_path+'/results.pkl', 'wb') as handle :
+    with open(path_my_data+ '/results.pkl', 'wb') as handle :
             pickle.dump(results, handle)
 
-    imsave(image_path+'/AxonDeepSeg.jpeg', img_mrf, 'jpeg')
+    imsave(path_my_data + '/AxonDeepSeg.jpeg', img_mrf, 'jpeg')
 
 #---------------------------------------------------------------------------------------------------------
 
-def myelin(path):
+def myelin(path_my_data):
     """
-    :param path: folder of the data, must include the segmentation results results.pkl
+    :param path_my_data: folder of the data, must include the segmentation results results.pkl
     :return: no return
 
     Myelin is Segmented by the AxonSegmentation Toolbox (NeuroPoly)
     The segmentation mask of the myelin is saved in the folder of the data
     """
 
-    file = open(path+'/pixel_size_in_micrometer.txt', 'r')
+    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
 
-    file = open(path+"/results.pkl",'r')
+    file = open(path_my_data + "/results.pkl", 'r')
     results = pickle.load(file)
 
 
     print '\n\n ---START MYELIN DETECTION---'
 
-    io.savemat(path+'/AxonMask.mat', mdict={'prediction': results["img_mrf"]})
+    io.savemat(path_my_data + '/AxonMask.mat', mdict={'prediction': results["img_mrf"]})
     current_path = os.path.dirname(os.path.abspath(__file__))
     print current_path
 
     command = path_matlab+"/bin/matlab -nodisplay -nosplash -r \"clear all;addpath(\'"+current_path+"\');" \
-            "addpath(genpath(\'"+path_axonseg+"/code\')); myelin(\'%s\',%s);exit()\""%(path,pixel_size)
+            "addpath(genpath(\'"+path_axonseg+"/code\')); myelin(\'%s\',%s);exit()\""%(path_my_data, pixel_size)
     os.system(command)
 
-    os.remove(path+'/AxonMask.mat')
+    os.remove(path_my_data + '/AxonMask.mat')
 
 
-def pipeline(image_path, model_path, mrf_path, visualize=False):
+def pipeline(path_my_data, path_model, path_mrf, visualize=False):
     """
-    :param image_path: : folder of the data, must include image.jpg
-    :param model_path :  folder of the model of segmentation. Must contain model.ckpt
-    :param mrf_path: folder of the mrf parameters.  Must contain mrf_parameter.pkl
+    :param path_my_data: : folder of the data, must include image.jpg
+    :param path_model :  folder of the model of segmentation. Must contain model.ckpt
+    :param path_mrf: folder of the mrf parameters.  Must contain mrf_parameter.pkl
     :param visualize: if True, visualization of the results is runned. (and If a groundtruth is in image_path, scores are calculated)
     :return:
     """
 
     print '\n\n ---START AXON-MYELIN SEGMENTATION---'
-    axon_segmentation(image_path, model_path, mrf_path)
-    myelin(image_path)
-    print '\n End of the process : see results in : ', image_path
+    axon_segmentation(path_my_data, path_model, path_mrf)
+    myelin(path_my_data)
+    print '\n End of the process : see results in : ', path_my_data
 
     if visualize:
         from evaluation.visualization import visualize_results
-        visualize_results(image_path)
+        visualize_results(path_my_data)
 
 
 

@@ -22,8 +22,8 @@ path_mrf = './models/mrf'
 path_my_data = './victor/my_data/data4'
 
 # Generate training path
-from AxonDeepSeg.data_construction import build_data
-build_data(path_data, path_training, trainRatio=0.80)
+from AxonDeepSeg.dataset_building import build_dataset
+build_dataset(path_data, path_training, trainRatio=0.80)
 
 # OPTION 1: Local Train
 # Training the U-Net from a path_training

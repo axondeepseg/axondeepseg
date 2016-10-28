@@ -10,11 +10,7 @@ import numpy as np
 import random
 import os
 
-#######################################################################################################################
-#                                                Data Augmentation                                                    #
-#######################################################################################################################
-
-def extract_patch(img,mask,size):
+def extract_patches(img, mask, size):
     """
     :param img: image represented by a numpy-array
     :param mask: groundtruth of the segmentation
@@ -29,29 +25,30 @@ def extract_patch(img,mask,size):
 
     r2_h = size-r_h
     r2_w = size-r_w
-    q2_h = q_h + 1
-    q2_w = q_w + 1
 
-    q3_h, r3_h = divmod(r2_h,q_h)
-    q3_w, r3_w = divmod(r2_w,q_w)
+    q3_h, r3_h = divmod(r2_h, q_h)
+    q3_w, r3_w = divmod(r2_w, q_w)
 
-    dataset = []
-    pos = 0
-    while pos+size<=h:
-        pos2 = 0
-        while pos2+size<=w:
-            patch = img[pos:pos+size, pos2:pos2+size]
-            patch_gt = mask[pos:pos+size, pos2:pos2+size]
-            dataset.append([patch,patch_gt])
-            pos2 = size + pos2 - q3_w
-            if pos2 + size > w :
-                pos2 = pos2 - r3_w
+    patches = []
+    pos_x = 0
+    while pos_x+size<=h:
+        pos_y = 0
+        while pos_y+size<=w:
+            patch = img[pos_x:pos_x+size, pos_y:pos_y+size]
+            patch_gt = mask[pos_x:pos_x+size, pos_y:pos_y+size]
+            patches.append([patch,patch_gt])
+            pos_y = size + pos_y - q3_w
+            if pos_y + size > w :
+                pos_y = pos_y - r3_w
 
-        pos = size + pos - q3_h
-        if pos + size > h:
-            pos = pos - r3_h
-    return dataset
+        pos_x = size + pos_x - q3_h
+        if pos_x + size > h:
+            pos_x = pos_x - r3_h
+    return patches
 
+#######################################################################################################################
+#                                                Data Augmentation                                                    #
+#######################################################################################################################
 
 def flipped(patch):
     """
@@ -65,23 +62,20 @@ def flipped(patch):
         image, gt = [np.fliplr(image), np.fliplr(gt)]
     s = np.random.binomial(1, 0.5, 1)
     if s == 1:
-        image, gt=[np.flipud(image), np.flipud(gt)]
-    return [image,gt]
+        image, gt = [np.flipud(image), np.flipud(gt)]
+    return [image, gt]
 
 
-def elastic_transform(image, gt, alpha, sigma, random_state=None):
+def elastic_transform(image, gt, alpha, sigma):
     """
     :param image: image
     :param gt: ground truth
     :param alpha: deformation coefficient (high alpha -> strong deformation)
     :param sigma: std of the gaussian filter. (high sigma -> smooth deformation)
-    :param random_state:
     :return: deformation of the pair [image,mask]
     """
 
-    if random_state is None:
-        random_state = np.random.RandomState(None)
-
+    random_state = np.random.RandomState(None)
     shape = image.shape
 
     d = 4
@@ -104,7 +98,6 @@ def elastic_transform(image, gt, alpha, sigma, random_state=None):
     elastic_gt = preprocessing.binarize(np.array(elastic_gt), threshold=0.5)
 
     return [elastic_image, elastic_gt]
-
 
 def elastic(patch):
     """
@@ -133,7 +126,7 @@ def shifting(patch):
 
 
 
-def resc(patch):
+def rescaling(patch):
     """
     :param patch:  [image,mask]
     :return: random rescaling of the pair [image,mask]
@@ -142,7 +135,7 @@ def resc(patch):
     """
 
     s = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
-    data_rescale=[]
+    rescaled_patch=[]
     for scale in s:
 
         image_rescale = rescale(patch[0], scale)
@@ -154,14 +147,14 @@ def resc(patch):
             image_rescale = np.pad(image_rescale,(q_h, q_h+r_h), mode = "reflect")
             mask_rescale = np.pad(mask_rescale,(q_h, q_h+r_h), mode = "reflect")
         else :
-            patches = extract_patch(image_rescale,mask_rescale, 256)
+            patches = extract_patches(image_rescale, mask_rescale, 256)
             i = np.random.randint(len(patches), size=1)
             image_rescale,mask_rescale = patches[i]
 
         mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.001)
-        data_rescale = [image_rescale, mask_rescale]
+        rescaled_patch = [image_rescale, mask_rescale]
 
-    return data_rescale
+    return rescaled_patch
 
 def rotate_image(image, angle):
     """
@@ -262,7 +255,7 @@ def random_rotation(patch):
     return [image_rotated_cropped, gt_rotated_cropped]
 
 
-def augmentation(patch):
+def random_transformation(patch):
     """
     :param patch: [image,mask]
     :param size: application of the random transformations to the pair [image,mask]
@@ -276,7 +269,7 @@ def augmentation(patch):
 
 
 #######################################################################################################################
-#                                             Feeding data for the network                                            #
+#                                             Input data for the U-Net                                                #
 #######################################################################################################################
 class input_data:
     """
@@ -307,9 +300,9 @@ class input_data:
 
     def next_batch(self, batch_size = 1, rnd = False, augmented_data = True):
         """
-        :param batch_size: size of the batch to feed the network
+        :param batch_size: number of images per batch to feed the network, 1 image is often enough
         :param rnd: if True, batch is randomly taken into the training set
-        :param augmented_data: if True, each patch of the batch is randomly transformed as a data augmentation process
+        :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process
         :return: The pair [batch_x (data), batch_y (prediction)] to feed the network
         """
         batch_x = []
@@ -328,16 +321,16 @@ class input_data:
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
-            category = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
+            mask = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
 
             if augmented_data :
-                [image, category] = augmentation([image, category])
+                [image, mask] = random_transformation([image, mask])
 
             batch_x.append(image)
             if i == 0:
-                batch_y = category.reshape(-1,1)
+                batch_y = mask.reshape(-1,1)
             else:
-                batch_y = np.concatenate((batch_y, category.reshape(-1, 1)), axis=0)
+                batch_y = np.concatenate((batch_y, mask.reshape(-1, 1)), axis=0)
         batch_y = np.concatenate((np.invert(batch_y)/255, batch_y), axis = 1)
 
         return [np.asarray(batch_x), batch_y]
