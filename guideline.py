@@ -28,7 +28,7 @@ build_dataset(path_data, path_training, trainRatio=0.80)
 # OPTION 1: Local Train
 # Training the U-Net from a path_training
 from AxonDeepSeg.learn_model import train_model
-train_model(path_training, path_model, learning_rate=0.005)
+train_model(path_training, path_model, learning_rate=0.0005)
 #Initialize the training
 train_model(path_training, path_model, path_model_init, learning_rate=0.002)
 
@@ -37,7 +37,7 @@ train_model(path_training, path_model, path_model_init, learning_rate=0.002)
 scp -r AxonDeepSeg neuropoly@bireli.neuro.polymtl.ca:
 scp -r path_training neuropoly@bireli.neuro.polymtl.ca:my_project #path on bireli : path_bireli_training
 scp -r path_model_init neuropoly@bireli.neuro.polymtl.ca:my_project/models # path on bireli : path_bireli_model_init
-# Connect to bireli using ssh neuropoly@ssh
+# Connect to bireli using ssh neuropoly@ssh or (ssh -Y) to display
 git clone https://github.com/neuropoly/axondeepseg.git
 cd axondeepseg/AxonDeepSeg
 # sub-option1: if you don't have an initial model:
