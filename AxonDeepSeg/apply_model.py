@@ -106,6 +106,8 @@ def apply_convnet(path_my_data, path_model):
         depth = hyperparameters['depth']
         image_size = hyperparameters['image_size']
 
+    #--------------------SAME ALGORITHM IN TRAIN_model---------------------------
+
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
     y = tf.placeholder(tf.float32, shape=(batch_size*n_input, n_classes))
     keep_prob = tf.placeholder(tf.float32)
@@ -223,6 +225,8 @@ def apply_convnet(path_my_data, path_model):
     sess = tf.Session()
     saver.restore(sess, folder_model+"/model.ckpt")
 
+    #--------------------- Apply the segmentation to each patch of the images--------------------------------
+
     for i in range(len(data)):
         print 'processing patch %s on %s'%(i, len(data))
         batch_x = np.asarray([data[i]])
@@ -237,6 +241,8 @@ def apply_convnet(path_my_data, path_model):
 
     sess.close()
     tf.reset_default_graph()
+
+    #-----------------------Merge each segmented patch to reconstruct the total segmentation
 
     h_size, w_size = image_init.shape
     prediction_rescaled = patches2im(predictions, positions, h_size, w_size)

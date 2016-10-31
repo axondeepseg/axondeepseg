@@ -7,11 +7,11 @@ import time
 from learning.input_data import input_data
 import sys
 
-def learn_model(path_trainingset, path_model, path_model_init = None, learning_rate = None, save_trainable = True, verbose = 1):
+def train_model(path_trainingset, path_model, path_model_init = None, learning_rate = None, save_trainable = True, verbose = 1):
     """
     :param path_trainingset: path of the train and test set built from data_construction
-    :param path_model:
-    :param path_model_init:
+    :param path_model: path to save the trained model
+    :param path_model_init: (option) path of the model to initialize  the training
     :param learning_rate: learning_rate of the optimiser
     :param save_trainable: if True, only weights are saved. If false the variables from the optimisers are saved too
     :param verbose:
@@ -43,11 +43,15 @@ def learn_model(path_trainingset, path_model, path_model_init = None, learning_r
     dropout = 0.75
     depth = 6
 
+    #----------------SAVING HYPERPARAMETERS TO USE THEM FOR apply_model-----------------------------------------------#
+
     hyperparameters = {'depth': depth,'dropout': dropout, 'image_size': image_size,
                        'model_restored_path': path_model_init, 'learning_rate': learning_rate}
 
     with open(folder_model+'/hyperparameters.pkl', 'wb') as handle :
             pickle.dump(hyperparameters, handle)
+
+
 
     # Optimization Parameters
     batch_size = 1
@@ -70,7 +74,6 @@ def learn_model(path_trainingset, path_model, path_model_init = None, learning_r
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
     y = tf.placeholder(tf.float32, shape=(batch_size*n_input, n_classes))
     keep_prob = tf.placeholder(tf.float32)
-
 
     # Create some wrappers for simplicity
     def conv2d(x, W, b, strides=1):
@@ -173,7 +176,7 @@ def learn_model(path_trainingset, path_model, path_model_init = None, learning_r
     weights['finalconv']= tf.Variable(tf.random_normal([1, 1, num_features, n_classes]), name='finalconv-%s'%i)
     biases['finalconv_b']= tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s'%i)
 
-    # Construct model
+    # Call the model
     pred = conv_net(x, weights, biases, keep_prob)
 
     # Define loss and optimizer
@@ -201,7 +204,7 @@ def learn_model(path_trainingset, path_model, path_model_init = None, learning_r
 
     with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
         last_epoch = 0
-        if path_model_init :
+        if path_model_init:
             folder_restored_model = path_model_init
             saver.restore(sess, folder_restored_model+"/model.ckpt")
 
@@ -237,8 +240,8 @@ def learn_model(path_trainingset, path_model, path_model_init = None, learning_r
 
             if step % epoch_size == 0 :
                 start = time.time()
-                A = []
-                L = []
+                A = [] # list of accuracy scores on the datatest
+                L = [] # list of the Loss, or cost, scores on the dataset
 
                 data_test.set_batch_start()
                 for i in range(data_test.set_size):
@@ -282,6 +285,7 @@ def learn_model(path_trainingset, path_model, path_model_init = None, learning_r
         print("Model saved in file: %s" % save_path)
         print "Optimization Finished!"
 
+# To Call the training in the terminal
 
 if __name__ == "__main__":
     import argparse
@@ -301,4 +305,4 @@ if __name__ == "__main__":
 
     else : learning_rate = None
 
-    learn_model(path_training, path_model, path_model_init, learning_rate)
+    train_model(path_training, path_model, path_model_init, learning_rate)

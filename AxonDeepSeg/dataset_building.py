@@ -77,7 +77,7 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80):
                     mask_rescaled = (rescale(mask_init, rescale_coeff)*256).astype(int)
                     mask = preprocessing.binarize(mask_rescaled, threshold=125)
 
-            if i ==0:
+            if i == 0:
                 patches = extract_patch(img, mask, 256)
             else:
                 patches += extract_patch(img, mask, 256)
