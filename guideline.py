@@ -41,22 +41,25 @@ scp -r path_model_init neuropoly@bireli.neuro.polymtl.ca:my_project/models # pat
 git clone https://github.com/neuropoly/axondeepseg.git
 cd axondeepseg/AxonDeepSeg
 # sub-option1: if you don't have an initial model:
-python train_model.py - p path_bireli_training - m path_bireli_model - lr 0.0005 # result : path_bireli_model
+python train_model.py -p path_bireli_training -m path_bireli_model -lr 0.0005 # result : path_bireli_model
 # sub-option2: if you do have an initial model:
-python train_model.py - p path_bireli_training - m path_bireli_model - m_init path_bireli_model_init - lr 0.0005
-# In a local Terminal window, visualize to visualize the training performances:
-scp -r neuropoly@bireli.neuro.polymtl.ca:my_project/models/model path_model
+python train_model.py -p path_bireli_training -m path_bireli_model -m_init path_bireli_model_init - lr 0.0005
 
-#Visualization of the training
-from AxonDeepSeg.evaluation.visualization import visualize_learning
-# OPTION 1 : if you do not have an initial model
-visualize_learning(path_model)
-# OPTION 2 if you do not have an initial model
-visualize_learning(path_model, path_model_init)
+
+# OPTION 1 : Local Visualization
+from AxonDeepSeg.evaluation.visualization import visualize_training
+# sub-option 1 : if you do not have an initial model
+visualize_training(path_model)
+# sub-option 2 if you do not have an initial model
+visualize_training(path_model, path_model_init)
+
+# OPTION 2 : Visualization on GPU
+visualize_training - m path_bireli_model - m_init path_bireli_model_init
+
 
 # Training the MRF from the paths_training
-from AxonDeepSeg.mrf import learn_mrf
-learn_mrf(path_mrf_training, path_model, path_mrf)
+from AxonDeepSeg.mrf import train_mrf
+train_mrf(path_mrf_training, path_model, path_mrf, threshold_precision=0.8, threshold_sensitivity=0.9)
 
 #----------------------Axon segmentation with a trained model and trained mrf---------------------#
 from AxonDeepSeg.apply_model import axon_segmentation
@@ -81,8 +84,8 @@ pipeline(path_my_data, path_model, path_mrf)
 # Outputs from myelin() and axon_segmentation()
 
 #----------------------Visualization of the results--------------------#
-from AxonDeepSeg.evaluation.visualization import visualize_results
-visualize_results(path_my_data)
+from AxonDeepSeg.evaluation.visualization import visualize_segmentation
+visualize_segmentation(path_my_data)
 # Outputs :
 # Plots of the axon segmentation and the myelin segmentation
 # if my_data does have a groundtruth : report_results.txt in path_my_data

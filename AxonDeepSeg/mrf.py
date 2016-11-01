@@ -79,7 +79,7 @@ def run_mrf(label_field, feature_field, nb_class, max_map_iter, weight):
     return mrf_map(X, Y, mu, sigma, nb_class, max_map_iter, weight[0], weight[1])
 
 
-def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, threshold_learning, labels_true,
+def learn_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, threshold_learning, labels_true,
               threshold_sensitivity, threshold_precision):
     """
         Goal:       Weight Learning by maximizing the pixel accuracy + sensitivity condition
@@ -142,13 +142,13 @@ def train_mrf(label_fields, feature_fields, nb_class, max_map_iter, weight, thre
     return weight
 
 
-def learn_mrf(path_mrf_training, model_path, path_mrf, threshold_sensitivity = 0.9, threshold_precision = 0.81, visualize = False):
+def train_mrf(path_mrf_training, model_path, path_mrf, threshold_sensitivity = 0.9, threshold_precision = 0.81, visualize = False):
     """
     :param image_path : folder of the data to train the mrf, must include image.jpg
     :param model_path : folder of the model to bring an initial segmentation
     :param path_mrf : folder to put the weights learned for the mrf
     :param threshold_sensitivity : minimum sensitivity accepted
-    :param threshold_precision : minimum precision accepted 
+    :param threshold_precision : minimum precision accepted
     :return: no return
 
     Weights are saved in mrf_parameter.pkl
@@ -197,7 +197,7 @@ def learn_mrf(path_mrf_training, model_path, path_mrf, threshold_sensitivity = 0
         prediction = apply_convnet(image_path, model_path)
         label_fields.append(prediction.reshape(-1, 1))
 
-    weight = train_mrf(label_fields, images_init, nb_class, max_map_iter, [alpha, beta, sigma_blur], threshold_learning, labels_true, threshold_sensitivity,
+    weight = learn_mrf(label_fields, images_init, nb_class, max_map_iter, [alpha, beta, sigma_blur], threshold_learning, labels_true, threshold_sensitivity,
                        threshold_precision=threshold_precision)
 
     mrf_coef = {'weight': weight, "nb_class": nb_class, 'max_map_iter': max_map_iter, 'alpha': alpha, 'beta': beta,

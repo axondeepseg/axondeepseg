@@ -346,8 +346,8 @@ def pipeline(path_my_data, path_model, path_mrf, visualize=False):
     print '\n End of the process : see results in : ', path_my_data
 
     if visualize:
-        from evaluation.visualization import visualize_results
-        visualize_results(path_my_data)
+        from evaluation.visualization import visualize_segmentation
+        visualize_segmentation(path_my_data)
 
 
 

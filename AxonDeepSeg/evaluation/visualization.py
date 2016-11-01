@@ -9,7 +9,7 @@ from tabulate import tabulate
 from os.path import dirname, abspath
 
 
-def visualize_learning(path_model, path_model_init = None, start_visu=0):
+def visualize_training(path_model, path_model_init = None, start_visu=0):
     """
     :param path_model: path of the folder with the model parameters .ckpt
     :param path_model_init: if the model is initialized by another, path of its folder
@@ -61,7 +61,7 @@ def visualize_learning(path_model, path_model_init = None, start_visu=0):
 
 
 
-def visualize_results(path) :
+def visualize_segmentation(path) :
     """
     :param path: path of the folder including the data and the results obtained after by the segmentation process.
     :return: no return
@@ -157,4 +157,4 @@ if __name__ == "__main__":
     path_model = args["path_model"]
     path_model_init = args["path_model_init"]
 
-    visualize_learning(path_model, path_model_init)
+    visualize_training(path_model, path_model_init)
