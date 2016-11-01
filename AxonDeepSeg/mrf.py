@@ -147,6 +147,8 @@ def learn_mrf(path_mrf_training, model_path, path_mrf, threshold_sensitivity = 0
     :param image_path : folder of the data to train the mrf, must include image.jpg
     :param model_path : folder of the model to bring an initial segmentation
     :param path_mrf : folder to put the weights learned for the mrf
+    :param threshold_sensitivity : minimum sensitivity accepted
+    :param threshold_precision : minimum precision accepted 
     :return: no return
 
     Weights are saved in mrf_parameter.pkl
