@@ -21,7 +21,7 @@ def visualize_training(path_model, path_model_init = None, start_visu=0):
 
     """
 
-    file = open(path_model + '/evolution.pkl', 'r') # learning variables : loss, accuracy, epoch
+    file = open(path_model + '/evolution.pkl', 'r') # training variables : loss, accuracy, epoch
     evolution = pickle.load(file)
 
     if path_model_init:
@@ -68,7 +68,7 @@ def visualize_segmentation(path) :
     if there is a mask (ground truth) in the folder, scores are calculated : sensitivity, errors and dice
     figure(1) segmentation without mrf
     figure(2) segmentation with mrf
-    if there is myelin.jpg in the folder, myelin and image, myelin and axon segmentated, myelin and groundtruth are represented
+    if there is MyelinSeg.jpg in the folder, myelin and image, myelin and axon segmentated, myelin and groundtruth are represented
     """
 
     path_img = path+'/image.jpg'
@@ -80,7 +80,7 @@ def visualize_segmentation(path) :
     file = open(path+'/results.pkl','r')
     res = pickle.load(file)
 
-    img_mrf = res['img_mrf']
+    prediction_mrf = res['prediction_mrf']
     prediction = res['prediction']
     image_init = imread(path_img, flatten=False, mode='L')
 
@@ -90,7 +90,7 @@ def visualize_segmentation(path) :
     plt.title('Axon Segmentation mask')
     plt.imshow(image_init, cmap=plt.get_cmap('gray'))
     plt.hold(True)
-    plt.imshow(img_mrf, alpha=0.7)
+    plt.imshow(prediction_mrf, alpha=0.7)
 
     i_figure += 1
     if 'mask.jpg' in os.listdir(path):
@@ -101,9 +101,9 @@ def visualize_segmentation(path) :
         acc = accuracy_score(prediction, mask)
         score = score_analysis(image_init, mask, prediction)
         Dice = dice(image_init, mask, prediction)['dice'].mean()
-        acc_mrf = accuracy_score(img_mrf, mask)
-        score_mrf = score_analysis(image_init, mask, img_mrf)
-        Dice_mrf = dice(image_init, mask, img_mrf)['dice'].mean()
+        acc_mrf = accuracy_score(prediction_mrf, mask)
+        score_mrf = score_analysis(image_init, mask, prediction_mrf)
+        Dice_mrf = dice(image_init, mask, prediction_mrf)['dice'].mean()
 
         headers = ["MRF", "accuracy", "sensitivity", "precision", "diffusion", "Dice"]
         table = [["False", acc, score[0], score[1], score[2], Dice],
@@ -131,7 +131,7 @@ def visualize_segmentation(path) :
 
         ax2 = fig.add_subplot(1,2,2)
         ax2.set_title('Myelin Segmentation - Axon Segmentation')
-        ax2.imshow(img_mrf, cmap=plt.get_cmap('gray'))
+        ax2.imshow(prediction_mrf, cmap=plt.get_cmap('gray'))
         ax2.hold(True)
         ax2.imshow(myelin, alpha=0.7)
 

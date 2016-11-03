@@ -286,19 +286,19 @@ def axon_segmentation(path_my_data, path_model, path_mrf):
     mrf_parameters = pickle.load(open(folder_mrf +'/mrf_parameter.pkl', "rb"))
     weight = mrf_parameters['weight']
 
-    img_mrf = run_mrf(y_pred, image_init, nb_class, max_map_iter, weight)
-    img_mrf = img_mrf == 1
-    img_mrf = preprocessing.binarize(rescale(img_mrf, 1/rescale_coeff),threshold=0.5)
+    prediction_mrf = run_mrf(y_pred, image_init, nb_class, max_map_iter, weight)
+    prediction_mrf = prediction_mrf == 1
+    prediction_mrf = preprocessing.binarize(rescale(prediction_mrf, 1/rescale_coeff),threshold=0.5)
 
     # ------ Saving results ------- #
     results={}
-    results['img_mrf'] = img_mrf
+    results['prediction_mrf'] = prediction_mrf
     results['prediction'] = prediction
 
     with open(path_my_data+ '/results.pkl', 'wb') as handle :
             pickle.dump(results, handle)
 
-    imsave(path_my_data + '/AxonDeepSeg.jpeg', img_mrf, 'jpeg')
+    imsave(path_my_data + '/AxonDeepSeg.jpeg', prediction_mrf, 'jpeg')
 
 #---------------------------------------------------------------------------------------------------------
 
@@ -320,7 +320,7 @@ def myelin(path_my_data):
 
     print '\n\n ---START MYELIN DETECTION---'
 
-    io.savemat(path_my_data + '/AxonMask.mat', mdict={'prediction': results["img_mrf"]})
+    io.savemat(path_my_data + '/AxonMask.mat', mdict={'prediction': results["prediction_mrf"]})
     current_path = os.path.dirname(os.path.abspath(__file__))
     print current_path
 

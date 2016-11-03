@@ -1,3 +1,6 @@
+__author__ = 'Charley Gros and Victor Herman'
+
+
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 import scipy
