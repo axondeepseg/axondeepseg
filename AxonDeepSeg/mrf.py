@@ -197,7 +197,9 @@ def train_mrf(path_mrf_training, model_path, path_mrf, threshold_sensitivity = 0
 
         labels_true.append(mask.reshape(-1,1))
 
-        prediction = apply_convnet(image_path, model_path)
+        prediction = rescale((apply_convnet(image_path, model_path).astype(float)), rescale_coeff)
+        prediction = (preprocessing.binarize(prediction, threshold=0.5)).astype(int)
+
         label_fields.append(prediction.reshape(-1, 1))
 
     weight = learn_mrf(label_fields, images_init, nb_class, max_map_iter, [alpha, beta, sigma_blur], threshold_learning, labels_true, threshold_sensitivity,

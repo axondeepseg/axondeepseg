@@ -288,7 +288,9 @@ def axon_segmentation(path_my_data, path_model, path_mrf):
 
     prediction_mrf = run_mrf(y_pred, image_init, nb_class, max_map_iter, weight)
     prediction_mrf = prediction_mrf == 1
-    prediction_mrf = preprocessing.binarize(rescale(prediction_mrf, 1/rescale_coeff),threshold=0.5)
+
+    prediction_mrf = preprocessing.binarize(rescale(prediction_mrf, 1/rescale_coeff),threshold=0.5).astype(int)
+    prediction = preprocessing.binarize(rescale(prediction.astype(float), 1/rescale_coeff),threshold=0.5).astype(int)
 
     # ------ Saving results ------- #
     results={}

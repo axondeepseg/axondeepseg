@@ -98,10 +98,10 @@ def visualize_segmentation(path) :
         path_mask = path+'/mask.jpg'
         mask = preprocessing.binarize(imread(path_mask, flatten=False, mode='L'), threshold=125)
 
-        acc = accuracy_score(prediction, mask)
+        acc = accuracy_score(prediction.reshape(-1,1), mask.reshape(-1,1))
         score = score_analysis(image_init, mask, prediction)
         Dice = dice(image_init, mask, prediction)['dice'].mean()
-        acc_mrf = accuracy_score(prediction_mrf, mask)
+        acc_mrf = accuracy_score(prediction_mrf.reshape(-1,1), mask.reshape(-1,1))
         score_mrf = score_analysis(image_init, mask, prediction_mrf)
         Dice_mrf = dice(image_init, mask, prediction_mrf)['dice'].mean()
 
