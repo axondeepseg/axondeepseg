@@ -19,41 +19,50 @@ def im2patches(img, size=256):
     :param size: size of the patches to extract (must be the same as used in the learning)
     :return: [img, patches, positions of the patches]
     """
+
     h, w = img.shape
 
-    q_h, r_h = divmod(h, size)
-    q_w, r_w = divmod(w, size)
+    if (h == 256 and w == 256):
+        patch = img
+        patch = exposure.equalize_hist(patch)
+        patch = (patch - np.mean(patch)) / np.std(patch)
+        positions = [[0,0]]
+        patches = [patch]
 
-    r2_h = size-r_h
-    r2_w = size-r_w
-    q2_h = q_h + 1
-    q2_w = q_w + 1
+    else :
+        q_h, r_h = divmod(h, size)
+        q_w, r_w = divmod(w, size)
 
-    q3_h, r3_h = divmod(r2_h, q_h)
-    q3_w, r3_w = divmod(r2_w, q_w)
 
-    dataset = []
-    positions=[]
-    pos = 0
-    while pos+size<=h:
-        pos2 = 0
-        while pos2+size<=w:
-            patch = img[pos:pos+size, pos2:pos2+size]
-            patch = exposure.equalize_hist(patch)
-            patch = (patch - np.mean(patch))/np.std(patch)
+        r2_h = size-r_h
+        r2_w = size-r_w
+        q2_h = q_h + 1
+        q2_w = q_w + 1
 
-            dataset.append(patch)
-            positions.append([pos,pos2])
-            pos2 = size + pos2 - q3_w
-            if pos2 + size > w :
-                pos2 = pos2 - r3_w
+        q3_h, r3_h = divmod(r2_h, q_h)
+        q3_w, r3_w = divmod(r2_w, q_w)
 
-        pos = size + pos - q3_h
-        if pos + size > h:
-            pos = pos - r3_h
+        dataset = []
+        positions=[]
+        pos = 0
+        while pos+size<=h:
+            pos2 = 0
+            while pos2+size<=w:
+                patch = img[pos:pos+size, pos2:pos2+size]
+                patch = exposure.equalize_hist(patch)
+                patch = (patch - np.mean(patch))/np.std(patch)
 
-    patches = np.asarray(dataset)
+                dataset.append(patch)
+                positions.append([pos,pos2])
+                pos2 = size + pos2 - q3_w
+                if pos2 + size > w :
+                    pos2 = pos2 - r3_w
 
+            pos = size + pos - q3_h
+            if pos + size > h:
+                pos = pos - r3_h
+
+        patches = np.asarray(dataset)
     return [img, patches, positions]
 
 
@@ -228,7 +237,7 @@ def apply_convnet(path_my_data, path_model):
     #--------------------- Apply the segmentation to each patch of the images--------------------------------
 
     for i in range(len(data)):
-        print 'processing patch %s on %s'%(i, len(data))
+        print 'processing patch %s on %s'%(i+1, len(data))
         batch_x = np.asarray([data[i]])
         start = time.time()
         p = sess.run(pred, feed_dict={x: batch_x})
@@ -301,6 +310,7 @@ def axon_segmentation(path_my_data, path_model, path_mrf):
             pickle.dump(results, handle)
 
     imsave(path_my_data + '/AxonDeepSeg.jpeg', prediction_mrf, 'jpeg')
+    io.savemat(path_my_data + '/AxonMask.mat', mdict={'prediction': results["prediction_mrf"]})
 
 #---------------------------------------------------------------------------------------------------------
 

@@ -87,12 +87,21 @@ def visualize_segmentation(path) :
     i_figure = 1
 
     plt.figure(i_figure)
-    plt.title('Axon Segmentation mask')
+    plt.title('Axon Segmentation (with mrf) mask')
     plt.imshow(image_init, cmap=plt.get_cmap('gray'))
     plt.hold(True)
     plt.imshow(prediction_mrf, alpha=0.7)
 
     i_figure += 1
+
+    plt.figure(i_figure)
+    plt.title('Axon Segmentation (without mrf) mask')
+    plt.imshow(image_init, cmap=plt.get_cmap('gray'))
+    plt.hold(True)
+    plt.imshow(prediction, alpha=0.7)
+
+    i_figure += 1
+
     if 'mask.jpg' in os.listdir(path):
         Mask = True
         path_mask = path+'/mask.jpg'

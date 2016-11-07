@@ -202,8 +202,8 @@ def train_mrf(path_mrf_training, model_path, path_mrf, threshold_sensitivity = 0
 
         label_fields.append(prediction.reshape(-1, 1))
 
-    weight = learn_mrf(label_fields, images_init, nb_class, max_map_iter, [alpha, beta, sigma_blur], threshold_learning, labels_true, threshold_sensitivity,
-                       threshold_precision=threshold_precision)
+    weight = learn_mrf(label_fields, images_init, nb_class, max_map_iter, [alpha, beta, sigma_blur], threshold_learning, labels_true,
+                       threshold_sensitivity = threshold_sensitivity, threshold_precision=threshold_precision)
 
     mrf_coef = {'weight': weight, "nb_class": nb_class, 'max_map_iter': max_map_iter, 'alpha': alpha, 'beta': beta,
                 'sigma_blur': sigma_blur, 'threshold_precision': threshold_precision,
@@ -225,8 +225,8 @@ def train_mrf(path_mrf_training, model_path, path_mrf, threshold_sensitivity = 0
     score_2_mrf_list = []
 
     i_figure = 1
-    for label_field, image_init, label_true,image_path in zip(label_fields, images_init, labels_true, path_mrf_training):
-        h,w = image_init.shape
+    for label_field, image_init, label_true, image_path in zip(label_fields, images_init, labels_true, path_mrf_training):
+        h, w = image_init.shape
         img_mrf = run_mrf(label_field, image_init, nb_class, max_map_iter, weight)
         img_mrf = img_mrf == 1
 
