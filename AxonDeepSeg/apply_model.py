@@ -310,7 +310,6 @@ def axon_segmentation(path_my_data, path_model, path_mrf):
             pickle.dump(results, handle)
 
     imsave(path_my_data + '/AxonDeepSeg.jpeg', prediction_mrf, 'jpeg')
-    io.savemat(path_my_data + '/AxonMask.mat', mdict={'prediction': results["prediction_mrf"]})
 
 #---------------------------------------------------------------------------------------------------------
 
