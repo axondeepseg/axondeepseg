@@ -127,22 +127,15 @@ def visualize_segmentation(path) :
         file.write(text)
         file.close()
 
-    if 'myelin.jpg' in os.listdir(path):
-        path_myelin = path + '/myelin.jpg'
+    if 'MyelinSeg.jpg' in os.listdir(path):
+        path_myelin = path + '/MyelinSeg.jpg'
         myelin = preprocessing.binarize(imread(path_myelin, flatten=False, mode='L'), threshold=125)
 
-        fig = plt.figure(i_figure)
-        ax1 = fig.add_subplot(1,2,1)
-        ax1.set_title('Myelin')
-        ax1.imshow(image_init, cmap=plt.get_cmap('gray'))
-        ax1.hold(True)
-        ax1.imshow(myelin, alpha=0.7)
-
-        ax2 = fig.add_subplot(1,2,2)
-        ax2.set_title('Myelin Segmentation - Axon Segmentation')
-        ax2.imshow(prediction_mrf, cmap=plt.get_cmap('gray'))
-        ax2.hold(True)
-        ax2.imshow(myelin, alpha=0.7)
+        plt.figure(i_figure)
+        plt.title('Myelin Segmentation')
+        plt.imshow(image_init, cmap=plt.get_cmap('gray'))
+        plt.hold(True)
+        plt.imshow(myelin, alpha=0.7)
 
         i_figure+=1
 

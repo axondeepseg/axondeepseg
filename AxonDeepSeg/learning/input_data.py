@@ -134,25 +134,23 @@ def rescaling(patch):
     --- Rescaling reinforces axons size diversity ---
     """
 
-    s = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
-    rescaled_patch=[]
-    for scale in s:
+    scale = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
 
-        image_rescale = rescale(patch[0], scale)
-        mask_rescale = rescale(patch[1], scale)
-        s_r = mask_rescale.shape[0]
-        q_h, r_h = divmod(256-s_r,2)
+    image_rescale = rescale(patch[0], scale)
+    mask_rescale = rescale(patch[1], scale)
+    s_r = mask_rescale.shape[0]
+    q_h, r_h = divmod(256-s_r,2)
 
-        if q_h > 0 :
-            image_rescale = np.pad(image_rescale,(q_h, q_h+r_h), mode = "reflect")
-            mask_rescale = np.pad(mask_rescale,(q_h, q_h+r_h), mode = "reflect")
-        else :
-            patches = extract_patches(image_rescale, mask_rescale, 256)
-            i = np.random.randint(len(patches), size=1)
-            image_rescale,mask_rescale = patches[i]
+    if q_h > 0 :
+        image_rescale = np.pad(image_rescale,(q_h, q_h+r_h), mode = "reflect")
+        mask_rescale = np.pad(mask_rescale,(q_h, q_h+r_h), mode = "reflect")
+    else :
+        patches = extract_patches(image_rescale, mask_rescale, 256)
+        i = np.random.randint(len(patches), size=1)[0]
+        image_rescale,mask_rescale = patches[i]
 
-        mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.001)
-        rescaled_patch = [image_rescale, mask_rescale]
+    mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.001)
+    rescaled_patch = [image_rescale, mask_rescale]
 
     return rescaled_patch
 
@@ -262,6 +260,7 @@ def random_transformation(patch):
     :return: application of the random transformations to the pair [image,mask]
     """
     patch = shifting(patch)
+    patch = rescaling(patch)
     patch = random_rotation(patch)
     patch = elastic(patch)
     patch = flipped(patch)
