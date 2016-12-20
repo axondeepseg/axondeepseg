@@ -114,7 +114,7 @@ def train_model(path_trainingset, path_model, path_model_init = None, learning_r
 
     # expansion
         for i in range(depth):
-            data_temp = tf.image.resize_images(data_temp, data_temp_size[-1] * 2, data_temp_size[-1] * 2)
+            data_temp = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
             upconv = conv2d(data_temp, weights['upconv'][i], biases['upconv'][i])
             data_temp_size.append(data_temp_size[-1]*2)
 
