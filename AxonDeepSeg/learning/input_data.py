@@ -4,7 +4,7 @@ from scipy.ndimage.interpolation import map_coordinates
 from scipy.ndimage.filters import gaussian_filter
 from scipy.misc import imread
 from sklearn import preprocessing
-import cv2
+#import cv2
 from skimage.transform import rotate
 import numpy as np
 import random
@@ -237,12 +237,12 @@ def random_rotation(patch):
     image_size = (img.shape[1], img.shape[0])
     image_center = tuple(np.array(image_size) / 2)
 
-    #image_rotated = rotate(img, angle, resize=True, center=image_center, preserve_range=True)
-    #gt_rotated = rotate(mask, angle, resize=True, center=image_center, preserve_range=True)
-    #gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5)).astype(int)
+    image_rotated = rotate(img, angle, resize=True, center=image_center, preserve_range=True)
+    gt_rotated = rotate(mask, angle, resize=True, center=image_center, preserve_range=True)
+    gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5)).astype(int)
 
-    image_rotated = rotate_image(img, angle)
-    gt_rotated = rotate_image(mask, angle)
+    #image_rotated = rotate_image(img, angle)
+    #gt_rotated = rotate_image(mask, angle)
 
     s_p = image_rotated.shape[0]
     center = int(float(s_p)/2)
@@ -250,7 +250,7 @@ def random_rotation(patch):
     image_rotated_cropped = image_rotated[center-128:center+128, center-128:center+128]
     gt_rotated_cropped = gt_rotated[center-128:center+128, center-128:center+128]
 
-    return [image_rotated_cropped, gt_rotated_cropped]
+    return [image_rotated_cropped.astype(int), gt_rotated_cropped]
 
 
 def random_transformation(patch):
