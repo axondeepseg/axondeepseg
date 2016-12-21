@@ -118,8 +118,8 @@ def shifting(patch):
     mask = np.pad(patch[1],size_shift, mode = "reflect")
     begin_h = np.random.randint(2*size_shift-1)
     begin_w = np.random.randint(2*size_shift-1)
-    shifted_image = img[begin_h:,begin_w:]
-    shifted_mask = mask[begin_h:,begin_w:]
+    shifted_image = img[begin_h:begin_h+256,begin_w:begin_w+256]
+    shifted_mask = mask[begin_h:begin_h+256,begin_w:begin_w+256]
 
     return [shifted_image,shifted_mask]
 
@@ -149,7 +149,7 @@ def rescaling(patch):
         image_rescale,mask_rescale = patches[i]
 
     mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.001)
-    rescaled_patch = [image_rescale, mask_rescale]
+    rescaled_patch = [(image_rescale*256).astype(int), mask_rescale]
 
     return rescaled_patch
 
