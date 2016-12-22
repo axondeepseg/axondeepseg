@@ -246,15 +246,15 @@ class input_data:
                     self.batch_start= 0
 
             image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
+            mask = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
+
+            if augmented_data :
+                [image, mask] = random_transformation([image, mask])
 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
-            mask = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
-
-            if augmented_data :
-                [image, mask] = random_transformation([image, mask])
 
             batch_x.append(image)
             if i == 0:
