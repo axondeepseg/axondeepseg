@@ -153,7 +153,7 @@ def rescaling(patch):
             image_rescale,mask_rescale = patches[i]
 
         mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.001)
-        rescaled_patch = [(image_rescale*256).astype(int), mask_rescale]
+        rescaled_patch = [(image_rescale*256).astype(int), mask_rescale.astype(int)]
 
     return rescaled_patch
 
