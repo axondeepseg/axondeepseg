@@ -138,9 +138,9 @@ def rescaling(patch):
     if scale == 1.0:
         rescaled_patch = patch
 
-    else:
-        image_rescale = rescale(patch[0], scale)
-        mask_rescale = rescale(patch[1], scale)
+    else :
+        image_rescale = rescale(patch[0], scale, preserve_range= True)
+        mask_rescale = rescale(patch[1], scale, preserve_range= True)
         s_r = mask_rescale.shape[0]
         q_h, r_h = divmod(256-s_r,2)
 
@@ -150,10 +150,10 @@ def rescaling(patch):
         else:
             patches = extract_patches(image_rescale, mask_rescale, 256)
             i = np.random.randint(len(patches), size=1)[0]
-            image_rescale,mask_rescale = patches[i]
+            image_rescale, mask_rescale = patches[i]
 
-        mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.001)
-        rescaled_patch = [(image_rescale*256).astype(int), mask_rescale.astype(int)]
+        mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.5)
+        rescaled_patch = [image_rescale, mask_rescale.astype(int)]
 
     return rescaled_patch
 
@@ -162,26 +162,17 @@ def random_rotation(patch):
     :param patch: [image, mask]
     :return: random rotation of the pair [image,mask]
     """
-
-    img = np.pad(patch[0],180,mode = "reflect")
-    mask = np.pad(patch[1],180,mode = "reflect")
+    img = patch[0]
+    mask = patch[1]
 
     angle = np.random.uniform(5, 89, 1)
 
-    image_size = (img.shape[1], img.shape[0])
-    image_center = tuple(np.array(image_size) / 2)
-
-    image_rotated = transform.rotate(img, angle, resize=True, center=image_center, preserve_range=True).astype(int)
-    gt_rotated = transform.rotate(mask, angle, resize=True, center=image_center, preserve_range=True)
+    image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True).astype(int)
+    gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
     gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5)).astype(int)
 
-    s_p = image_rotated.shape[0]
-    center = int(float(s_p)/2)
 
-    image_rotated_cropped = image_rotated[center-128:center+128, center-128:center+128]
-    gt_rotated_cropped = gt_rotated[center-128:center+128, center-128:center+128]
-
-    return [image_rotated_cropped, gt_rotated_cropped]
+    return [image_rotated, gt_rotated]
 
 
 def random_transformation(patch):
