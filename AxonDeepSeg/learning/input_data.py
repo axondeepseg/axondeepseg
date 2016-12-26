@@ -167,10 +167,9 @@ def random_rotation(patch):
 
     angle = np.random.uniform(5, 89, 1)
 
-    image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True).astype(int)
+    image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True)
     gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
     gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5)).astype(int)
-
 
     return [image_rotated, gt_rotated]
 
@@ -239,13 +238,13 @@ class input_data:
             image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
             mask = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
 
-            if augmented_data :
-                [image, mask] = random_transformation([image, mask])
-
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
+
+            if augmented_data:
+                [image, mask] = random_transformation([image, mask])
 
             batch_x.append(image)
             if i == 0:
