@@ -6,6 +6,7 @@ from segmentation_scoring import score_analysis, dice
 from sklearn import preprocessing
 import os
 from tabulate import tabulate
+import numpy as np
 from os.path import dirname, abspath
 
 
@@ -83,22 +84,23 @@ def visualize_segmentation(path) :
     prediction_mrf = res['prediction_mrf']
     prediction = res['prediction']
     image_init = imread(path_img, flatten=False, mode='L')
+    predict = np.ma.masked_where(prediction == 0, prediction)
+    predict_mrf = np.ma.masked_where(prediction_mrf == 0, prediction_mrf)
 
     i_figure = 1
 
     plt.figure(i_figure)
     plt.title('Axon Segmentation (with mrf) mask')
-    plt.imshow(image_init, cmap=plt.get_cmap('gray'))
+    plt.imshow(image_init, 'gray')
     plt.hold(True)
-    plt.imshow(prediction_mrf, alpha=0.7)
+    plt.imshow(predict_mrf, 'hsv', alpha=0.7)
 
     i_figure += 1
 
     plt.figure(i_figure)
     plt.title('Axon Segmentation (without mrf) mask')
-    plt.imshow(image_init, cmap=plt.get_cmap('gray'))
-    plt.hold(True)
-    plt.imshow(prediction, alpha=0.7)
+    plt.imshow(image_init, 'gray')
+    plt.imshow(predict, 'hsv', alpha=0.7)
 
     i_figure += 1
 
@@ -109,19 +111,30 @@ def visualize_segmentation(path) :
 
         acc = accuracy_score(prediction.reshape(-1,1), mask.reshape(-1,1))
         score = score_analysis(image_init, mask, prediction)
-        Dice = dice(image_init, mask, prediction)['dice'].mean()
+        Dice = dice(image_init, mask, prediction)['dice']
+        Dice_mean = Dice.mean()
         acc_mrf = accuracy_score(prediction_mrf.reshape(-1,1), mask.reshape(-1,1))
         score_mrf = score_analysis(image_init, mask, prediction_mrf)
-        Dice_mrf = dice(image_init, mask, prediction_mrf)['dice'].mean()
+        Dice_mrf = dice(image_init, mask, prediction_mrf)['dice']
+        Dice_mrf_mean = Dice_mrf.mean()
 
         headers = ["MRF", "accuracy", "sensitivity", "precision", "diffusion", "Dice"]
-        table = [["False", acc, score[0], score[1], score[2], Dice],
-        ["True", acc_mrf, score_mrf[0], score_mrf[1], score_mrf[2], Dice_mrf]]
+        table = [["False", acc, score[0], score[1], score[2], Dice_mean],
+        ["True", acc_mrf, score_mrf[0], score_mrf[1], score_mrf[2], Dice_mrf_mean]]
 
         subtitle2 = '\n\n---Scores---\n\n'
         scores = tabulate(table, headers)
         text = subtitle2+scores
+
+        subtitle3 = '\n\n---Dice Percentiles---\n\n'
+        headers = ["MRF", "Dice 10th", "50th", "90th"]
+        table = [["False", np.percentile(Dice, 10), np.percentile(Dice, 50), np.percentile(Dice, 90)],
+        ["True", np.percentile(Dice_mrf, 10), np.percentile(Dice_mrf, 50), np.percentile(Dice_mrf, 90)]]
+        scores_2 = tabulate(table, headers)
+
+        text = text + subtitle3+subtitle3+scores_2
         print text
+
 
         file = open(path+"/Report_results.txt", 'w')
         file.write(text)
@@ -130,12 +143,12 @@ def visualize_segmentation(path) :
     if 'MyelinSeg.jpg' in os.listdir(path):
         path_myelin = path + '/MyelinSeg.jpg'
         myelin = preprocessing.binarize(imread(path_myelin, flatten=False, mode='L'), threshold=125)
+        myelin = np.ma.masked_where(myelin == 0, myelin)
 
         plt.figure(i_figure)
         plt.title('Myelin Segmentation')
-        plt.imshow(image_init, cmap=plt.get_cmap('gray'))
-        plt.hold(True)
-        plt.imshow(myelin, alpha=0.7)
+        plt.imshow(image_init, 'gray')
+        plt.imshow(myelin, 'hsv', alpha=0.7)
 
         i_figure+=1
 

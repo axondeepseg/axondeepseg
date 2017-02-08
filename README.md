@@ -12,7 +12,7 @@ The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi e
 ### Prerequisites : 
   * **Python 2.7** : https://www.python.org/download/releases/2.7/
   * **PIP** : https://pip.pypa.io/en/stable/installing/
-  * **Tensorflow** (GPU enabled, Python 2.7) : https://www.tensorflow.org/versions/r0.10/get_started/os_setup.html
+  * **Tensorflow 0.11** (GPU enabled, Python 2.7) : https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html
   * **OpenCV** (Python 2.7) : http://opencv.org/
   
 ### Prerequisites only for myelin segmentation :

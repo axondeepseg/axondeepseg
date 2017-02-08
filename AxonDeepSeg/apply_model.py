@@ -232,7 +232,7 @@ def apply_convnet(path_my_data, path_model):
 
     # Launch the graph
     sess = tf.Session()
-    saver.restore(sess, folder_model+"/model.ckpt")
+    saver.restore(sess, folder_model+ '/model.ckpt')
 
     #--------------------- Apply the segmentation to each patch of the images--------------------------------
 

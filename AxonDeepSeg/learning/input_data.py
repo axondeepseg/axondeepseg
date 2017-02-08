@@ -135,6 +135,7 @@ def rescaling(patch):
 
     scale = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
 
+
     if scale == 1.0:
         rescaled_patch = patch
 
