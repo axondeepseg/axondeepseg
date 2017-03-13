@@ -223,7 +223,7 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
     num_features_b = 2*num_features_in
     weights['wb1'] = tf.Variable(tf.random_normal([3, 3, num_features_in, num_features_b], stddev=math.sqrt(2.0/(9*float(num_features_in)))),name='wb1-%s'%i)
     weights['wb2'] = tf.Variable(tf.random_normal([3, 3, num_features_b, num_features_b], stddev=math.sqrt(2.0/(9*float(num_features_b)))), name='wb2-%s'%i)
-    biases['bb1'] = tf.Variable(tf.random_normal([num_features_b]), name='bb2-%s'%i)
+    biases['bb1'] = tf.Variable(tf.random_normal([num_features_b]), name='bb1-%s'%i)
     biases['bb2'] = tf.Variable(tf.random_normal([num_features_b]), name='bb2-%s'%i)
 
     num_features_in = num_features_b

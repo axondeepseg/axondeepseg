@@ -6,14 +6,14 @@ import os
 import pickle
 import numpy as np
 import time
-import json
 from mrf import run_mrf
 from scipy import io
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
 from skimage import exposure
 from sklearn import preprocessing
-from config import *
+from config import*
+import json
 
 #Input que l'on veut: depth, number of features per layer, number of convolution per layer, size of convolutions per layer.    n_classes = 2, dropout = 0.75
 
@@ -97,7 +97,7 @@ def patches2im(predictions, positions, image_height, image_width):
     return image
 
 
-def apply_convnet(path_my_data, path_model,config_network):
+def apply_convnet(path_my_data, path_model,config):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -122,33 +122,25 @@ def apply_convnet(path_my_data, path_model,config_network):
     # Network Parameters
     image_size = 256
     n_input = image_size * image_size
-    learning_rate = config_network.get("network_learning_rate", 0.0005)
-    n_classes = config_network.get("network_n_classes", 2)
-    dropout = config_network.get("network_dropout", 0.75)
-    depth = config_network.get("network_depth", 6)
-    number_of_convolutions_per_layer = config_network.get("network_convolution_per_layer", [1 for i in range(depth)])
-    size_of_convolutions_per_layer =  config_network.get("network_size_of_convolutions_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
-    features_per_convolution = config_network.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
+    learning_rate = config.get("network_learning_rate", 0.0005)
+    n_classes = config.get("network_n_classes", 2)
+    dropout = config.get("network_dropout", 0.75)
+    depth = config.get("network_depth", 6)
+    number_of_convolutions_per_layer = config.get("network_convolution_per_layer", [1 for i in range(depth)])
+    size_of_convolutions_per_layer =  config.get("network_size_of_convolution_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
+    features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     ##############
-
-    print(learning_rate,
-        n_classes,
-        dropout,
-        depth,
-        number_of_convolutions_per_layer,
-        size_of_convolutions_per_layer,
-        features_per_convolution)
 
     folder_model = path_model
     if not os.path.exists(folder_model):
         os.makedirs(folder_model)
-    """
+
     if os.path.exists(folder_model+'/hyperparameters.pkl'):
         print 'hyperparameters detected in the model'
         hyperparameters = pickle.load(open(folder_model +'/hyperparameters.pkl', "rb"))
         depth = hyperparameters['depth']
         image_size = hyperparameters['image_size']
-    """
+
     #--------------------SAME ALGORITHM IN TRAIN_model---------------------------
 
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
@@ -206,16 +198,16 @@ def apply_convnet(path_my_data, path_model,config_network):
         for i in range(depth):
 
             for conv_number in range(number_of_convolutions_per_layer[i]):
-                print('Layer: ',i,' Conv: ',conv_number)
+                print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
                 if conv_number == 0:
                     convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
                 else:
                     convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
 
             relu_results.append(convolution_c)
-            convolution = maxpool2d(convolution_c, k=2)
+            convolution_c = maxpool2d(convolution_c, k=2)
             data_temp_size.append(data_temp_size[-1]/2)
-            data_temp = convolution
+            data_temp = convolution_c
 
         conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'])
         conv2 = conv2d(conv1, weights['wb2'], biases['bb2'])
@@ -233,6 +225,7 @@ def apply_convnet(path_my_data, path_model,config_network):
                                                                      [-1, data_temp_size[depth-i-1], data_temp_size[depth-i-1], -1]), upconv])
             
             for conv_number in range(number_of_convolutions_per_layer[i]):
+                print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
                 if conv_number == 0:
                     convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number])
                 else:
@@ -255,7 +248,7 @@ def apply_convnet(path_my_data, path_model,config_network):
 
         layer_convolutions_weights = []
         layer_convolutions_biases = []
-        print(i)
+
         # Compute the layer's convolutions and biases.
         for conv_number in range(number_of_convolutions_per_layer[i]):
 
@@ -277,48 +270,47 @@ def apply_convnet(path_my_data, path_model,config_network):
         weights['wc'].append(layer_convolutions_weights)
         biases['bc'].append(layer_convolutions_biases)
 
+    num_features_b = 2*num_features_in
+    weights['wb1'] = tf.Variable(tf.random_normal([3, 3, num_features_in, num_features_b], stddev=math.sqrt(2.0/(9*float(num_features_in)))),name='wb1-%s'%i)
+    weights['wb2'] = tf.Variable(tf.random_normal([3, 3, num_features_b, num_features_b], stddev=math.sqrt(2.0/(9*float(num_features_b)))), name='wb2-%s'%i)
+    biases['bb1'] = tf.Variable(tf.random_normal([num_features_b]), name='bb1-%s'%i)
+    biases['bb2'] = tf.Variable(tf.random_normal([num_features_b]), name='bb2-%s'%i)
 
-    weights['wb1']= tf.Variable(tf.random_normal([3, 3, num_features_in, num_features[1]], stddev=math.sqrt(2.0/(9*float(num_features_in)))),name='wb1-%s'%i)
-    weights['wb2']= tf.Variable(tf.random_normal([3, 3, num_features[1], num_features[1]], stddev=math.sqrt(2.0/(9*float(num_features[1])))), name='wb2-%s'%i)
-    biases['bb1']= tf.Variable(tf.random_normal([num_features[1]]), name='bb2-%s'%i)
-    biases['bb2']= tf.Variable(tf.random_normal([num_features[1]]), name='bb2-%s'%i)
-
-    num_features_in = num_features[1]
+    num_features_in = num_features_b
 
     # Expansion
     for i in range(depth):
+
 
         layer_convolutions_weights = []
         layer_convolutions_biases = []
 
         num_features = features_per_convolution[depth-i-1][-1]
 
-        weights['upconv'].append(tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[0]]), name='upconv-%s'%i))
+        weights['upconv'].append(tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s'%i))
         biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[0]]), name='bupconv-%s'%i))
 
         for conv_number in reversed(range(number_of_convolutions_per_layer[depth-i-1])):
 
             if conv_number == number_of_convolutions_per_layer[depth-i-1]-1:
                 num_features_in = features_per_convolution[depth-i-1][-1][1]+num_features[0]
-            else:
-                num_features_in = num_features[0]
+                print('Input features layer : ',num_features_in)
+
             # We climb the reversed layers 
             conv_size = size_of_convolutions_per_layer[depth-i-1][conv_number]
             num_features = features_per_convolution[depth-i-1][conv_number]
-            
-            layer_convolutions_weights.append(tf.Variable(tf.random_normal([conv_size,conv_size, num_features_in, num_features[0]],
+            print(num_features[1])
+            layer_convolutions_weights.append(tf.Variable(tf.random_normal([conv_size,conv_size, num_features_in, num_features[1]],
                                                                     stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'we'+str(conv_number+1)+'1-%s'%i))
-            layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[0]],
-                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[0])))), name='be'+str(conv_number+1)+'1-%s'%i))
-            
-            num_features_in = num_features[0]
+            layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
+                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[1])))), name='be'+str(conv_number+1)+'1-%s'%i))
+            # Actualisation of next convolution's input number.
+            num_features_in = num_features[1]
 
         # Store expansion layers weights & biases.
         weights['we'].append(layer_convolutions_weights)
         biases['be'].append(layer_convolutions_biases)
 
-
-    num_features_in = num_features[0]
     weights['finalconv']= tf.Variable(tf.random_normal([1, 1, num_features_in, n_classes]), name='finalconv-%s'%i)
     biases['finalconv_b']= tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s'%i)
 
@@ -364,7 +356,7 @@ def apply_convnet(path_my_data, path_model,config_network):
     #                                            Mrf                                                                      #
     #######################################################################################################################
 
-def axon_segmentation(path_my_data, path_model, path_mrf, config_network):
+def axon_segmentation(path_my_data, path_model, path_mrf,config):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -380,7 +372,7 @@ def axon_segmentation(path_my_data, path_model, path_mrf, config_network):
     rescale_coeff = pixel_size/general_pixel_size
 
     # ------ Apply ConvNets ------- #
-    prediction = apply_convnet(path_my_data, path_model,config_network)
+    prediction = apply_convnet(path_my_data, path_model,config)
 
     # ------ Apply mrf ------- #
     nb_class = 2
