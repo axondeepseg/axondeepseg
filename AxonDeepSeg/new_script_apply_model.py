@@ -1,16 +1,19 @@
+# -*- coding: utf-8 -*-
+
 import tensorflow as tf
 import math
 import os
 import pickle
 import numpy as np
 import time
+import json
 from mrf import run_mrf
 from scipy import io
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
 from skimage import exposure
 from sklearn import preprocessing
-from config import*
+from config import *
 
 #Input que l'on veut: depth, number of features per layer, number of convolution per layer, size of convolutions per layer.    n_classes = 2, dropout = 0.75
 
@@ -94,7 +97,7 @@ def patches2im(predictions, positions, image_height, image_width):
     return image
 
 
-def apply_convnet(path_my_data, path_model,config):
+def apply_convnet(path_my_data, path_model,config_network):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -119,25 +122,33 @@ def apply_convnet(path_my_data, path_model,config):
     # Network Parameters
     image_size = 256
     n_input = image_size * image_size
-    learning_rate = config.get("network_learning_rate", 0.0005)
-    n_classes = config.get("network_n_classes", 2)
-    dropout = config.get("network_dropout", 0.75)
-    depth = config.get("network_depth", 6)
-    number_of_convolutions_per_layer = config.get("network_convolution_per_layer", [1 for i in range(depth)])
-    size_of_convolutions_per_layer =  config.get("network_size_of_convolution_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
-    features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
+    learning_rate = config_network.get("network_learning_rate", 0.0005)
+    n_classes = config_network.get("network_n_classes", 2)
+    dropout = config_network.get("network_dropout", 0.75)
+    depth = config_network.get("network_depth", 6)
+    number_of_convolutions_per_layer = config_network.get("network_convolution_per_layer", [1 for i in range(depth)])
+    size_of_convolutions_per_layer =  config_network.get("network_size_of_convolutions_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
+    features_per_convolution = config_network.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     ##############
+
+    print(learning_rate,
+        n_classes,
+        dropout,
+        depth,
+        number_of_convolutions_per_layer,
+        size_of_convolutions_per_layer,
+        features_per_convolution)
 
     folder_model = path_model
     if not os.path.exists(folder_model):
         os.makedirs(folder_model)
-
+    """
     if os.path.exists(folder_model+'/hyperparameters.pkl'):
         print 'hyperparameters detected in the model'
         hyperparameters = pickle.load(open(folder_model +'/hyperparameters.pkl', "rb"))
         depth = hyperparameters['depth']
         image_size = hyperparameters['image_size']
-
+    """
     #--------------------SAME ALGORITHM IN TRAIN_model---------------------------
 
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
@@ -190,10 +201,6 @@ def apply_convnet(path_my_data, path_model,config):
         data_temp = x
         data_temp_size = [image_size]
         relu_results = []
-
-        print("Depth %d" % depth)
-        print("convolutions")
-        print(number_of_convolutions_per_layer)
 
         # contraction
         for i in range(depth):
@@ -248,7 +255,7 @@ def apply_convnet(path_my_data, path_model,config):
 
         layer_convolutions_weights = []
         layer_convolutions_biases = []
-
+        print(i)
         # Compute the layer's convolutions and biases.
         for conv_number in range(number_of_convolutions_per_layer[i]):
 
@@ -300,9 +307,9 @@ def apply_convnet(path_my_data, path_model,config):
             num_features = features_per_convolution[depth-i-1][conv_number]
             
             layer_convolutions_weights.append(tf.Variable(tf.random_normal([conv_size,conv_size, num_features_in, num_features[0]],
-                                                                    stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'wc'+str(conv_number+1)+'1-%s'%i))
+                                                                    stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'we'+str(conv_number+1)+'1-%s'%i))
             layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[0]],
-                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[0])))), name='bc'+str(conv_number+1)+'1-%s'%i))
+                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[0])))), name='be'+str(conv_number+1)+'1-%s'%i))
             
             num_features_in = num_features[0]
 
@@ -316,7 +323,7 @@ def apply_convnet(path_my_data, path_model,config):
     biases['finalconv_b']= tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s'%i)
 
     # Construct model
-    pred = conv_net(x, weights, biases, keep_prob)
+    pred = Uconv_net(x, weights, biases, keep_prob)
 
     saver = tf.train.Saver(tf.all_variables())
 
@@ -357,7 +364,7 @@ def apply_convnet(path_my_data, path_model,config):
     #                                            Mrf                                                                      #
     #######################################################################################################################
 
-def axon_segmentation(path_my_data, path_model, path_mrf):
+def axon_segmentation(path_my_data, path_model, path_mrf, config_network):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -372,9 +379,8 @@ def axon_segmentation(path_my_data, path_model, path_mrf):
     pixel_size = float(file.read())
     rescale_coeff = pixel_size/general_pixel_size
 
-
     # ------ Apply ConvNets ------- #
-    prediction = apply_convnet(path_my_data, path_model)
+    prediction = apply_convnet(path_my_data, path_model,config_network)
 
     # ------ Apply mrf ------- #
     nb_class = 2

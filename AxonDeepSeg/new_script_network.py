@@ -251,9 +251,9 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
             num_features = features_per_convolution[depth-i-1][conv_number]
             print(num_features[1])
             layer_convolutions_weights.append(tf.Variable(tf.random_normal([conv_size,conv_size, num_features_in, num_features[1]],
-                                                                    stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'wc'+str(conv_number+1)+'1-%s'%i))
+                                                                    stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'we'+str(conv_number+1)+'1-%s'%i))
             layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
-                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[1])))), name='bc'+str(conv_number+1)+'1-%s'%i))
+                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[1])))), name='be'+str(conv_number+1)+'1-%s'%i))
             # Actualisation of next convolution's input number.
             num_features_in = num_features[1]
 
