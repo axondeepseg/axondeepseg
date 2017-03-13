@@ -288,18 +288,18 @@ def apply_convnet(path_my_data, path_model,config):
         num_features = features_per_convolution[depth-i-1][-1]
 
         weights['upconv'].append(tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s'%i))
-        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[0]]), name='bupconv-%s'%i))
+        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s'%i))
 
         for conv_number in reversed(range(number_of_convolutions_per_layer[depth-i-1])):
 
             if conv_number == number_of_convolutions_per_layer[depth-i-1]-1:
-                num_features_in = features_per_convolution[depth-i-1][-1][1]+num_features[0]
+                num_features_in = features_per_convolution[depth-i-1][-1][1]+num_features[1]
                 print('Input features layer : ',num_features_in)
 
             # We climb the reversed layers 
             conv_size = size_of_convolutions_per_layer[depth-i-1][conv_number]
             num_features = features_per_convolution[depth-i-1][conv_number]
-            print(num_features[1])
+            # print(num_features[1])
             layer_convolutions_weights.append(tf.Variable(tf.random_normal([conv_size,conv_size, num_features_in, num_features[1]],
                                                                     stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'we'+str(conv_number+1)+'1-%s'%i))
             layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
