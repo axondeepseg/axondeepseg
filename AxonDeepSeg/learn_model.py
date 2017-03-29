@@ -95,7 +95,7 @@ def train_model(path_trainingset, path_model, path_model_init = None, learning_r
         data_temp = x
         data_temp_size = [image_size]
         relu_results = []
-        print('CHECK')
+
     # contraction
         for i in range(depth):
           conv1 = conv2d(data_temp, weights['wc1'][i], biases['bc1'][i])
@@ -144,7 +144,7 @@ def train_model(path_trainingset, path_model, path_model_init = None, learning_r
 
 
     # Store layers weight & bias
-      
+
       weights['wc1'].append(tf.Variable(tf.random_normal([3, 3, num_features_init, num_features], stddev=math.sqrt(2.0/(9.0*float(num_features_init)))), name = 'wc1-%s'%i))
       weights['wc2'].append(tf.Variable(tf.random_normal([3, 3, num_features, num_features], stddev=math.sqrt(2.0/(9.0*float(num_features)))), name = 'wc2-%s'%i))
       biases['bc1'].append(tf.Variable(tf.random_normal([num_features], stddev=math.sqrt(2.0/(9.0*float(num_features)))), name='bc1-%s'%i))

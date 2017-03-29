@@ -17,7 +17,7 @@ import os
 # network_features_per_convolution : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
 # Default : [[[64,64] for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_convolution[k][1] = network_features_per_convolution[k+1][0].
 
-filename = './georgji_config_network.json'
+filename = './article_SEM_georgji_config_network.json'
 
 
 network_learning_rate = 0.0005
@@ -69,8 +69,8 @@ features_per_convolution = config_network.get("network_features_per_convolution"
 # print(learning_rate,n_classes,dropout,depth,number_of_convolutions_per_layer,size_of_convolutions_per_layer,features_per_convolution)
 
 # training
-path_training = './../trainingset'
-path_model = './../models/Unet_georgji'
+path_training = '/home/piant_local/piant/article_SEM/trainingset'
+path_model = './../models/Unet_SEM/'
 #
 with open(path_model+filename, 'w') as f:
     json.dump(config, f, indent=2)

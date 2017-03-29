@@ -23,9 +23,121 @@ import sys
     # network_features_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
     # Default : [[64 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_layer[k][1] = network_features_per_layer[k+1][0].
     
+def gaussian_noise(image):
+    """
+    :param image: input image 256*256 for the network.
+    :return: application of the gaussian noise to the image
+    """
+    img = image
+    noisy_img = random_noise(img, mode='gaussian')
+    return noisy_img
+
+def conv2d(x, W, b, strides=1):
+    # Conv2D wrapper, with bias and relu activation
+    x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
+    x = tf.nn.bias_add(x, b)
+    return tf.nn.relu(x)
+
+def maxpool2d(x, k=2):
+    # MaxPool2D wrapper
+    return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1],
+                          padding='SAME')
 
 
-def train_model(path_trainingset, path_model, config, path_model_init = None, save_trainable = True, verbose = 1):
+# Create model
+def Uconv_net(x, weights, biases, config, dropout, image_size = 256):
+    """
+    Create the U-net.
+    Input :
+           x : TF object to define, ensemble des patchs des images :graph input
+
+           weights['wc'] : list of lists containing the convolutions' weights of the contraction layers.
+           weights['we'] : list of lists containing the convolutions' weights of the expansion layers.
+           biases['bc'] : list of lists containing the convolutions' biases of the contraction layers.
+           biases['be'] : list of lists containing the convolutions' biases of the expansion layers.
+           
+           weights['wb'] : list of the bottom layer's convolutions' weights.
+           biases['bb'] : list of the bottom layer's convolutions' biases.
+
+           weights['upconv'] : list of the upconvolutions layers convolutions' weights.
+           biases['upconv_b'] : list of the upconvolutions layers convolutions' biases.
+
+           weights['finalconv'] : list of the last layer convolutions' weights.
+           biases['finalconv_b'] : list of the last layer convolutions' biases.
+
+           dropout : float between 0 and 1 : percentage of neurons kept, 
+           image_size : int : The image size
+
+    Output :
+           The U-net.
+    """
+    
+    image_size = 256
+    n_input = image_size * image_size
+    learning_rate = config.get("network_learning_rate", 0.0005)
+    n_classes = config.get("network_n_classes", 2)
+    dropout = config.get("network_dropout", 0.75)
+    depth = config.get("network_depth", 6)
+    number_of_convolutions_per_layer = config.get("network_convolution_per_layer", [1 for i in range(depth)])
+    size_of_convolutions_per_layer =  config.get("network_size_of_convolutions_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
+    features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
+
+    # Reshape input picture
+    x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
+    data_temp = x
+    data_temp_size = [image_size]
+    relu_results = []
+
+    # contraction
+    for i in range(depth):
+
+        for conv_number in range(number_of_convolutions_per_layer[i]):
+            print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
+            print('Size:',size_of_convolutions_per_layer[i][conv_number])
+
+            if conv_number == 0:
+                convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
+            else:
+                convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
+
+        relu_results.append(convolution_c)
+        convolution_c = maxpool2d(convolution_c, k=2)
+        data_temp_size.append(data_temp_size[-1]/2)
+        data_temp = convolution_c
+
+    conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'])
+    conv2 = conv2d(conv1, weights['wb2'], biases['bb2'])
+    data_temp_size.append(data_temp_size[-1])
+    data_temp = conv2
+
+    # expansion
+    for i in range(depth):
+        data_temp = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
+        upconv = conv2d(data_temp, weights['upconv'][i], biases['upconv_b'][i])
+        data_temp_size.append(data_temp_size[-1]*2)
+
+        # concatenation
+        upconv_concat = tf.concat(concat_dim=3, values=[tf.slice(relu_results[depth-i-1], [0, 0, 0, 0],
+                                                                 [-1, data_temp_size[depth-i-1], data_temp_size[depth-i-1], -1]), upconv])
+        
+        for conv_number in range(number_of_convolutions_per_layer[i]):
+            print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
+            print('Size:',size_of_convolutions_per_layer[i][conv_number])
+            
+            if conv_number == 0:
+                convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number])
+            else:
+                convolution_e = conv2d(convolution_e, weights['we'][i][conv_number], biases['be'][i][conv_number])
+
+        data_temp = convolution_e
+
+    # final convolution and segmentation
+    finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
+    final_result = tf.reshape(finalconv, tf.TensorShape([finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], 2]))
+
+    return final_result
+
+def train_model(path_trainingset, path_model, config, path_model_init = None, save_trainable = True, verbose = 1, augmented_data = True, with_noise = False):
     """
     :param path_trainingset: path of the train and test set built from data_construction
     :param path_model: path to save the trained model
@@ -98,98 +210,8 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
     y = tf.placeholder(tf.float32, shape=(batch_size*n_input, n_classes))
     keep_prob = tf.placeholder(tf.float32)
 
+    ####################################################################
     # Create some wrappers for simplicity
-    def conv2d(x, W, b, strides=1):
-        # Conv2D wrapper, with bias and relu activation
-        x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
-        x = tf.nn.bias_add(x, b)
-        return tf.nn.relu(x)
-
-    def maxpool2d(x, k=2):
-        # MaxPool2D wrapper
-        return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1],
-                              padding='SAME')
-
-
-    # Create model
-    def Uconv_net(x, weights, biases, dropout, image_size = image_size):
-        """
-        Create the U-net.
-        Input :
-               x : TF object to define, ensemble des patchs des images :graph input
-
-               weights['wc'] : list of lists containing the convolutions' weights of the contraction layers.
-               weights['we'] : list of lists containing the convolutions' weights of the expansion layers.
-               biases['bc'] : list of lists containing the convolutions' biases of the contraction layers.
-               biases['be'] : list of lists containing the convolutions' biases of the expansion layers.
-               
-               weights['wb'] : list of the bottom layer's convolutions' weights.
-               biases['bb'] : list of the bottom layer's convolutions' biases.
-
-               weights['upconv'] : list of the upconvolutions layers convolutions' weights.
-               biases['upconv_b'] : list of the upconvolutions layers convolutions' biases.
-
-               weights['finalconv'] : list of the last layer convolutions' weights.
-               biases['finalconv_b'] : list of the last layer convolutions' biases.
-
-               dropout : float between 0 and 1 : percentage of neurons kept, 
-               image_size : int : The image size
-
-        Output :
-               The U-net.
-        """
-        # Reshape input picture
-        x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
-        data_temp = x
-        data_temp_size = [image_size]
-        relu_results = []
-
-        # contraction
-        for i in range(depth):
-
-            for conv_number in range(number_of_convolutions_per_layer[i]):
-                print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
-                print('Size:',size_of_convolutions_per_layer[i][conv_number])
-		if conv_number == 0:
-                    convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
-                else:
-                    convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
-
-            relu_results.append(convolution_c)
-            convolution_c = maxpool2d(convolution_c, k=2)
-            data_temp_size.append(data_temp_size[-1]/2)
-            data_temp = convolution_c
-
-        conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'])
-        conv2 = conv2d(conv1, weights['wb2'], biases['bb2'])
-        data_temp_size.append(data_temp_size[-1])
-        data_temp = conv2
-
-        # expansion
-        for i in range(depth):
-            data_temp = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
-            upconv = conv2d(data_temp, weights['upconv'][i], biases['upconv_b'][i])
-            data_temp_size.append(data_temp_size[-1]*2)
-
-            # concatenation
-            upconv_concat = tf.concat(concat_dim=3, values=[tf.slice(relu_results[depth-i-1], [0, 0, 0, 0],
-                                                                     [-1, data_temp_size[depth-i-1], data_temp_size[depth-i-1], -1]), upconv])
-            
-            for conv_number in range(number_of_convolutions_per_layer[i]):
-                print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
-                if conv_number == 0:
-                    convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number])
-                else:
-                    convolution_e = conv2d(convolution_e, weights['we'][i][conv_number], biases['be'][i][conv_number])
-
-            data_temp = convolution_e
-
-        # final convolution and segmentation
-        finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
-        final_result = tf.reshape(finalconv, tf.TensorShape([finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], 2]))
-
-        return final_result
-
     
     weights = {'upconv':[],'finalconv':[],'wb1':[], 'wb2':[], 'wc':[], 'we':[]}
     biases = {'upconv_b':[],'finalconv_b':[],'bb1':[], 'bb2':[], 'bc':[], 'be':[]}                                  
@@ -264,10 +286,12 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
 
     weights['finalconv']= tf.Variable(tf.random_normal([1, 1, num_features_in, n_classes]), name='finalconv-%s'%i)
     biases['finalconv_b']= tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s'%i)
+    ####################################################
 
     # Call the model
-    pred = Uconv_net(x, weights, biases, keep_prob)
+    pred = Uconv_net(x, weights, biases, config, keep_prob, image_size = image_size)
 
+    
     # Define loss and optimizer
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
     #cost = tf.reduce_mean(-tf.reduce_sum(y*tf.log(tf.clip_by_value(pred,1e-10,1.0))))
@@ -314,15 +338,27 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
         epoch = 1 + last_epoch
 
         while step * batch_size < training_iters:
-            batch_x, batch_y = data_train.next_batch(batch_size, rnd = True, augmented_data= True)
+            batch_x, batch_y = data_train.next_batch(batch_size, rnd = True, augmented_data= augmented_data)
+            
             sess.run(optimizer, feed_dict={x: batch_x, y: batch_y,
                                            keep_prob: dropout})
+            if with_noise:
+                noisy_x = gaussian_noise(batch_x)
+
+                sess.run(optimizer, feed_dict={x: noisy_x, y: batch_y,
+                                           keep_prob: dropout})
+
 
             if step % display_step == 0:
                 # Calculate batch loss and accuracy
                 loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: batch_x,
                                                                   y: batch_y,
                                                                   keep_prob: 1.})
+                if with_noise:
+                    loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: noisy_x,
+                                                                  y: batch_y,
+                                                                  keep_prob: 1.})
+
                 if verbose == 2:
                     outputs = "Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
                         "{:.6f}".format(loss) + ", Training Accuracy= " + \
@@ -336,11 +372,17 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
 
                 data_test.set_batch_start()
                 for i in range(data_test.set_size):
-                    batch_x, batch_y = data_test.next_batch(batch_size, rnd=False, augmented_data= False)
+                    batch_x, batch_y = data_test.next_batch(batch_size, rnd=False, augmented_data= augmented_data)
                     loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
                     A.append(acc)
                     L.append(loss)
+
+                    if with_noise:
+                        noisy_x = gaussian_noise(batch_x)
+                        loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
+                        A.append(acc)
+                        L.append(loss)
 
                     if verbose >= 1:
                         print '--\nAccuracy on patch'+str(i)+': '+str(acc)
@@ -399,7 +441,7 @@ if __name__ == "__main__":
     else :
         learning_rate = None
         
-    with open(filename, 'r') as fd:
+    with open(config_file, 'r') as fd:
         config= json.loads(fd.read())
 
     train_model(path_training, path_model, config, path_model_init, learning_rate)

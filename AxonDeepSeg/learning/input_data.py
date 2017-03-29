@@ -135,6 +135,7 @@ def rescaling(patch):
 
     scale = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
 
+
     if scale == 1.0:
         rescaled_patch = patch
 
@@ -153,7 +154,7 @@ def rescaling(patch):
             image_rescale, mask_rescale = patches[i]
 
         mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.5)
-        rescaled_patch = [image_rescale, mask_rescale.astype(int)]
+        rescaled_patch = [image_rescale.astype(np.uint8), mask_rescale.astype(np.uint8)]
 
     return rescaled_patch
 
@@ -166,12 +167,11 @@ def random_rotation(patch):
     mask = patch[1]
 
     angle = np.random.uniform(5, 89, 1)
-
     image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True)
     gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
-    gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5)).astype(int)
+    gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5))
 
-    return [image_rotated, gt_rotated]
+    return [image_rotated.astype(np.uint8), gt_rotated.astype(np.uint8)]
 
 
 def random_transformation(patch):
@@ -238,13 +238,15 @@ class input_data:
             image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
             mask = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
 
+            if augmented_data:
+                [image, mask] = random_transformation([image, mask])            
+ 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
-            #---------------------------
 
-            if augmented_data:
-                [image, mask] = random_transformation([image, mask])
+
+            #---------------------------
 
             batch_x.append(image)
             if i == 0:

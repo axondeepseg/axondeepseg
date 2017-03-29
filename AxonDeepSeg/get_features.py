@@ -14,6 +14,7 @@ from skimage import exposure
 from sklearn import preprocessing
 from config import*
 import json
+import matplotlib.pyplot as plt
 
 #Input que l'on veut: depth, number of features per layer, number of convolution per layer, size of convolutions per layer.    n_classes = 2, dropout = 0.75
 
@@ -97,12 +98,16 @@ def patches2im(predictions, positions, image_height, image_width):
     return image
 
 
-def apply_convnet(path_my_data, path_model,config):
+def get_convnet_features(path_my_data, path_model, config, folder_write = None, target_features = [0,0]):
     """
+    :param target_features: list of two int: the convolution target we want to get the output.
+    :param config: json file, description on file header.
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
     :return: prediction, the mask of the segmentation
     """
+    if folder_write == None:
+        folder_write = path_model
 
     print '\n\n ---Start axon segmentation on %s---' % path_my_data
 
@@ -147,7 +152,6 @@ def apply_convnet(path_my_data, path_model,config):
     y = tf.placeholder(tf.float32, shape=(batch_size*n_input, n_classes))
     keep_prob = tf.placeholder(tf.float32)
 
-
     # Create some wrappers for simplicity
     def conv2d(x, W, b, strides=1):
         # Conv2D wrapper, with bias and relu activation
@@ -162,7 +166,7 @@ def apply_convnet(path_my_data, path_model,config):
 
 
     # Create model
-    def Uconv_net(x, weights, biases, dropout, image_size = image_size):
+    def Uconv_net(x, weights, biases, dropout, image_size = image_size, target_features = [0,0]):
         """
         Create the U-net.
         Input :
@@ -189,6 +193,7 @@ def apply_convnet(path_my_data, path_model,config):
                The U-net.
         """
         # Reshape input picture
+        
         x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
         data_temp = x
         data_temp_size = [image_size]
@@ -199,8 +204,55 @@ def apply_convnet(path_my_data, path_model,config):
 
             for conv_number in range(number_of_convolutions_per_layer[i]):
                 print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
-                if conv_number == 0:
+                print('Size:',size_of_convolutions_per_layer[i][conv_number])
+                if conv_number == target_features[1]:
                     convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
+                    if i == target_features[0]:
+                        with tf.name_scope('convolution'):
+
+
+                            channels = features_per_convolution[target_features[0]][target_features[1]][1]
+                            conv_size = size_of_convolutions_per_layer[target_features[0]][target_features[1]]
+
+                            W_a = weights['wc'][i][conv_number]
+                            print(W_a)
+                            Wpad= tf.zeros([conv_size, conv_size, 1, 1])        # [5, 5, 1, 4]  - four zero kernels for padding
+                            # We have a 6 by 6 grid of kernepl visualizations. yet we only have 32 filters
+                            # Therefore, we concatenate 4 empty filters
+                            W_b = tf.concat(3, [W_a, Wpad]) 
+                            
+                            for repetition in range(36-channels-1):
+                                W_b = tf.concat(3, [W_b, Wpad])   # [5, 5, 1, 36]  
+
+                            W_c = tf.split(3, 36, W_b)         # 36 x [5, 5, 1, 1]
+                            W_row0 = tf.concat(0, W_c[0:6])    # [30, 5, 1, 1]
+                            W_row1 = tf.concat(0, W_c[6:12])   # [30, 5, 1, 1]
+                            W_row2 = tf.concat(0, W_c[12:18])  # [30, 5, 1, 1]
+                            W_row3 = tf.concat(0, W_c[18:24])  # [30, 5, 1, 1]
+                            W_row4 = tf.concat(0, W_c[24:30])  # [30, 5, 1, 1]
+                            W_row5 = tf.concat(0, W_c[30:36])  # [30, 5, 1, 1]
+                            W_d = tf.concat(1, [W_row0, W_row1, W_row2, W_row3, W_row4, W_row5]) # [30, 30, 1, 1]
+                            W_e = tf.reshape(W_d, [1, 6*conv_size, 6*conv_size, 1])
+                            Wtag = tf.placeholder(tf.string, None)
+                            tf.image_summary("Visualize_kernels", W_e)
+
+                            """V = convolution_c
+                            ix = image_size
+                            iy = image_size
+                            V = tf.slice(V,(0,0,0,0),(1,-1,-1,-1),name='slice_first_input') #V[0,...]
+                            V = tf.reshape(V,(iy,ix,channels))
+
+                            #ix += 4
+                            #iy += 4
+                            #V = tf.image.resize_image_with_crop_or_pad(x_tild, iy, ix)
+
+                            V = tf.reshape(V,(iy,ix,1,channels))
+
+                            V = tf.transpose(V,(2,0,3,1))
+                            V = tf.reshape(V,(-1,image_size, image_size,1))
+
+                            tf.image_summary('Layer:'+str(target_features[0])+'+Conv:'+str(target_features[1]),V)"""
+
                 else:
                     convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
 
@@ -288,22 +340,22 @@ def apply_convnet(path_my_data, path_model,config):
         num_features = features_per_convolution[depth-i-1][-1]
 
         weights['upconv'].append(tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s'%i))
-        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[0]]), name='bupconv-%s'%i))
+        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s'%i))
 
         for conv_number in reversed(range(number_of_convolutions_per_layer[depth-i-1])):
 
             if conv_number == number_of_convolutions_per_layer[depth-i-1]-1:
-                num_features_in = features_per_convolution[depth-i-1][-1][1]+num_features[0]
+                num_features_in = features_per_convolution[depth-i-1][-1][1]+num_features[1]
                 print('Input features layer : ',num_features_in)
 
             # We climb the reversed layers 
             conv_size = size_of_convolutions_per_layer[depth-i-1][conv_number]
             num_features = features_per_convolution[depth-i-1][conv_number]
-            print(num_features[1])
+            # print(num_features[1])
             layer_convolutions_weights.append(tf.Variable(tf.random_normal([conv_size,conv_size, num_features_in, num_features[1]],
-                                                                    stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'wc'+str(conv_number+1)+'1-%s'%i))
+                                                                    stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'we'+str(conv_number+1)+'1-%s'%i))
             layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
-                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[1])))), name='bc'+str(conv_number+1)+'1-%s'%i))
+                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[1])))), name='be'+str(conv_number+1)+'1-%s'%i))
             # Actualisation of next convolution's input number.
             num_features_in = num_features[1]
 
@@ -315,10 +367,11 @@ def apply_convnet(path_my_data, path_model,config):
     biases['finalconv_b']= tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s'%i)
 
     # Construct model
-    pred = conv_net(x, weights, biases, keep_prob)
+    pred = Uconv_net(x, weights, biases, keep_prob, target_features = target_features)
 
     saver = tf.train.Saver(tf.all_variables())
 
+    summary = tf.merge_all_summaries()
     # Image to batch
     image_init, data, positions = im2patches(img, 256)
     predictions = []
@@ -327,126 +380,23 @@ def apply_convnet(path_my_data, path_model,config):
     sess = tf.Session()
     saver.restore(sess, folder_model+ '/model.ckpt')
 
+    writer = tf.train.SummaryWriter(folder_write)
+
     #--------------------- Apply the segmentation to each patch of the images--------------------------------
 
     for i in range(len(data)):
         print 'processing patch %s on %s'%(i+1, len(data))
         batch_x = np.asarray([data[i]])
         start = time.time()
-        p = sess.run(pred, feed_dict={x: batch_x})
-        #print time.time() - start,'s - test time'
+        p,summary_str = sess.run([pred,summary], feed_dict={x: batch_x})
         prediction_m = p[:, 0].reshape(256,256)
         prediction = p[:, 1].reshape(256,256)
 
         Mask = prediction - prediction_m > 0
         predictions.append(Mask)
 
+        writer.add_summary(summary_str, i)
+
+    writer.flush()
+    writer.close()
     sess.close()
-    tf.reset_default_graph()
-
-    #-----------------------Merge each segmented patch to reconstruct the total segmentation
-
-    h_size, w_size = image_init.shape
-    prediction_rescaled = patches2im(predictions, positions, h_size, w_size)
-    prediction = (preprocessing.binarize(rescale(prediction_rescaled, 1/rescale_coeff),threshold=0.5)).astype(int)
-
-    return prediction
-
-    #######################################################################################################################
-    #                                            Mrf                                                                      #
-    #######################################################################################################################
-
-def axon_segmentation(path_my_data, path_model, path_mrf,config):
-    """
-    :param path_my_data: folder of the image to segment. Must contain image.jpg
-    :param path_model: folder of the model of segmentation. Must contain model.ckpt
-    :param path_mrf: folder of the mrf parameters.  Must contain mrf_parameter.pkl
-    :return: no return
-    Results including the prediction and the prediction associated with the mrf are saved in the image_path
-    AxonMask.mat is saved in the image_path to feed the detection of Myelin
-    /AxonSeg.jpeg is saved in the image_path
-    """
-
-    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
-    pixel_size = float(file.read())
-    rescale_coeff = pixel_size/general_pixel_size
-
-    print('OKKKKKK')
-
-    # ------ Apply ConvNets ------- #
-    prediction = apply_convnet(path_my_data, path_model,config)
-
-    # ------ Apply mrf ------- #
-    nb_class = 2
-    max_map_iter = 10
-    image_init = (rescale(imread(path_my_data + '/image.jpg', flatten=False, mode='L'), rescale_coeff) * 256).astype(int)
-    prediction = (preprocessing.binarize((rescale(prediction.astype(float), rescale_coeff) * 256).astype(int), threshold=125))
-    y_pred = prediction.reshape(-1, 1)
-
-    folder_mrf = path_mrf
-    mrf_parameters = pickle.load(open(folder_mrf +'/mrf_parameter.pkl', "rb"))
-    weight = mrf_parameters['weight']
-
-    prediction_mrf = run_mrf(y_pred, image_init, nb_class, max_map_iter, weight)
-    prediction_mrf = prediction_mrf == 1
-
-    prediction_mrf = preprocessing.binarize(rescale(prediction_mrf, 1/rescale_coeff),threshold=0.5).astype(int)
-    prediction = preprocessing.binarize(rescale(prediction.astype(float), 1/rescale_coeff),threshold=0.5).astype(int)
-
-    # ------ Saving results ------- #
-    results={}
-    results['prediction_mrf'] = prediction_mrf
-    results['prediction'] = prediction
-
-    with open(path_my_data+ '/results.pkl', 'wb') as handle :
-            pickle.dump(results, handle)
-
-    imsave(path_my_data + '/AxonDeepSeg.jpeg', prediction_mrf, 'jpeg')
-
-#---------------------------------------------------------------------------------------------------------
-
-def myelin(path_my_data):
-    """
-    :param path_my_data: folder of the data, must include the segmentation results results.pkl
-    :return: no return
-    Myelin is Segmented by the AxonSegmentation Toolbox (NeuroPoly)
-    The segmentation mask of the myelin is saved in the folder of the data
-    """
-
-    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
-    pixel_size = float(file.read())
-
-    file = open(path_my_data + "/results.pkl", 'r')
-    results = pickle.load(file)
-
-
-    print '\n\n ---START MYELIN DETECTION---'
-
-    io.savemat(path_my_data + '/AxonMask.mat', mdict={'prediction': results["prediction_mrf"]})
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    print current_path
-
-    command = path_matlab+"/bin/matlab -nodisplay -nosplash -r \"clear all;addpath(\'"+current_path+"\');" \
-            "addpath(genpath(\'"+path_axonseg+"/code\')); myelin(\'%s\',%s);exit()\""%(path_my_data, pixel_size)
-    os.system(command)
-
-    os.remove(path_my_data + '/AxonMask.mat')
-
-
-def pipeline(path_my_data, path_model, path_mrf, visualize=False):
-    """
-    :param path_my_data: : folder of the data, must include image.jpg
-    :param path_model :  folder of the model of segmentation. Must contain model.ckpt
-    :param path_mrf: folder of the mrf parameters.  Must contain mrf_parameter.pkl
-    :param visualize: if True, visualization of the results is runned. (and If a groundtruth is in image_path, scores are calculated)
-    :return:
-    """
-
-    print '\n\n ---START AXON-MYELIN SEGMENTATION---'
-    axon_segmentation(path_my_data, path_model, path_mrf)
-    myelin(path_my_data)
-    print '\n End of the process : see results in : ', path_my_data
-
-    if visualize:
-        from evaluation.visualization import visualize_segmentation
-        visualize_segmentation(path_my_data)

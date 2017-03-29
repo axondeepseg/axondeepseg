@@ -127,7 +127,7 @@ def apply_convnet(path_my_data, path_model,config):
     dropout = config.get("network_dropout", 0.75)
     depth = config.get("network_depth", 6)
     number_of_convolutions_per_layer = config.get("network_convolution_per_layer", [1 for i in range(depth)])
-    size_of_convolutions_per_layer =  config.get("network_size_of_convolutions_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
+    size_of_convolutions_per_layer =  config.get("network_size_of_convolution_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     ##############
 
@@ -233,15 +233,19 @@ def apply_convnet(path_my_data, path_model,config):
 
             data_temp = convolution_e
 
+        denseconv = tf.reshape(data_temp, [-1, weights['dense'].get_shape().as_list()[0]])
+        denseconv = tf.add(tf.matmul(denseconv, weights['dense']), biases['dense_b'])
+        denseconv = tf.nn.relu(denseconv)
+
         # final convolution and segmentation
-        finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
+        finalconv = tf.nn.conv2d(denseconv, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
         final_result = tf.reshape(finalconv, tf.TensorShape([finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], 2]))
 
         return final_result
 
     
-    weights = {'upconv':[],'finalconv':[],'wb1':[], 'wb2':[], 'wc':[], 'we':[]}
-    biases = {'upconv_b':[],'finalconv_b':[],'bb1':[], 'bb2':[], 'bc':[], 'be':[]}                                  
+    weights = {'upconv':[],'finalconv':[],'wb1':[], 'wb2':[], 'wc':[], 'we':[], 'dense':[]}
+    biases = {'upconv_b':[],'finalconv_b':[],'bb1':[], 'bb2':[], 'bc':[], 'be':[], 'dense_b':[]}                                  
         
     # Contraction
     for i in range(depth):
@@ -288,22 +292,22 @@ def apply_convnet(path_my_data, path_model,config):
         num_features = features_per_convolution[depth-i-1][-1]
 
         weights['upconv'].append(tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s'%i))
-        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[0]]), name='bupconv-%s'%i))
+        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s'%i))
 
         for conv_number in reversed(range(number_of_convolutions_per_layer[depth-i-1])):
 
             if conv_number == number_of_convolutions_per_layer[depth-i-1]-1:
-                num_features_in = features_per_convolution[depth-i-1][-1][1]+num_features[0]
+                num_features_in = features_per_convolution[depth-i-1][-1][1]+num_features[1]
                 print('Input features layer : ',num_features_in)
 
             # We climb the reversed layers 
             conv_size = size_of_convolutions_per_layer[depth-i-1][conv_number]
             num_features = features_per_convolution[depth-i-1][conv_number]
-            print(num_features[1])
+            # print(num_features[1])
             layer_convolutions_weights.append(tf.Variable(tf.random_normal([conv_size,conv_size, num_features_in, num_features[1]],
-                                                                    stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'wc'+str(conv_number+1)+'1-%s'%i))
+                                                                    stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features_in)))), name = 'we'+str(conv_number+1)+'1-%s'%i))
             layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
-                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[1])))), name='bc'+str(conv_number+1)+'1-%s'%i))
+                                                                        stddev=math.sqrt(2.0/(conv_size*conv_size*float(num_features[1])))), name='be'+str(conv_number+1)+'1-%s'%i))
             # Actualisation of next convolution's input number.
             num_features_in = num_features[1]
 
@@ -311,11 +315,19 @@ def apply_convnet(path_my_data, path_model,config):
         weights['we'].append(layer_convolutions_weights)
         biases['be'].append(layer_convolutions_biases)
 
+
+    # HERE ADD FULLY CONNECTED LAYER.
+
+    weights['dense'] = tf.Variable(tf.random_normal([7*7*num_features_in, 1024]), name='denseconv-%s'%i)
+    biases['dense_b']= tf.Variable(tf.random_normal([1024]), name='bdenseconv-%s'%i)
+
+    num_features_in = 1024
+
     weights['finalconv']= tf.Variable(tf.random_normal([1, 1, num_features_in, n_classes]), name='finalconv-%s'%i)
     biases['finalconv_b']= tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s'%i)
 
     # Construct model
-    pred = conv_net(x, weights, biases, keep_prob)
+    pred = Uconv_net(x, weights, biases, keep_prob)
 
     saver = tf.train.Saver(tf.all_variables())
 
@@ -370,8 +382,6 @@ def axon_segmentation(path_my_data, path_model, path_mrf,config):
     file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
     rescale_coeff = pixel_size/general_pixel_size
-
-    print('OKKKKKK')
 
     # ------ Apply ConvNets ------- #
     prediction = apply_convnet(path_my_data, path_model,config)

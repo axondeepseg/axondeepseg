@@ -17,46 +17,40 @@ import os
 # network_features_per_convolution : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
 # Default : [[[64,64] for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_convolution[k][1] = network_features_per_convolution[k+1][0].
 
-filename = './georgji_config_network.json'
-
+repname = './configs_networks'
+filename = '/robert_config_network.json'
 
 network_learning_rate = 0.0005
 network_n_classes = 2
 dropout = 0.75
-network_depth = 4
-network_convolution_per_layer = [1 for i in range(network_depth)]
-network_size_of_convolutions_per_layer = [[5],[3],[5],[9]]#[[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]
-network_features_per_convolution = [[[1,64]],[[64,128]],[[128,256]],[[256,512]]]#,[[256,512],[512,512]],[[512,1024],[1024,1024]],[[1024,2048],[2048,2048]]]
-"""
+network_depth = 6
+network_convolution_per_layer = [3 for i in range(network_depth)]
+network_size_of_convolutions_per_layer = [[5,5,5],[5,5,5],[5,5,5],[5,5,5],[5,5,5],[5,5,5],]#[[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]
+network_features_per_convolution = [[[1,10],[10,20],[20,30]],[[30,40],[40,50],[50,60]],[[60,70],[70,80],[80,90]],[[90,100],[100,110],[110,120]],
+                                    [[120,130],[130,140],[140,150]],[[150,160],[160,170],[170,180]]]
+trainingset = 'SEM3'
 
 config = {
-    'network_learning_rate': 0.0005,
-    'network_n_classes': 2,
-    'dropout': 0.75,
-    'network_depth': 3,
-    'network_convolution_per_layer': [1 for i in range(network_depth)],
-    'network_size_of_convolutions_per_layer': [[3 for k in range(network_convolution_per_layer[i])] for i in
-                                               range(network_depth)],
-    'network_features_per_convolution': [[[64,64] for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]
-}
-"""
-config = {
-    'network_learning_rate': 0.0005,
-    'network_n_classes': 2,
-    'network_dropout': 0.75,
-    'network_depth': 3,
-    'network_convolution_per_layer': [1 for i in range(network_depth)],
+    'network_learning_rate': network_learning_rate,
+    'network_n_classes': network_n_classes,
+    'network_dropout': dropout,
+    'network_depth': network_depth,
+    'network_convolution_per_layer': network_convolution_per_layer,
     'network_size_of_convolutions_per_layer': network_size_of_convolutions_per_layer,
-    'network_features_per_convolution': network_features_per_convolution
+    'network_features_per_convolution': network_features_per_convolution,
+    'network_trainingset': trainingset
 }
+
 
 # Edit and read the config
+if not os.path.exists(repname):
+    os.makedirs(repname)
 
-with open(filename, 'w+') as f:
+with open(repname+filename, 'w+') as f:
     json.dump(config, f, indent=2)
 
-with open(filename, 'r') as fd:
-	config_network = json.loads(fd.read())
+with open(repname+filename, 'r') as fd:
+    config_network = json.loads(fd.read())
 
 learning_rate = config_network.get("network_learning_rate", 0.0005)
 n_classes = config_network.get("network_n_classes", 2)
@@ -69,15 +63,21 @@ features_per_convolution = config_network.get("network_features_per_convolution"
 # print(learning_rate,n_classes,dropout,depth,number_of_convolutions_per_layer,size_of_convolutions_per_layer,features_per_convolution)
 
 # training
-path_training = './../trainingset'
-path_model = './../models/Unet_georgji'
-#
+path_training = '/Users/piant/axondeepseg_data/trainingset/SEM3/trainingset'
+path_model = '/Users/piant/axondeepseg_data/models/Unet_robert'
+path_model_init = '/Users/piant/axondeepseg_data/models/Unet_robert'
+
+if not os.path.exists(path_model):
+    os.makedirs(path_model)
+
+   
 with open(path_model+filename, 'w') as f:
     json.dump(config, f, indent=2)
 
 
+
 from new_script_network import train_model
-train_model(path_training, path_model, config_network)
+train_model(path_training, path_model, config_network,path_model_init=None)
 
 #from AxonDeepSeg.learn_model import train_model
 #train_model(path_training, path_model, learning_rate=0.0005)

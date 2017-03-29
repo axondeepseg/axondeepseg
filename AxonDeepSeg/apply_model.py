@@ -11,7 +11,7 @@ from skimage.transform import rescale
 from skimage import exposure
 from sklearn import preprocessing
 from config import*
-import time
+
 
 def im2patches(img, size=256):
     """
@@ -232,7 +232,7 @@ def apply_convnet(path_my_data, path_model):
 
     # Launch the graph
     sess = tf.Session()
-    saver.restore(sess, folder_model+"/model.ckpt")
+    saver.restore(sess, folder_model+ '/model.ckpt')
 
     #--------------------- Apply the segmentation to each patch of the images--------------------------------
 
@@ -247,7 +247,6 @@ def apply_convnet(path_my_data, path_model):
 
         Mask = prediction - prediction_m > 0
         predictions.append(Mask)
-
 
     sess.close()
     tf.reset_default_graph()
