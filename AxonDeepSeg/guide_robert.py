@@ -52,16 +52,6 @@ with open(repname+filename, 'w+') as f:
 with open(repname+filename, 'r') as fd:
     config_network = json.loads(fd.read())
 
-learning_rate = config_network.get("network_learning_rate", 0.0005)
-n_classes = config_network.get("network_n_classes", 2)
-dropout = config_network.get("network_dropout", 0.75)
-depth = config_network.get("network_depth", 6)
-number_of_convolutions_per_layer = config_network.get("network_convolution_per_layer", [1 for i in range(depth)])
-size_of_convolutions_per_layer =  config_network.get("network_size_of_convolutions_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
-features_per_convolution = config_network.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
-
-# print(learning_rate,n_classes,dropout,depth,number_of_convolutions_per_layer,size_of_convolutions_per_layer,features_per_convolution)
-
 # training
 path_training = '/Users/piant/axondeepseg_data/trainingset/SEM3/trainingset'
 path_model = '/Users/piant/axondeepseg_data/models/Unet_robert'
@@ -73,7 +63,6 @@ if not os.path.exists(path_model):
    
 with open(path_model+filename, 'w') as f:
     json.dump(config, f, indent=2)
-
 
 
 from new_script_network import train_model

@@ -199,6 +199,8 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
         data_temp_size = [image_size]
         relu_results = []
 
+        limit_to_one_image = 0
+
         # contraction
         for i in range(depth):
 
@@ -210,6 +212,9 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
                     if i == target_features[0]:
                         with tf.name_scope('convolution'):
 
+                            if limit_to_one_image == 0:
+                                tf.image_summary("Visualize_image", convolution_c)
+                                limit_to_one_image +=1
 
                             channels = features_per_convolution[target_features[0]][target_features[1]][1]
                             conv_size = size_of_convolutions_per_layer[target_features[0]][target_features[1]]
@@ -236,22 +241,6 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
                             Wtag = tf.placeholder(tf.string, None)
                             tf.image_summary("Visualize_kernels", W_e)
 
-                            """V = convolution_c
-                            ix = image_size
-                            iy = image_size
-                            V = tf.slice(V,(0,0,0,0),(1,-1,-1,-1),name='slice_first_input') #V[0,...]
-                            V = tf.reshape(V,(iy,ix,channels))
-
-                            #ix += 4
-                            #iy += 4
-                            #V = tf.image.resize_image_with_crop_or_pad(x_tild, iy, ix)
-
-                            V = tf.reshape(V,(iy,ix,1,channels))
-
-                            V = tf.transpose(V,(2,0,3,1))
-                            V = tf.reshape(V,(-1,image_size, image_size,1))
-
-                            tf.image_summary('Layer:'+str(target_features[0])+'+Conv:'+str(target_features[1]),V)"""
 
                 else:
                     convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
