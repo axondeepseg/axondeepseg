@@ -17,6 +17,9 @@ import os
 # network_features_per_convolution : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
 # Default : [[[64,64] for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_convolution[k][1] = network_features_per_convolution[k+1][0].
 
+# network_trainingset : string : String describing the dataset used for the training.
+
+
 repname = './configs_networks'
 filename = '/robert_config_network.json'
 
@@ -43,14 +46,14 @@ config = {
 
 
 # Edit and read the config
-if not os.path.exists(repname):
+"""if not os.path.exists(repname):
     os.makedirs(repname)
 
 with open(repname+filename, 'w+') as f:
     json.dump(config, f, indent=2)
 
 with open(repname+filename, 'r') as fd:
-    config_network = json.loads(fd.read())
+    config_network = json.loads(fd.read())"""
 
 # training
 path_training = '/Users/piant/axondeepseg_data/trainingset/SEM3/trainingset'

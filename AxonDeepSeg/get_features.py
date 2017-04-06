@@ -200,7 +200,7 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
         relu_results = []
 
         limit_to_one_image = 0
-
+        limit_to_one_image_end = 0
         # contraction
         for i in range(depth):
 
@@ -213,15 +213,15 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
                         with tf.name_scope('convolution'):
 
                             if limit_to_one_image == 0:
-                                tf.image_summary("Visualize_image", convolution_c)
+                                for iteration in range(convolution_c.get_shape().as_list()[-1]-1):
+                                    tf.image_summary("Visualize_image", convolution_c[:,:,:,iteration:iteration+1])
                                 limit_to_one_image +=1
 
                             channels = features_per_convolution[target_features[0]][target_features[1]][1]
                             conv_size = size_of_convolutions_per_layer[target_features[0]][target_features[1]]
 
                             W_a = weights['wc'][i][conv_number]
-                            print(W_a)
-                            Wpad= tf.zeros([conv_size, conv_size, 1, 1])        # [5, 5, 1, 4]  - four zero kernels for padding
+                            Wpad= tf.zeros([conv_size, conv_size, 1, 1])
                             # We have a 6 by 6 grid of kernepl visualizations. yet we only have 32 filters
                             # Therefore, we concatenate 4 empty filters
                             W_b = tf.concat(3, [W_a, Wpad]) 
@@ -273,6 +273,11 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
                     convolution_e = conv2d(convolution_e, weights['we'][i][conv_number], biases['be'][i][conv_number])
 
             data_temp = convolution_e
+
+        if limit_to_one_image_end == 0:
+            for iteration in range(convolution_e.get_shape().as_list()[-1]-1):
+                tf.image_summary("Visualize_image_end", convolution_e[:,:,:,iteration:iteration+1])
+            limit_to_one_image_end +=1
 
         # final convolution and segmentation
         finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
