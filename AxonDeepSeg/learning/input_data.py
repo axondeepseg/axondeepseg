@@ -7,7 +7,9 @@ from sklearn import preprocessing
 from skimage import transform
 import numpy as np
 import random
+import cv2
 import os
+import matplotlib.pyplot as plt
 
 def extract_patches(img, mask, size):
     """
@@ -135,7 +137,6 @@ def rescaling(patch):
 
     scale = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
 
-
     if scale == 1.0:
         rescaled_patch = patch
 
@@ -154,7 +155,7 @@ def rescaling(patch):
             image_rescale, mask_rescale = patches[i]
 
         mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.5)
-        rescaled_patch = [image_rescale.astype(np.uint8), mask_rescale.astype(np.uint8)]
+        rescaled_patch = [image_rescale, mask_rescale.astype(int)]
 
     return rescaled_patch
 
@@ -167,11 +168,12 @@ def random_rotation(patch):
     mask = patch[1]
 
     angle = np.random.uniform(5, 89, 1)
+
     image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True)
     gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
-    gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5))
+    gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5)).astype(int)
 
-    return [image_rotated.astype(np.uint8), gt_rotated.astype(np.uint8)]
+    return [image_rotated, gt_rotated]
 
 
 def random_transformation(patch):
@@ -238,15 +240,13 @@ class input_data:
             image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
             mask = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
 
-            if augmented_data:
-                [image, mask] = random_transformation([image, mask])            
- 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
-
-
             #---------------------------
+
+            if augmented_data:
+                [image, mask] = random_transformation([image, mask])
 
             batch_x.append(image)
             if i == 0:
@@ -256,6 +256,55 @@ class input_data:
         batch_y = np.concatenate((np.invert(batch_y)/255, batch_y), axis = 1)
 
         return [np.asarray(batch_x), batch_y]
+
+    def next_batch_WithWeights(self, batch_size = 1, rnd = False, augmented_data = True):
+        """
+        :param batch_size: number of images per batch to feed the network, 1 image is often enough
+        :param rnd: if True, batch is randomly taken into the training set
+        :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process
+        :return: The triplet [batch_x (data), batch_y (prediction), weights (based on distance to edges)] to feed the network
+        """
+        batch_x = []
+        for i in range(batch_size) :
+            if rnd :
+                indice = random.choice(range(self.set_size))
+            else :
+                indice = self.batch_start
+                self.batch_start += 1
+                if self.batch_start >= self.set_size:
+                    self.batch_start= 0
+
+            image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
+            mask = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
+
+            #-----PreProcessing --------
+            image = exposure.equalize_hist(image) #histogram equalization
+            image = (image - np.mean(image))/np.std(image) #data whitening
+            #---------------------------
+
+            if augmented_data:
+                [image, mask] = random_transformation([image, mask])
+
+            to_use = np.asarray(mask,dtype='uint8').reshape(256,256,1)
+
+            weight = cv2.distanceTransform(to_use, distanceType = cv2.DIST_L2, maskSize = 5)
+            w0 = 10
+            sigma = 5
+
+            weight = w0*np.exp(-(weight/sigma)**2/2)
+
+            batch_x.append(image)
+            if i == 0:
+                batch_y = mask.reshape(-1,1)
+                weights = weight.reshape(-1,1)
+            else:
+                batch_y = np.concatenate((batch_y, mask.reshape(-1, 1)), axis=0)
+                weights = np.concatenate((weights, weight.reshape(-1, 1)), axis=0)
+
+        batch_y = np.concatenate((np.invert(batch_y)/255, batch_y), axis = 1)
+        weights = np.concatenate((weights/255, weights), axis = 1)
+
+        return [np.asarray(batch_x), batch_y, weights]
 
     def read_batch(self, batch_y, size_batch):
         images = batch_y.reshape(size_batch, self.size_image, self.size_image, self.n_labels)
