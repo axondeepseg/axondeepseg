@@ -295,14 +295,16 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
     # Graph input
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
     y = tf.placeholder(tf.float32, shape=(batch_size*n_input, n_classes))
-    spatial_weights = tf.placeholder(tf.float32, shape=(batch_size*n_input, n_classes))
+    spatial_weights = tf.placeholder(tf.float32, shape=(batch_size*n_input, 1))
     keep_prob = tf.placeholder(tf.float32)
 
     # Call the model
     pred = Uconv_net(x, config, keep_prob, image_size = image_size)
 
+     # 
+
     # Define loss and optimizer
-    cost = tf.reduce_mean(spatial_weights[:,1] * tf.nn.softmax_cross_entropy_with_logits(pred, y))
+    cost = tf.reduce_mean(spatial_weights[:,0]*tf.nn.softmax_cross_entropy_with_logits(pred, y))
 
     tf.scalar_summary('Loss', cost)
 
@@ -349,11 +351,13 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
             batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True, augmented_data=True)
             sess.run(optimizer, feed_dict={x: batch_x, y: batch_y,
                                            spatial_weights: weight, keep_prob: dropout})
+            
 
             if step % display_step == 0:
                 # Calculate batch loss and accuracy
                 loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y, 
                                                                            spatial_weights: weight, keep_prob: 1.})
+
 
                 if verbose == 2:
                     outputs = "Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
@@ -369,7 +373,7 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
                 data_test.set_batch_start()
                 for i in range(data_test.set_size):
                     batch_x, batch_y, weight = data_test.next_batch_WithWeights(batch_size, rnd=False, augmented_data= augmented_data)
-                    loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y,spatial_weights: weight, keep_prob: 1.})
+                    loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
 
                     A.append(acc)
                     L.append(loss)

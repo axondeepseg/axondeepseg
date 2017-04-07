@@ -5,11 +5,11 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.misc import imread
 from sklearn import preprocessing
 from skimage import transform
+from scipy import ndimage
 import numpy as np
 import random
-import cv2
 import os
-import matplotlib.pyplot as plt
+
 
 def extract_patches(img, mask, size):
     """
@@ -155,7 +155,7 @@ def rescaling(patch):
             image_rescale, mask_rescale = patches[i]
 
         mask_rescale = preprocessing.binarize(np.array(mask_rescale), threshold=0.5)
-        rescaled_patch = [image_rescale, mask_rescale.astype(int)]
+        rescaled_patch = [image_rescale.astype(np.uint8), mask_rescale.astype(np.uint8)]
 
     return rescaled_patch
 
@@ -171,9 +171,9 @@ def random_rotation(patch):
 
     image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True)
     gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
-    gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5)).astype(int)
+    gt_rotated = (preprocessing.binarize(gt_rotated, threshold=0.5))
 
-    return [image_rotated, gt_rotated]
+    return [image_rotated.astype(np.uint8), gt_rotated.astype(np.uint8)]
 
 
 def random_transformation(patch):
@@ -287,7 +287,7 @@ class input_data:
 
             to_use = np.asarray(mask,dtype='uint8').reshape(256,256,1)
 
-            weight = cv2.distanceTransform(to_use, distanceType = cv2.DIST_L2, maskSize = 5)
+            weight = ndimage.distance_transform_edt(to_use)
             w0 = 10
             sigma = 5
 
@@ -302,7 +302,7 @@ class input_data:
                 weights = np.concatenate((weights, weight.reshape(-1, 1)), axis=0)
 
         batch_y = np.concatenate((np.invert(batch_y)/255, batch_y), axis = 1)
-        weights = np.concatenate((weights/255, weights), axis = 1)
+        
 
         return [np.asarray(batch_x), batch_y, weights]
 
