@@ -2,12 +2,19 @@
 
 import tensorflow as tf
 import math
-import numpy as np
 import os
 import pickle
+import numpy as np
 import time
-from learning.input_data import input_data
-import sys
+from mrf import run_mrf
+from scipy import io
+from scipy.misc import imread, imsave
+from skimage.transform import rescale
+from skimage import exposure
+from sklearn import preprocessing
+from config import*
+import json
+import matplotlib.pyplot as plt
 
 #Input que l'on veut: depth, number of features per layer, number of convolution per layer, size of convolutions per layer.    n_classes = 2, dropout = 0.75
 
@@ -21,8 +28,74 @@ import sys
     # Default : [[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)].
     
     # network_features_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
-    # Default : [[64 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_layer[k][1] = network_features_per_layer[k+1][0].
+    # Default : [[[64,64] for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_layer[k][1] = network_features_per_layer[k+1][0].
     
+    
+def im2patches(img, size=256):
+    """
+    :param img: image to segment.
+    :param size: size of the patches to extract (must be the same as used in the learning)
+    :return: [img, patches, positions of the patches]
+    """
+
+    h, w = img.shape
+
+    if (h == 256 and w == 256):
+        patch = img
+        patch = exposure.equalize_hist(patch)
+        patch = (patch - np.mean(patch)) / np.std(patch)
+        positions = [[0,0]]
+        patches = [patch]
+
+    else :
+        q_h, r_h = divmod(h, size)
+        q_w, r_w = divmod(w, size)
+
+
+        r2_h = size-r_h
+        r2_w = size-r_w
+        q2_h = q_h + 1
+        q2_w = q_w + 1
+
+        q3_h, r3_h = divmod(r2_h, q_h)
+        q3_w, r3_w = divmod(r2_w, q_w)
+
+        dataset = []
+        positions=[]
+        pos = 0
+        while pos+size<=h:
+            pos2 = 0
+            while pos2+size<=w:
+                patch = img[pos:pos+size, pos2:pos2+size]
+                patch = exposure.equalize_hist(patch)
+                patch = (patch - np.mean(patch))/np.std(patch)
+
+                dataset.append(patch)
+                positions.append([pos,pos2])
+                pos2 = size + pos2 - q3_w
+                if pos2 + size > w :
+                    pos2 = pos2 - r3_w
+
+            pos = size + pos - q3_h
+            if pos + size > h:
+                pos = pos - r3_h
+
+        patches = np.asarray(dataset)
+    return [img, patches, positions]
+
+
+def patches2im(predictions, positions, image_height, image_width):
+    """
+    :param predictions: list of the segmentation masks on the patches
+    :param positions: positions of the segmentations masks
+    :param h_size: height of the image to reconstruct
+    :param w_size: width of the image to reconstruct
+    :return: reconstructed segmentation on the full image from the masks and their positions
+    """
+    image = np.zeros((image_height, image_width))
+    for pred, pos in zip(predictions, positions):
+        image[pos[0]:pos[0]+256, pos[1]:pos[1]+256] = pred
+    return image
 # Create some wrappers for simplicity
 def conv2d(x, W, b, strides=1):
     # Conv2D wrapper, with bias and relu activation
@@ -37,7 +110,7 @@ def maxpool2d(x, k=2):
 
 
 # Create model
-def Uconv_net(x, config, dropout, image_size = 256):
+def Uconv_net(x, config, dropout, image_size = 256, target_features = [0,0]):
     """
     Create the U-net.
     Input :
@@ -157,31 +230,63 @@ def Uconv_net(x, config, dropout, image_size = 256):
     biases['finalconv_b']= tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s'%i)
     ####################################################
 
-    # Reshape input picture
+# Reshape input picture
+    
     x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
     data_temp = x
     data_temp_size = [image_size]
     relu_results = []
 
+    limit_to_one_image = 0
+    limit_to_one_image_end = 0
     # contraction
     for i in range(depth):
 
         for conv_number in range(number_of_convolutions_per_layer[i]):
             print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
             print('Size:',size_of_convolutions_per_layer[i][conv_number])
-
-            if conv_number == 0:
+            if conv_number == target_features[1]:
                 convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
+                if i == target_features[0]:
+                    with tf.name_scope('convolution'):
+
+                        if limit_to_one_image == 0:
+                            for iteration in range(convolution_c.get_shape().as_list()[-1]-1):
+                                tf.image_summary("Visualize_image_number_"+str(iteration), convolution_c[:,:,:,iteration:iteration+1])
+                            limit_to_one_image +=1
+
+                        channels = features_per_convolution[target_features[0]][target_features[1]][1]
+                        conv_size = size_of_convolutions_per_layer[target_features[0]][target_features[1]]
+
+                        W_a = weights['wc'][i][conv_number]
+                        Wpad= tf.zeros([conv_size, conv_size, 1, 1])
+                        # We have a 6 by 6 grid of kernepl visualizations. yet we only have 32 filters
+                        # Therefore, we concatenate 4 empty filters
+                        W_b = tf.concat(3, [W_a, Wpad]) 
+                        
+                        for repetition in range(36-channels-1):
+                            W_b = tf.concat(3, [W_b, Wpad])   # [5, 5, 1, 36]  
+
+                        W_c = tf.split(3, 36, W_b)         # 36 x [5, 5, 1, 1]
+                        W_row0 = tf.concat(0, W_c[0:6])    # [30, 5, 1, 1]
+                        W_row1 = tf.concat(0, W_c[6:12])   # [30, 5, 1, 1]
+                        W_row2 = tf.concat(0, W_c[12:18])  # [30, 5, 1, 1]
+                        W_row3 = tf.concat(0, W_c[18:24])  # [30, 5, 1, 1]
+                        W_row4 = tf.concat(0, W_c[24:30])  # [30, 5, 1, 1]
+                        W_row5 = tf.concat(0, W_c[30:36])  # [30, 5, 1, 1]
+                        W_d = tf.concat(1, [W_row0, W_row1, W_row2, W_row3, W_row4, W_row5]) # [30, 30, 1, 1]
+                        W_e = tf.reshape(W_d, [1, 6*conv_size, 6*conv_size, 1])
+                        Wtag = tf.placeholder(tf.string, None)
+                        tf.image_summary("Visualize_kernels_"+str(conv_number), W_e)
+
+
             else:
                 convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
 
         relu_results.append(convolution_c)
-        convolution_c = conv2d(convolution_c, weights['pooling'][i], biases['pooling_b'][i], strides = 2)
-        # convolution_c = maxpool2d(convolution_c, k=2)
+        convolution_c = maxpool2d(convolution_c, k=2)
         data_temp_size.append(data_temp_size[-1]/2)
         data_temp = convolution_c
-
-
 
     conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'])
     conv2 = conv2d(conv1, weights['wb2'], biases['bb2'])
@@ -200,8 +305,6 @@ def Uconv_net(x, config, dropout, image_size = 256):
         
         for conv_number in range(number_of_convolutions_per_layer[i]):
             print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
-            print('Size:',size_of_convolutions_per_layer[i][conv_number])
-            
             if conv_number == 0:
                 convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number])
             else:
@@ -209,39 +312,43 @@ def Uconv_net(x, config, dropout, image_size = 256):
 
         data_temp = convolution_e
 
+    if limit_to_one_image_end == 0:
+        for iteration in range(convolution_e.get_shape().as_list()[-1]-1):
+            tf.image_summary("Visualize_image_end_"+str(iteration), convolution_e[:,:,:,iteration:iteration+1])
+        limit_to_one_image_end +=1
+
     # final convolution and segmentation
     finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
-    final_result = tf.reshape(finalconv, tf.TensorShape([finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], 2]))
+    final_result = tf.reshape(finalconv, tf.TensorShape([finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], n_classes]))
 
     return final_result
 
-def train_model(path_trainingset, path_model, config, path_model_init = None, save_trainable = True, verbose = 1):
+def get_convnet_features(path_my_data, path_model, config, folder_write = None, target_features = [0,0], thresh_indices = [0,0.5]):
     """
-    :param path_trainingset: path of the train and test set built from data_construction
-    :param path_model: path to save the trained model
-    :param config: json file: network's parameters 
-    :param path_model_init: (option) path of the model to initialize  the training
-    :param learning_rate: learning_rate of the optimiser
-    :param save_trainable: if True, only weights are saved. If false the variables from the optimisers are saved too
-    :param verbose:
-    :return:
+    :param target_features: list of two int: the convolution target we want to get the output.
+    :param config: json file, description on file header.
+    :param path_my_data: folder of the image to segment. Must contain image.jpg
+    :param path_model: folder of the model of segmentation. Must contain model.ckpt
+    :return: prediction, the mask of the segmentation
     """
+    if folder_write == None:
+        folder_write = path_model
 
-    # Divers variables
-    Loss = []
-    Epoch = []
-    Accuracy = []
-    Report = ''
-    verbose = 1
+    print '\n\n ---Start axon segmentation on %s---' % path_my_data
 
-    # Results and Models
-    folder_model = path_model
-    if not os.path.exists(folder_model):
-        os.makedirs(folder_model)
+    path_img = path_my_data + '/image.jpg'
+    img = imread(path_img, flatten=False, mode='L')
 
-    display_step = 100
-    save_step = 600
+    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
+    pixel_size = float(file.read())
 
+    # set the resolution to the general_pixel_size
+    rescale_coeff = pixel_size/general_pixel_size
+    img = (rescale(img, rescale_coeff)*256).astype(int)
+
+    batch_size = 1
+
+    ###############
     # Network Parameters
     image_size = 256
     n_input = image_size * image_size
@@ -252,177 +359,56 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
     number_of_convolutions_per_layer = config.get("network_convolution_per_layer", [1 for i in range(depth)])
     size_of_convolutions_per_layer =  config.get("network_size_of_convolutions_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
+    ##############
 
-    #----------------SAVING HYPERPARAMETERS TO USE THEM FOR apply_model-----------------------------------------------#
+    folder_model = path_model
+    if not os.path.exists(folder_model):
+        os.makedirs(folder_model)
 
-    hyperparameters = {'depth': depth,'dropout': dropout, 'image_size': image_size,
-                       'model_restored_path': path_model_init, 'learning_rate': learning_rate,
-                        'network_n_classes': n_classes,
-                        'network_convolution_per_layer': number_of_convolutions_per_layer,
-                        'network_size_of_convolutions_per_layer': size_of_convolutions_per_layer,
-                        'network_features_per_convolution': features_per_convolution}
+    if os.path.exists(folder_model+'/hyperparameters.pkl'):
+        print 'hyperparameters detected in the model'
+        hyperparameters = pickle.load(open(folder_model +'/hyperparameters.pkl', "rb"))
+        depth = hyperparameters['depth']
+        image_size = hyperparameters['image_size']
 
-    with open(folder_model+'/hyperparameters.pkl', 'wb') as handle :
-            pickle.dump(hyperparameters, handle)
+    #--------------------SAME ALGORITHM IN TRAIN_model---------------------------
 
-    # Optimization Parameters
-    batch_size = 1
-    training_iters = 500000
-    epoch_size = 200
-
-    Report += '\n\n---Savings---'
-    Report += '\n Model saved in : '+ folder_model
-
-
-    Report += '\n\n---PARAMETERS---\n'
-    Report += 'learning_rate : '+ str(learning_rate)+'; \n batch_size :  ' + str(batch_size) +';\n depth :  ' + str(depth) \
-            +';\n epoch_size: ' + str(epoch_size)+';\n dropout :  ' + str(dropout)\
-            +';\n (if model restored) restored_model :' + str(path_model_init)
-
-    data_train = input_data(trainingset_path=path_trainingset, type='train')
-    data_test = input_data(trainingset_path=path_trainingset, type='test')
-
-    # Graph input
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
     y = tf.placeholder(tf.float32, shape=(batch_size*n_input, n_classes))
     keep_prob = tf.placeholder(tf.float32)
 
-    # Call the model
-    pred = Uconv_net(x, config, keep_prob)
+    # Construct model
+    pred = Uconv_net(x, config, keep_prob, target_features = target_features)
 
-    # Define loss and optimizer
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
+    saver = tf.train.Saver(tf.all_variables())
 
-    tf.scalar_summary('Loss', cost)
-
-    temp = set(tf.all_variables()) # trick to get variables generated by the optimizer
-
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
-
-    # Evaluate model
-    correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
-
-    init = tf.initialize_all_variables()
-
-    if save_trainable :
-        saver = tf.train.Saver(tf.trainable_variables())
-
-    else :
-        saver = tf.train.Saver(tf.all_variables())
+    summary = tf.merge_all_summaries()
+    # Image to batch
+    image_init, data, positions = im2patches(img, 256)
+    predictions = []
 
     # Launch the graph
-    Report += '\n\n---Intermediary results---\n'
+    sess = tf.Session()
+    saver.restore(sess, folder_model+ '/model.ckpt')
 
-    with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
-        last_epoch = 0
-        if path_model_init:
-            folder_restored_model = path_model_init
-            saver.restore(sess, folder_restored_model+"/model.ckpt")
+    writer = tf.train.SummaryWriter(folder_write)
 
-            if save_trainable :
-                sess.run(tf.initialize_variables(set(tf.all_variables()) - temp))
+    #--------------------- Apply the segmentation to each patch of the images--------------------------------
 
-            file = open(folder_restored_model+'/evolution.pkl','r')
-            evolution_restored = pickle.load(file)
-            last_epoch = evolution_restored["steps"][-1]
-
-        else:
-            sess.run(init)
-        print 'training start'
-
-        step = 1
-        epoch = 1 + last_epoch
-
-        while step * batch_size < training_iters:
-            batch_x, batch_y = data_train.next_batch(batch_size, rnd = True, augmented_data= True)
-            sess.run(optimizer, feed_dict={x: batch_x, y: batch_y,
-                                           keep_prob: dropout})
-
-            if step % display_step == 0:
-                # Calculate batch loss and accuracy
-                loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: batch_x,
-                                                                  y: batch_y,
-                                                                  keep_prob: 1.})
-                if verbose == 2:
-                    outputs = "Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
-                        "{:.6f}".format(loss) + ", Training Accuracy= " + \
-                        "{:.5f}".format(acc)
-                    print outputs
-
-            if step % epoch_size == 0 :
-                start = time.time()
-                A = [] # list of accuracy scores on the datatest
-                L = [] # list of the Loss, or cost, scores on the dataset
-
-                data_test.set_batch_start()
-                for i in range(data_test.set_size):
-                    batch_x, batch_y = data_test.next_batch(batch_size, rnd=False, augmented_data= False)
-                    print(type(batch_x),type(batch_x[0,0,0]),type(batch_y),type(batch_y[0,0]))
-                    loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
-
-                    A.append(acc)
-                    L.append(loss)
-
-                    if verbose >= 1:
-                        print '--\nAccuracy on patch'+str(i)+': '+str(acc)
-                        print 'Loss on patch'+str(i)+': '+str(loss)
-                Accuracy.append(np.mean(A))
-                Loss.append(np.mean(L))
-                Epoch.append(epoch)
-
-                output_2 = '\n----\n Last epoch: ' + str(epoch)
-                output_2+= '\n Accuracy: ' + str(np.mean(A))+';'
-                output_2+= '\n Loss: ' + str(np.mean(L))+';'
-                print '\n\n----Scores on test:---' + output_2
-                epoch+=1
-
-            if step % save_step == 0:
-                evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
-                with open(folder_model+'/evolution.pkl', 'wb') as handle:
-                    pickle.dump(evolution, handle)
-                save_path = saver.save(sess, folder_model+"/model.ckpt")
-
-                print("Model saved in file: %s" % save_path)
-                file = open(folder_model+"/report.txt", 'w')
-                file.write(Report + output_2)
-                file.close()
-
-            step += 1
-
-        save_path = saver.save(sess, folder_model+"/model.ckpt")
-
-        evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
-        with open(folder_model+'/evolution.pkl', 'wb') as handle :
-            pickle.dump(evolution, handle)
-
-        print("Model saved in file: %s" % save_path)
-        print "Optimization Finished!"
-
-# To Call the training in the terminal
-
-if __name__ == "__main__":
-    import argparse
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--path_training", required=True, help="")
-    ap.add_argument("-m", "--path_model", required=True, help="")
-    ap.add_argument("-m_init", "--path_model_init", required=False, help="")
-    ap.add_argument("-lr", "--learning_rate", required=False, help="")
-    ap.add_argument("-c", "--config_file", required=True,help="")
-
-    args = vars(ap.parse_args())
-    path_training = args["path_training"]
-    path_model = args["path_model"]
-    path_model_init = args["path_model_init"]
-    config_file = args["config_file"]
-    learning_rate = args["learning_rate"]
-    if learning_rate :
-        learning_rate = float(args["learning_rate"])
-    else :
-        learning_rate = None
+    for i in range(len(data)):
+        print 'processing patch %s on %s'%(i+1, len(data))
+        batch_x = np.asarray([data[i]])
+        start = time.time()
+        p,summary_str = sess.run([pred,summary], feed_dict={x: batch_x})
+        Mask = np.zeros_like(p[:,0])
+        for pixel in range(len(p[:,0])):
+            Mask[pixel] = np.argmax(p[pixel,:])
         
-    with open(filename, 'r') as fd:
-        config= json.loads(fd.read())
+        Mask.reshape(256,256)
+        predictions.append(Mask)
 
-    train_model(path_training, path_model, config, path_model_init, learning_rate)
- 
+        writer.add_summary(summary_str, i)
+
+    writer.flush()
+    writer.close()
+    sess.close()

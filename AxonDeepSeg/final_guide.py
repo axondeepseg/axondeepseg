@@ -20,7 +20,6 @@ import os
 # network_trainingset : string : String describing the dataset used for the training.
 
 
-repname = './configs_networks'
 filename = '/robert_config_network.json'
 
 network_learning_rate = 0.0005
@@ -31,7 +30,11 @@ network_convolution_per_layer = [3 for i in range(network_depth)]
 network_size_of_convolutions_per_layer = [[5,5,5],[5,5,5],[5,5,5],[5,5,5],[5,5,5],[5,5,5],]#[[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]
 network_features_per_convolution = [[[1,10],[10,20],[20,30]],[[30,40],[40,50],[50,60]],[[60,70],[70,80],[80,90]],[[90,100],[100,110],[110,120]],
                                     [[120,130],[130,140],[140,150]],[[150,160],[160,170],[170,180]]]
-trainingset = 'SEM3'
+trainingset = 'CARS_tot'
+
+downsampling = 'convolution'
+
+thresholds = [0,0.5]
 
 config = {
     'network_learning_rate': network_learning_rate,
@@ -41,7 +44,9 @@ config = {
     'network_convolution_per_layer': network_convolution_per_layer,
     'network_size_of_convolutions_per_layer': network_size_of_convolutions_per_layer,
     'network_features_per_convolution': network_features_per_convolution,
-    'network_trainingset': trainingset
+    'network_trainingset': trainingset,
+    'network_downsampling': downsampling,
+    'network_thresholds': thresholds
 }
 
 
@@ -56,22 +61,21 @@ with open(repname+filename, 'r') as fd:
     config_network = json.loads(fd.read())"""
 
 # training
-path_training = '/Users/piant/axondeepseg_data/trainingset/SEM3/trainingset'
-path_model = '/Users/piant/axondeepseg_data/models/Unet_robert'
-path_model_init = '/Users/piant/axondeepseg_data/models/Unet_robert'
+path_training = '/Users/piant/axondeepseg_data/trainingset/'+trainingset
+path_model = '/Users/piant/axondeepseg_data/models/TEST'
+path_model_init = '/Users/piant/axondeepseg_data/models/TEST'
 
 if not os.path.exists(path_model):
     os.makedirs(path_model)
 
-   
 with open(path_model+filename, 'w') as f:
     json.dump(config, f, indent=2)
 
 with open(path_model+filename, 'r') as fd:
     config_network = json.loads(fd.read())
 
-from new_script_network import train_model
-train_model(path_training, path_model, config_network,path_model_init=None)
+from new_script_network_nclasses import train_model
+train_model(path_training, path_model, config_network,path_model_init=None,thresh_indices = [0,0.5])
 
-#from AxonDeepSeg.learn_model import train_model
-#train_model(path_training, path_model, learning_rate=0.0005)
+#from new_script_network import train_model
+#train_model(path_training, path_model, config_network,path_model_init=None)

@@ -10,6 +10,7 @@ import numpy as np
 import random
 import os
 
+import matplotlib.pyplot as plt
 
 def extract_patches(img, mask, size):
     """
@@ -239,14 +240,21 @@ class input_data:
 
             image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
             mask = preprocessing.binarize(imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L'), threshold=125)
+            
+            if augmented_data:
+                [image, mask] = random_transformation([image, mask])
 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
 
-            if augmented_data:
-                [image, mask] = random_transformation([image, mask])
+            """plt.figure()
+            plt.subplot(2,1,1)
+            plt.imshow(image,cmap='gray')
+            plt.subplot(2,1,2)
+            plt.imshow(mask,cmap='gray')
+            plt.show()"""
 
             batch_x.append(image)
             if i == 0:
@@ -255,7 +263,7 @@ class input_data:
                 batch_y = np.concatenate((batch_y, mask.reshape(-1, 1)), axis=0)
         batch_y = np.concatenate((np.invert(batch_y)/255, batch_y), axis = 1)
 
-        return [np.asarray(batch_x), batch_y]
+        return [np.asarray(batch_x), batch_y.astype(np.uint8)]
 
     def next_batch_WithWeights(self, batch_size = 1, rnd = False, augmented_data = True):
         """

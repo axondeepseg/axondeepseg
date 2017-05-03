@@ -6,23 +6,33 @@ import numpy as np
 import os
 import pickle
 import time
-from learning.input_data import input_data
+from learning.input_data_nclasses import input_data
 import sys
 
-#Input que l'on veut: depth, number of features per layer, number of convolution per layer, size of convolutions per layer.    n_classes = 2, dropout = 0.75
+#import matplotlib.pyplot as plt
 
+########## HEADER ##########
 # Description du fichier config :
     # network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
+    
     # network_n_classes : int : number of labels in the output. Default : 2.
-    # dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
+    
+    # network_dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
+    
     # network_depth : int : number of layers WARNING : factualy, there will be 2*network_depth layers. Default : 6.
+    
     # network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
+    
     # network_size_of_convolutions_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer]] : Describe the size of each convolution filter. 
     # Default : [[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)].
     
     # network_features_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
     # Default : [[64 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_layer[k][1] = network_features_per_layer[k+1][0].
     
+    # network_trainingset : string : describe the trainingset for the network.
+###########################
+
+
 # Create some wrappers for simplicity
 def conv2d(x, W, b, strides=1):
     # Conv2D wrapper, with bias and relu activation
@@ -41,27 +51,13 @@ def Uconv_net(x, config, dropout, image_size = 256):
     """
     Create the U-net.
     Input :
-           x : TF object to define, ensemble des patchs des images :graph input
-
-           weights['wc'] : list of lists containing the convolutions' weights of the contraction layers.
-           weights['we'] : list of lists containing the convolutions' weights of the expansion layers.
-           biases['bc'] : list of lists containing the convolutions' biases of the contraction layers.
-           biases['be'] : list of lists containing the convolutions' biases of the expansion layers.
-           
-           weights['wb'] : list of the bottom layer's convolutions' weights.
-           biases['bb'] : list of the bottom layer's convolutions' biases.
-
-           weights['upconv'] : list of the upconvolutions layers convolutions' weights.
-           biases['upconv_b'] : list of the upconvolutions layers convolutions' biases.
-
-           weights['finalconv'] : list of the last layer convolutions' weights.
-           biases['finalconv_b'] : list of the last layer convolutions' biases.
-
-           dropout : float between 0 and 1 : percentage of neurons kept, 
-           image_size : int : The image size
+        x : TF object to define, ensemble des patchs des images :graph input
+        config : dict : described in the header.
+        dropout : float between 0 and 1 : percentage of neurons kept, 
+        image_size : int : The image size
 
     Output :
-           The U-net.
+        The U-net.
     """
     
     image_size = 256
@@ -211,19 +207,21 @@ def Uconv_net(x, config, dropout, image_size = 256):
 
     # final convolution and segmentation
     finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
-    final_result = tf.reshape(finalconv, tf.TensorShape([finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], 2]))
+    final_result = tf.reshape(finalconv, tf.TensorShape([finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], n_classes]))
 
     return final_result
 
-def train_model(path_trainingset, path_model, config, path_model_init = None, save_trainable = True, verbose = 1):
+def train_model(path_trainingset, path_model, config, path_model_init = None,
+                save_trainable = True, verbose = 1, thresh_indices = [0,0.5]):
     """
     :param path_trainingset: path of the train and test set built from data_construction
     :param path_model: path to save the trained model
-    :param config: json file: network's parameters 
+    :param config: dict: network's parameters described in the header.
     :param path_model_init: (option) path of the model to initialize  the training
     :param learning_rate: learning_rate of the optimiser
     :param save_trainable: if True, only weights are saved. If false the variables from the optimisers are saved too
     :param verbose:
+    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return:
     """
 
@@ -278,9 +276,9 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
     Report += 'learning_rate : '+ str(learning_rate)+'; \n batch_size :  ' + str(batch_size) +';\n depth :  ' + str(depth) \
             +';\n epoch_size: ' + str(epoch_size)+';\n dropout :  ' + str(dropout)\
             +';\n (if model restored) restored_model :' + str(path_model_init)
-
-    data_train = input_data(trainingset_path=path_trainingset, type='train')
-    data_test = input_data(trainingset_path=path_trainingset, type='test')
+    
+    data_train = input_data(trainingset_path = path_trainingset, type='train', thresh_indices = thresh_indices)
+    data_test = input_data(trainingset_path = path_trainingset, type='test', thresh_indices = thresh_indices)
 
     # Graph input
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
@@ -344,6 +342,7 @@ def train_model(path_trainingset, path_model, config, path_model_init = None, sa
                 loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: batch_x,
                                                                   y: batch_y,
                                                                   keep_prob: 1.})
+
                 if verbose == 2:
                     outputs = "Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
                         "{:.6f}".format(loss) + ", Training Accuracy= " + \
@@ -422,7 +421,7 @@ if __name__ == "__main__":
         learning_rate = None
         
     with open(filename, 'r') as fd:
-        config= json.loads(fd.read())
+        config = json.loads(fd.read())
 
     train_model(path_training, path_model, config, path_model_init, learning_rate)
  

@@ -214,7 +214,7 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
 
                             if limit_to_one_image == 0:
                                 for iteration in range(convolution_c.get_shape().as_list()[-1]-1):
-                                    tf.image_summary("Visualize_image", convolution_c[:,:,:,iteration:iteration+1])
+                                    tf.image_summary("Visualize_image_number_"+str(iteration), convolution_c[:,:,:,iteration:iteration+1])
                                 limit_to_one_image +=1
 
                             channels = features_per_convolution[target_features[0]][target_features[1]][1]
@@ -239,7 +239,7 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
                             W_d = tf.concat(1, [W_row0, W_row1, W_row2, W_row3, W_row4, W_row5]) # [30, 30, 1, 1]
                             W_e = tf.reshape(W_d, [1, 6*conv_size, 6*conv_size, 1])
                             Wtag = tf.placeholder(tf.string, None)
-                            tf.image_summary("Visualize_kernels", W_e)
+                            tf.image_summary("Visualize_kernels_"+str(conv_number, W_e)
 
 
                 else:
@@ -276,7 +276,7 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
 
         if limit_to_one_image_end == 0:
             for iteration in range(convolution_e.get_shape().as_list()[-1]-1):
-                tf.image_summary("Visualize_image_end", convolution_e[:,:,:,iteration:iteration+1])
+                tf.image_summary("Visualize_image_end_"+str(iteration), convolution_e[:,:,:,iteration:iteration+1])
             limit_to_one_image_end +=1
 
         # final convolution and segmentation
