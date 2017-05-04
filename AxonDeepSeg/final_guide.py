@@ -36,6 +36,8 @@ downsampling = 'convolution'
 
 thresholds = [0,0.5]
 
+weighted_cost = True
+
 config = {
     'network_learning_rate': network_learning_rate,
     'network_n_classes': network_n_classes,
@@ -46,9 +48,9 @@ config = {
     'network_features_per_convolution': network_features_per_convolution,
     'network_trainingset': trainingset,
     'network_downsampling': downsampling,
-    'network_thresholds': thresholds
+    'network_thresholds': thresholds,
+    'network_weighted_cost': weighted_cost
 }
-
 
 # Edit and read the config
 """if not os.path.exists(repname):
@@ -74,8 +76,8 @@ with open(path_model+filename, 'w') as f:
 with open(path_model+filename, 'r') as fd:
     config_network = json.loads(fd.read())
 
-from new_script_network_nclasses import train_model
-train_model(path_training, path_model, config_network,path_model_init=None,thresh_indices = [0,0.5])
+from final_network import train_model
+train_model(path_training, path_model, config_network,path_model_init=None)
 
 #from new_script_network import train_model
 #train_model(path_training, path_model, config_network,path_model_init=None)

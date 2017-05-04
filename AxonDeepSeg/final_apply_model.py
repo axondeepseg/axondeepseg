@@ -136,7 +136,7 @@ def Uconv_net(x, config, dropout, image_size = 256):
     Output :
         The U-net.
     """
-    
+    # Network Parameters
     image_size = 256
     n_input = image_size * image_size
     learning_rate = config.get("network_learning_rate", 0.0005)
@@ -147,6 +147,7 @@ def Uconv_net(x, config, dropout, image_size = 256):
     size_of_convolutions_per_layer =  config.get("network_size_of_convolutions_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     downsampling = config.get("network_downsampling", 'maxpooling')
+    weighted_cost = config.get("network_weighted_cost", False)
 
 ####################################################################
     # Create some wrappers for simplicity
@@ -159,7 +160,7 @@ def Uconv_net(x, config, dropout, image_size = 256):
         biases = {'upconv_b':[],'finalconv_b':[],'bb1':[], 'bb2':[], 'bc':[], 'be':[]}            
     else:
         print('Wrong downsampling method, please use ''maxpooling'' or ''convolution''.')
-        break    
+         
 
     # Contraction
     for i in range(depth):
@@ -299,7 +300,7 @@ def Uconv_net(x, config, dropout, image_size = 256):
 
     return final_result
 
-def apply_convnet(path_my_data, path_model,config,):
+def apply_convnet(path_my_data, path_model,config):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -335,6 +336,7 @@ def apply_convnet(path_my_data, path_model,config,):
     features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     downsampling = config.get("network_downsampling", 'maxpooling')
     thresh_indices = config.get("network_thresholds", [0,0.5])
+    weighted_cost = config.get("weighted_cost", False)
     ##############
 
     folder_model = path_model
@@ -420,6 +422,8 @@ def axon_segmentation(path_my_data, path_model, config):
 
     # ------ Apply ConvNets ------- #
     prediction = apply_convnet(path_my_data, path_model, config)
+
+    thresh_indices = config.get("network_thresholds", [0,0.5])
 
     # ------ Apply mrf ------- #
     nb_class = 2

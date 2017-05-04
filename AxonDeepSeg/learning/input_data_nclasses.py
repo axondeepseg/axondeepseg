@@ -9,7 +9,7 @@ from scipy import ndimage
 import numpy as np
 import random
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def extract_patches(img, mask, size):
     """
@@ -359,9 +359,10 @@ class input_data:
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
 
-            to_use = np.asarray(mask).reshape(256,256,1)
-
+            to_use = np.asarray(mask)
+            to_use[to_use<=np.min(to_use)]=0
             weight = ndimage.distance_transform_edt(to_use)
+            weight[weight==0]=np.max(weight)
             w0 = 10
             sigma = 5
 
@@ -378,12 +379,10 @@ class input_data:
         n = len(self.thresh_indices)
         batch_y_tot = np.zeros([batch_y.shape[0], n])
 
-        for classe in range(n):
-            if classe <= n-2:
-                batch_y_tot[:,classe] = (batch_y == np.mean([self.thresh_indices[classe],
+        for classe in range(n-1):
+            batch_y_tot[:,classe] = (batch_y == np.mean([self.thresh_indices[classe],
                                                              self.thresh_indices[classe+1]]))[:,0]
-            if classe == n-1:
-                batch_y_tot[:,classe] = (batch_y == 1)[:,0]
+        batch_y_tot[:,n-1] = (batch_y == 1)[:,0]
 
         return [np.asarray(batch_x), batch_y_tot.astype(np.uint8), weights]
 

@@ -34,6 +34,8 @@ import sys
     # network_downsampling : string 'maxpooling' or 'convolution' : the downsampling method. 
 
     # network_thresholds : list of float in [0,1] : the thresholds for the ground truthes labels.
+
+    # network_weighted_cost : boolean : whether we use weighted cost for training or not.
 ###########################
 
 
@@ -74,7 +76,7 @@ def Uconv_net(x, config, dropout, image_size = 256):
     size_of_convolutions_per_layer =  config.get("network_size_of_convolutions_per_layer",[[3 for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     downsampling = config.get("network_downsampling", 'maxpooling')
-
+    weighted_cost = config.get("network_weighted_cost", False)
 ####################################################################
     # Create some wrappers for simplicity
     
@@ -85,10 +87,8 @@ def Uconv_net(x, config, dropout, image_size = 256):
         weights = {'upconv':[],'finalconv':[],'wb1':[], 'wb2':[], 'wc':[], 'we':[]}
         biases = {'upconv_b':[],'finalconv_b':[],'bb1':[], 'bb2':[], 'bc':[], 'be':[]}            
     else:
-        print('Wrong downsampling method, please use ''maxpooling'' or ''convolution''.')
-        break              
-     
-
+        print('Wrong downsampling method, please use ''maxpooling'' or ''convolution''.')             
+    
     # Contraction
     for i in range(depth):
 
@@ -228,7 +228,7 @@ def Uconv_net(x, config, dropout, image_size = 256):
     return final_result
 
 def train_model(path_trainingset, path_model, config, path_model_init = None,
-                save_trainable = True, verbose = 1):
+                save_trainable = True, verbose = 1, augmented_data = True, gpu = None):
     """
     :param path_trainingset: path of the train and test set built from data_construction
     :param path_model: path to save the trained model
@@ -268,13 +268,14 @@ def train_model(path_trainingset, path_model, config, path_model_init = None,
     features_per_convolution = config.get("network_features_per_convolution",[[[64,64] for k in range(number_of_convolutions_per_layer[i])] for i in range(depth)])
     downsampling = config.get("network_downsampling", 'maxpooling')
     thresh_indices = config.get("network_thresholds", [0,0.5])
+    weighted_cost = config.get("network_weighted_cost", False)
 
     #----------------SAVING HYPERPARAMETERS TO USE THEM FOR apply_model-----------------------------------------------#
 
     hyperparameters = {'depth': depth,'dropout': dropout, 'image_size': image_size,
                        'model_restored_path': path_model_init, 'learning_rate': learning_rate,
                         'network_n_classes': n_classes, 'network_downsampling': downsampling,
-                        'network_thresholds': thresh_indices
+                        'network_thresholds': thresh_indices, 'weighted_cost':weighted_cost,
                         'network_convolution_per_layer': number_of_convolutions_per_layer,
                         'network_size_of_convolutions_per_layer': size_of_convolutions_per_layer,
                         'network_features_per_convolution': features_per_convolution}
@@ -302,13 +303,25 @@ def train_model(path_trainingset, path_model, config, path_model_init = None,
     # Graph input
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
     y = tf.placeholder(tf.float32, shape=(batch_size*n_input, n_classes))
+
+    if weighted_cost == True:
+        spatial_weights = tf.placeholder(tf.float32, shape=(batch_size*n_input, 1))
+
     keep_prob = tf.placeholder(tf.float32)
 
-    # Call the model
-    pred = Uconv_net(x, config, keep_prob)
+    # Call the model, selected a GPU if asked
+    # WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
+    if gpu in ['gpu:0','gpu:1']:
+        with tf.device('/'+gpu):
+            pred = Uconv_net(x, config, keep_prob)
+    else:
+        pred = Uconv_net(x, config, keep_prob)
 
     # Define loss and optimizer
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
+    if weighted_cost == True:
+        cost = tf.reduce_mean(spatial_weights[:,0]*tf.nn.softmax_cross_entropy_with_logits(pred, y))
+    else:
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
 
     tf.scalar_summary('Loss', cost)
 
@@ -348,19 +361,32 @@ def train_model(path_trainingset, path_model, config, path_model_init = None,
             sess.run(init)
         print 'training start'
 
+        if weighted_cost == True:
+            print('Weighted cost selected')
+        else:
+            print('Default cost selected')
+
         step = 1
         epoch = 1 + last_epoch
 
         while step * batch_size < training_iters:
-            batch_x, batch_y = data_train.next_batch(batch_size, rnd = True, augmented_data= True)
-            sess.run(optimizer, feed_dict={x: batch_x, y: batch_y,
-                                           keep_prob: dropout})
+            if weighted_cost == True:
+                batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True, augmented_data=augmented_data)
+                sess.run(optimizer, feed_dict={x: batch_x, y: batch_y,
+                                               spatial_weights: weight, keep_prob: dropout})
+            else:
+                batch_x, batch_y = data_train.next_batch(batch_size, rnd = True, augmented_data= augmented_data)
+                sess.run(optimizer, feed_dict={x: batch_x, y: batch_y,
+                                               keep_prob: dropout})
 
             if step % display_step == 0:
                 # Calculate batch loss and accuracy
-                loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: batch_x,
-                                                                  y: batch_y,
-                                                                  keep_prob: 1.})
+                if weighted_cost == True:
+                    loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y, 
+                                                                               spatial_weights: weight, keep_prob: 1.})
+                else:
+                    loss, acc, p = sess.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
+                                                                               keep_prob: 1.})
 
                 if verbose == 2:
                     outputs = "Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
@@ -375,8 +401,12 @@ def train_model(path_trainingset, path_model, config, path_model_init = None,
 
                 data_test.set_batch_start()
                 for i in range(data_test.set_size):
-                    batch_x, batch_y = data_test.next_batch(batch_size, rnd=False, augmented_data= False)
-                    loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
+                    if weighted_cost == True:
+                        batch_x, batch_y, weight = data_test.next_batch_WithWeights(batch_size, rnd=False, augmented_data = False)
+                        loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
+                    else:
+                        batch_x, batch_y = data_test.next_batch(batch_size, rnd=False, augmented_data = False)
+                        loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
                     A.append(acc)
                     L.append(loss)
