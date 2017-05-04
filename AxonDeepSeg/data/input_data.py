@@ -359,7 +359,7 @@ class input_data:
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
 
-            to_use = np.asarray(mask)
+            to_use = np.asarray(255*mask,dtype='uint8')
             to_use[to_use<=np.min(to_use)]=0
             weight = ndimage.distance_transform_edt(to_use)
             weight[weight==0]=np.max(weight)
@@ -367,6 +367,7 @@ class input_data:
             sigma = 5
 
             weight = w0*np.exp(-(weight/sigma)**2/2)
+            weight = preprocessing.normalize(weight)
 
             batch_x.append(image)
             if i == 0:

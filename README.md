@@ -2,7 +2,7 @@
 Segment axon and myelin from microscopy data. Written in Python.
 Methods based on deep convolutional neural networks.
 The U-Net from ([Ronneberger et al.](https://arxiv.org/abs/1505.04597)) is used as a pixel classifier model.
-Then an MRF is applied for the post-processing. # NOT WORKING FOR NOW
+Then an MRF should be applied for the post-processing. # NOT WORKING FOR NOW :scripts in older branches.
 
 The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi et al.](http://journal.frontiersin.org/article/10.3389/fninf.2016.00037/full))
 

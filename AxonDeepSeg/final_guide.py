@@ -5,22 +5,35 @@
 import json
 import os
 
-# Description du fichier config :
-# network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
-# network_n_classes : int : number of labels in the output. Default : 2.
-# dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
-# network_depth : int : number of layers WARNING : factualy, there will be 2*network_depth layers. Default : 6.
-# network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
-# network_size_of_convolutions_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer]] : Describe the size of each convolution filter.
-# Default : [[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)].
+########## HEADER ##########
+# config file description :
+    # network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
+    
+    # network_n_classes : int : number of labels in the output. Default : 2.
+    
+    # network_dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
+    
+    # network_depth : int : number of layers WARNING : factualy, there will be 2*network_depth layers. Default : 6.
+    
+    # network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
+    
+    # network_size_of_convolutions_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer]] : Describe the size of each convolution filter. 
+    # Default : [[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)].
+    
+    # network_features_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
+    # Default : [[64 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_layer[k][1] = network_features_per_layer[k+1][0].
+    
+    # network_trainingset : string : describe the trainingset for the network.
 
-# network_features_per_convolution : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
-# Default : [[[64,64] for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_convolution[k][1] = network_features_per_convolution[k+1][0].
+    # network_downsampling : string 'maxpooling' or 'convolution' : the downsampling method. 
 
-# network_trainingset : string : String describing the dataset used for the training.
+    # network_thresholds : list of float in [0,1] : the thresholds for the ground truthes labels.
+
+    # network_weighted_cost : boolean : whether we use weighted cost for training or not.
+###########################
 
 
-filename = '/robert_config_network.json'
+filename = '/config_network.json'
 
 network_learning_rate = 0.0005
 network_n_classes = 2
@@ -52,21 +65,12 @@ config = {
     'network_weighted_cost': weighted_cost
 }
 
-# Edit and read the config
-"""if not os.path.exists(repname):
-    os.makedirs(repname)
-
-with open(repname+filename, 'w+') as f:
-    json.dump(config, f, indent=2)
-
-with open(repname+filename, 'r') as fd:
-    config_network = json.loads(fd.read())"""
-
-# training
+# training paths
 path_training = '/Users/piant/axondeepseg_data/trainingset/'+trainingset
 path_model = '/Users/piant/axondeepseg_data/models/TEST'
 path_model_init = '/Users/piant/axondeepseg_data/models/TEST'
 
+# Create the folder for the model and (read/edit/save) the config file in it.
 if not os.path.exists(path_model):
     os.makedirs(path_model)
 
@@ -76,8 +80,7 @@ with open(path_model+filename, 'w') as f:
 with open(path_model+filename, 'r') as fd:
     config_network = json.loads(fd.read())
 
-from final_network import train_model
+# Training
+from train_network import train_model
 train_model(path_training, path_model, config_network,path_model_init=None)
 
-#from new_script_network import train_model
-#train_model(path_training, path_model, config_network,path_model_init=None)

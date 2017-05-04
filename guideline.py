@@ -1,92 +1,101 @@
-# This explains how to train, visualize and segment on a new image
+# Network training with cleaned branch :
+
+# Explains how to train, visualize and segment on a new image
 
 # download + unzip example data
 # https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
+###########################
+# Load a .json config file containing :
+
+    # network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
+    
+    # network_n_classes : int : number of labels in the output. Default : 2.
+    
+    # network_dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
+    
+    # network_depth : int : number of layers WARNING : factualy, there will be 2*network_depth layers. Default : 6.
+    
+    # network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
+    
+    # network_size_of_convolutions_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer]] : Describe the size of each convolution filter. 
+    # Default : [[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)].
+    
+    # network_features_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
+    # Default : [[64 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_layer[k][1] = network_features_per_layer[k+1][0].
+    
+    # network_trainingset : string : describe the trainingset for the network.
+
+    # network_downsampling : string 'maxpooling' or 'convolution' : the downsampling method. 
+
+    # network_thresholds : list of float in [0,1] : the thresholds for the ground truthes labels.
+
+    # network_weighted_cost : boolean : whether we use weighted cost for training or not.
+###########################
+
+# Example
+
+# 1/ Build the dataset for training.
 # input data to build the training set
-path_data = './victor/data'
+path_data = 'mypath_raw_data'
 
 # output path of training data path
-path_training = './trainingset'
+path_training = 'mypath_trainingset'
 
-# output path for trained U-Net
-path_model = './models/Unet_new'
-# optional input path of a model to initialize the training
-path_model_init = './models/Unet_init'
-
-# input to train the mrf. Here we don't use all data for the MRF for faster results and redundancy.
-path_mrf_training = ['./victor/data/data2', './victor/data/data4']
-path_mrf = './models/mrf'
-
-# input to segment an image
-path_my_data = './victor/my_data/data4'
-
-# Generate training path
-from AxonDeepSeg.dataset_building import build_dataset
+from AxonDeepSeg.data.dataset_building import build_dataset
 build_dataset(path_data, path_training, trainRatio=0.80)
 
-# OPTION 1: Local Train
-# Training the U-Net from a path_training
-from AxonDeepSeg.learn_model import train_model
-train_model(path_training, path_model, learning_rate=0.0005)
-#Initialize the training
-train_model(path_training, path_model, path_model_init, learning_rate=0.002)
 
-# OPTION 2: Train on GPU
-# copy training data + model (in case you start from an existing model) onto neuropoly@ssh
-scp -r AxonDeepSeg neuropoly@bireli.neuro.polymtl.ca:
-scp -r path_training neuropoly@bireli.neuro.polymtl.ca:my_project #path on bireli : path_bireli_training
-scp -r path_model_init neuropoly@bireli.neuro.polymtl.ca:my_project/models # path on bireli : path_bireli_model_init
-# Connect to bireli using ssh neuropoly@ssh or (ssh -Y) to display
-git clone https://github.com/neuropoly/axondeepseg.git
-cd axondeepseg/AxonDeepSeg
-# sub-option1: if you don't have an initial model:
-python train_model.py -p path_bireli_training -m path_bireli_model -lr 0.0005 # result : path_bireli_model
-# sub-option2: if you do have an initial model:
-python train_model.py -p path_bireli_training -m path_bireli_model -m_init path_bireli_model_init - lr 0.0005
+# 2/ Load the config file and train the network
+import json
+import os
+
+# output path for trained U-Net
+path_model = 'mypath_models/Unet_new'
+
+# optional input path of a model to initialize the training
+path_model_init = 'mypath_models/Unet_init'
+
+path_configfile = 'mypath_configfile'
+
+if not os.path.exists(path_model):
+    os.makedirs(path_model)
+
+with open(path_configfile, 'r') as fd:
+    config_network = json.loads(fd.read())
+
+# OPTIONAL : specify the gpu one wants to use.
+gpu_device = 'gpu:0' # or gpu_device = 'gpu:1' these are the only two possible targets for now.
+
+from AxonDeepSeg.train_network import train_model
+train_model(path_training, path_model, config_network, path_model_init=None, gpu = gpu_device)
 
 
-# OPTION 1 : Local Visualization
+# 3/ Local Visualization
 from AxonDeepSeg.evaluation.visualization import visualize_training
 # sub-option 1 : if you do not have an initial model
 visualize_training(path_model)
-# sub-option 2 if you do not have an initial model
+# sub-option 2 : if you have an initial model
 visualize_training(path_model, path_model_init)
 
-# OPTION 2 : Visualization on GPU
-visualize_training - m path_bireli_model - m_init path_bireli_model_init
 
+# 4/ Apply the model to segment one image
+path_target_image = 'mypath_target_image'
 
-# Training the MRF from the paths_training
-from AxonDeepSeg.mrf import train_mrf
-train_mrf(path_mrf_training, path_model, path_mrf, threshold_precision=0.8, threshold_sensitivity=0.9)
-
-#----------------------Axon segmentation with a trained model and trained mrf---------------------#
 from AxonDeepSeg.apply_model import axon_segmentation
-# Ground Truth need to be in path_my_data
-axon_segmentation(path_my_data, path_model, path_mrf)
-# Outputs :
-# Axon segmentation mask AxonSeg.jpeg
-# Segmentation array after and before mrf in results.pkl
+axon_segmentation(path_my_data, path_model, config_network)
 
-#----------------------Myelin segmentation from axon segmentation--------------------#
+
+# 5/ Myelin segmentation from axon segmentation
 from AxonDeepSeg.apply_model import myelin
 # Axon_segmentation() has to be already runned
 myelin(path_my_data)
-# Outputs in (path_my_data) :
-# Myelin segmentation mask, MyelinSeg.jpg
-# Metrics evalution of the segmentation, axonlist.mat
 
-#----------------------Axon and Myelin segmentation--------------------#
-from AxonDeepSeg.apply_model import pipeline
-pipeline(path_my_data, path_model, path_mrf)
-# Outputs :
-# Outputs from myelin() and axon_segmentation()
 
-#----------------------Visualization of the results--------------------#
-from AxonDeepSeg.evaluation.visualization import visualize_segmentation
+# 6/ Visualization of the results
+from AxonDeepSeg.evaluation.visualize import visualize_segmentation
 visualize_segmentation(path_my_data)
-# Outputs :
-# Plots of the axon segmentation and the myelin segmentation
-# if my_data does have a groundtruth : report_results.txt in path_my_data
+
+
+# 7/ Print the features. 
 

@@ -6,7 +6,8 @@ import numpy as np
 import os
 import pickle
 import time
-from learning.input_data_nclasses import input_data
+from data.input_data import input_data
+from config import*
 import sys
 
 #import matplotlib.pyplot as plt
@@ -453,23 +454,19 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("-p", "--path_training", required=True, help="")
     ap.add_argument("-m", "--path_model", required=True, help="")
-    ap.add_argument("-m_init", "--path_model_init", required=False, help="")
-    ap.add_argument("-lr", "--learning_rate", required=False, help="")
     ap.add_argument("-c", "--config_file", required=True,help="")
+    ap.add_argument("-m_init", "--path_model_init", required=False, help="")
+    ap.add_argument("-gpu", "--GPU", required=False, help="")
 
     args = vars(ap.parse_args())
     path_training = args["path_training"]
     path_model = args["path_model"]
     path_model_init = args["path_model_init"]
     config_file = args["config_file"]
-    learning_rate = args["learning_rate"]
-    if learning_rate :
-        learning_rate = float(args["learning_rate"])
-    else :
-        learning_rate = None
-        
+    gpu = args["GPU"]
+
     with open(filename, 'r') as fd:
         config = json.loads(fd.read())
 
-    train_model(path_training, path_model, config, path_model_init, learning_rate)
+    train_model(path_training, path_model, config, path_model_init, gpu = gpu)
  

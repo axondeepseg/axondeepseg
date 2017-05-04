@@ -1,7 +1,7 @@
 {
   "network_depth": 6, 
   "network_n_classes": 2, 
-  "network_trainingset": "SEM3", 
+  "network_trainingset": "CARS_tot", 
   "network_features_per_convolution": [
     [
       [
