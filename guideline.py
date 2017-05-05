@@ -102,4 +102,4 @@ from AxonDeepSeg.visualisation.get_features_nclasses import get_convnet_features
 get_convnet_features(path_my_data, path_model, config_network,folder_write = path_model, target_features = [0,0], thresh_indices = [0,0.5])
 
 # Then in the command prompt:
-tensorboard --logdir=path_model
+# tensorboard --logdir=path_model
