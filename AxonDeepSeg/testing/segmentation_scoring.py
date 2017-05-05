@@ -43,11 +43,11 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
         centroid_candidates = centroid_candidates.difference(centroid_match)
         centroid_match = list(centroid_match)
         if len(centroid_match) != 0:
-            diff = np.sum((centroid_match - axon_center)**2, axis=1)
+            diff = np.sum((centroid_match - axon_center) ** 2, axis=1)
             ind = np.argmin(diff)
             center = centroid_match[ind]
             centroids_T.append(center)
-            n_extra += len(centroid_match)-1
+            n_extra += len(centroid_match) - 1
         if len(centroid_match) == 0:
             notDetected.append(axon_center)
 
@@ -59,15 +59,14 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
 
     centroids_F = np.array(centroids_F)
     centroids_T = np.array(centroids_T)
-    not_detected = len(np.array(notDetected))
+    # not_detected = len(np.array(notDetected))
 
     sensitivity = round(float(TP) / P, 3)
-    errors = round(float(FP) / P, 3)
-    diffusion = float(n_extra)/(TP+FP)
-    precision = round(float(TP)/(TP+FP), 3)
+    # errors = round(float(FP) / P, 3)
+    diffusion = float(n_extra) / (TP + FP)
+    precision = round(float(TP) / (TP + FP), 3)
 
     if visualization:
-
         plt.figure(1)
         plt.imshow(img, cmap=plt.get_cmap('gray'))
         plt.hold(True)
@@ -112,27 +111,26 @@ def dice(img, groundtruth, prediction, min_area=3):
 
     labels_pred = measure.label(prediction)
     regions_pred = regionprops(labels_pred)
-    features = ['coords','area','dice']
+    features = ['coords', 'area', 'dice']
     df = pd.DataFrame(columns=features)
 
-    i=0
-    for axon_predicted in regions_pred :
+    i = 0
+    for axon_predicted in regions_pred:
         centroid = (np.array(axon_predicted.centroid)).astype(int)
         if groundtruth[(centroid[0], centroid[1])] == 1:
             for axon_true in regions_true:
 
-               if [centroid[0], centroid[1]] in axon_true.coords.tolist():
+                if [centroid[0], centroid[1]] in axon_true.coords.tolist():
+                    surface_pred = np.zeros((h, w))
+                    surface_true = np.zeros((h, w))
 
-                   surface_pred = np.zeros((h, w))
-                   surface_true = np.zeros((h, w))
+                    surface_pred[axon_predicted.coords[:, 0], axon_predicted.coords[:, 1]] = 1
+                    surface_true[axon_true.coords[:, 0], axon_true.coords[:, 1]] = 1
+                    intersect = surface_pred * surface_true
 
-                   surface_pred[axon_predicted.coords[:, 0], axon_predicted.coords[:, 1]] = 1
-                   surface_true[axon_true.coords[:, 0], axon_true.coords[:, 1]] = 1
-                   intersect = surface_pred*surface_true
-
-                   Dice = 2*float(sum(sum(intersect)))/(sum(sum(surface_pred))+sum(sum(surface_true)))
-                   df.loc[i] = [axon_predicted.coords, axon_predicted.area, Dice]
-                   break
+                    Dice = 2 * float(sum(sum(intersect))) / (sum(sum(surface_pred)) + sum(sum(surface_true)))
+                    df.loc[i] = [axon_predicted.coords, axon_predicted.area, Dice]
+                    break
         i += 1
     dice_scores = df[df['area'] > min_area]
     return dice_scores
