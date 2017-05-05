@@ -11,6 +11,7 @@ import random
 import os
 #import matplotlib.pyplot as plt
 
+
 def extract_patches(img, mask, size):
     """
     :param img: image represented by a numpy-array
@@ -177,10 +178,13 @@ def elastic_transform(image, gt, alpha, sigma, thresh_indices = [0,0.5]):
         if np.max(elastic_gt) > 1.001:
             thresh_inf = np.int(255*value)
             thresh_sup = np.int(255*thresh_indices[indice+1])
+            class_max = 255
         else:
             thresh_inf = value
             thresh_sup = thresh_indices[indice+1]  
+            class_max = 1
         elastic_gt[(elastic_gt >= thresh_inf) & (elastic_gt < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
+
     elastic_gt[elastic_gt >= thresh_sup] = 1
 
     return [elastic_image, elastic_gt]

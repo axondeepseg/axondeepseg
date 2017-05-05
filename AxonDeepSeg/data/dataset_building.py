@@ -4,7 +4,7 @@ from scipy.misc import imread, imsave
 from sklearn import preprocessing
 from skimage.transform import rescale
 import random
-from config import*
+from ..config import general_pixel_size, path_matlab, path_axonseg
 import numpy as np
 
 
@@ -76,8 +76,8 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
                     img = (rescale(img, rescale_coeff)*256).astype(int)
                 elif 'mask' in data:
                     mask_init = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
-                    mask = rescale(mask_init, rescale_coeff)
-                    
+                    mask = (rescale(mask_init, rescale_coeff)*256)
+
                     for indice,value in enumerate(thresh_indices[:-1]):
                         if np.max(mask) > 1.001:
                             thresh_inf = np.int(255*value)
@@ -88,7 +88,11 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
 
                         mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
                         
-                    mask[mask>=thresh_sup] = 255
+                        plt.figure()
+                        plt.imshow(mask,cmap='gray')
+                        plt.show()
+
+                    mask[mask>=thresh_sup] = 1
 
             if i == 0:
                 patches = extract_patch(img, mask, 256)
