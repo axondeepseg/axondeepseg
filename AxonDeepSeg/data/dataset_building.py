@@ -87,10 +87,6 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
                             thresh_sup = thresh_indices[indice+1]   
 
                         mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-                        
-                        plt.figure()
-                        plt.imshow(mask,cmap='gray')
-                        plt.show()
 
                     mask[mask>=thresh_sup] = 1
 
