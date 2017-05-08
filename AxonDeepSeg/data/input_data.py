@@ -331,6 +331,7 @@ class input_data:
         for classe in range(n-1):
             batch_y_tot[:,classe] = (batch_y == np.mean([self.thresh_indices[classe],
                                                              self.thresh_indices[classe+1]]))[:,0]
+
         batch_y_tot[:,n-1] = (batch_y == 1)[:,0]
 
         return [np.asarray(batch_x), batch_y_tot.astype(np.uint8)]

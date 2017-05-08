@@ -11,6 +11,8 @@ from skimage.transform import rescale
 from skimage import exposure
 from config import general_pixel_size, path_matlab, path_axonseg
 
+#import matplotlib.pyplot as plt 
+
 
 ########## HEADER ##########
 # Description du fichier config :
@@ -119,7 +121,7 @@ def maxpool2d(x, k=2):
 
 
 # Create model
-def uconv_net(x, config, image_size=256):
+def uconv_net(x, config, weights, biases, image_size=256):
     """
     Create the U-net.
     Input :
@@ -140,6 +142,117 @@ def uconv_net(x, config, image_size=256):
     size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
     features_per_convolution = config["network_features_per_convolution"]
     downsampling = config["network_downsampling"]
+
+    # Reshape input picture
+    x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
+    data_temp = x
+    data_temp_size = [image_size]
+    relu_results = []
+
+    # contraction
+    for i in range(depth):
+
+        for conv_number in range(number_of_convolutions_per_layer[i]):
+            print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
+            print('Size:', size_of_convolutions_per_layer[i][conv_number])
+
+            if conv_number == 0:
+                convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
+            else:
+                convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
+
+        relu_results.append(convolution_c)
+
+        if downsampling == 'convolution':
+            convolution_c = conv2d(convolution_c, weights['pooling'][i], biases['pooling_b'][i], strides=2)
+        else:
+            convolution_c = maxpool2d(convolution_c, k=2)
+
+        data_temp_size.append(data_temp_size[-1] / 2)
+        data_temp = convolution_c
+
+    conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'])
+    conv2 = conv2d(conv1, weights['wb2'], biases['bb2'])
+    data_temp_size.append(data_temp_size[-1])
+    data_temp = conv2
+
+    # expansion
+    for i in range(depth):
+        data_temp = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
+        upconv = conv2d(data_temp, weights['upconv'][i], biases['upconv_b'][i])
+        data_temp_size.append(data_temp_size[-1] * 2)
+
+        # concatenation
+        upconv_concat = tf.concat(concat_dim=3, values=[tf.slice(relu_results[depth - i - 1], [0, 0, 0, 0],
+                                                                 [-1, data_temp_size[depth - i - 1],
+                                                                  data_temp_size[depth - i - 1], -1]), upconv])
+
+        for conv_number in range(number_of_convolutions_per_layer[i]):
+            print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
+            print('Size:', size_of_convolutions_per_layer[i][conv_number])
+
+            if conv_number == 0:
+                convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number])
+            else:
+                convolution_e = conv2d(convolution_e, weights['we'][i][conv_number], biases['be'][i][conv_number])
+
+        data_temp = convolution_e
+
+    # final convolution and segmentation
+    finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
+    final_result = tf.reshape(finalconv, tf.TensorShape(
+        [finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], n_classes]))
+
+    return final_result
+
+
+def apply_convnet(path_my_data, path_model, config):
+    """
+    :param path_my_data: folder of the image to segment. Must contain image.jpg
+    :param path_model: folder of the model of segmentation. Must contain model.ckpt
+    :param config: dict: network's parameters described in the header.
+    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
+    :return: prediction, the mask of the segmentation
+    """
+
+    print '\n\n ---Start axon segmentation on %s---' % path_my_data
+
+    path_img = path_my_data + '/image.jpg'
+    img = imread(path_img, flatten=False, mode='L')
+
+    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
+    pixel_size = float(file.read())
+
+    # set the resolution to the general_pixel_size
+    rescale_coeff = pixel_size / general_pixel_size
+    img = (rescale(img, rescale_coeff) * 256).astype(int)
+
+    batch_size = 1
+
+    ###############
+    # Network Parameters
+    image_size = 256
+    thresh_indices = config["network_thresholds"]
+    n_classes = config["network_n_classes"]
+    depth = config["network_depth"]
+    number_of_convolutions_per_layer = config["network_convolution_per_layer"]
+    size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
+    features_per_convolution = config["network_features_per_convolution"]
+    downsampling = config["network_downsampling"]
+    ##############
+
+    folder_model = path_model
+    if not os.path.exists(folder_model):
+        os.makedirs(folder_model)
+
+    if os.path.exists(folder_model + '/hyperparameters.pkl'):
+        print 'hyperparameters detected in the model'
+        hyperparameters = pickle.load(open(folder_model + '/hyperparameters.pkl', "rb"))
+        image_size = hyperparameters['image_size']
+
+    # --------------------SAME ALGORITHM IN TRAIN_model---------------------------
+
+    x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
 
     ####################################################################
     # Create some wrappers for simplicity
@@ -249,113 +362,8 @@ def uconv_net(x, config, image_size=256):
     biases['finalconv_b'] = tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s' % i)
     ####################################################
 
-    # Reshape input picture
-    x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
-    data_temp = x
-    data_temp_size = [image_size]
-    relu_results = []
-
-    # contraction
-    for i in range(depth):
-
-        for conv_number in range(number_of_convolutions_per_layer[i]):
-            print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
-            print('Size:', size_of_convolutions_per_layer[i][conv_number])
-
-            if conv_number == 0:
-                convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
-            else:
-                convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
-
-        relu_results.append(convolution_c)
-
-        if downsampling == 'convolution':
-            convolution_c = conv2d(convolution_c, weights['pooling'][i], biases['pooling_b'][i], strides=2)
-        else:
-            convolution_c = maxpool2d(convolution_c, k=2)
-
-        data_temp_size.append(data_temp_size[-1] / 2)
-        data_temp = convolution_c
-
-    conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'])
-    conv2 = conv2d(conv1, weights['wb2'], biases['bb2'])
-    data_temp_size.append(data_temp_size[-1])
-    data_temp = conv2
-
-    # expansion
-    for i in range(depth):
-        data_temp = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
-        upconv = conv2d(data_temp, weights['upconv'][i], biases['upconv_b'][i])
-        data_temp_size.append(data_temp_size[-1] * 2)
-
-        # concatenation
-        upconv_concat = tf.concat(concat_dim=3, values=[tf.slice(relu_results[depth - i - 1], [0, 0, 0, 0],
-                                                                 [-1, data_temp_size[depth - i - 1],
-                                                                  data_temp_size[depth - i - 1], -1]), upconv])
-
-        for conv_number in range(number_of_convolutions_per_layer[i]):
-            print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
-            print('Size:', size_of_convolutions_per_layer[i][conv_number])
-
-            if conv_number == 0:
-                convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number])
-            else:
-                convolution_e = conv2d(convolution_e, weights['we'][i][conv_number], biases['be'][i][conv_number])
-
-        data_temp = convolution_e
-
-    # final convolution and segmentation
-    finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
-    final_result = tf.reshape(finalconv, tf.TensorShape(
-        [finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], n_classes]))
-
-    return final_result
-
-
-def apply_convnet(path_my_data, path_model, config):
-    """
-    :param path_my_data: folder of the image to segment. Must contain image.jpg
-    :param path_model: folder of the model of segmentation. Must contain model.ckpt
-    :param config: dict: network's parameters described in the header.
-    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
-    :return: prediction, the mask of the segmentation
-    """
-
-    print '\n\n ---Start axon segmentation on %s---' % path_my_data
-
-    path_img = path_my_data + '/image.jpg'
-    img = imread(path_img, flatten=False, mode='L')
-
-    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
-    pixel_size = float(file.read())
-
-    # set the resolution to the general_pixel_size
-    rescale_coeff = pixel_size / general_pixel_size
-    img = (rescale(img, rescale_coeff) * 256).astype(int)
-
-    batch_size = 1
-
-    ###############
-    # Network Parameters
-    image_size = 256
-    thresh_indices = config["network_thresholds"]
-    ##############
-
-    folder_model = path_model
-    if not os.path.exists(folder_model):
-        os.makedirs(folder_model)
-
-    if os.path.exists(folder_model + '/hyperparameters.pkl'):
-        print 'hyperparameters detected in the model'
-        hyperparameters = pickle.load(open(folder_model + '/hyperparameters.pkl', "rb"))
-        image_size = hyperparameters['image_size']
-
-    # --------------------SAME ALGORITHM IN TRAIN_model---------------------------
-
-    x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
-
     # Call the model
-    pred = uconv_net(x, config)
+    pred = uconv_net(x, config, weights, biases)
 
     saver = tf.train.Saver(tf.all_variables())
 
@@ -374,12 +382,16 @@ def apply_convnet(path_my_data, path_model, config):
         batch_x = np.asarray([data[i]])
         p = sess.run(pred, feed_dict={x: batch_x})
 
-
         Mask = np.zeros_like(p[:, 0])
         for pixel in range(len(p[:, 0])):
             Mask[pixel] = np.argmax(p[pixel, :])
 
-        Mask.reshape(256, 256)
+        if np.max(Mask)!=0:
+            Mask = Mask.reshape(256, 256)/np.max(Mask)
+
+        else: 
+            Mask = Mask.reshape(256,256)
+
         predictions.append(Mask)
 
     sess.close()
@@ -389,20 +401,29 @@ def apply_convnet(path_my_data, path_model, config):
 
     h_size, w_size = image_init.shape
     prediction_rescaled = patches2im(predictions, positions, h_size, w_size)
+
     prediction = rescale(prediction_rescaled, 1 / rescale_coeff)
 
+    """plt.figure()
+    plt.imshow(prediction,cmap = 'gray')
+    plt.show()"""
+
     # Rescaling and set indices to integer values
-    for indice, value in enumerate(thresh_indices[:-1]):
-        thresh_inf = value
-        thresh_sup = thresh_indices[indice + 1]
-        prediction[(prediction >= thresh_inf) & (prediction < thresh_sup)] = indice
-    prediction[prediction >= thresh_sup] = len(thresh_indices)
+    for indice,value in enumerate(thresh_indices[:-1]):
+        if np.max(prediction) > 1.001:
+            thresh_inf = np.int(255*value)
+            thresh_sup = np.int(255*thresh_indices[indice+1])
+        else:
+            thresh_inf = value
+            thresh_sup = thresh_indices[indice+1]   
+
+        prediction[(prediction >= thresh_inf) & (prediction < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
+
+    prediction[(prediction >= thresh_indices[-1])] = 1
 
     return prediction
 
-
     #######################################################################################################################
-
 
 def axon_segmentation(path_my_data, path_model, config):
     """
@@ -423,11 +444,18 @@ def axon_segmentation(path_my_data, path_model, config):
     thresh_indices = config.get("network_thresholds", [0, 0.5])
 
     prediction = rescale(prediction.astype(float), rescale_coeff)
-    for indice, value in enumerate(thresh_indices[:-1]):
-        thresh_inf = value
-        thresh_sup = thresh_indices[indice + 1]
-        prediction[(prediction >= thresh_inf) & (prediction < thresh_sup)] = indice
-    prediction[prediction >= thresh_sup] = len(thresh_indices)
+
+    for indice,value in enumerate(thresh_indices[:-1]):
+        if np.max(prediction) > 1.001:
+            thresh_inf = np.int(255*value)
+            thresh_sup = np.int(255*thresh_indices[indice+1])
+        else:
+            thresh_inf = value
+            thresh_sup = thresh_indices[indice+1]   
+
+        prediction[(prediction >= thresh_inf) & (prediction < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
+
+    prediction[(prediction >= thresh_indices[-1])] = 1
 
     prediction = rescale(prediction.astype(float), 1 / rescale_coeff)
 

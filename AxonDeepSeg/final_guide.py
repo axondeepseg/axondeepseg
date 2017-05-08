@@ -36,7 +36,7 @@ import os
 filename = '/config_network.json'
 
 network_learning_rate = 0.0005
-network_n_classes = 2
+network_n_classes = 3
 dropout = 0.75
 network_depth = 6
 network_convolution_per_layer = [3 for i in range(network_depth)]
@@ -45,13 +45,13 @@ network_size_of_convolutions_per_layer = [[5, 5, 5], [5, 5, 5], [5, 5, 5], [5, 5
 network_features_per_convolution = [[[1, 10], [10, 20], [20, 30]], [[30, 40], [40, 50], [50, 60]],
                                     [[60, 70], [70, 80], [80, 90]], [[90, 100], [100, 110], [110, 120]],
                                     [[120, 130], [130, 140], [140, 150]], [[150, 160], [160, 170], [170, 180]]]
-trainingset = 'CARS_tot'
+trainingset = 'simulation'
 
 downsampling = 'convolution'
 
-thresholds = [0, 0.5]
+thresholds = [0, 0.1, 0.8]
 
-weighted_cost = True
+weighted_cost = False
 
 config = {
     'network_learning_rate': network_learning_rate,
