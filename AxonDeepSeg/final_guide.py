@@ -45,7 +45,7 @@ network_size_of_convolutions_per_layer = [[5, 5, 5], [5, 5, 5], [5, 5, 5], [5, 5
 network_features_per_convolution = [[[1, 10], [10, 20], [20, 30]], [[30, 40], [40, 50], [50, 60]],
                                     [[60, 70], [70, 80], [80, 90]], [[90, 100], [100, 110], [110, 120]],
                                     [[120, 130], [130, 140], [140, 150]], [[150, 160], [160, 170], [170, 180]]]
-trainingset = 'simulation'
+trainingset = 'simulation_png'
 
 downsampling = 'convolution'
 

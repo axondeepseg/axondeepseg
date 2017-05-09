@@ -427,7 +427,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                              feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
                     else:
                         batch_x, batch_y = data_test.next_batch(batch_size, rnd=False, augmented_data=False)
-                        loss, acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
+                        loss, acc= session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
                     A.append(acc)
                     L.append(loss)

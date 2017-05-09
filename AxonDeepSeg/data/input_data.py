@@ -9,7 +9,7 @@ from scipy import ndimage
 import numpy as np
 import random
 import os
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 def extract_patches(img, mask, size):
@@ -237,6 +237,7 @@ def random_transformation(patch, thresh_indices = [0,0.5]):
 
     patch = flipped(patch)
 
+
     return patch
 
 
@@ -271,6 +272,7 @@ class input_data:
         self.batch_start = 0
         self.thresh_indices = thresh_indices
 
+
     def set_batch_start(self, start = 0):
         """
         :param start: starting indice of the data reading by the network.
@@ -299,25 +301,38 @@ class input_data:
                 if self.batch_start >= self.set_size:
                     self.batch_start= 0
 
-            image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
+            image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
 
-            mask = imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L')
+            mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')
 
             # Online data augmentation
             if augmented_data:
                 [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices)
+            else:
+                for indice,value in enumerate(self.thresh_indices[:-1]):
+                    if np.max(mask) > 1.001:
+                        thresh_inf = np.int(255*value)
+                        thresh_sup = np.int(255*self.thresh_indices[indice+1])
+                        class_max = 255
+                    else:
+                        thresh_inf = value
+                        thresh_sup = tself.hresh_indices[indice+1]  
+                        class_max = 1
+                    mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,self.thresh_indices[indice+1]])
+
+                mask[mask >= thresh_sup] = 1
 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
             
-            """plt.figure()
+            plt.figure()
             plt.subplot(2,1,1)
             plt.imshow(image,cmap='gray')
             plt.subplot(2,1,2)
             plt.imshow(mask,cmap='gray')
-            plt.show()"""
+            plt.show()
 
             batch_x.append(image)
             if i == 0:
@@ -333,8 +348,11 @@ class input_data:
                                                              self.thresh_indices[classe+1]]))[:,0]
 
         batch_y_tot[:,n-1] = (batch_y == 1)[:,0]
+        print(batch_y_tot,type(batch_y_tot[0,0]))
+        batch_y_tot = batch_y_tot.astype(np.uint8)
+        print(batch_y_tot,type(batch_y_tot[0,0]))
+        return [np.asarray(batch_x), batch_y_tot]
 
-        return [np.asarray(batch_x), batch_y_tot.astype(np.uint8)]
 
     def next_batch_WithWeights(self, batch_size = 1, rnd = False, augmented_data = True):
         """
@@ -353,11 +371,24 @@ class input_data:
                 if self.batch_start >= self.set_size:
                     self.batch_start= 0
 
-            image = imread(self.path + 'image_%s.jpeg' % indice, flatten=False, mode='L')
-            mask = imread(self.path + 'mask_%s.jpeg' % indice, flatten=False, mode='L')
+            image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
+            mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')
 
             if augmented_data:
                 [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices)
+            else:
+                for indice,value in enumerate(self.thresh_indices[:-1]):
+                    if np.max(mask) > 1.001:
+                        thresh_inf = np.int(255*value)
+                        thresh_sup = np.int(255*self.thresh_indices[indice+1])
+                        class_max = 255
+                    else:
+                        thresh_inf = value
+                        thresh_sup = tself.hresh_indices[indice+1]  
+                        class_max = 1
+                    mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,self.thresh_indices[indice+1]])
+
+                mask[mask >= thresh_sup] = 1
 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
