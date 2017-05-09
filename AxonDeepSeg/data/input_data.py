@@ -9,7 +9,7 @@ from scipy import ndimage
 import numpy as np
 import random
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 def extract_patches(img, mask, size):
@@ -327,12 +327,12 @@ class input_data:
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
             
-            plt.figure()
+            """plt.figure()
             plt.subplot(2,1,1)
             plt.imshow(image,cmap='gray')
             plt.subplot(2,1,2)
             plt.imshow(mask,cmap='gray')
-            plt.show()
+            plt.show()"""
 
             batch_x.append(image)
             if i == 0:
@@ -348,9 +348,9 @@ class input_data:
                                                              self.thresh_indices[classe+1]]))[:,0]
 
         batch_y_tot[:,n-1] = (batch_y == 1)[:,0]
-        print(batch_y_tot,type(batch_y_tot[0,0]))
+
         batch_y_tot = batch_y_tot.astype(np.uint8)
-        print(batch_y_tot,type(batch_y_tot[0,0]))
+
         return [np.asarray(batch_x), batch_y_tot]
 
 

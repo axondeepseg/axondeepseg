@@ -208,7 +208,7 @@ def uconv_net(x, config, weights, biases, image_size=256):
 
 def apply_convnet(path_my_data, path_model, config):
     """
-    :param path_my_data: folder of the image to segment. Must contain image.jpg
+    :param path_my_data: folder of the image to segment. Must contain image.png
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
     :param config: dict: network's parameters described in the header.
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
@@ -217,7 +217,7 @@ def apply_convnet(path_my_data, path_model, config):
 
     print '\n\n ---Start axon segmentation on %s---' % path_my_data
 
-    path_img = path_my_data + '/image.jpg'
+    path_img = path_my_data + '/image.png'
     img = imread(path_img, flatten=False, mode='L')
 
     file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
@@ -385,6 +385,8 @@ def apply_convnet(path_my_data, path_model, config):
         Mask = np.zeros_like(p[:, 0])
         for pixel in range(len(p[:, 0])):
             Mask[pixel] = np.argmax(p[pixel, :])
+            #print(p[pixel, :])
+
 
         if np.max(Mask)!=0:
             Mask = Mask.reshape(256, 256)/np.max(Mask)
@@ -403,10 +405,6 @@ def apply_convnet(path_my_data, path_model, config):
     prediction_rescaled = patches2im(predictions, positions, h_size, w_size)
 
     prediction = rescale(prediction_rescaled, 1 / rescale_coeff)
-
-    """plt.figure()
-    plt.imshow(prediction,cmap = 'gray')
-    plt.show()"""
 
     # Rescaling and set indices to integer values
     for indice,value in enumerate(thresh_indices[:-1]):
@@ -467,7 +465,7 @@ def axon_segmentation(path_my_data, path_model, config):
     with open(path_my_data + '/results.pkl', 'wb') as handle:
         pickle.dump(results, handle)
 
-    imsave(path_my_data + '/AxonDeepSeg.jpeg', prediction, 'jpeg')
+    imsave(path_my_data + '/AxonDeepSeg.png', prediction, 'png')
 
 
 # ---------------------------------------------------------------------------------------------------------
