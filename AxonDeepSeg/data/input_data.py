@@ -108,6 +108,7 @@ def rescaling(patch, thresh_indices = [0,0.5]):
             mask_rescale[(mask_rescale >= thresh_inf) & (mask_rescale < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
 
         mask_rescale[(mask_rescale >= thresh_indices[-1])] = 1
+
         rescaled_patch = [image_rescale.astype(np.uint8), mask_rescale]
 
     return rescaled_patch
@@ -237,6 +238,17 @@ def random_transformation(patch, thresh_indices = [0,0.5]):
 
     patch = flipped(patch)
 
+    for indice,value in enumerate(thresh_indices[:-1]):
+        if np.max(patch[1]) > 1.001:
+            thresh_inf = np.int(255*value)
+            thresh_sup = np.int(255*thresh_indices[indice+1])
+        else:
+            thresh_inf = value
+            thresh_sup = thresh_indices[indice+1]   
+
+        patch[1][(patch[1] >= thresh_inf) & (patch[1] < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
+
+    patch[1][(patch[1] >= thresh_indices[-1])] = 1
 
     return patch
 
@@ -308,7 +320,7 @@ class input_data:
             # Online data augmentation
             if augmented_data:
                 [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices)
-            else:
+            else: 
                 for indice,value in enumerate(self.thresh_indices[:-1]):
                     if np.max(mask) > 1.001:
                         thresh_inf = np.int(255*value)
