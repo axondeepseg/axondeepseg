@@ -12,14 +12,15 @@ from config import generate_config
 # import matplotlib.pyplot as plt
 
 ########## HEADER ##########
-# Description du fichier config :
+# Config file description :
+
 # network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
 
 # network_n_classes : int : number of labels in the output. Default : 2.
 
 # network_dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
 
-# network_depth : int : number of layers WARNING : factualy, there will be 2*network_depth layers. Default : 6.
+# network_depth : int : number of layers. Default : 6.
 
 # network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
 

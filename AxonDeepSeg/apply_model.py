@@ -15,14 +15,15 @@ from config import general_pixel_size, path_matlab, path_axonseg
 
 
 ########## HEADER ##########
-# Description du fichier config :
+# Config file description :
+
 # network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
 
 # network_n_classes : int : number of labels in the output. Default : 2.
 
 # network_dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
 
-# network_depth : int : number of layers WARNING : factualy, there will be 2*network_depth layers. Default : 6.
+# network_depth : int : number of layers. Default : 6.
 
 # network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
 
@@ -37,6 +38,8 @@ from config import general_pixel_size, path_matlab, path_axonseg
 # network_downsampling : string 'maxpooling' or 'convolution' : the downsampling method.
 
 # network_thresholds : list of float in [0,1] : the thresholds for the ground truthes labels.
+
+# network_weighted_cost : boolean : whether we use weighted cost for training or not.
 ###########################
 
 
@@ -519,3 +522,25 @@ def pipeline(path_my_data, path_model, config, visualize=False):
     if visualize:
         from visualization.visualize import visualize_segmentation
         visualize_segmentation(path_my_data)
+
+# To Call the training in the terminal
+
+def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-m", "--path_model", required=True, help="")
+    ap.add_argument("-p", "--path_data", required=True, help="")
+    ap.add_argument("-c", "--config_file", required=False, help="", default="~/.axondeepseg.json")
+
+    args = vars(ap.parse_args())
+    path_model = args["path_model"]
+    path_data = args["path_data"]
+    config_file = args["config_file"]
+
+    config = generate_config(config_file)
+
+    axon_segmentation(path_data, path_model, config)
+
+
+if __name__ == '__main__':
+    main()
