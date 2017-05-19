@@ -122,6 +122,142 @@ def maxpool2d(x, k=2):
     return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1],
                           padding='SAME')
 
+# Compute the weights and biases for the network.
+def compute_weights(config):
+    """
+    Create the weights and biases.
+    Input :
+        x : TF object to define, ensemble des patchs des images :graph input
+        config : dict : described in the header.
+        dropout : float between 0 and 1 : percentage of neurons kept,
+        image_size : int : The image size
+
+    Output :
+        The U-net.
+    """
+    image_size = 256
+    n_input = image_size * image_size
+
+    learning_rate = config["network_learning_rate"]
+    n_classes = config["network_n_classes"]
+    dropout = config["network_dropout"]
+    depth = config["network_depth"]
+    number_of_convolutions_per_layer = config["network_convolution_per_layer"]
+    size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
+    features_per_convolution = config["network_features_per_convolution"]
+    downsampling = config["network_downsampling"]
+    weighted_cost = config["network_weighted_cost"]
+    thresh_indices = config["network_thresholds"]
+
+    ####################################################################
+    # Create some wrappers for simplicity
+
+    if downsampling == 'convolution':
+        weights = {'upconv': [], 'finalconv': [], 'wb1': [], 'wb2': [], 'wc': [], 'we': [], 'pooling': []}
+        biases = {'upconv_b': [], 'finalconv_b': [], 'bb1': [], 'bb2': [], 'bc': [], 'be': [], 'pooling_b': []}
+    elif downsampling == 'maxpooling':
+        weights = {'upconv': [], 'finalconv': [], 'wb1': [], 'wb2': [], 'wc': [], 'we': []}
+        biases = {'upconv_b': [], 'finalconv_b': [], 'bb1': [], 'bb2': [], 'bc': [], 'be': []}
+    else:
+        print('Wrong downsampling method, please use ''maxpooling'' or ''convolution''.')
+
+        # Contraction
+    for i in range(depth):
+
+        layer_convolutions_weights = []
+        layer_convolutions_biases = []
+
+        # Compute the layer's convolutions and biases.
+        for conv_number in range(number_of_convolutions_per_layer[i]):
+
+            conv_size = size_of_convolutions_per_layer[i][conv_number]
+            num_features = features_per_convolution[i][conv_number]
+
+            # Use 1 if it is the first convolution : input.
+            if i == 0 and conv_number == 0:
+                num_features_in = 1
+
+            layer_convolutions_weights.append(
+                tf.Variable(tf.random_normal([conv_size, conv_size, num_features_in, num_features[1]],
+                                             stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features_in)))),
+                            name='wc' + str(conv_number + 1) + '1-%s' % i))
+            layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
+                                                                          stddev=math.sqrt(2.0 / (
+                                                                          conv_size * conv_size * float(
+                                                                              num_features[1])))),
+                                                         name='bc' + str(conv_number + 1) + '1-%s' % i))
+
+            num_features_in = num_features[1]
+
+        if downsampling == 'convolution':
+            weights_pool = tf.Variable(tf.random_normal([5, 5, num_features_in, num_features_in],
+                                                        stddev=math.sqrt(2.0 / (25 * float(num_features_in)))),
+                                       name='wb1-%s' % i)
+            biases_pool = tf.Variable(
+                tf.random_normal([num_features_in], stddev=math.sqrt(2.0 / (25 * float(num_features[1])))),
+                name='bc' + str(conv_number + 1) + '1-%s' % i)
+
+        # Store contraction layers weights & biases.
+        weights['wc'].append(layer_convolutions_weights)
+        biases['bc'].append(layer_convolutions_biases)
+        if downsampling == 'convolution':
+            weights['pooling'].append(weights_pool)
+            biases['pooling_b'].append(biases_pool)
+
+    num_features_b = 2 * num_features_in
+    weights['wb1'] = tf.Variable(
+        tf.random_normal([3, 3, num_features_in, num_features_b], stddev=math.sqrt(2.0 / (9 * float(num_features_in)))),
+        name='wb1-%s' % i)
+    weights['wb2'] = tf.Variable(
+        tf.random_normal([3, 3, num_features_b, num_features_b], stddev=math.sqrt(2.0 / (9 * float(num_features_b)))),
+        name='wb2-%s' % i)
+    biases['bb1'] = tf.Variable(tf.random_normal([num_features_b]), name='bb1-%s' % i)
+    biases['bb2'] = tf.Variable(tf.random_normal([num_features_b]), name='bb2-%s' % i)
+
+    num_features_in = num_features_b
+
+    # Expansion
+    for i in range(depth):
+
+        layer_convolutions_weights = []
+        layer_convolutions_biases = []
+
+        num_features = features_per_convolution[depth - i - 1][-1]
+
+        weights['upconv'].append(
+            tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s' % i))
+        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s' % i))
+
+        for conv_number in reversed(range(number_of_convolutions_per_layer[depth - i - 1])):
+
+            if conv_number == number_of_convolutions_per_layer[depth - i - 1] - 1:
+                num_features_in = features_per_convolution[depth - i - 1][-1][1] + num_features[1]
+                print('Input features layer : ', num_features_in)
+
+            # We climb the reversed layers
+            conv_size = size_of_convolutions_per_layer[depth - i - 1][conv_number]
+            num_features = features_per_convolution[depth - i - 1][conv_number]
+            layer_convolutions_weights.append(
+                tf.Variable(tf.random_normal([conv_size, conv_size, num_features_in, num_features[1]],
+                                             stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features_in)))),
+                            name='we' + str(conv_number + 1) + '1-%s' % i))
+            layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
+                                                                          stddev=math.sqrt(2.0 / (
+                                                                          conv_size * conv_size * float(
+                                                                              num_features[1])))),
+                                                         name='be' + str(conv_number + 1) + '1-%s' % i))
+            # Actualisation of next convolution's input number.
+            num_features_in = num_features[1]
+
+        # Store expansion layers weights & biases.
+        weights['we'].append(layer_convolutions_weights)
+        biases['be'].append(layer_convolutions_biases)
+
+    weights['finalconv'] = tf.Variable(tf.random_normal([1, 1, num_features_in, n_classes]), name='finalconv-%s' % i)
+    biases['finalconv_b'] = tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s' % i)
+
+    return weights,biases
+
 
 # Create model
 def uconv_net(x, config, weights, biases, image_size=256):
@@ -236,12 +372,6 @@ def apply_convnet(path_my_data, path_model, config):
     # Network Parameters
     image_size = 256
     thresh_indices = config["network_thresholds"]
-    n_classes = config["network_n_classes"]
-    depth = config["network_depth"]
-    number_of_convolutions_per_layer = config["network_convolution_per_layer"]
-    size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
-    features_per_convolution = config["network_features_per_convolution"]
-    downsampling = config["network_downsampling"]
     ##############
 
     folder_model = path_model
@@ -257,112 +387,7 @@ def apply_convnet(path_my_data, path_model, config):
 
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
 
-    ####################################################################
-    # Create some wrappers for simplicity
-
-    if downsampling == 'convolution':
-        weights = {'upconv': [], 'finalconv': [], 'wb1': [], 'wb2': [], 'wc': [], 'we': [], 'pooling': []}
-        biases = {'upconv_b': [], 'finalconv_b': [], 'bb1': [], 'bb2': [], 'bc': [], 'be': [], 'pooling_b': []}
-    elif downsampling == 'maxpooling':
-        weights = {'upconv': [], 'finalconv': [], 'wb1': [], 'wb2': [], 'wc': [], 'we': []}
-        biases = {'upconv_b': [], 'finalconv_b': [], 'bb1': [], 'bb2': [], 'bc': [], 'be': []}
-    else:
-        print('Wrong downsampling method, please use ''maxpooling'' or ''convolution''.')
-
-    # Contraction
-    for i in range(depth):
-
-        layer_convolutions_weights = []
-        layer_convolutions_biases = []
-
-        # Compute the layer's convolutions and biases.
-        for conv_number in range(number_of_convolutions_per_layer[i]):
-
-            conv_size = size_of_convolutions_per_layer[i][conv_number]
-            num_features = features_per_convolution[i][conv_number]
-
-            # Use 1 if it is the first convolution : input.
-            if i == 0 and conv_number == 0:
-                num_features_in = 1
-
-            layer_convolutions_weights.append(
-                tf.Variable(tf.random_normal([conv_size, conv_size, num_features_in, num_features[1]],
-                                             stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features_in)))),
-                            name='wc' + str(conv_number + 1) + '1-%s' % i))
-            layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
-                                                                          stddev=math.sqrt(2.0 / (
-                                                                          conv_size * conv_size * float(
-                                                                              num_features[1])))),
-                                                         name='bc' + str(conv_number + 1) + '1-%s' % i))
-
-            num_features_in = num_features[1]
-
-        if downsampling == 'convolution':
-            weights_pool = tf.Variable(tf.random_normal([5, 5, num_features_in, num_features_in],
-                                                        stddev=math.sqrt(2.0 / (25 * float(num_features_in)))),
-                                       name='wb1-%s' % i)
-            biases_pool = tf.Variable(
-                tf.random_normal([num_features_in], stddev=math.sqrt(2.0 / (25 * float(num_features[1])))),
-                name='bc' + str(conv_number + 1) + '1-%s' % i)
-
-        # Store contraction layers weights & biases.
-        weights['wc'].append(layer_convolutions_weights)
-        biases['bc'].append(layer_convolutions_biases)
-        if downsampling == 'convolution':
-            weights['pooling'].append(weights_pool)
-            biases['pooling_b'].append(biases_pool)
-
-    num_features_b = 2 * num_features_in
-    weights['wb1'] = tf.Variable(
-        tf.random_normal([3, 3, num_features_in, num_features_b], stddev=math.sqrt(2.0 / (9 * float(num_features_in)))),
-        name='wb1-%s' % i)
-    weights['wb2'] = tf.Variable(
-        tf.random_normal([3, 3, num_features_b, num_features_b], stddev=math.sqrt(2.0 / (9 * float(num_features_b)))),
-        name='wb2-%s' % i)
-    biases['bb1'] = tf.Variable(tf.random_normal([num_features_b]), name='bb1-%s' % i)
-    biases['bb2'] = tf.Variable(tf.random_normal([num_features_b]), name='bb2-%s' % i)
-
-    num_features_in = num_features_b
-
-    # Expansion
-    for i in range(depth):
-
-        layer_convolutions_weights = []
-        layer_convolutions_biases = []
-
-        num_features = features_per_convolution[depth - i - 1][-1]
-
-        weights['upconv'].append(
-            tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s' % i))
-        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s' % i))
-
-        for conv_number in reversed(range(number_of_convolutions_per_layer[depth - i - 1])):
-
-            if conv_number == number_of_convolutions_per_layer[depth - i - 1] - 1:
-                num_features_in = features_per_convolution[depth - i - 1][-1][1] + num_features[1]
-                print('Input features layer : ', num_features_in)
-
-            # We climb the reversed layers 
-            conv_size = size_of_convolutions_per_layer[depth - i - 1][conv_number]
-            num_features = features_per_convolution[depth - i - 1][conv_number]
-            layer_convolutions_weights.append(
-                tf.Variable(tf.random_normal([conv_size, conv_size, num_features_in, num_features[1]],
-                                             stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features_in)))),
-                            name='we' + str(conv_number + 1) + '1-%s' % i))
-            layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
-                                                                          stddev=math.sqrt(2.0 / (
-                                                                          conv_size * conv_size * float(
-                                                                              num_features[1])))),
-                                                         name='be' + str(conv_number + 1) + '1-%s' % i))
-            # Actualisation of next convolution's input number.
-            num_features_in = num_features[1]
-
-        # Store expansion layers weights & biases.
-        weights['we'].append(layer_convolutions_weights)
-        biases['be'].append(layer_convolutions_biases)
-
-    weights['finalconv'] = tf.Variable(tf.random_normal([1, 1, num_features_in, n_classes]), name='finalconv-%s' % i)
-    biases['finalconv_b'] = tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s' % i)
+    weights, biases = compute_weights(config)
     ####################################################
 
     # Call the model
@@ -426,7 +451,7 @@ def apply_convnet(path_my_data, path_model, config):
 
     #######################################################################################################################
 
-def axon_segmentation(path_my_data, path_model, config):
+def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png'):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -468,7 +493,7 @@ def axon_segmentation(path_my_data, path_model, config):
     with open(path_my_data + '/results.pkl', 'wb') as handle:
         pickle.dump(results, handle)
 
-    imsave(path_my_data + '/AxonDeepSeg.png', prediction, 'png')
+    imsave(path_my_data + '/'+imagename, prediction, 'png')
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -531,15 +556,17 @@ def main():
     ap.add_argument("-m", "--path_model", required=True, help="")
     ap.add_argument("-p", "--path_data", required=True, help="")
     ap.add_argument("-c", "--config_file", required=False, help="", default="~/.axondeepseg.json")
+    ap.add_argument("-n", "--imagename", required=False, help="", default="AxonDeepSeg.png")
 
     args = vars(ap.parse_args())
     path_model = args["path_model"]
     path_data = args["path_data"]
     config_file = args["config_file"]
+    imagename = args["imagename"]
 
     config = generate_config(config_file)
 
-    axon_segmentation(path_data, path_model, config)
+    axon_segmentation(path_data, path_model, config, imagename = imagename)
 
 
 if __name__ == '__main__':
