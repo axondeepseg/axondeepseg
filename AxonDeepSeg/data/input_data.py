@@ -179,11 +179,9 @@ def elastic_transform(image, gt, alpha, sigma, thresh_indices = [0,0.5]):
         if np.max(elastic_gt) > 1.001:
             thresh_inf = np.int(255*value)
             thresh_sup = np.int(255*thresh_indices[indice+1])
-            class_max = 255
         else:
             thresh_inf = value
-            thresh_sup = thresh_indices[indice+1]  
-            class_max = 1
+            thresh_sup = thresh_indices[indice+1]
         elastic_gt[(elastic_gt >= thresh_inf) & (elastic_gt < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
 
     elastic_gt[elastic_gt >= thresh_sup] = 1
@@ -325,11 +323,9 @@ class input_data:
                     if np.max(mask) > 1.001:
                         thresh_inf = np.int(255*value)
                         thresh_sup = np.int(255*self.thresh_indices[indice+1])
-                        class_max = 255
                     else:
                         thresh_inf = value
-                        thresh_sup = tself.hresh_indices[indice+1]  
-                        class_max = 1
+                        thresh_sup = self.thresh_indices[indice+1]
                     mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,self.thresh_indices[indice+1]])
 
                 mask[mask >= thresh_sup] = 1
@@ -386,6 +382,7 @@ class input_data:
             image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
             mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')
 
+            #Data augmentation. If not, set the mask's values to the labels values.
             if augmented_data:
                 [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices)
             else:
@@ -393,11 +390,9 @@ class input_data:
                     if np.max(mask) > 1.001:
                         thresh_inf = np.int(255*value)
                         thresh_sup = np.int(255*self.thresh_indices[indice+1])
-                        class_max = 255
                     else:
                         thresh_inf = value
-                        thresh_sup = tself.hresh_indices[indice+1]  
-                        class_max = 1
+                        thresh_sup = self.thresh_indices[indice+1]
                     mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,self.thresh_indices[indice+1]])
 
                 mask[mask >= thresh_sup] = 1
@@ -407,15 +402,37 @@ class input_data:
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
 
-            to_use = np.asarray(255*mask,dtype='uint8')
-            to_use[to_use<=np.min(to_use)]=0
-            weight = ndimage.distance_transform_edt(to_use)
-            weight[weight==0]=np.max(weight)
-            w0 = 10
-            sigma = 5
+            # Create a weight map for each class and then average them all
+            weights_intermediate = np.zeros((self.size_image,self.size_image,len(self.thresh_indices[1:])))
 
-            weight = w0*np.exp(-(weight/sigma)**2/2)
-            weight = preprocessing.normalize(weight)
+            for indice,classe in enumerate(self.thresh_indices[1:]):
+
+                mask_classe = np.asarray(list(mask))
+                mask_classe[mask_classe==np.mean([self.thresh_indices[indice-1],classe])]=1
+                mask_classe[mask_classe!=1]=0
+                to_use = np.asarray(255*mask_classe,dtype='uint8')
+
+                to_use[to_use <= np.min(to_use)] = 0
+                weight = ndimage.distance_transform_edt(to_use)
+                weight[weight==0]=np.max(weight)
+
+                w0 = 5
+                sigma = 3
+                weight = 1 + w0*np.exp(-(weight/sigma)**2/2)
+                #weight = weight/np.max(weight)
+                weights_intermediate[:,:,indice] = weight
+
+            weight = np.mean(weights_intermediate, axis = 2)
+
+            """plt.figure()
+            plt.subplot(2,2,1)
+            plt.imshow(mask,cmap='gray')
+            plt.title('Ground truth')
+            plt.subplot(2,2,2)
+            plt.imshow(weight, interpolation='nearest', cmap='gray',vmin=1)
+            plt.title('Weight map')
+            plt.colorbar(ticks=[1, 10])
+            plt.show()"""
 
             batch_x.append(image)
             if i == 0:
