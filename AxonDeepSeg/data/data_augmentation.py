@@ -55,7 +55,7 @@ def rescaling(patch, thresh_indices = [0,0.5]): #indices to indexes.
             image_rescale = np.pad(image_rescale,(q_h, q_h+r_h), mode = "reflect")
             mask_rescale = np.pad(mask_rescale,(q_h, q_h+r_h), mode = "reflect")
         else:           
-            patches = extract_patches(image_rescale, mask_rescale, 256)
+            patches = extract_patch(image_rescale, mask_rescale, 256)
             i = np.random.randint(len(patches), size=1)[0]
             image_rescale, mask_rescale = patches[i]
 
