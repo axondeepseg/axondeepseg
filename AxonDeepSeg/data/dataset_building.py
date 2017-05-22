@@ -6,57 +6,24 @@ from skimage.transform import rescale
 import random
 from ..config import general_pixel_size, path_matlab, path_axonseg
 import numpy as np
-
-
-def extract_patch(img, mask, size):
-    """
-    :param img: image represented by a numpy-array
-    :param mask: groundtruth of the segmentation
-    :param size: size of the patches to extract
-    :return: a list of pairs [patch, ground_truth] with a very low overlapping.
-    """
-
-    h, w = img.shape
-
-    q_h, r_h = divmod(h, size)
-    q_w, r_w = divmod(w, size)
-
-    r2_h = size-r_h
-    r2_w = size-r_w
-
-    q3_h, r3_h = divmod(r2_h,q_h)
-    q3_w, r3_w = divmod(r2_w,q_w)
-
-    dataset = []
-    pos = 0
-    while pos+size<=h:
-        pos2 = 0
-        while pos2+size<=w:
-            patch = img[pos:pos+size, pos2:pos2+size]
-            patch_gt = mask[pos:pos+size, pos2:pos2+size]
-            dataset.append([patch,patch_gt])
-            pos2 = size + pos2 - q3_w
-            if pos2 + size > w :
-                pos2 = pos2 - r3_w
-
-        pos = size + pos - q3_h
-        if pos + size > h:
-            pos = pos - r3_h
-    return dataset
+from patch_extraction import extract_patch
 
 
 def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.5]):
     """
     :param path_data: folder including all images used for the training. Each image is represented by a a folder
-    including image.jpg and mask.jpg (ground truth)
+    including image.png and mask.png (ground truth) and a .txt file named pixel_size_in_micrometer.
     :param trainingset_path: path of the resulting trainingset
     :param trainRatio: ratio of the training patches over the total . (High ratio : good learning but poor estimation of the performance)
     :param thresh_indices: list of float in [0,1[.
+
+    WARNING with 3 classes, labels should be [0,0.1,0.8], it was designed for .jpeg
+    
     :return: no return
 
     Every 256 by 256 patches are extracted from the images with a very low overlapping.
     They are regrouped by category folder : \Train and \Test.
-    Each data is represented by the patch, image_i.jpg, and its groundtruth, classes_i.jpg
+    Each data is represented by the patch, image_i.png, and its groundtruth, mask_i.png
     A rescaling is also added to set the pixel size at the value of the general_pixel_size
     """
 
@@ -78,8 +45,9 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
                     mask_init = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
                     mask = (rescale(mask_init, rescale_coeff)*256)
 
+                    # Set the mask values to the classes' values
                     for indice,value in enumerate(thresh_indices[:-1]):
-                        if np.max(mask) > 1.001:
+                        if np.max(mask) > 1.001: # because of numerical values.
                             thresh_inf = np.int(255*value)
                             thresh_sup = np.int(255*thresh_indices[indice+1])
                         else:
@@ -113,7 +81,7 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
     if not os.path.exists(folder_train):
         os.makedirs(folder_train)
 
-    folder_test = trainingset_path+'/Test'
+    folder_test = trainingset_path+'/Test' # change to Validation.
 
     if os.path.exists(folder_test):
         shutil.rmtree(folder_test)

@@ -413,8 +413,6 @@ def apply_convnet(path_my_data, path_model, config):
         Mask = np.zeros_like(p[:, 0])
         for pixel in range(len(p[:, 0])):
             Mask[pixel] = np.argmax(p[pixel, :])
-            #print(p[pixel, :])
-
 
         if np.max(Mask)!=0:
             Mask = Mask.reshape(256, 256)/np.max(Mask)

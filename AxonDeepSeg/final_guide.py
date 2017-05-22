@@ -14,7 +14,7 @@ import os
 
 # network_dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
 
-# network_depth : int : number of layers WARNING : factualy, there will be 2*network_depth layers. Default : 6.
+# network_depth : int : number of layers. Default : 6.
 
 # network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
 
@@ -36,7 +36,7 @@ import os
 filename = '/config_network.json'
 
 network_learning_rate = 0.0005
-network_n_classes = 3
+network_n_classes = 2
 dropout = 0.75
 network_depth = 6
 network_convolution_per_layer = [3 for i in range(network_depth)]
@@ -49,9 +49,9 @@ trainingset = 'simulation_png'
 
 downsampling = 'convolution'
 
-thresholds = [0, 0.1, 0.8]
+thresholds = [0, 0.5]
 
-weighted_cost = False
+weighted_cost = True
 
 config = {
     'network_learning_rate': network_learning_rate,

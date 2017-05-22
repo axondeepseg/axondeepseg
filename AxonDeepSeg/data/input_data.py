@@ -9,210 +9,9 @@ from scipy import ndimage
 import numpy as np
 import random
 import os
+from patch_extraction import extract_patch
+from data_augmentation import shifting, rescaling, flipping, random_rotation, elastic
 #import matplotlib.pyplot as plt
-
-
-def extract_patches(img, mask, size):
-    """
-    :param img: image represented by a numpy-array
-    :param mask: groundtruth of the segmentation
-    :param size: size of the patches to extract
-    :return: a list of pairs [patch, ground_truth] with a very low overlapping.
-    """
-
-    h, w = img.shape
-
-    q_h, r_h = divmod(h, size)
-    q_w, r_w = divmod(w, size)
-
-    r2_h = size-r_h
-    r2_w = size-r_w
-
-    q3_h, r3_h = divmod(r2_h, q_h)
-    q3_w, r3_w = divmod(r2_w, q_w)
-
-    patches = []
-    pos_x = 0
-    while pos_x+size<=h:
-        pos_y = 0
-        while pos_y+size<=w:
-            patch = img[pos_x:pos_x+size, pos_y:pos_y+size]
-            patch_gt = mask[pos_x:pos_x+size, pos_y:pos_y+size]
-            patches.append([patch,patch_gt])
-            pos_y = size + pos_y - q3_w
-            if pos_y + size > w :
-                pos_y = pos_y - r3_w
-
-        pos_x = size + pos_x - q3_h
-        if pos_x + size > h:
-            pos_x = pos_x - r3_h
-    return patches
-
-#######################################################################################################################
-#                                                Data Augmentation                                                    #
-#######################################################################################################################
-def shifting(patch):
-    """
-    :param patch: [image,mask]
-    :return: random shifting of the pair [image,mask]
-    """
-    size_shift = 10
-    img = np.pad(patch[0],size_shift, mode = "reflect")
-    mask = np.pad(patch[1],size_shift, mode = "reflect")
-    begin_h = np.random.randint(2*size_shift-1)
-    begin_w = np.random.randint(2*size_shift-1)
-    shifted_image = img[begin_h:begin_h+256,begin_w:begin_w+256]
-    shifted_mask = mask[begin_h:begin_h+256,begin_w:begin_w+256]
-
-    return [shifted_image,shifted_mask]
-
-
-def rescaling(patch, thresh_indices = [0,0.5]):
-    """
-    :param patch:  [image,mask]
-    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
-    :return: random rescaling of the pair [image,mask]
-
-    --- Rescaling reinforces axons size diversity ---
-    """
-
-    scale = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
-
-    if scale == 1.0:
-        rescaled_patch = patch
-
-    else :
-        image_rescale = rescale(patch[0], scale, preserve_range= True)
-        mask_rescale = rescale(patch[1], scale, preserve_range= True)
-        s_r = mask_rescale.shape[0]
-        q_h, r_h = divmod(256-s_r,2)
-
-        if q_h > 0:
-            image_rescale = np.pad(image_rescale,(q_h, q_h+r_h), mode = "reflect")
-            mask_rescale = np.pad(mask_rescale,(q_h, q_h+r_h), mode = "reflect")
-        else:           
-            patches = extract_patches(image_rescale, mask_rescale, 256)
-            i = np.random.randint(len(patches), size=1)[0]
-            image_rescale, mask_rescale = patches[i]
-
-        mask_rescale = np.array(mask_rescale)
-
-        for indice,value in enumerate(thresh_indices[:-1]):
-            if np.max(mask_rescale) > 1.001:
-                thresh_inf = np.int(255*value)
-                thresh_sup = np.int(255*thresh_indices[indice+1])
-            else:
-                thresh_inf = value
-                thresh_sup = thresh_indices[indice+1]   
-
-            mask_rescale[(mask_rescale >= thresh_inf) & (mask_rescale < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-
-        mask_rescale[(mask_rescale >= thresh_indices[-1])] = 1
-
-        rescaled_patch = [image_rescale.astype(np.uint8), mask_rescale]
-
-    return rescaled_patch
-
-
-def random_rotation(patch, thresh_indices = [0,0.5]):
-    """
-    :param patch: [image, mask]
-    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
-    :return: random rotation of the pair [image,mask]
-    """
-    img = patch[0]
-    mask = patch[1]
-
-    angle = np.random.uniform(5, 89, 1)
-
-    image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True)
-    gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
-
-    for indice,value in enumerate(thresh_indices[:-1]):
-        if np.max(gt_rotated) > 1.001:
-            thresh_inf = np.int(255*value)
-            thresh_sup = np.int(255*thresh_indices[indice+1])
-        else:
-            thresh_inf = value
-            thresh_sup = thresh_indices[indice+1]      
-        
-        gt_rotated[(gt_rotated >= thresh_inf) & (gt_rotated < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-    
-    gt_rotated[gt_rotated >= thresh_sup] = 1
-
-    return [image_rotated.astype(np.uint8), gt_rotated]
-
-
-def elastic_transform(image, gt, alpha, sigma, thresh_indices = [0,0.5]):
-    """
-    :param image: image
-    :param gt: ground truth
-    :param alpha: deformation coefficient (high alpha -> strong deformation)
-    :param sigma: std of the gaussian filter. (high sigma -> smooth deformation)
-    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
-    :return: deformation of the pair [image,mask]
-    """
-
-    random_state = np.random.RandomState(None)
-    shape = image.shape
-
-    d = 4
-    sub_shape = (shape[0]/d, shape[0]/d)
-
-    deformations_x = random_state.rand(*sub_shape) * 2 - 1
-    deformations_y = random_state.rand(*sub_shape) * 2 - 1
-
-    deformations_x = np.repeat(np.repeat(deformations_x, d, axis=1), d, axis = 0)
-    deformations_y = np.repeat(np.repeat(deformations_y, d, axis=1), d, axis = 0)
-
-    dx = gaussian_filter(deformations_x, sigma, mode="constant", cval=0) * alpha
-    dy = gaussian_filter(deformations_y, sigma, mode="constant", cval=0) * alpha
-
-    x, y = np.meshgrid(np.arange(shape[0]), np.arange(shape[1]))
-    indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1))
-
-    elastic_image = map_coordinates(image, indices, order=1).reshape(shape)
-    elastic_gt = map_coordinates(gt, indices, order=1).reshape(shape)
-    elastic_gt = np.array(elastic_gt)
-
-    for indice,value in enumerate(thresh_indices[:-1]):
-        if np.max(elastic_gt) > 1.001:
-            thresh_inf = np.int(255*value)
-            thresh_sup = np.int(255*thresh_indices[indice+1])
-        else:
-            thresh_inf = value
-            thresh_sup = thresh_indices[indice+1]
-        elastic_gt[(elastic_gt >= thresh_inf) & (elastic_gt < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-
-    elastic_gt[elastic_gt >= thresh_sup] = 1
-
-    return [elastic_image, elastic_gt]
-
-def elastic(patch, thresh_indices = [0,0.5]):
-    """
-    :param patch: [image,mask].
-    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
-    :return: random deformation of the pair [image,mask].
-    """
-    alpha = random.choice([1,2,3,4,5,6,7,8,9])
-    patch_deformed = elastic_transform(patch[0],patch[1], alpha = alpha, sigma = 4,thresh_indices = thresh_indices)
-    return patch_deformed
-
-
-def flipped(patch):
-    """
-    :param patch: [image,mask]
-    :return: random vertical and horizontal flipped [image,mask]
-    """
-    s = np.random.binomial(1, 0.5, 1)
-    image = patch[0]
-    gt = patch[1]
-    if s == 1 :
-        image, gt = [np.fliplr(image), np.fliplr(gt)]
-    s = np.random.binomial(1, 0.5, 1)
-    if s == 1:
-        image, gt = [np.flipud(image), np.flipud(gt)]
-    return [image, gt]
 
 
 def random_transformation(patch, thresh_indices = [0,0.5]):
@@ -229,12 +28,9 @@ def random_transformation(patch, thresh_indices = [0,0.5]):
     plt.imshow(patch[1],cmap='gray')
     plt.show()"""
     patch = rescaling(patch, thresh_indices = thresh_indices)
-
     patch = random_rotation(patch, thresh_indices = thresh_indices)  
-
     patch = elastic(patch, thresh_indices = thresh_indices)  
-
-    patch = flipped(patch)
+    patch = flipping(patch) # used until now, the output is not really realistic.
 
     for indice,value in enumerate(thresh_indices[:-1]):
         if np.max(patch[1]) > 1.001:
@@ -259,7 +55,7 @@ class input_data:
     Data to feed the learning/testing of the CNN
     """
 
-    def __init__(self, trainingset_path, type = 'train', thresh_indices = [0,0.5]):
+    def __init__(self, trainingset_path, type = 'train', thresh_indices = [0,0.5], image_size = 256):
         """
         Input: 
             trainingset_path : string : path to the trainingset folder containing 2 folders Test and Train
@@ -269,15 +65,15 @@ class input_data:
         Output:
             None.
         """
-        if type == 'train' : # Data for the train
+        if type == 'train' : # Data for the train !!!!!!!!! change to Training
             self.path = trainingset_path+'/Train/'
             self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
 
-        if type == 'test': # Data for the test
+        if type == 'test': # Data for the test  !!!!!!! Change to Validation.
             self.path = trainingset_path+'/Test/'
             self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
 
-        self.size_image = 256
+        self.size_image = image_size
         self.n_labels = 2
         self.batch_start = 0
         self.thresh_indices = thresh_indices
@@ -351,9 +147,9 @@ class input_data:
         n = len(self.thresh_indices)
         batch_y_tot = np.zeros([batch_y.shape[0], n*batch_y.shape[1]])
 
-        for classe in range(n-1):
-            batch_y_tot[:,classe] = (batch_y == np.mean([self.thresh_indices[classe],
-                                                             self.thresh_indices[classe+1]]))[:,0]
+        for class_ in range(n-1):
+            batch_y_tot[:,class_] = (batch_y == np.mean([self.thresh_indices[class_],
+                                                             self.thresh_indices[class_+1]]))[:,0]
 
         batch_y_tot[:,n-1] = (batch_y == 1)[:,0]
 
@@ -445,9 +241,9 @@ class input_data:
         n = len(self.thresh_indices)
         batch_y_tot = np.zeros([batch_y.shape[0], n])
 
-        for classe in range(n-1):
-            batch_y_tot[:,classe] = (batch_y == np.mean([self.thresh_indices[classe],
-                                                             self.thresh_indices[classe+1]]))[:,0]
+        for class_ in range(n-1):
+            batch_y_tot[:,class_] = (batch_y == np.mean([self.thresh_indices[class_],
+                                                             self.thresh_indices[class_+1]]))[:,0]
         batch_y_tot[:,n-1] = (batch_y == 1)[:,0]
 
         return [np.asarray(batch_x), batch_y_tot.astype(np.uint8), weights]

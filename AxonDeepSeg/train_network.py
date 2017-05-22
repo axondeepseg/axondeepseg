@@ -372,6 +372,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         cost = tf.reduce_mean(spatial_weights[:, 0] * tf.nn.softmax_cross_entropy_with_logits(pred, y))
     else:
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
+    ########
 
     tf.scalar_summary('Loss', cost)
 
@@ -382,6 +383,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # Evaluate model
     correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+    ########
 
     init = tf.initialize_all_variables()
 
@@ -396,7 +398,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as session:
         last_epoch = 0
-        if path_model_init:
+        if path_model_init: # load a previous session if requested.
             folder_restored_model = path_model_init
             saver.restore(session, folder_restored_model + "/model.ckpt")
 
@@ -420,6 +422,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         epoch = 1 + last_epoch
 
         while step * batch_size < training_iters:
+            # Compute the optimizer
             if weighted_cost == True:
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
                                                                              augmented_data=augmented_data)
