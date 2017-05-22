@@ -1,5 +1,4 @@
 import random
-from ..config import general_pixel_size, path_matlab, path_axonseg
 import numpy as np
 
 
