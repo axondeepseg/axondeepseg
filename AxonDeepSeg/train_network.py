@@ -352,9 +352,10 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     y = tf.placeholder(tf.float32, shape=(batch_size * n_input, n_classes))
 
     if weighted_cost == True:
-        spatial_weights = tf.placeholder(tf.float32, shape=(batch_size * n_input, 1))
+        spatial_weights = tf.placeholder(tf.float32, shape=(batch_size * n_input, n_classes))
 
     keep_prob = tf.placeholder(tf.float32)
+    adapt_learning_rate = tf.placeholder(tf.float32)
 
     weights, biases = compute_weights(config)
     ####################################################
@@ -367,9 +368,19 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     else:
         pred = uconv_net(x, config, weights, biases)
 
+    total_parameters = 0
+    for variable in tf.trainable_variables():
+        # shape is an array of tf.Dimension
+        shape = variable.get_shape()
+        variable_parametes = 1
+        for dim in shape:
+            variable_parametes *= dim.value
+        total_parameters += variable_parametes
+    print('tot_param = ',total_parameters)
+
     # Define loss and optimizer
     if weighted_cost == True:
-        cost = tf.reduce_mean(spatial_weights[:, 0] * tf.nn.softmax_cross_entropy_with_logits(pred, y))
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(tf.mul(spatial_weights, pred), y))
     else:
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
     ########
@@ -427,6 +438,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
                                                                              augmented_data=augmented_data)
 
+
                 session.run(optimizer, feed_dict={x: batch_x, y: batch_y,
                                                spatial_weights: weight, keep_prob: dropout})
             else:
@@ -439,6 +451,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if weighted_cost == True:
                     loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
                                                                                spatial_weights: weight, keep_prob: 1.})
+
                 else:
                     loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
                                                                                keep_prob: 1.})
