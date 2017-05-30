@@ -22,7 +22,7 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
     :return: no return
 
     Every 256 by 256 patches are extracted from the images with a very low overlapping.
-    They are regrouped by category folder : \Train and \Test.
+    They are regrouped by category folder : \Train and \Validation.
     Each data is represented by the patch, image_i.png, and its groundtruth, mask_i.png
     A rescaling is also added to set the pixel size at the value of the general_pixel_size
     """
@@ -64,12 +64,12 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
                 patches += extract_patch(img, mask, 256)
             i+=1
 
-    testRatio = 1-trainRatio
-    size_test = int(testRatio*len(patches))
+    validationRatio = 1-trainRatio
+    size_validation = int(validationRatio*len(patches))
 
     random.shuffle(patches)
-    patches_train = patches[:-size_test]
-    patches_test = patches[-size_test:]
+    patches_train = patches[:-size_validation]
+    patches_validation = patches[-size_validation:]
 
     if not os.path.exists(trainingset_path):
         os.makedirs(trainingset_path)
@@ -81,12 +81,12 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
     if not os.path.exists(folder_train):
         os.makedirs(folder_train)
 
-    folder_test = trainingset_path+'/Test' # change to Validation.
+    folder_validation = trainingset_path+'/Validation' # change to Validation.
 
-    if os.path.exists(folder_test):
-        shutil.rmtree(folder_test)
-    if not os.path.exists(folder_test):
-        os.makedirs(folder_test)
+    if os.path.exists(folder_validation):
+        shutil.rmtree(folder_validation)
+    if not os.path.exists(folder_validation):
+        os.makedirs(folder_validation)
 
     j = 0
     for patch in patches_train:
@@ -95,9 +95,9 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
         j += 1
 
     k=0
-    for patch in patches_test:
-        imsave(folder_test+'/image_%s.png'%k, patch[0], 'png')
-        imsave(folder_test+'/mask_%s.png'%k, patch[1], 'png')
+    for patch in patches_validation:
+        imsave(folder_validation+'/image_%s.png'%k, patch[0], 'png')
+        imsave(folder_validation+'/mask_%s.png'%k, patch[1], 'png')
         k += 1
 
 

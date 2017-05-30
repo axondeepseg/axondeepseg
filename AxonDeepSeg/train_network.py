@@ -276,7 +276,7 @@ def uconv_net(x, config, weights, biases, image_size=256):
 def train_model(path_trainingset, path_model, config, path_model_init=None,
                 save_trainable=True, augmented_data=True, gpu=None):
     """
-    :param path_trainingset: path of the train and test set built from data_construction
+    :param path_trainingset: path of the train and validation set built from data_construction
     :param path_model: path to save the trained model
     :param config: dict: network's parameters described in the header.
     :param path_model_init: (option) path of the model to initialize  the training
@@ -345,7 +345,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
               + ';\n (if model restored) restored_model :' + str(path_model_init)
 
     data_train = input_data(trainingset_path=path_trainingset, type='train', thresh_indices=thresh_indices)
-    data_test = input_data(trainingset_path=path_trainingset, type='test', thresh_indices=thresh_indices)
+    data_validation = input_data(trainingset_path=path_trainingset, type='validation', thresh_indices=thresh_indices)
 
     # Graph input
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
@@ -463,18 +463,21 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     print outputs
 
             if step % epoch_size == 0:
-                A = []  # list of accuracy scores on the datatest
-                L = []  # list of the Loss, or cost, scores on the dataset
 
-                data_test.set_batch_start()
-                for i in range(data_test.set_size):
+                # Here we evaluate the performance of our network on the validation dataset
+
+                A = []  # list of accuracy scores on the validation dataset
+                L = []  # list of the Loss, or cost, scores on the validation dataset
+
+                data_validation.set_batch_start()
+                for i in range(data_validation.set_size):
                     if weighted_cost == True:
-                        batch_x, batch_y, weight = data_test.next_batch_WithWeights(batch_size, rnd=False,
-                                                                                    augmented_data=False)
+                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(batch_size, rnd=False,
+                                                                                          augmented_data=False)
                         loss, acc = session.run([cost, accuracy],
                                              feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
                     else:
-                        batch_x, batch_y = data_test.next_batch(batch_size, rnd=False, augmented_data=False)
+                        batch_x, batch_y = data_validation.next_batch(batch_size, rnd=False, augmented_data=False)
                         loss, acc= session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
                     A.append(acc)
@@ -490,7 +493,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 output_2 = '\n----\n Last epoch: ' + str(epoch)
                 output_2 += '\n Accuracy: ' + str(np.mean(A)) + ';'
                 output_2 += '\n Loss: ' + str(np.mean(L)) + ';'
-                print '\n\n----Scores on test:---' + output_2
+                print '\n\n----Scores on validation:---' + output_2
                 epoch += 1
 
             if step % save_step == 0:
@@ -510,11 +513,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         # Initialize best model with model after epoch 1
         if epoch == 1:
-            A_current_best = A  
+            A_current_best = A
             L_current_best = L  
 
         # If new model is better than the last one, update best model
-        elif np.mean(A)>np.mean(A_current_best) && np.mean(L)<np.mean(L_current_best):
+        elif (np.mean(A)>np.mean(A_current_best) and np.mean(L)<np.mean(L_current_best)):
             save_path = saver.save(session, folder_model + "/best_model.ckpt")
 
         evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}

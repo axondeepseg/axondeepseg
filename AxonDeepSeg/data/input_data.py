@@ -46,15 +46,15 @@ def random_transformation(patch, thresh_indices = [0,0.5]):
 #######################################################################################################################
 class input_data:
     """
-    Data to feed the learning/testing of the CNN
+    Data to feed the learning/validating of the CNN
     """
 
     def __init__(self, trainingset_path, type = 'train', thresh_indices = [0,0.5], image_size = 256):
         """
         Input: 
-            trainingset_path : string : path to the trainingset folder containing 2 folders Test and Train
+            trainingset_path : string : path to the trainingset folder containing 2 folders Validation and Train
                                     with images and ground truthes.
-            type : string 'train' or 'test' : for the network's training. 
+            type : string 'train' or 'validation' : for the network's training.
             thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
         Output:
             None.
@@ -63,8 +63,8 @@ class input_data:
             self.path = trainingset_path+'/Train/'
             self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
 
-        if type == 'test': # Data for the test  !!!!!!! Change to Validation.
-            self.path = trainingset_path+'/Test/'
+        if type == 'validation': # Data for the validation
+            self.path = trainingset_path+'/Validation/'
             self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
 
         self.size_image = image_size
