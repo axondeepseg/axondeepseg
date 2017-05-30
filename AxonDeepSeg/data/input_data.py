@@ -72,6 +72,9 @@ class input_data:
         self.batch_start = 0
         self.thresh_indices = thresh_indices
 
+    def get_size(self):
+        return self.set_size
+
 
     def set_batch_start(self, start = 0):
         """

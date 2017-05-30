@@ -330,10 +330,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     with open(folder_model + '/hyperparameters.pkl', 'wb') as handle:
         pickle.dump(hyperparameters, handle)
 
+    data_train = input_data(trainingset_path=path_trainingset, type='train', thresh_indices=thresh_indices)
+    data_validation = input_data(trainingset_path=path_trainingset, type='validation', thresh_indices=thresh_indices)
+
     # Optimization Parameters
     batch_size = 1
     training_iters = 500000
-    epoch_size = 200
+    epoch_size = data_train.get_size()
 
     Report += '\n\n---Savings---'
     Report += '\n Model saved in : ' + folder_model
@@ -344,8 +347,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
               + ';\n epoch_size: ' + str(epoch_size) + ';\n dropout :  ' + str(dropout) \
               + ';\n (if model restored) restored_model :' + str(path_model_init)
 
-    data_train = input_data(trainingset_path=path_trainingset, type='train', thresh_indices=thresh_indices)
-    data_validation = input_data(trainingset_path=path_trainingset, type='validation', thresh_indices=thresh_indices)
 
     # Graph input
     x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
