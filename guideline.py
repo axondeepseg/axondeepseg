@@ -72,7 +72,7 @@ train_model(path_training, path_model, config_network, path_model_init=None, gpu
 
 
 # 3/ Local Visualization
-from AxonDeepSeg.evaluation.visualization import visualize_training
+from AxonDeepSeg.visualization.visualize import visualize_training
 # sub-option 1 : if you do not have an initial model
 visualize_training(path_model)
 # sub-option 2 : if you have an initial model
@@ -83,17 +83,17 @@ visualize_training(path_model, path_model_init)
 path_target_image = 'mypath_target_image'
 
 from AxonDeepSeg.apply_model import axon_segmentation
-axon_segmentation(path_my_data, path_model, config_network)
+axon_segmentation(path_target_image, path_model, config_network)
 
 
-# 5/ Myelin segmentation from axon segmentation
+# 5/ Myelin segmentation from axon segmentation !!! TO BE DELETED !!!
 from AxonDeepSeg.apply_model import myelin
 # Axon_segmentation() has to be already runned
 myelin(path_my_data)
 
 
 # 6/ Visualization of the results
-from AxonDeepSeg.evaluation.visualize import visualize_segmentation
+from AxonDeepSeg.visualization.visualize import visualize_segmentation
 visualize_segmentation(path_my_data)
 
 

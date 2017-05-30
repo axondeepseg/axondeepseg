@@ -16,47 +16,28 @@ def visualize_training(path_model, path_model_init=None, start_visu=0):
     :param start_visu: first iterations can reach extreme values, start_visu set another start than epoch 0
     :return: no return
 
-    figure(1) represent the evolution of the loss and the accuracy evaluated on the test set along the learning process
-    figure(2) if learning initialized by another, evolution of the model of initialisation and of the new are merged
-
+    figure(1) represent the evolution of the loss and the accuracy evaluated on the test set along the learning process.
+    If the learning began from an initial model, the figure plots first the accuracy and loss evolution from this initial model and then stacks the evolution of the model.
     """
 
-    file = open(path_model + '/evolution.pkl', 'r')  # training variables : loss, accuracy, epoch
-    evolution = pickle.load(file)
+    evolution = retrieve_training_data(path_model)
 
-    if path_model_init:
-        file_init = open(path_model_init + '/evolution.pkl', 'r')
-        evolution_init = pickle.load(file_init)
-        last_epoch = evolution_init['steps'][-1]
+    fig = plt.figure(1)
+    # Drawing the evolution curves
 
-        evolution_merged = {}  # Merging the two plots : learning of the init and learning of the model
-        for key in ['steps', 'accuracy', 'loss']:
-            evolution_merged[key] = evolution_init[key] + evolution[key]
-
-        fig = plt.figure(1)
-        ax = fig.add_subplot(111)
-        ax.plot(evolution_merged['steps'][start_visu:], evolution_merged['accuracy'][start_visu:], '-',
-                label='accuracy')
-        plt.ylabel('Accuracy')
-        plt.ylim(ymin=0.7)
-        ax2 = ax.twinx()
-        ax2.axvline(last_epoch, color='k', linestyle='--')
-        plt.title('Evolution merged (before and after restoration')
-        ax2.plot(evolution_merged['steps'][start_visu:], evolution_merged['loss'][start_visu:], '-r', label='loss')
-        plt.ylabel('Loss')
-        plt.ylim(ymax=100)
-        plt.xlabel('Epoch')
-
-    fig = plt.figure(2)
     ax = fig.add_subplot(111)
     ax.plot(evolution['steps'][start_visu:], evolution['accuracy'][start_visu:], '-', label='accuracy')
     plt.ylabel('Accuracy')
-    plt.ylim(ymin=0.7)
+    plt.ylim(ymin=0)
+    # plt.ylim(ymax=100)
+
     ax2 = ax.twinx()
-    plt.title('Accuracy and loss evolution')
     ax2.plot(evolution['steps'][start_visu:], evolution['loss'][start_visu:], '-r', label='loss')
+
+    # Annotating the graph
+
+    plt.title('Accuracy and loss evolution')
     plt.ylabel('Loss')
-    plt.ylim(ymax=100)
     plt.xlabel('Epoch')
     plt.show()
 
@@ -71,7 +52,7 @@ def visualize_segmentation(path):
     if there is MyelinSeg.jpg in the folder, myelin and image, myelin and axon segmentated, myelin and groundtruth are represented
     """
 
-    path_img = path + '/image.jpg'
+    path_img = path + '/image.png'
     mask = False
 
     if not 'results.pkl' in os.listdir(path):
@@ -103,9 +84,9 @@ def visualize_segmentation(path):
 
     i_figure += 1
 
-    if 'mask.jpg' in os.listdir(path):
+    if 'mask.png' in os.listdir(path):
         Mask = True
-        path_mask = path + '/mask.jpg'
+        path_mask = path + '/mask.png'
         mask = preprocessing.binarize(imread(path_mask, flatten=False, mode='L'), threshold=125)
 
         acc = accuracy_score(prediction.reshape(-1, 1), mask.reshape(-1, 1))
@@ -158,6 +139,43 @@ def visualize_segmentation(path):
             plt.imshow(myelin, alpha=0.7)
 
     plt.show()
+
+
+def retrieve_training_data(path_model, path_model_init = None):
+    """
+    :param path_model: path of the folder with the model parameters .ckpt
+    :param path_model_init: if the model is initialized by another, path of its folder
+    :return: dictionary {steps, accuracy, loss} describing the evolution over epochs of the performance of the model. Stacks the initial model if needed
+    """
+
+
+    file = open(path_model + '/evolution.pkl', 'r')  # training variables : loss, accuracy, epoch
+    evolution = pickle.load(file)
+
+    if path_model_init:
+        file_init = open(path_model_init + '/evolution.pkl', 'r')
+        evolution_init = pickle.load(file_init)
+        last_epoch = evolution_init['steps'][-1]
+
+        evolution_merged = {}  # Merging the two plots : learning of the init and learning of the model
+        for key in ['steps', 'accuracy', 'loss']:
+            evolution_merged[key] = evolution_init[key] + evolution[key]
+
+        evolution = evolution_merged
+
+    return evolution
+
+
+def retrieve_hyperparameters(path_model):
+
+    """
+
+    :param path_model: path of the folder with the model parameters .ckpt
+    :return: the dict containing the hyperparameters
+    """
+
+    file = open(path_model + '/hyperparameters.pkl', 'r')  # training variables : loss, accuracy, epoch
+    return pickle.load(file)
 
 
 if __name__ == "__main__":
