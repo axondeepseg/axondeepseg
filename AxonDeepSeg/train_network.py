@@ -508,6 +508,15 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         save_path = saver.save(session, folder_model + "/model.ckpt")
 
+        # Initialize best model with model after epoch 1
+        if epoch == 1:
+            A_current_best = A  
+            L_current_best = L  
+
+        # If new model is better than the last one, update best model
+        elif np.mean(A)>np.mean(A_current_best) && np.mean(L)<np.mean(L_current_best):
+            save_path = saver.save(session, folder_model + "/best_model.ckpt")
+
         evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
         with open(folder_model + '/evolution.pkl', 'wb') as handle:
             pickle.dump(evolution, handle)
