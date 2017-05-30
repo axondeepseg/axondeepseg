@@ -16,7 +16,7 @@ def visualize_training(path_model, path_model_init=None, start_visu=0):
     :param start_visu: first iterations can reach extreme values, start_visu set another start than epoch 0
     :return: no return
 
-    figure(1) represent the evolution of the loss and the accuracy evaluated on the test set along the learning process.
+    figure(1) represent the evolution of the loss and the accuracy evaluated on the validation set along the learning process.
     If the learning began from an initial model, the figure plots first the accuracy and loss evolution from this initial model and then stacks the evolution of the model.
     """
 
