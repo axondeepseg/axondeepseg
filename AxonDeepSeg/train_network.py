@@ -433,6 +433,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         step = 1
         epoch = 1 + last_epoch
 
+        A_current_best = []
+        L_current_best = []
+
         while step * batch_size < training_iters:
             # Compute the optimizer
             if weighted_cost == True:
@@ -470,6 +473,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 A = []  # list of accuracy scores on the validation dataset
                 L = []  # list of the Loss, or cost, scores on the validation dataset
 
+
+
                 data_validation.set_batch_start()
                 for i in range(data_validation.set_size):
                     if weighted_cost == True:
@@ -495,7 +500,20 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 output_2 += '\n Accuracy: ' + str(np.mean(A)) + ';'
                 output_2 += '\n Loss: ' + str(np.mean(L)) + ';'
                 print '\n\n----Scores on validation:---' + output_2
+
+                # Saving model if it's the best one
+
+                if epoch == 1:
+                    A_current_best = A
+                    L_current_best = L
+
+                    # If new model is better than the last one, update best model
+                elif (np.mean(A) > np.mean(A_current_best) and np.mean(L) < np.mean(L_current_best)):
+                    save_path = saver.save(session, folder_model + "/best_model.ckpt")
+
                 epoch += 1
+
+            # Saving the model
 
             if step % save_step == 0:
                 evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
@@ -513,13 +531,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         save_path = saver.save(session, folder_model + "/model.ckpt")
 
         # Initialize best model with model after epoch 1
-        if epoch == 1:
-            A_current_best = A
-            L_current_best = L  
-
-        # If new model is better than the last one, update best model
-        elif (np.mean(A)>np.mean(A_current_best) and np.mean(L)<np.mean(L_current_best)):
-            save_path = saver.save(session, folder_model + "/best_model.ckpt")
 
         evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
         with open(folder_model + '/evolution.pkl', 'wb') as handle:
