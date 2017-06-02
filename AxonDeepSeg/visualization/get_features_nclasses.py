@@ -133,7 +133,7 @@ def uconv_net(x, config, weights, biases, image_size = 256, target_features = [0
 
                         if limit_to_one_image == 0:
                             for iteration in range(convolution_c.get_shape().as_list()[-1]-1):
-                                tf.image_summary("Visualize_image_number_"+str(iteration), convolution_c[:,:,:,iteration:iteration+1])
+                                tf.summary.image("Visualize_image_number_"+str(iteration), convolution_c[:,:,:,iteration:iteration+1])
                             limit_to_one_image +=1
 
                         channels = features_per_convolution[target_features[0]][target_features[1]][1]
@@ -143,22 +143,22 @@ def uconv_net(x, config, weights, biases, image_size = 256, target_features = [0
                         Wpad= tf.zeros([conv_size, conv_size, 1, 1])
                         # We have a 6 by 6 grid of kernepl visualizations. yet we only have 32 filters
                         # Therefore, we concatenate 4 empty filters
-                        W_b = tf.concat(3, [W_a, Wpad]) 
+                        W_b = tf.concat([W_a, Wpad], axis=3)
                         
                         for repetition in range(36-channels-1):
-                            W_b = tf.concat(3, [W_b, Wpad])   # [5, 5, 1, 36]  
+                            W_b = tf.concat([W_b, Wpad], axis=3)   # [5, 5, 1, 36]
 
                         W_c = tf.split(3, 36, W_b)         # 36 x [5, 5, 1, 1]
-                        W_row0 = tf.concat(0, W_c[0:6])    # [30, 5, 1, 1]
-                        W_row1 = tf.concat(0, W_c[6:12])   # [30, 5, 1, 1]
-                        W_row2 = tf.concat(0, W_c[12:18])  # [30, 5, 1, 1]
-                        W_row3 = tf.concat(0, W_c[18:24])  # [30, 5, 1, 1]
-                        W_row4 = tf.concat(0, W_c[24:30])  # [30, 5, 1, 1]
-                        W_row5 = tf.concat(0, W_c[30:36])  # [30, 5, 1, 1]
-                        W_d = tf.concat(1, [W_row0, W_row1, W_row2, W_row3, W_row4, W_row5]) # [30, 30, 1, 1]
+                        W_row0 = tf.concat(W_c[0:6], axis=0)    # [30, 5, 1, 1]
+                        W_row1 = tf.concat(W_c[6:12], axis=0)   # [30, 5, 1, 1]
+                        W_row2 = tf.concat(W_c[12:18], axis=0)  # [30, 5, 1, 1]
+                        W_row3 = tf.concat(W_c[18:24], axis=0)  # [30, 5, 1, 1]
+                        W_row4 = tf.concat(W_c[24:30], axis=0)  # [30, 5, 1, 1]
+                        W_row5 = tf.concat(W_c[30:36], axis=0)  # [30, 5, 1, 1]
+                        W_d = tf.concat([W_row0, W_row1, W_row2, W_row3, W_row4, W_row5], axis=1) # [30, 30, 1, 1]
                         W_e = tf.reshape(W_d, [1, 6*conv_size, 6*conv_size, 1])
                         Wtag = tf.placeholder(tf.string, None)
-                        tf.image_summary("Visualize_kernels_"+str(conv_number), W_e)
+                        tf.summary.image("Visualize_kernels_"+str(conv_number), W_e)
 
 
             else:
@@ -186,8 +186,9 @@ def uconv_net(x, config, weights, biases, image_size = 256, target_features = [0
         data_temp_size.append(data_temp_size[-1]*2)
 
         # concatenation
-        upconv_concat = tf.concat(concat_dim=3, values=[tf.slice(relu_results[depth-i-1], [0, 0, 0, 0],
-                                                                 [-1, data_temp_size[depth-i-1], data_temp_size[depth-i-1], -1]), upconv])
+        upconv_concat = tf.concat(values=[tf.slice(relu_results[depth-i-1], [0, 0, 0, 0],
+                                                                 [-1, data_temp_size[depth-i-1], data_temp_size[depth-i-1], -1]), upconv],
+                                  axis=3)
         
         for conv_number in range(number_of_convolutions_per_layer[i]):
             print('Layer: ',i,' Conv: ',conv_number, 'Features: ', features_per_convolution[i][conv_number])
@@ -200,7 +201,7 @@ def uconv_net(x, config, weights, biases, image_size = 256, target_features = [0
 
     if limit_to_one_image_end == 0:
         for iteration in range(convolution_e.get_shape().as_list()[-1]-1):
-            tf.image_summary("Visualize_image_end_"+str(iteration), convolution_e[:,:,:,iteration:iteration+1])
+            tf.summary.image("Visualize_image_end_"+str(iteration), convolution_e[:,:,:,iteration:iteration+1])
         limit_to_one_image_end +=1
 
     # final convolution and segmentation
@@ -356,7 +357,7 @@ def get_convnet_features(path_my_data, path_model, config, folder_write = None, 
     # Construct model
     pred = uconv_net(x, config, weights, biases, target_features = target_features)
 
-    saver = tf.train.Saver(tf.all_variables())
+    saver = tf.train.Saver(tf.global_variables())
 
     summary = tf.merge_all_summaries()
     # Image to batch
