@@ -457,7 +457,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if step % epoch_size == 0:
                     summary, _ = session.run([merged_summaries, optimizer], feed_dict={x: batch_x, y: batch_y,
                                                spatial_weights: weight, keep_prob: dropout})
-                    train_writer.add_summary(summary, last_epoch)
+                    train_writer.add_summary(summary, epoch)
 
                 else:
                     session.run(optimizer, feed_dict={x: batch_x, y: batch_y,
@@ -471,7 +471,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if step % epoch_size == 0:
                     summary, _ = session.run([merged_summaries, optimizer], feed_dict={x: batch_x, y: batch_y,
                                                    keep_prob: dropout})
-                    train_writer.add_summary(summary, last_epoch)
+                    train_writer.add_summary(summary, epoch)
 
                 else:
                     session.run(optimizer, feed_dict={x: batch_x, y: batch_y,
@@ -514,7 +514,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                         loss, acc, summary = session.run([cost, accuracy, merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
                     # Writing the summary for this step of the training, to use in Tensorflow
-                    test_writer.add_summary(summary, last_epoch)
+                    test_writer.add_summary(summary, epoch)
 
                     A.append(acc)
                     L.append(loss)
