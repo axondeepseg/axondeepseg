@@ -49,15 +49,15 @@ def default_configuration():
 def generate_config(config_path=None):
     """ Generate the config file
     Input : 
-        config_path : string : path to a json config file.
+        config_path : string : path to a json config file. If None, using the default configuration.
     Output :
         config : dict : the network config file.
     """
     config = default_configuration()
-    with open(config_path) as conf_file:
-        user_conf = json.load(conf_file)
-        config.extend(user_conf)
-
+    if config_path != None:
+        with open(config_path) as conf_file:
+            user_conf = json.load(conf_file)
+            config.update(user_conf)
     if not validate_config(config):
         raise ValueError('Invalid configuration file')
 

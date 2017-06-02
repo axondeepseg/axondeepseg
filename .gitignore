@@ -20,3 +20,5 @@ victor/
 *.pyc
 
 AxonDeepSeg/guide_local\.py
+
+models/test_model/
