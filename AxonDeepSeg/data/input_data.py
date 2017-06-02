@@ -244,7 +244,13 @@ class input_data:
             else:
                 batch_y = np.concatenate((batch_y, mask.reshape(-1, 1)), axis=0)
                 #weights = np.concatenate((weights, weights_mean.reshape(-1, 1)), axis=2)
-                weights = np.concatenate((weights, weights_intermediate), axis=2)
+
+                if len(weights.shape) == 2:
+                    weights = np.stack((weights, weights_intermediate))
+                elif len(weights.shape) == 3:
+                    L_weights = np.split(weights,weights.shape[0],axis=0)
+                    L_weights.append(weights_intermediate)
+                    weights = np.stack(weights)
         
         n = len(self.thresh_indices)
         batch_y_tot = np.zeros([batch_y.shape[0], n*batch_y.shape[1]])

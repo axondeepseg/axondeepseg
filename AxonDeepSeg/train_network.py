@@ -443,8 +443,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         step = 1
         epoch = 1 + last_epoch
 
-        A_current_best = []
-        L_current_best = []
+        acc_current_best = 0
+        loss_current_best = 10000
 
         while step * batch_size < training_iters:
             # Compute the optimizer
@@ -457,7 +457,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if step % epoch_size == 0:
                     summary, _ = session.run([merged_summaries, optimizer], feed_dict={x: batch_x, y: batch_y,
                                                spatial_weights: weight, keep_prob: dropout})
-                    train_writer.add_summary(summary, last_epoch)
+                    train_writer.add_summary(summary, epoch)
 
                 else:
                     session.run(optimizer, feed_dict={x: batch_x, y: batch_y,
@@ -471,7 +471,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if step % epoch_size == 0:
                     summary, _ = session.run([merged_summaries, optimizer], feed_dict={x: batch_x, y: batch_y,
                                                    keep_prob: dropout})
-                    train_writer.add_summary(summary, last_epoch)
+                    train_writer.add_summary(summary, epoch)
 
                 else:
                     session.run(optimizer, feed_dict={x: batch_x, y: batch_y,
@@ -492,56 +492,43 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                               "{:.5f}".format(acc)
                     print outputs
 
+
+            # At the end of every epoch we compute the performance of our network on the validation set and we
+            # save the summaries to see them on TensorBoard
             if step % epoch_size == 0:
 
-                # Here we evaluate the performance of our network on the validation dataset
-
-                A = []  # list of accuracy scores on the validation dataset
-                L = []  # list of the Loss, or cost, scores on the validation dataset
-
-
+                # We retrieve the validation set, and we compute the loss and accuracy on the whole validation set
                 data_validation.set_batch_start()
-                for i in range(data_validation.set_size):
-                    if weighted_cost == True:
-                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(batch_size, rnd=False,
-                                                                                          augmented_data=False)
-                        loss, acc, summary = session.run([cost, accuracy, merged_summaries],
-                                             feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
+                if weighted_cost == True:
+                    batch_x, batch_y, weight = data_validation.next_batch_WithWeights(data_validation.get_size(), rnd=False,
+                                                                                      augmented_data=False)
+                    loss, acc, summary = session.run([cost, accuracy, merged_summaries],
+                                         feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
 
+                else:
+                    batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, augmented_data=False)
+                    loss, acc, summary = session.run([cost, accuracy, merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
-                    else:
-                        batch_x, batch_y = data_validation.next_batch(batch_size, rnd=False, augmented_data=False)
-                        loss, acc, summary = session.run([cost, accuracy, merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
+                # Writing the summary for this step of the training, to use in Tensorflow
+                test_writer.add_summary(summary, epoch)
 
-                    # Writing the summary for this step of the training, to use in Tensorflow
-                    test_writer.add_summary(summary, last_epoch)
-
-                    A.append(acc)
-                    L.append(loss)
-
-                    if verbose >= 1:
-                        print '--\nAccuracy on patch' + str(i) + ': ' + str(acc)
-                        print 'Loss on patch' + str(i) + ': ' + str(loss)
-
-                # Saving data in the summaries
-
-                Accuracy.append(np.mean(A))
-                Loss.append(np.mean(L))
+                Accuracy.append(acc)
+                Loss.append(loss)
                 Epoch.append(epoch)
 
                 output_2 = '\n----\n Last epoch: ' + str(epoch)
-                output_2 += '\n Accuracy: ' + str(np.mean(A)) + ';'
-                output_2 += '\n Loss: ' + str(np.mean(L)) + ';'
+                output_2 += '\n Accuracy: ' + str(acc) + ';'
+                output_2 += '\n Loss: ' + str(loss) + ';'
                 print '\n\n----Scores on validation:---' + output_2
 
                 # Saving model if it's the best one
 
                 if epoch == 1:
-                    A_current_best = A
-                    L_current_best = L
+                    acc_current_best = acc
+                    loss_current_best = loss
 
                     # If new model is better than the last one, update best model
-                elif (np.mean(A) > np.mean(A_current_best) and np.mean(L) < np.mean(L_current_best)):
+                elif (acc > acc_current_best and loss < loss_current_best):
                     save_path = saver.save(session, folder_model + "/best_model.ckpt")
 
                 epoch += 1
