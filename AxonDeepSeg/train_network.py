@@ -452,26 +452,40 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
                                                                              augmented_data=augmented_data)
 
-                summary, _ = session.run([merged_summaries, optimizer], feed_dict={x: batch_x, y: batch_y,
+                # if were just finished an epoch, we summarize the performance of the
+                # net on the training set to see it in tensorboard.
+                if step % epoch_size == 0:
+                    summary, _ = session.run([merged_summaries, optimizer], feed_dict={x: batch_x, y: batch_y,
                                                spatial_weights: weight, keep_prob: dropout})
-            else:
-                batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, augmented_data=augmented_data)
-                summary, _ = session.run([merged_summaries, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                               keep_prob: dropout})
-            # Writing the summary for this step of the training, to use in Tensorflow
-            train_writer.add_summary(summary, step)
+                    train_writer.add_summary(summary, last_epoch)
 
-            # Every now and then we display the performance of the network
+                else:
+                    session.run(optimizer, feed_dict={x: batch_x, y: batch_y,
+                                                       spatial_weights: weight,
+                                                       keep_prob: dropout})
+            else: # no weighted cost
+                batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, augmented_data=augmented_data)
+
+                # if were just finished an epoch, we summarize the performance of the
+                # net on the training set to see it in tensorboard.
+                if step % epoch_size == 0:
+                    summary, _ = session.run([merged_summaries, optimizer], feed_dict={x: batch_x, y: batch_y,
+                                                   keep_prob: dropout})
+                    train_writer.add_summary(summary, last_epoch)
+
+                else:
+                    session.run(optimizer, feed_dict={x: batch_x, y: batch_y,
+                                                           keep_prob: dropout})
+
+            # Every now and then we display the performance of the network on the training set
             if step % display_step == 0:
                 # Calculate batch loss and accuracy
                 if weighted_cost == True:
-                    loss, acc, p, summary = session.run([cost, accuracy, pred, merged_summaries], feed_dict={x: batch_x, y: batch_y,
+                    loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
                                                                                spatial_weights: weight, keep_prob: 1.})
-                    test_writer.add_summary(summary, step)
                 else:
-                    loss, acc, p, summary = session.run([cost, accuracy, pred, merged_summaries], feed_dict={x: batch_x, y: batch_y,
+                    loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
                                                                                keep_prob: 1.})
-                    test_writer.add_summary(summary, step)
                 if verbose == 2:
                     outputs = "Iter " + str(step * batch_size) + ", Minibatch Loss= " + \
                               "{:.6f}".format(loss) + ", Training Accuracy= " + \
@@ -486,28 +500,31 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 L = []  # list of the Loss, or cost, scores on the validation dataset
 
 
-
                 data_validation.set_batch_start()
                 for i in range(data_validation.set_size):
                     if weighted_cost == True:
                         batch_x, batch_y, weight = data_validation.next_batch_WithWeights(batch_size, rnd=False,
                                                                                           augmented_data=False)
-                        loss, acc = session.run([cost, accuracy],
+                        loss, acc, summary = session.run([cost, accuracy, merged_summaries],
                                              feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
+
+
                     else:
                         batch_x, batch_y = data_validation.next_batch(batch_size, rnd=False, augmented_data=False)
-                        loss, acc= session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
+                        loss, acc, summary = session.run([cost, accuracy, merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
+
+                    # Writing the summary for this step of the training, to use in Tensorflow
+                    test_writer.add_summary(summary, last_epoch)
 
                     A.append(acc)
                     L.append(loss)
 
-                    # Saving data in the summaries
-
-
-
                     if verbose >= 1:
                         print '--\nAccuracy on patch' + str(i) + ': ' + str(acc)
                         print 'Loss on patch' + str(i) + ': ' + str(loss)
+
+                # Saving data in the summaries
+
                 Accuracy.append(np.mean(A))
                 Loss.append(np.mean(L))
                 Epoch.append(epoch)
