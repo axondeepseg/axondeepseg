@@ -389,11 +389,15 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]], name='Reshape_pred')
     y_ = tf.reshape(tf.reshape(y,[-1,tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]), [-1,tf.shape(y)[-1]], name='Reshape_y')
-    spatial_weights_ = tf.reshape(tf.reshape(spatial_weights,[-1,tf.shape(spatial_weights)[1]*tf.shape(spatial_weights)[2]]), [-1], name='Reshape_spatial_weights')
+    
+    
     
 
     # Define loss and optimizer
     if weighted_cost == True:
+        # Reshaping the weights matrix to a vector of good length
+        spatial_weights_ = tf.reshape(tf.reshape(spatial_weights,[-1,tf.shape(spatial_weights)[1]*tf.shape(spatial_weights)[2]]), [-1], name='Reshape_spatial_weights')
+        
         cost = tf.reduce_mean(tf.multiply(spatial_weights_,tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
     else:
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_))

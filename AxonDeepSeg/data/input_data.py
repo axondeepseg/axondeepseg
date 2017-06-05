@@ -92,6 +92,7 @@ class input_data:
         :return: The pair [batch_x (data), batch_y (prediction)] to feed the network.
         """
         batch_x = []
+        batch_y = []
 
         # Set the range of indices
         # Read the image and mask files.
