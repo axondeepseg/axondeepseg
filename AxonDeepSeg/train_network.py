@@ -96,10 +96,10 @@ def compute_weights(config):
 
         layer_convolutions_weights = []
         layer_convolutions_biases = []
-
+        
         # Compute the layer's convolutions and biases.
         for conv_number in range(number_of_convolutions_per_layer[i]):
-
+            
             conv_size = size_of_convolutions_per_layer[i][conv_number]
             num_features = features_per_convolution[i][conv_number]
 
@@ -118,6 +118,7 @@ def compute_weights(config):
                                                          name='bc' + str(conv_number + 1) + '1-%s' % i))
 
             num_features_in = num_features[1]
+            
 
         if downsampling == 'convolution':
             weights_pool = tf.Variable(tf.random_normal([5, 5, num_features_in, num_features_in],
@@ -148,18 +149,18 @@ def compute_weights(config):
 
     # Expansion
     for i in range(depth):
-
+        
         layer_convolutions_weights = []
         layer_convolutions_biases = []
 
         num_features = features_per_convolution[depth - i - 1][-1]
-
+        
         weights['upconv'].append(
             tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s' % i))
         biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s' % i))
 
         for conv_number in reversed(range(number_of_convolutions_per_layer[depth - i - 1])):
-
+            
             if conv_number == number_of_convolutions_per_layer[depth - i - 1] - 1:
                 num_features_in = features_per_convolution[depth - i - 1][-1][1] + num_features[1]
                 print('Input features layer : ', num_features_in)
@@ -211,7 +212,7 @@ def uconv_net(x, config, weights, biases, image_size=256):
     downsampling = config["network_downsampling"]
 
     # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
-    #x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
+    x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
     data_temp = x
     data_temp_size = [image_size]
     relu_results = []
@@ -267,14 +268,12 @@ def uconv_net(x, config, weights, biases, image_size=256):
 
     # final convolution and segmentation
     finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
-
-    print 'shape final conv ',finalconv.get_shape().as_list()
-    print 'data temp size', data_temp_size[-1]
-    final_result = tf.reshape(finalconv, tf.TensorShape(
-        [None, data_temp_size[-1] * data_temp_size[-1], n_classes]))
+    
+    final_result = tf.reshape(finalconv,
+        [tf.shape(finalconv)[0] * data_temp_size[-1] * data_temp_size[-1], n_classes])
 
     return final_result
-
+    
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
                 save_trainable=True, augmented_data=True, gpu=None):
@@ -395,6 +394,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
     # Evaluate model
+    
     correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
