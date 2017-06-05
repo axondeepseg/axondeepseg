@@ -210,8 +210,8 @@ def uconv_net(x, config, weights, biases, image_size=256):
     features_per_convolution = config["network_features_per_convolution"]
     downsampling = config["network_downsampling"]
 
-    # Reshape input picture
-    x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
+    # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
+    #x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
     data_temp = x
     data_temp_size = [image_size]
     relu_results = []
@@ -267,8 +267,11 @@ def uconv_net(x, config, weights, biases, image_size=256):
 
     # final convolution and segmentation
     finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
+
+    print 'shape final conv ',finalconv.get_shape().as_list()
+    print 'data temp size', data_temp_size[-1]
     final_result = tf.reshape(finalconv, tf.TensorShape(
-        [finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], n_classes]))
+        [None, data_temp_size[-1] * data_temp_size[-1], n_classes]))
 
     return final_result
 
@@ -349,11 +352,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
 
     # Graph input
-    x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
-    y = tf.placeholder(tf.float32, shape=(batch_size * n_input, n_classes))
+    x = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # None should be batch_size
+    y = tf.placeholder(tf.float32, shape=(None, n_classes)) # Should be batch_size x n_input
 
     if weighted_cost == True:
-        spatial_weights = tf.placeholder(tf.float32, shape=(batch_size * n_input, n_classes))
+        spatial_weights = tf.placeholder(tf.float32, shape=(None, n_classes)) # Should be batch_size x n_input
 
     keep_prob = tf.placeholder(tf.float32)
     adapt_learning_rate = tf.placeholder(tf.float32)
