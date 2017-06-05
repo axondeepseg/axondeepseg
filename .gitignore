@@ -24,3 +24,5 @@ AxonDeepSeg/guide_local\.py
 models/test_model/
 
 summaries/
+
+guidelines/

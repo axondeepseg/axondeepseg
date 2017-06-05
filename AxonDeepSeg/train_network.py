@@ -96,10 +96,10 @@ def compute_weights(config):
 
         layer_convolutions_weights = []
         layer_convolutions_biases = []
-
+        
         # Compute the layer's convolutions and biases.
         for conv_number in range(number_of_convolutions_per_layer[i]):
-
+            
             conv_size = size_of_convolutions_per_layer[i][conv_number]
             num_features = features_per_convolution[i][conv_number]
 
@@ -118,6 +118,7 @@ def compute_weights(config):
                                                          name='bc' + str(conv_number + 1) + '1-%s' % i))
 
             num_features_in = num_features[1]
+            
 
         if downsampling == 'convolution':
             weights_pool = tf.Variable(tf.random_normal([5, 5, num_features_in, num_features_in],
@@ -148,18 +149,18 @@ def compute_weights(config):
 
     # Expansion
     for i in range(depth):
-
+        
         layer_convolutions_weights = []
         layer_convolutions_biases = []
 
         num_features = features_per_convolution[depth - i - 1][-1]
-
+        
         weights['upconv'].append(
             tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s' % i))
         biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s' % i))
 
         for conv_number in reversed(range(number_of_convolutions_per_layer[depth - i - 1])):
-
+            
             if conv_number == number_of_convolutions_per_layer[depth - i - 1] - 1:
                 num_features_in = features_per_convolution[depth - i - 1][-1][1] + num_features[1]
                 print('Input features layer : ', num_features_in)
@@ -210,7 +211,7 @@ def uconv_net(x, config, weights, biases, image_size=256):
     features_per_convolution = config["network_features_per_convolution"]
     downsampling = config["network_downsampling"]
 
-    # Reshape input picture
+    # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
     x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
     data_temp = x
     data_temp_size = [image_size]
@@ -267,11 +268,12 @@ def uconv_net(x, config, weights, biases, image_size=256):
 
     # final convolution and segmentation
     finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
-    final_result = tf.reshape(finalconv, tf.TensorShape(
-        [finalconv.get_shape().as_list()[0] * data_temp_size[-1] * data_temp_size[-1], n_classes]))
+    
+    final_result = tf.reshape(finalconv,
+        [tf.shape(finalconv)[0], data_temp_size[-1] * data_temp_size[-1], n_classes])
 
     return final_result
-
+    
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
                 save_trainable=True, augmented_data=True, gpu=None):
@@ -349,11 +351,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
 
     # Graph input
-    x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
-    y = tf.placeholder(tf.float32, shape=(batch_size * n_input, n_classes))
+    x = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # None should be batch_size
+    y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes)) # Should be batch_size x n_input
 
     if weighted_cost == True:
-        spatial_weights = tf.placeholder(tf.float32, shape=(batch_size * n_input, n_classes))
+        spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # Should be batch_size x n_input
 
     keep_prob = tf.placeholder(tf.float32)
     adapt_learning_rate = tf.placeholder(tf.float32)
@@ -378,12 +380,27 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             variable_parametes *= dim.value
         total_parameters += variable_parametes
     print('tot_param = ',total_parameters)
+    
+    # Reshaping pred and y so that they are understandable by softmax_cross_entropy
+    
+
+#    final_result = tf.reshape(finalconv,
+#        [tf.shape(finalconv)[0], data_temp_size[-1] * data_temp_size[-1], n_classes])
+    
+    pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]], name='Reshape_pred')
+    y_ = tf.reshape(tf.reshape(y,[-1,tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]), [-1,tf.shape(y)[-1]], name='Reshape_y')
+    
+    
+    
 
     # Define loss and optimizer
     if weighted_cost == True:
-        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=tf.multiply(spatial_weights, pred), labels=y))
+        # Reshaping the weights matrix to a vector of good length
+        spatial_weights_ = tf.reshape(tf.reshape(spatial_weights,[-1,tf.shape(spatial_weights)[1]*tf.shape(spatial_weights)[2]]), [-1], name='Reshape_spatial_weights')
+        
+        cost = tf.reduce_mean(tf.multiply(spatial_weights_,tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
     else:
-        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_))
     ########
 
     tf.summary.scalar('loss', cost)
@@ -392,7 +409,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
     # Evaluate model
-    correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
+    
+    correct_pred = tf.equal(tf.argmax(pred_, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
     tf.summary.scalar('accuracy', accuracy)
@@ -443,15 +461,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         step = 1
         epoch = 1 + last_epoch
 
-        A_current_best = []
-        L_current_best = []
+        acc_current_best = 0
+        loss_current_best = 10000
 
         while step * batch_size < training_iters:
             # Compute the optimizer
             if weighted_cost == True:
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
                                                                              augmented_data=augmented_data)
-
+  
+                
                 # if were just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in tensorboard.
                 if step % epoch_size == 0:
@@ -460,6 +479,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     train_writer.add_summary(summary, epoch)
 
                 else:
+                    
                     session.run(optimizer, feed_dict={x: batch_x, y: batch_y,
                                                        spatial_weights: weight,
                                                        keep_prob: dropout})
@@ -492,56 +512,44 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                               "{:.5f}".format(acc)
                     print outputs
 
+
+            # At the end of every epoch we compute the performance of our network on the validation set and we
+            # save the summaries to see them on TensorBoard
             if step % epoch_size == 0:
 
-                # Here we evaluate the performance of our network on the validation dataset
-
-                A = []  # list of accuracy scores on the validation dataset
-                L = []  # list of the Loss, or cost, scores on the validation dataset
-
-
+                # We retrieve the validation set, and we compute the loss and accuracy on the whole validation set
                 data_validation.set_batch_start()
-                for i in range(data_validation.set_size):
-                    if weighted_cost == True:
-                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(batch_size, rnd=False,
-                                                                                          augmented_data=False)
-                        loss, acc, summary = session.run([cost, accuracy, merged_summaries],
-                                             feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
+                if weighted_cost == True:
+                    batch_x, batch_y, weight = data_validation.next_batch_WithWeights(data_validation.get_size(), rnd=False,
+                                                                                      augmented_data=False)
+                    
+                    loss, acc, summary = session.run([cost, accuracy, merged_summaries],
+                                         feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
 
+                else:
+                    batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, augmented_data=False)
+                    loss, acc, summary = session.run([cost, accuracy, merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
-                    else:
-                        batch_x, batch_y = data_validation.next_batch(batch_size, rnd=False, augmented_data=False)
-                        loss, acc, summary = session.run([cost, accuracy, merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
+                # Writing the summary for this step of the training, to use in Tensorflow
+                test_writer.add_summary(summary, epoch)
 
-                    # Writing the summary for this step of the training, to use in Tensorflow
-                    test_writer.add_summary(summary, epoch)
-
-                    A.append(acc)
-                    L.append(loss)
-
-                    if verbose >= 1:
-                        print '--\nAccuracy on patch' + str(i) + ': ' + str(acc)
-                        print 'Loss on patch' + str(i) + ': ' + str(loss)
-
-                # Saving data in the summaries
-
-                Accuracy.append(np.mean(A))
-                Loss.append(np.mean(L))
+                Accuracy.append(acc)
+                Loss.append(loss)
                 Epoch.append(epoch)
 
                 output_2 = '\n----\n Last epoch: ' + str(epoch)
-                output_2 += '\n Accuracy: ' + str(np.mean(A)) + ';'
-                output_2 += '\n Loss: ' + str(np.mean(L)) + ';'
+                output_2 += '\n Accuracy: ' + str(acc) + ';'
+                output_2 += '\n Loss: ' + str(loss) + ';'
                 print '\n\n----Scores on validation:---' + output_2
 
                 # Saving model if it's the best one
 
                 if epoch == 1:
-                    A_current_best = A
-                    L_current_best = L
+                    acc_current_best = acc
+                    loss_current_best = loss
 
                     # If new model is better than the last one, update best model
-                elif (np.mean(A) > np.mean(A_current_best) and np.mean(L) < np.mean(L_current_best)):
+                elif (acc > acc_current_best and loss < loss_current_best):
                     save_path = saver.save(session, folder_model + "/best_model.ckpt")
 
                 epoch += 1
@@ -571,6 +579,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         print("Model saved in file: %s" % save_path)
         print "Optimization Finished!"
+        
 
 
 # To Call the training in the terminal
