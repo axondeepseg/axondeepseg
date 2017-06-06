@@ -30,7 +30,7 @@ https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
 ##  File Structure
 
-`
+
 axondeepseg
 -- AxonDeepSeg/
 ---- Files related to the algorithm
@@ -60,7 +60,7 @@ axondeepseg
 ------ ...
 ---- model2/
 ---- ...
-`
+
 
 
 ### N.B.
