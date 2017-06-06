@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
+import time
 import math
 import numpy as np
 import os
@@ -416,10 +417,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     tf.summary.scalar('accuracy', accuracy)
 
     ######## Initializing variables and summaries
+    
     merged_summaries = tf.summary.merge_all()
+    
+    # Then we create the directories where we will store our model
 
-    train_writer = tf.summary.FileWriter(logdir='../summaries/train')
-    test_writer = tf.summary.FileWriter(logdir='../summaries/test')
+    train_writer = tf.summary.FileWriter(logdir=path_model + '/train')
+    validation_writer = tf.summary.FileWriter(logdir=path_model + '/validation')
 
     init = tf.global_variables_initializer()
 
@@ -438,7 +442,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         # Setting the graph in the summaries writer in order to be able to use TensorBoard
         train_writer.add_graph(session.graph)
-        test_writer.add_graph(session.graph)
+        validation_writer.add_graph(session.graph)
 
         if path_model_init: # load a previous session if requested.
             folder_restored_model = path_model_init
@@ -531,7 +535,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     loss, acc, summary = session.run([cost, accuracy, merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
                 # Writing the summary for this step of the training, to use in Tensorflow
-                test_writer.add_summary(summary, epoch)
+                validation_writer.add_summary(summary, epoch)
 
                 Accuracy.append(acc)
                 Loss.append(loss)

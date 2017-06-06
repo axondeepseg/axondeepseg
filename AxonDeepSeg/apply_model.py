@@ -402,7 +402,8 @@ def apply_convnet(path_my_data, path_model, config):
 
     # Launch the graph
     sess = tf.Session()
-    saver.restore(sess, folder_model + '/model.ckpt')
+    saver = tf.train.import_meta_graph(path_model + 'model.ckpt.meta')
+    saver.restore(sess, tf.train.latest_checkpoint(path_model))
 
     # --------------------- Apply the segmentation to each patch of the images--------------------------------
 
