@@ -31,7 +31,7 @@ network_convolution_per_layer = [3 for i in range(network_depth)]
 network_size_of_convolutions_per_layer = [[5,5,5],[5,5,5],[5,5,5],[5,5,5],[5,5,5],[5,5,5]]#[[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]
 network_features_per_convolution = [[[1,10],[10,20],[20,30]],[[30,40],[40,50],[50,60]],[[60,70],[70,80],[80,90]],[[90,100],[100,110],[110,120]],
                                     [[120,130],[130,140],[140,150]],[[150,160],[160,170],[170,180]]]
-trainingset = 'trainingset'
+trainingset_name = 'victor'
 
 downsampling = 'convolution'
 
@@ -47,7 +47,7 @@ config = {
     'network_convolution_per_layer': network_convolution_per_layer,
     'network_size_of_convolutions_per_layer': network_size_of_convolutions_per_layer,
     'network_features_per_convolution': network_features_per_convolution,
-    'network_trainingset': trainingset,
+    'network_trainingset': trainingset_name,
     'network_downsampling': downsampling,
     'network_thresholds': thresholds,
     'network_weighted_cost': weighted_cost
@@ -67,24 +67,24 @@ with open(repname+filename, 'r') as fd:
 # training
 
 dir_name = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S") 
-
-path_training = '../'+trainingset
 path_model = os.path.join('../models/', dir_name)
-path_model_init = None
 
 if not os.path.exists(path_model):
     os.makedirs(path_model)
+    
+# Specify here the path to the initial model if needed.
 
-if not os.path.exists(path_model):
-    os.makedirs(path_model)
+path_model_init = None 
 
-   
+# **If you want to initialize with a pre-trained model, add it to the folder just created right now, before launching the training ! **
+
 with open(path_model+filename, 'w') as f:
     json.dump(config, f, indent=2)
 
 with open(path_model+filename, 'r') as fd:
     config_network = json.loads(fd.read())
+    
+# Training phase
 
 from AxonDeepSeg.train_network import train_model
 train_model(path_training, path_model, config_network,path_model_init=path_model_init,gpu=None)
-
