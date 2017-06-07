@@ -360,6 +360,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     data_train = input_data(trainingset_path=path_trainingset, type='train', thresh_indices=thresh_indices)
     data_validation = input_data(trainingset_path=path_trainingset, type='validation', thresh_indices=thresh_indices)
+    
+    batch_size_validation = data_validation.get_size()
 
     # Optimization Parameters
     batch_size = 1
@@ -409,16 +411,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     # Reshaping pred and y so that they are understandable by softmax_cross_entropy
     
-
-#    final_result = tf.reshape(finalconv,
-#        [tf.shape(finalconv)[0], data_temp_size[-1] * data_temp_size[-1], n_classes])
-    
     pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]], name='Reshape_pred')
     y_ = tf.reshape(tf.reshape(y,[-1,tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]), [-1,tf.shape(y)[-1]], name='Reshape_y')
-    
-    
-    
-
+   
     # Define loss and optimizer
     if weighted_cost == True:
         # Reshaping the weights matrix to a vector of good length
@@ -447,19 +442,34 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     tf.summary.scalar('loss', training_loss)
     tf.summary.scalar('accuracy', training_acc)
+    
+    # Merged summaries relates to all numeric data (histograms, kernels ... etc)
+    merged_summaries = tf.summary.merge_all()
 
+    
+    # We now create a summary specific to images. We add images of the input and its transformation by the u-net
+        
+    L_im_summ = []
+    L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
+    softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_), (-1, image_size * image_size, n_classes)), (-1, image_size, image_size, n_classes)) # We compute the softmax prediction to display the probability map and reshape them to (b_s, imsz, imsz, n_classes)
+    
+    probability_maps = tf.split(softmax_pred, n_classes, axis=3)
+    
+    # We create a probability map for each class
+    for i, probmap in enumerate(probability_maps):
+        L_im_summ.append(tf.summary.image('probability_map_class_'+str(i), probmap))
+    
+    # Merging the image summary
+    images_merged_summaries = tf.summary.merge(L_im_summ)
 
     ######## Initializing variables and summaries
     
-    merged_summaries = tf.summary.merge_all()
-    
-    # Then we create the directories where we will store our model
+    # We create the directories where we will store our model
 
     train_writer = tf.summary.FileWriter(logdir=path_model + '/train')
     validation_writer = tf.summary.FileWriter(logdir=path_model + '/validation')
 
     init = tf.global_variables_initializer()
-
 
     if save_trainable:
         saver = tf.train.Saver(tf.trainable_variables())
@@ -504,11 +514,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         loss_current_best = 10000
 
         while step * batch_size < training_iters:
+            
             # Compute the optimizer at each training iteration
             if weighted_cost == True:
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
                                                                              augmented_data=augmented_data)
-  
                 
                 # if were just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in tensorboard.
@@ -520,9 +530,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_training_acc.append(stepacc)
                                                            
                     # Writing the summary
-                    summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y,
-                                                   keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, spatial_weights: weight})
+                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, spatial_weights: weight})
                     train_writer.add_summary(summary, epoch)
+                    train_writer.add_summary(im_summary, epoch)
                     
                     epoch_training_loss = []
                     epoch_training_acc = []
@@ -535,8 +545,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_training_loss.append(stepcost)
                     epoch_training_acc.append(stepacc)
                     
-                    
-                    
+                 
             else: # no weighted cost
                 batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, augmented_data=augmented_data)
 
@@ -550,10 +559,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_training_acc.append(stepacc)
                                         
                     # Writing the summary
-                    summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y,
-                                                   keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc})
-                    train_writer.add_summary(summary, epoch)
+                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc})
                     
+                    train_writer.add_summary(summary, epoch)
+                    train_writer.add_summary(im_summary, epoch)
+
                     epoch_training_loss = []
                     epoch_training_acc = []
 
@@ -592,19 +602,19 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     loss, acc = session.run([cost, accuracy],
                                          feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
                     # Writing the summary for this step of the training, to use in Tensorflow
-                    summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y,
-                                                       keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, spatial_weights: weight})
+                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, spatial_weights: weight})
 
                 else:
                     batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, augmented_data=False)
                     loss, acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
                    # Writing the summary for this step of the training, to use in Tensorflow
-                    summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y,
-                                                       keep_prob: dropout, L_training_loss: loss, L_training_acc: acc})
+                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc})
                     
                     
                 validation_writer.add_summary(summary, epoch)
+                validation_writer.add_summary(im_summary_val, epoch)
+                
 
                 Accuracy.append(acc)
                 Loss.append(loss)
