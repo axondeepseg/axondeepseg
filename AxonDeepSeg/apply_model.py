@@ -9,7 +9,7 @@ from scipy import io
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
 from skimage import exposure
-from config import general_pixel_size, path_matlab, path_axonseg
+from config import general_pixel_size, path_matlab, path_axonseg, generate_config
 
 #import matplotlib.pyplot as plt 
 
@@ -322,9 +322,10 @@ def uconv_net(x, config, weights, biases, image_size=256):
         data_temp_size.append(data_temp_size[-1] * 2)
 
         # concatenation
-        upconv_concat = tf.concat(concat_dim=3, values=[tf.slice(relu_results[depth - i - 1], [0, 0, 0, 0],
+        upconv_concat = tf.concat(values=[tf.slice(relu_results[depth - i - 1], [0, 0, 0, 0],
                                                                  [-1, data_temp_size[depth - i - 1],
-                                                                  data_temp_size[depth - i - 1], -1]), upconv])
+                                                                  data_temp_size[depth - i - 1], -1]), upconv],
+                                    axis = 3)
 
         for conv_number in range(number_of_convolutions_per_layer[i]):
             print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
@@ -393,7 +394,7 @@ def apply_convnet(path_my_data, path_model, config):
     # Call the model
     pred = uconv_net(x, config, weights, biases)
 
-    saver = tf.train.Saver(tf.all_variables())
+    saver = tf.train.Saver(tf.global_variables())
 
     # Image to batch
     image_init, data, positions = im2patches(img, 256)
@@ -401,7 +402,8 @@ def apply_convnet(path_my_data, path_model, config):
 
     # Launch the graph
     sess = tf.Session()
-    saver.restore(sess, folder_model + '/model.ckpt')
+    saver = tf.train.import_meta_graph(path_model + '/model.ckpt.meta')
+    saver.restore(sess, tf.train.latest_checkpoint(path_model))
 
     # --------------------- Apply the segmentation to each patch of the images--------------------------------
 
@@ -553,18 +555,25 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-m", "--path_model", required=True, help="")
     ap.add_argument("-p", "--path_data", required=True, help="")
-    ap.add_argument("-c", "--config_file", required=False, help="", default="~/.axondeepseg.json")
     ap.add_argument("-n", "--imagename", required=False, help="", default="AxonDeepSeg.png")
+    ap.add_argument("-c", "--config_file", required=False, help="", default=None)
 
     args = vars(ap.parse_args())
+
     path_model = args["path_model"]
     path_data = args["path_data"]
     config_file = args["config_file"]
+
+    # We can't use the default argument from argparse.add_argument as it relies on another argument being entered (path_model).
+    # Instead, we set it ourselves below if path_config has not been given.
+    if config_file == None:
+        config_file = path_model + '/config_network.json'
     imagename = args["imagename"]
 
     config = generate_config(config_file)
 
     axon_segmentation(path_data, path_model, config, imagename = imagename)
+
 
 
 if __name__ == '__main__':

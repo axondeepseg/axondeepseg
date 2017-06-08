@@ -15,16 +15,18 @@ def random_transformation(patch, thresh_indices = [0,0.5]):
     :return: application of the random transformations to the pair [image,mask].
     """
     patch = shifting(patch)
-    """plt.figure(1)
-    plt.subplot(2,1,1)
-    plt.imshow(patch[0],cmap='gray')
-    plt.subplot(2,1,2)
-    plt.imshow(patch[1],cmap='gray')
-    plt.show()"""
     patch = rescaling(patch, thresh_indices = thresh_indices)
     patch = random_rotation(patch, thresh_indices = thresh_indices)  
     patch = elastic(patch, thresh_indices = thresh_indices)  
     patch = flipping(patch) # used until now, the output is not really realistic.
+       
+    return patch
+
+def patch_to_mask(patch, thresh_indices=[0, 0.5]):
+    '''
+    Process a patch so that the pixels between two threshold values are set to the closest threshold, effectively
+    enabling the creation of a mask with as many different values as there are thresholds.
+    '''
 
     for indice,value in enumerate(thresh_indices[:-1]):
         if np.max(patch[1]) > 1.001:
@@ -34,9 +36,9 @@ def random_transformation(patch, thresh_indices = [0,0.5]):
             thresh_inf = value
             thresh_sup = thresh_indices[indice+1]   
 
-        patch[1][(patch[1] >= thresh_inf) & (patch[1] < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
+            patch[1][(patch[1] >= thresh_inf) & (patch[1] < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
 
-    patch[1][(patch[1] >= thresh_indices[-1])] = 1
+            patch[1][(patch[1] >= thresh_indices[-1])] = 1
 
     return patch
 
@@ -91,7 +93,9 @@ class input_data:
         :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process.
         :return: The pair [batch_x (data), batch_y (prediction)] to feed the network.
         """
+                
         batch_x = []
+        batch_y = []
 
         # Set the range of indices
         # Read the image and mask files.
@@ -104,55 +108,35 @@ class input_data:
                 if self.batch_start >= self.set_size:
                     self.batch_start= 0
 
+            # We are reading directly the images. Range of values : 0-255
             image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
-
-            mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')
-
+            mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')            
+            
             # Online data augmentation
             if augmented_data:
-                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices)
-            else: 
-                for indice,value in enumerate(self.thresh_indices[:-1]):
-                    if np.max(mask) > 1.001:
-                        thresh_inf = np.int(255*value)
-                        thresh_sup = np.int(255*self.thresh_indices[indice+1])
-                    else:
-                        thresh_inf = value
-                        thresh_sup = self.thresh_indices[indice+1]
-                    mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,self.thresh_indices[indice+1]])
-
-                mask[mask >= thresh_sup] = 1
-
+                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices) 
+            mask = patch_to_mask(mask, self.thresh_indices)
+            
+                
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
             
-            """plt.figure()
-            plt.subplot(2,1,1)
-            plt.imshow(image,cmap='gray')
-            plt.subplot(2,1,2)
-            plt.imshow(mask,cmap='gray')
-            plt.show()"""
+            n = len(self.thresh_indices)
+
+            # Working out the real mask (sparse cube with n depth layer for each class)
+            real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
+            for class_ in range(n-1):
+                real_mask[:,:,class_] = (mask[:,:] >= self.thresh_indices[class_]) * (mask[:,:] <                                    self.thresh_indices[class_+1])
+            real_mask[:,:,n-1] = (mask > self.thresh_indices[n-1])
+            real_mask = real_mask.astype(np.uint8)
 
             batch_x.append(image)
-            if i == 0:
-                batch_y = mask.reshape(-1,1)
-            else:
-                batch_y = np.concatenate((batch_y, mask.reshape(-1, 1)), axis=0)
-
-        n = len(self.thresh_indices)
-        batch_y_tot = np.zeros([batch_y.shape[0], n*batch_y.shape[1]])
-
-        for class_ in range(n-1):
-            batch_y_tot[:,class_] = (batch_y == np.mean([self.thresh_indices[class_],
-                                                             self.thresh_indices[class_+1]]))[:,0]
-
-        batch_y_tot[:,n-1] = (batch_y == 1)[:,0]
-
-        batch_y_tot = batch_y_tot.astype(np.uint8)
-
-        return [np.asarray(batch_x), batch_y_tot]
+            batch_y.append(real_mask)
+        
+        # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them
+        return [np.stack(batch_x), np.stack(batch_y)]
 
 
     def next_batch_WithWeights(self, batch_size = 1, rnd = False, augmented_data = True):
@@ -163,6 +147,9 @@ class input_data:
         :return: The triplet [batch_x (data), batch_y (prediction), weights (based on distance to edges)] to feed the network.
         """
         batch_x = []
+        batch_y = []
+        batch_w = []
+        
         for i in range(batch_size) :
             if rnd :
                 indice = random.choice(range(self.set_size))
@@ -178,24 +165,16 @@ class input_data:
             #Data augmentation. If not, set the mask's values to the labels values.
             if augmented_data:
                 [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices)
-            else:
-                for indice,value in enumerate(self.thresh_indices[:-1]):
-                    if np.max(mask) > 1.001:
-                        thresh_inf = np.int(255*value)
-                        thresh_sup = np.int(255*self.thresh_indices[indice+1])
-                    else:
-                        thresh_inf = value
-                        thresh_sup = self.thresh_indices[indice+1]
-                    mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,self.thresh_indices[indice+1]])
-
-                mask[mask >= thresh_sup] = 1
+            mask = patch_to_mask(mask, self.thresh_indices)
 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
 
-            # Create a weight map for each class (background is the first class, equal to 1.
+            # Create a weight map for each class (background is the first class, equal to 1
+            
+            
             weights_intermediate = np.ones((self.size_image * self.size_image,len(self.thresh_indices)))
             #weights_intermediate = np.zeros((self.size_image, self.size_image, len(self.thresh_indices[1:])))
 
@@ -233,31 +212,38 @@ class input_data:
                 plt.title('Weight map')
                 plt.colorbar(ticks=[1, 10])
                 plt.show()"""
+            
+            # Generating the mask with the real labels as well as the matrix of the weights
+            
+            n = len(self.thresh_indices) #number of classes
 
-            #weights_intermediate = np.ones((self.size_image * self.size_image, len(self.thresh_indices)))
-            #weights_mean = np.mean(weights_intermediate, axis = 2)
-
+            weights_intermediate = np.reshape(weights_intermediate,[mask.shape[0], mask.shape[1], n])
+            
+            # Working out the real mask (sparse cube with n depth layer for each class)
+            real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
+            for class_ in range(n-1):
+                real_mask[:,:,class_] = (mask[:,:] >= self.thresh_indices[class_]) * (mask[:,:] <                                    self.thresh_indices[class_+1])
+            real_mask[:,:,n-1] = (mask > self.thresh_indices[n-1])
+            real_mask = real_mask.astype(np.uint8)
+            
+            # Working out the real weights (sparse matrix with the weights associated with each pixel)
+            
+            real_weights = np.zeros([mask.shape[0], mask.shape[1]])            
+            for class_ in range(n):
+                real_weights += np.multiply(real_mask[:,:,class_],weights_intermediate[:,:,class_])
+                
+            
+            # We have now loaded the good image, a mask (under the shape of a matrix, with different labels) that still needs to be converted to a volume (meaning, a sparse cube where each layer of depth relates to a class)
+            
             batch_x.append(image)
-            if i == 0:
-                batch_y = mask.reshape(-1,1)
-                weights = weights_intermediate
-            else:
-                batch_y = np.concatenate((batch_y, mask.reshape(-1, 1)), axis=0)
-                #weights = np.concatenate((weights, weights_mean.reshape(-1, 1)), axis=2)
-                weights = np.concatenate((weights, weights_intermediate), axis=2)
-        
-        n = len(self.thresh_indices)
-        batch_y_tot = np.zeros([batch_y.shape[0], n*batch_y.shape[1]])
+            batch_y.append(real_mask)
+            batch_w.append(real_weights)
 
-        for class_ in range(n-1):
-            batch_y_tot[:,class_] = (batch_y == np.mean([self.thresh_indices[class_],
-                                                             self.thresh_indices[class_+1]]))[:,0]
-        batch_y_tot[:,n-1] = (batch_y == 1)[:,0]
-        batch_y_tot = batch_y_tot.astype(np.uint8)
-
-        return [np.asarray(batch_x), batch_y_tot, weights]
+        # We then stack the matrices we generated and return them
+        return [np.stack(batch_x), np.stack(batch_y), np.stack(batch_w)]
 
     def read_batch(self, batch_y, size_batch):
         images = batch_y.reshape(size_batch, self.size_image, self.size_image, self.n_labels)
         return images
-
+    
+    

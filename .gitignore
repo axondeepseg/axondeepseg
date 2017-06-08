@@ -7,16 +7,18 @@ dist/
 
 config/
 
-trainingset/
-
-scripts_max/
-
-test/
-
-victor/
-
 \.idea/
 
 *.pyc
 
-AxonDeepSeg/guide_local\.py
+models/
+
+data/
+
+guidelines/.ipynb_checkpoints/
+
+victor/
+
+summaries/
+
+trainingset/
