@@ -290,7 +290,7 @@ def uconv_net(x, config, weights, biases, image_size=256):
     tf.summary.histogram('activations_last', finalconv)
     
     # We also display the weights of the first kernel (can help to detect some mistakes)
-    first_layer_weights_reshaped = visualize_first_layer(weights['wc'][0][0], image_size, size_of_convolutions_per_layer[0][0], features_per_convolution[0][0][1])
+    first_layer_weights_reshaped = visualize_first_layer(weights['wc'][0][0], size_of_convolutions_per_layer[0][0], features_per_convolution[0][0][1])
     tf.summary.image("Visualize_kernel", first_layer_weights_reshaped)
     
     # Finally we compute the activations of the last layer
@@ -364,7 +364,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     batch_size_validation = data_validation.get_size()
 
     # Optimization Parameters
-    batch_size = 1
+    batch_size = 2
     training_iters = 500000
     epoch_size = data_train.get_size()
 
@@ -664,19 +664,21 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         print "Optimization Finished!"
         
 
-def visualize_first_layer(W_conv1, imsize, filter_size, n_filter):
+def visualize_first_layer(W_conv1, filter_size, n_filter):
     '''
     :param W_conv1: weights of the first convolution of the first layer
-    :param imsize: size of the training images
     :return W1_e: pre-processed data to be added to the summary. Will be used to visualize the kernels of the first layer
     '''
         
     w_display = int(np.ceil(np.sqrt(n_filter)))
     n_filter_completion = int(w_display*w_display - n_filter) # Number of blank filters to add to ensure the display
         
-    # Note: we use the dimensions of the current model
+    # modifiying variables to take into account the added padding for better visualisation
     
-    W1_a = W_conv1                       # [5, 5, 1, 10]
+    filter_size = filter_size + 2
+    
+    # Note: the dimensions in comment are the ones from the current model
+    W1_a = tf.pad(W_conv1,[[1,1],[1,1],[0,0], [0,0]])                       # [6, 6, 1, 10] 
     W1pad= tf.zeros([filter_size, filter_size, 1, 1])        # [5, 5, 1, 6]  - four zero kernels for padding
     # We have a 4 by 4 grid of kernel visualizations. Therefore, we concatenate 6 empty filters
         
