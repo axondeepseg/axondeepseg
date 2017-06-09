@@ -366,7 +366,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # Optimization Parameters
     
     # batch_size is defined in the call to the function (default = 1)
-    training_iters = 2500
+    max_epoch = 2500
     epoch_size = data_train.get_size()
 
     Report += '\n\n---Savings---'

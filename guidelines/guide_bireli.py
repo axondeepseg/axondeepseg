@@ -25,7 +25,7 @@ filename = '/config_network.json'
 
 network_learning_rate = 0.0005
 network_n_classes = 2
-dropout = 0.4
+dropout = 0.75
 network_depth = 6
 network_convolution_per_layer = [3 for i in range(network_depth)]
 network_size_of_convolutions_per_layer = [[5,5,5],[5,5,5],[5,5,5],[5,5,5],[5,5,5],[5,5,5]]#[[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]
@@ -53,38 +53,33 @@ config = {
     'network_weighted_cost': weighted_cost
 }
 
-
-# Edit and read the config
-"""if not os.path.exists(repname):
-    os.makedirs(repname)
-
-with open(repname+filename, 'w+') as f:
-    json.dump(config, f, indent=2)
-
-with open(repname+filename, 'r') as fd:
-    config_network = json.loads(fd.read())"""
-
-# training
+path_training = '../data/'+trainingset_name+'/training/'
 
 dir_name = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S") 
+#dir_name = 'baseline_bis'
 path_model = os.path.join('../models/', dir_name)
 
 if not os.path.exists(path_model):
     os.makedirs(path_model)
     
-# Specify here the path to the initial model if needed.
-
 path_model_init = None 
 
-# **If you want to initialize with a pre-trained model, add it to the folder just created right now, before launching the training ! **
 
-with open(path_model+filename, 'w') as f:
-    json.dump(config, f, indent=2)
+# Specify here the path to the initial model if needed.
 
-with open(path_model+filename, 'r') as fd:
-    config_network = json.loads(fd.read())
+if os.path.exists(path_model+filename): # if there is already a configfile
+    with open(path_model+filename, 'r') as fd:
+        config_network = json.loads(fd.read())
+else: # There is no config file for the moment
+    with open(path_model+filename, 'w') as f:
+        json.dump(config, f, indent=2)
+    with open(path_model+filename, 'r') as fd:
+        config_network = json.loads(fd.read())
     
-# Training phase
+################################################### Training phase ###################################################
 
+# Note : possible values for gpu: None, '/gpu:0'. If used withing CUDA_VISIBLE_DEVICES=?, then it will use gpu number ? by default
 from AxonDeepSeg.train_network import train_model
-train_model(path_training, path_model, config_network,path_model_init=path_model_init,gpu=None)
+train_model(path_training, path_model, config_network,path_model_init=path_model_init,gpu=None, augmented_data=True)
+
+
