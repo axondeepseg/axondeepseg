@@ -302,7 +302,7 @@ def uconv_net(x, config, weights, biases, image_size=256):
     
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
-                save_trainable=True, augmented_data=True, gpu=None):
+                save_trainable=True, augmented_data=True, gpu=None, batch_size=1):
     """
     :param path_trainingset: path of the train and validation set built from data_construction
     :param path_model: path to save the trained model
@@ -364,8 +364,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     batch_size_validation = data_validation.get_size()
 
     # Optimization Parameters
-    batch_size = 2
-    training_iters = 500000
+    
+    # batch_size is defined in the call to the function (default = 1)
+    training_iters = 2500
     epoch_size = data_train.get_size()
 
     Report += '\n\n---Savings---'
@@ -513,7 +514,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         acc_current_best = 0
         loss_current_best = 10000
 
-        while step * batch_size < training_iters:
+        while epoch < max_epoch:
             
             # Compute the optimizer at each training iteration
             if weighted_cost == True:
