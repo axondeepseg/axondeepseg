@@ -9,7 +9,7 @@ import numpy as np
 from patch_extraction import extract_patch
 
 
-def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.5]):
+def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.8], random_seed = None):
     """
     :param path_data: folder including all images used for the training. Each image is represented by a a folder
     including image.png and mask.png (ground truth) and a .txt file named pixel_size_in_micrometer.
@@ -18,6 +18,7 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
     :param thresh_indices: list of float in [0,1[.
 
     WARNING with 3 classes, labels should be [0,0.1,0.8], it was designed for .jpeg
+    :param random_seed: the random seed to use when generating the dataset. Enables to generate the same train and validation set if given the same raw dataset.
     
     :return: no return
 
@@ -26,7 +27,9 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
     Each data is represented by the patch, image_i.png, and its groundtruth, mask_i.png
     A rescaling is also added to set the pixel size at the value of the general_pixel_size
     """
-
+    
+    random.seed(random_seed) #Setting the random seed in order to get reproducible results.
+    
     i = 0
     for root in os.listdir(path_data)[:]:
 
@@ -73,15 +76,18 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
 
     if not os.path.exists(trainingset_path):
         os.makedirs(trainingset_path)
+        os.makedirs(trainingset_path+'/raw/')
+        os.makedirs(trainingset_path+'/testing/')
+        
 
-    folder_train = trainingset_path+'/Train'
+    folder_train = trainingset_path+'/training/Train'
 
     if os.path.exists(folder_train):
         shutil.rmtree(folder_train)
     if not os.path.exists(folder_train):
         os.makedirs(folder_train)
 
-    folder_validation = trainingset_path+'/Validation' # change to Validation.
+    folder_validation = trainingset_path+'/training/Validation' # change to Validation.
 
     if os.path.exists(folder_validation):
         shutil.rmtree(folder_validation)
