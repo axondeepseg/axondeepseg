@@ -23,7 +23,7 @@ def compute_training(configfile, path_trainingset, path_model, path_model_init =
 
     # Training
     from AxonDeepSeg.train_network import train_model
-    train_model(path_trainingset, path_model, config_network, path_model_init=path_model_init)
+    train_model(path_trainingset, path_model, config_network)
 
 
 def main():
