@@ -42,11 +42,19 @@ from config import generate_config
 
 
 # Create some wrappers for simplicity
-def conv2d(x, W, b, strides=1):
+def conv2d(x, W, b, phase, strides=1, bn = True):
     # Conv2D wrapper, with bias and relu activation
     x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
-    x = tf.nn.bias_add(x, b)
-    return tf.nn.relu(x)
+    
+    
+    # We add then batch normalization. If we choose to use it (default), then we apply BN post-activation.
+    if bn:
+        x = tf.nn.relu(x)
+        return tf.contrib.layers.batch_norm(x, center=True, scale=True, 
+                                          is_training=phase)
+    else: # Else we first ass the bias, then apply ReLU.
+        x = tf.nn.bias_add(x, b)
+        return tf.nn.relu(x)
 
 
 def maxpool2d(x, k=2):
@@ -56,7 +64,7 @@ def maxpool2d(x, k=2):
 # Compute the weights and biases for the network.
 def compute_weights(config):
     """
-    Create the weights and biases.
+    Create the weights and biases and defines how to initialize their values.
     Input :
         x : TF object to define, ensemble des patchs des images :graph input
         config : dict : described in the header.
@@ -91,8 +99,11 @@ def compute_weights(config):
         biases = {'upconv_b': [], 'finalconv_b': [], 'bb1': [], 'bb2': [], 'bc': [], 'be': []}
     else:
         print('Wrong downsampling method, please use ''maxpooling'' or ''convolution''.')
-
-        # Contraction
+        
+    ####################################################################
+    ######################### CONTRACTION PHASE ########################
+    ####################################################################
+    
     for i in range(depth):
 
         layer_convolutions_weights = []
@@ -101,26 +112,24 @@ def compute_weights(config):
         # Compute the layer's convolutions and biases.
         for conv_number in range(number_of_convolutions_per_layer[i]):
             
+            # We retrieve the parameters of the convolution
             conv_size = size_of_convolutions_per_layer[i][conv_number]
             num_features = features_per_convolution[i][conv_number]
-
-            # Use 1 if it is the first convolution : input.
-            if i == 0 and conv_number == 0:
+            if i == 0 and conv_number == 0: # Use 1 if it is the first convolution : input.
                 num_features_in = 1
-
+            
+            # We define how to initialize the weights and we add it to the previously defined wrappers
             layer_convolutions_weights.append(
                 tf.Variable(tf.random_normal([conv_size, conv_size, num_features_in, num_features[1]],
                                              stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features_in)))),
                             name='wc' + str(conv_number + 1) + '1-%s' % i))
             layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
-                                                                          stddev=math.sqrt(2.0 / (
-                                                                          conv_size * conv_size * float(
-                                                                              num_features[1])))),
-                                                         name='bc' + str(conv_number + 1) + '1-%s' % i))
-
+                                                                          stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features[1])))), name='bc' + str(conv_number + 1) + '1-%s' % i))
+            
+            # Actualisation of next convolution's input number.
             num_features_in = num_features[1]
             
-
+        # Downsampling phase
         if downsampling == 'convolution':
             weights_pool = tf.Variable(tf.random_normal([5, 5, num_features_in, num_features_in],
                                                         stddev=math.sqrt(2.0 / (25 * float(num_features_in)))),
@@ -135,7 +144,10 @@ def compute_weights(config):
         if downsampling == 'convolution':
             weights['pooling'].append(weights_pool)
             biases['pooling_b'].append(biases_pool)
+            
+    # We now have gone through the contraction phase, and we are at the "bottom" of the U-Net
 
+    # We define the weights and biases of the bottom layer and store them in the wrappers
     num_features_b = 2 * num_features_in
     weights['wb1'] = tf.Variable(
         tf.random_normal([3, 3, num_features_in, num_features_b], stddev=math.sqrt(2.0 / (9 * float(num_features_in)))),
@@ -143,23 +155,29 @@ def compute_weights(config):
     weights['wb2'] = tf.Variable(
         tf.random_normal([3, 3, num_features_b, num_features_b], stddev=math.sqrt(2.0 / (9 * float(num_features_b)))),
         name='wb2-%s' % i)
+    
     biases['bb1'] = tf.Variable(tf.random_normal([num_features_b]), name='bb1-%s' % i)
     biases['bb2'] = tf.Variable(tf.random_normal([num_features_b]), name='bb2-%s' % i)
 
     num_features_in = num_features_b
 
-    # Expansion
+    ####################################################################
+    ########################## EXPANSION PHASE #########################
+    ####################################################################
+    
     for i in range(depth):
         
         layer_convolutions_weights = []
         layer_convolutions_biases = []
-
+        
+        # We define the weights for the upconvolution
         num_features = features_per_convolution[depth - i - 1][-1]
         
         weights['upconv'].append(
             tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s' % i))
         biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s' % i))
 
+        # Then for each convolution we define the weights
         for conv_number in reversed(range(number_of_convolutions_per_layer[depth - i - 1])):
             
             if conv_number == number_of_convolutions_per_layer[depth - i - 1] - 1:
@@ -185,6 +203,7 @@ def compute_weights(config):
         weights['we'].append(layer_convolutions_weights)
         biases['be'].append(layer_convolutions_biases)
 
+    # We finish by the final convolution that gives us the probabilities
     weights['finalconv'] = tf.Variable(tf.random_normal([1, 1, num_features_in, n_classes]), name='finalconv-%s' % i)
     biases['finalconv_b'] = tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s' % i)
 
@@ -192,7 +211,7 @@ def compute_weights(config):
 
 
 # Create model
-def uconv_net(x, config, weights, biases, image_size=256):
+def uconv_net(x, config, weights, biases, phase, image_size=256):
     """
     Create the U-net.
     Input :
@@ -226,9 +245,9 @@ def uconv_net(x, config, weights, biases, image_size=256):
             print('Size:', size_of_convolutions_per_layer[i][conv_number])
 
             if conv_number == 0:
-                convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
+                convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number], phase, bn=True)
             else:
-                convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number])
+                convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number], phase, bn=True)
                 
             # Adding summary of the activations for each layer and each convolution (except the downsampling convolution)
             tf.summary.histogram('activations_contrac_d'+str(i)+'_cn'+str(conv_number), convolution_c)
@@ -238,15 +257,15 @@ def uconv_net(x, config, weights, biases, image_size=256):
         relu_results.append(convolution_c)
 
         if downsampling == 'convolution':
-            convolution_c = conv2d(convolution_c, weights['pooling'][i], biases['pooling_b'][i], strides=2)
+            convolution_c = conv2d(convolution_c, weights['pooling'][i], biases['pooling_b'][i], phase, bn=True, strides=2)
         else:
             convolution_c = maxpool2d(convolution_c, k=2)
 
         data_temp_size.append(data_temp_size[-1] / 2)
         data_temp = convolution_c
 
-    conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'])
-    conv2 = conv2d(conv1, weights['wb2'], biases['bb2'])
+    conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'], phase, bn=True)
+    conv2 = conv2d(conv1, weights['wb2'], biases['bb2'], phase, bn=True)
     data_temp_size.append(data_temp_size[-1])
     data_temp = conv2
     
@@ -258,7 +277,7 @@ def uconv_net(x, config, weights, biases, image_size=256):
     for i in range(depth):
         # Resizing + upconvolution
         data_temp = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
-        upconv = conv2d(data_temp, weights['upconv'][i], biases['upconv_b'][i])
+        upconv = conv2d(data_temp, weights['upconv'][i], biases['upconv_b'][i], phase, bn=True)
         data_temp_size.append(data_temp_size[-1] * 2)
 
         # concatenation (see U-net article)
@@ -273,9 +292,9 @@ def uconv_net(x, config, weights, biases, image_size=256):
             print('Size:', size_of_convolutions_per_layer[i][conv_number])
 
             if conv_number == 0:
-                convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number])
+                convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number], phase, bn=True)
             else:
-                convolution_e = conv2d(convolution_e, weights['we'][i][conv_number], biases['be'][i][conv_number])
+                convolution_e = conv2d(convolution_e, weights['we'][i][conv_number], biases['be'][i][conv_number], phase, bn=True)
                 
             # Adding summary of the activations for each layer and each convolution (except the upsampling convolution)
             tf.summary.histogram('activations_expand_d'+str(depth-i-1)+'_cn'+str(conv_number), convolution_e)
@@ -284,6 +303,9 @@ def uconv_net(x, config, weights, biases, image_size=256):
         data_temp = convolution_e
 
     # final convolution and segmentation
+    
+    
+    
     finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
     
     # Adding summary of the activations for the last convolution
@@ -384,6 +406,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # Graph input
     x = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # None should be batch_size
     y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes)) # Should be batch_size x n_input
+    phase = tf.placeholder(tf.bool) # Tells us if we are in training phase of test phase. Used for batch_normalization
 
     if weighted_cost == True:
         spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # Should be batch_size x n_input
@@ -398,9 +421,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
     if gpu in ['gpu:0', 'gpu:1']:
         with tf.device('/' + gpu):
-            pred = uconv_net(x, config, weights, biases)
+            pred = uconv_net(x, config, weights, biases, phase)
     else:
-        pred = uconv_net(x, config, weights, biases)
+        pred = uconv_net(x, config, weights, biases, phase)
 
     total_parameters = 0
     for variable in tf.trainable_variables():
@@ -428,7 +451,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ########
 
     temp = set(tf.global_variables())  # trick to get variables generated by the optimizer
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+    
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS) # We add the batch normalization parameters to the graph
+    with tf.control_dependencies(update_ops):
+        # Ensures that we execute the update_ops before performing the train_step
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
     # Evaluate model
     
@@ -527,13 +554,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 # net on the training set to see it in tensorboard.
                 if step % epoch_size == 0:
                     stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                               spatial_weights: weight, keep_prob: dropout})
+                                               spatial_weights: weight, keep_prob: dropout, phase:True})
                     # Evaluating the loss and the accuracy for the dataset
                     epoch_training_loss.append(stepcost)
                     epoch_training_acc.append(stepacc)
                                                            
                     # Writing the summary
-                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, spatial_weights: weight})
+                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, spatial_weights: weight, phase:True})
                     train_writer.add_summary(summary, epoch)
                     train_writer.add_summary(im_summary, epoch)
                     
@@ -544,7 +571,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     
                     stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
                                                        spatial_weights: weight,
-                                                       keep_prob: dropout})
+                                                       keep_prob: dropout, phase:True})
                     epoch_training_loss.append(stepcost)
                     epoch_training_acc.append(stepacc)
                     
@@ -556,13 +583,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 # net on the training set to see it in tensorboard.
                 if step % epoch_size == 0:
                     stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                                   keep_prob: dropout})
+                                                   keep_prob: dropout, phase:True})
                     # Evaluating the loss and the accuracy for the dataset
                     epoch_training_loss.append(stepcost)
                     epoch_training_acc.append(stepacc)
                                         
                     # Writing the summary
-                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc})
+                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, phase:True})
                     
                     train_writer.add_summary(summary, epoch)
                     train_writer.add_summary(im_summary, epoch)
@@ -572,7 +599,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
                 else:
                     stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                                           keep_prob: dropout})
+                                                           keep_prob: dropout, phase:True})
                     epoch_training_loss.append(stepcost)
                     epoch_training_acc.append(stepacc)
 
@@ -581,10 +608,10 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 # Calculate batch loss and accuracy
                 if weighted_cost == True:
                     loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
-                                                                               spatial_weights: weight, keep_prob: 1.})
+                                                                               spatial_weights: weight, keep_prob: 1., phase:False})
                 else:
                     loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
-                                                                               keep_prob: 1.})
+                                                                               keep_prob: 1., phase:False})
                 if verbose == 2:
                     outputs = "Iter " + str(step * batch_size) + ", Minibatch Loss= " + \
                               "{:.6f}".format(loss) + ", Training Accuracy= " + \
@@ -603,16 +630,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                                                                       augmented_data=False)
                     
                     loss, acc = session.run([cost, accuracy],
-                                         feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
+                                         feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
                     # Writing the summary for this step of the training, to use in Tensorflow
-                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, spatial_weights: weight})
+                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, spatial_weights: weight, phase:False})
 
                 else:
                     batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, augmented_data=False)
-                    loss, acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
+                    loss, acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1., phase:False})
 
                    # Writing the summary for this step of the training, to use in Tensorflow
-                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc})
+                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, phase:False})
                     
                     
                 validation_writer.add_summary(summary, epoch)
