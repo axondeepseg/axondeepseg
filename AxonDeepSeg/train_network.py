@@ -321,6 +321,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     Accuracy = []
     Report = ''
     verbose = 1
+    
+    print path_model_init
 
     # Results and Models
     folder_model = path_model

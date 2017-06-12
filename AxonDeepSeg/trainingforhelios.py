@@ -8,7 +8,7 @@ import os, sys
 
 def compute_training(configfile, path_trainingset, path_model, path_model_init = None):
 
-    os.chdir(sys.path[0])
+    os.chdir(sys.path[0]) # Necessary to fix the directory we are working in
     with open(os.path.join(path_model, configfile), 'r') as fd:
         config_network = json.loads(fd.read())
 
