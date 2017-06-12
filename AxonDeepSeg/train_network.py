@@ -326,6 +326,8 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
 def train_model(path_trainingset, path_model, config, path_model_init=None,
                 save_trainable=True, augmented_data=True, gpu=None, batch_size=1):
     """
+    Principal function of this script. Trains the model using TensorFlow.
+    
     :param path_trainingset: path of the train and validation set built from data_construction
     :param path_model: path to save the trained model
     :param config: dict: network's parameters described in the header.
@@ -337,20 +339,19 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     :return:
     """
 
-    # Divers variables
+    # Diverses variables
     Loss = []
     Epoch = []
     Accuracy = []
     Report = ''
     verbose = 1
+    activate_bn = True # We choose here if we want to use batch_normalization. True by default.
     
-    print path_model_init
-
     # Results and Models
     folder_model = path_model
     if not os.path.exists(folder_model):
         os.makedirs(folder_model)
-
+ 
     display_step = 100
     save_step = 600
 
@@ -369,7 +370,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     weighted_cost = config["network_weighted_cost"]
     thresh_indices = config["network_thresholds"]
 
-    # ----------------SAVING HYPERPARAMETERS TO USE THEM FOR apply_model-----------------------------------------------#
+    # SAVING HYPERPARAMETERS TO USE THEM FOR apply_model
 
     hyperparameters = {'depth': depth, 'dropout': dropout, 'image_size': image_size,
                        'model_restored_path': path_model_init, 'learning_rate': learning_rate,
@@ -402,32 +403,43 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
               + ';\n epoch_size: ' + str(epoch_size) + ';\n dropout :  ' + str(dropout) \
               + ';\n (if model restored) restored_model :' + str(path_model_init)
 
-
-    # Graph input
-    x = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # None should be batch_size
-    y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes)) # Should be batch_size x n_input
+            
+    ########################################################################################################################
+    ################################################## GRAPH CONSTRUCTION ##################################################
+    ########################################################################################################################
+    
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    #### 1 - Declaring the placeholders
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    x = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # None relates to batch_size
+    y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes))
     phase = tf.placeholder(tf.bool) # Tells us if we are in training phase of test phase. Used for batch_normalization
-
     if weighted_cost == True:
-        spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # Should be batch_size x n_input
-
+        spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) 
     keep_prob = tf.placeholder(tf.float32)
     adapt_learning_rate = tf.placeholder(tf.float32)
 
+    # Implementation note : we could use a spatial_weights tensor with only ones, which would greatly simplify the rest of the code by removing a lot of if conditions. Nevertheless, for computational reasons, we prefer to avoid the multipliciation by the spatial weights if the associated matrix is composed of only ones. This position may be revised in the future.
+    
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    #### 2 - Declaring the weights
+    ### ------------------------------------------------------------------------------------------------------------------ ###
     weights, biases = compute_weights(config)
-    ####################################################
 
-    # Call the model, selected a GPU if asked
-    # WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    #### 3 - Creating the graph associated to the prediction made by the U-net.
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    
+    # We select a GPU before creating the prediction graph. WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
     if gpu in ['gpu:0', 'gpu:1']:
         with tf.device('/' + gpu):
             pred = uconv_net(x, config, weights, biases, phase)
     else:
         pred = uconv_net(x, config, weights, biases, phase)
 
+    # We also display the total number of variables
     total_parameters = 0
     for variable in tf.trainable_variables():
-        # shape is an array of tf.Dimension
         shape = variable.get_shape()
         variable_parametes = 1
         for dim in shape:
@@ -435,8 +447,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         total_parameters += variable_parametes
     print('tot_param = ',total_parameters)
     
-    # Reshaping pred and y so that they are understandable by softmax_cross_entropy
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    #### 4 - Adapting the dimensions of the differents tensors, then defining the optimization of the graph (loss + opt.)
+    ### ------------------------------------------------------------------------------------------------------------------ ###
     
+    # Reshaping pred and y so that they are understandable by softmax_cross_entropy  
     pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]], name='Reshape_pred')
     y_ = tf.reshape(tf.reshape(y,[-1,tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]), [-1,tf.shape(y)[-1]], name='Reshape_y')
    
@@ -444,82 +459,106 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     if weighted_cost == True:
         # Reshaping the weights matrix to a vector of good length
         spatial_weights_ = tf.reshape(tf.reshape(spatial_weights,[-1,tf.shape(spatial_weights)[1]*tf.shape(spatial_weights)[2]]), [-1], name='Reshape_spatial_weights')
-        
         cost = tf.reduce_mean(tf.multiply(spatial_weights_,tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
     else:
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_))
-    ########
 
     temp = set(tf.global_variables())  # trick to get variables generated by the optimizer
     
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS) # We add the batch normalization parameters to the graph
-    with tf.control_dependencies(update_ops):
-        # Ensures that we execute the update_ops before performing the train_step
+    # We then define the optimization operation. 
+    if activate_bn:
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
+            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+    else: # In the case we don't use BN
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
-    # Evaluate model
-    
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    #### 5 - Evaluating the model and storing the results to visualise them in TensorBoard
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+     
+    # We evaluate the accuracy pixel-by-pixel
     correct_pred = tf.equal(tf.argmax(pred_, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
     
-    # Define variables to keep track of the train error over one whole epoch instead of just one batch (these are the ones we are going to summarize)
+    # Defining list variables to keep track of the train error over one whole epoch instead of just one batch (these are the ones we are going to summarize)
     
     L_training_loss = tf.placeholder(tf.float32)
     L_training_acc = tf.placeholder(tf.float32)
-    
+
     training_loss = tf.reduce_mean(L_training_loss)
     training_acc = tf.reduce_mean(tf.cast(L_training_acc, tf.float32))
     
     tf.summary.scalar('loss', training_loss)
     tf.summary.scalar('accuracy', training_acc)
     
-    # Merged summaries relates to all numeric data (histograms, kernels ... etc)
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    #### 6 - Processing summaries, that are used to visualize the training phase metrics on TensorBoard
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+ 
+    # We create a merged summary. It relates to all numeric data (histograms, kernels ... etc)
     merged_summaries = tf.summary.merge_all()
 
-    
-    # We now create a summary specific to images. We add images of the input and its transformation by the u-net
-        
+    # We also create a summary specific to images. We add images of the input and the probability maps predicted by the u-net
     L_im_summ = []
     L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
-    softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_), (-1, image_size * image_size, n_classes)), (-1, image_size, image_size, n_classes)) # We compute the softmax prediction to display the probability map and reshape them to (b_s, imsz, imsz, n_classes)
     
+    # Creating the operation giving the probabilities
+    softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_), (-1, image_size * image_size, n_classes)), (-1, image_size, image_size, n_classes)) # We compute the softmax predictions and reshape them to (b_s, imsz, imsz, n_classes)
     probability_maps = tf.split(softmax_pred, n_classes, axis=3)
     
-    # We create a probability map for each class
+    # Adding a probability map for each class to the image summary
     for i, probmap in enumerate(probability_maps):
         L_im_summ.append(tf.summary.image('probability_map_class_'+str(i), probmap))
     
     # Merging the image summary
     images_merged_summaries = tf.summary.merge(L_im_summ)
-
-    ######## Initializing variables and summaries
-    
+ 
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+    #### 7 - Initializing variables and summaries
+    ### ------------------------------------------------------------------------------------------------------------------ ###
+ 
     # We create the directories where we will store our model
-
     train_writer = tf.summary.FileWriter(logdir=path_model + '/train')
     validation_writer = tf.summary.FileWriter(logdir=path_model + '/validation')
 
+    # Initializing all the variables
     init = tf.global_variables_initializer()
 
+    # Creating a tool to preserve the state of the variables (useful for transfer learning for instance)
     if save_trainable:
         saver = tf.train.Saver(tf.trainable_variables())
-
     else:
         saver = tf.train.Saver(tf.all_variables())
 
-    # Launch the graph
+    ########################################################################################################################
+    #################################################### TRAINING PHASE ####################################################
+    ########################################################################################################################
+
     Report += '\n\n---Intermediary results---\n'
 
     with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as session:
+        
+        # Session initialized !
+        
+        ### --------------------------------------------------------------------------------------------------------------- ###
+        #### 1 - Preparing the main loop
+        ### --------------------------------------------------------------------------------------------------------------- ###
+
+        # Initialization of useful variables
         last_epoch = 0
         epoch_training_loss = []
         epoch_training_acc = []
+        acc_current_best = 0
+        loss_current_best = 10000
 
         # Setting the graph in the summaries writer in order to be able to use TensorBoard
         train_writer.add_graph(session.graph)
         validation_writer.add_graph(session.graph)
 
-        if path_model_init: # load a previous session if requested.
+        # Loading a previous session if requested.
+        if path_model_init: 
             folder_restored_model = path_model_init
             saver.restore(session, folder_restored_model + "/model.ckpt")
             if save_trainable:
@@ -527,22 +566,25 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             file = open(folder_restored_model + '/evolution.pkl', 'r')
             evolution_restored = pickle.load(file)
             last_epoch = evolution_restored["steps"][-1]
-
+        # Else, initializing the variables
         else:
             session.run(init)
         print 'training start'
 
+        # Display some information about weight selection
         if weighted_cost == True:
             print('Weighted cost selected')
         else:
             print('Default cost selected')
 
+        # Update state variables (useful with transfert learning)
         step = 1
         epoch = 1 + last_epoch
 
-        acc_current_best = 0
-        loss_current_best = 10000
-
+        ### --------------------------------------------------------------------------------------------------------------- ###
+        #### 2 - Main loop: training the neural network
+        ### --------------------------------------------------------------------------------------------------------------- ###
+        
         while epoch < max_epoch:
             
             # Compute the optimizer at each training iteration
