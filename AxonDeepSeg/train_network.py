@@ -49,9 +49,9 @@ def conv2d(x, W, b, phase, strides=1, bn = True):
     
     # We add then batch normalization. If we choose to use it (default), then we apply BN post-activation.
     if bn:
-        x = tf.nn.relu(x)
-        return tf.contrib.layers.batch_norm(x, center=True, scale=True, 
+        h1 = tf.contrib.layers.batch_norm(x, center=True, scale=True, 
                                           is_training=phase)
+        return tf.nn.relu(h1)
     else: # Else we first ass the bias, then apply ReLU.
         x = tf.nn.bias_add(x, b)
         return tf.nn.relu(x)
@@ -88,7 +88,6 @@ def compute_weights(config):
     weighted_cost = config["network_weighted_cost"]
     thresh_indices = config["network_thresholds"]
 
-    ####################################################################
     # Create some wrappers for simplicity
 
     if downsampling == 'convolution':
@@ -144,9 +143,12 @@ def compute_weights(config):
         if downsampling == 'convolution':
             weights['pooling'].append(weights_pool)
             biases['pooling_b'].append(biases_pool)
-            
-    # We now have gone through the contraction phase, and we are at the "bottom" of the U-Net
 
+    ####################################################################
+    ########################### DEEPEST PHASE ##########################
+    ####################################################################
+    
+    # We now have gone through the contraction phase, and we are at the "bottom" of the U-Net
     # We define the weights and biases of the bottom layer and store them in the wrappers
     num_features_b = 2 * num_features_in
     weights['wb1'] = tf.Variable(
@@ -223,6 +225,8 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
     Output :
         The U-net.
     """
+    
+    # Load the variables
     image_size = image_size
     n_classes = config["network_n_classes"]
     depth = config["network_depth"]
@@ -237,7 +241,10 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
     data_temp_size = [image_size]
     relu_results = []
 
-    # contraction
+    ####################################################################
+    ######################### CONTRACTION PHASE ########################
+    ####################################################################
+    
     for i in range(depth):
 
         for conv_number in range(number_of_convolutions_per_layer[i]):
@@ -252,7 +259,6 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
             # Adding summary of the activations for each layer and each convolution (except the downsampling convolution)
             tf.summary.histogram('activations_contrac_d'+str(i)+'_cn'+str(conv_number), convolution_c)
             
-            # If it's the first convolution of the first channel/filter, we also keep a summary of the image of the kernel
         
         relu_results.append(convolution_c)
 
@@ -263,6 +269,10 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
 
         data_temp_size.append(data_temp_size[-1] / 2)
         data_temp = convolution_c
+        
+    ####################################################################
+    ########################### DEEPEST PHASE ##########################
+    ####################################################################
 
     conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'], phase, bn=True)
     conv2 = conv2d(conv1, weights['wb2'], biases['bb2'], phase, bn=True)
@@ -273,7 +283,10 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
     tf.summary.histogram('activations_deepest_c0', conv1)
     tf.summary.histogram('activations_deepest_c1', conv2)
 
-    # expansion
+    ####################################################################
+    ########################## EXPANSION PHASE #########################
+    ####################################################################
+    
     for i in range(depth):
         # Resizing + upconvolution
         data_temp = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
@@ -302,10 +315,7 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
 
         data_temp = convolution_e
 
-    # final convolution and segmentation
-    
-    
-    
+    # Final convolution and segmentation
     finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
     
     # Adding summary of the activations for the last convolution
@@ -316,7 +326,6 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
     tf.summary.image("Visualize_kernel", first_layer_weights_reshaped)
     
     # Finally we compute the activations of the last layer
-    
     final_result = tf.reshape(finalconv,
         [tf.shape(finalconv)[0], data_temp_size[-1] * data_temp_size[-1], n_classes])
 
@@ -338,7 +347,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return:
     """
-
+  
+    ########################################################################################################################
+    ############################################## VARIABLES INITIALIZATION ################################################
+    ########################################################################################################################
+ 
     # Diverses variables
     Loss = []
     Epoch = []
@@ -383,20 +396,22 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     with open(folder_model + '/hyperparameters.pkl', 'wb') as handle:
         pickle.dump(hyperparameters, handle)
 
+        
+    # Loading the datasets
     data_train = input_data(trainingset_path=path_trainingset, type='train', thresh_indices=thresh_indices)
     data_validation = input_data(trainingset_path=path_trainingset, type='validation', thresh_indices=thresh_indices)
     
     batch_size_validation = data_validation.get_size()
 
-    # Optimization Parameters
+    # Main loop parameters
     
-    # batch_size is defined in the call to the function (default = 1)
     max_epoch = 2500
     epoch_size = data_train.get_size()
-
+    # batch_size is defined in the call to the function (default = 1)
+    
+    # Initilizating the text to write in report.txt
     Report += '\n\n---Savings---'
     Report += '\n Model saved in : ' + folder_model
-
     Report += '\n\n---PARAMETERS---\n'
     Report += 'learning_rate : ' + str(learning_rate) + '; \n batch_size :  ' + str(batch_size) + ';\n depth :  ' + str(
         depth) \
@@ -587,20 +602,26 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         
         while epoch < max_epoch:
             
+            ### ----------------------------------------------------------------------------------------------------------- ###
+            #### a) Optimizing the network with the training set. Keep track of the metric on TensorBoard
+            ### ----------------------------------------------------------------------------------------------------------- ###
+            
             # Compute the optimizer at each training iteration
             if weighted_cost == True:
+                # Extracting the batches
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
                                                                              augmented_data=augmented_data)
+                  
+                # Running the optimizer and computing the cost and accuracy.
+                stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
+                                                       spatial_weights: weight,
+                                                       keep_prob: dropout, phase:True})
+                epoch_training_loss.append(stepcost)
+                epoch_training_acc.append(stepacc)
                 
-                # if were just finished an epoch, we summarize the performance of the
-                # net on the training set to see it in tensorboard.
-                if step % epoch_size == 0:
-                    stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                               spatial_weights: weight, keep_prob: dropout, phase:True})
-                    # Evaluating the loss and the accuracy for the dataset
-                    epoch_training_loss.append(stepcost)
-                    epoch_training_acc.append(stepacc)
-                                                           
+                # If we just finished an epoch, we summarize the performance of the
+                # net on the training set to see it in TensorBoard.
+                if step % epoch_size == 0:            
                     # Writing the summary
                     summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, spatial_weights: weight, phase:True})
                     train_writer.add_summary(summary, epoch)
@@ -608,27 +629,21 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     
                     epoch_training_loss = []
                     epoch_training_acc = []
-
-                else:
-                    
-                    stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                                       spatial_weights: weight,
-                                                       keep_prob: dropout, phase:True})
-                    epoch_training_loss.append(stepcost)
-                    epoch_training_acc.append(stepacc)
-                    
-                 
-            else: # no weighted cost
+  
+            else: # No weighted cost
+                # Extracting batches
                 batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, augmented_data=augmented_data)
+                
+                # Computing loss, accuracy and optimizing the weights
+                stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
+                                                   keep_prob: dropout, phase:True})
+                # Evaluating the loss and the accuracy for the dataset
+                epoch_training_loss.append(stepcost)
+                epoch_training_acc.append(stepacc)
 
-                # if were just finished an epoch, we summarize the performance of the
+                # If were just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in tensorboard.
                 if step % epoch_size == 0:
-                    stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                                   keep_prob: dropout, phase:True})
-                    # Evaluating the loss and the accuracy for the dataset
-                    epoch_training_loss.append(stepcost)
-                    epoch_training_acc.append(stepacc)
                                         
                     # Writing the summary
                     summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, phase:True})
@@ -639,13 +654,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_training_loss = []
                     epoch_training_acc = []
 
-                else:
-                    stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                                           keep_prob: dropout, phase:True})
-                    epoch_training_loss.append(stepcost)
-                    epoch_training_acc.append(stepacc)
+            ### ----------------------------------------------------------------------------------------------------------- ###
+            #### b) Evaluating and displaying the performance on the training set
+            ### ----------------------------------------------------------------------------------------------------------- ###
 
-            # Every now and then we display the performance of the network on the training set, on the current batch
+                    
+            # Every now and then we display the performance of the network on the training set, on the current batch.
+            # Note : this part is not really used right now.
             if step % display_step == 0:
                 # Calculate batch loss and accuracy
                 if weighted_cost == True:
@@ -660,6 +675,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                               "{:.5f}".format(acc)
                     print outputs
 
+            ### ----------------------------------------------------------------------------------------------------------- ###
+            #### c) Evaluating the performance on the validation set. Keep track of it on TensorBoard and in a pickle file.
+            ### ----------------------------------------------------------------------------------------------------------- ###
 
             # At the end of every epoch we compute the performance of our network on the validation set and we
             # save the summaries to see them on TensorBoard
@@ -683,11 +701,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                    # Writing the summary for this step of the training, to use in Tensorflow
                     summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, phase:False})
                     
-                    
                 validation_writer.add_summary(summary, epoch)
                 validation_writer.add_summary(im_summary_val, epoch)
-                
 
+                # We also keep the metrics in lists so that we can save them in a pickle file later.
+                # We display the metrics (evaluated on the validation set).
                 Accuracy.append(acc)
                 Loss.append(loss)
                 Epoch.append(epoch)
@@ -697,8 +715,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 output_2 += '\n Loss: ' + str(loss) + ';'
                 print '\n\n----Scores on validation:---' + output_2
 
-                # Saving model if it's the best one
-
+                # Saving the model if it's the best one
                 if epoch == 1:
                     acc_current_best = acc
                     loss_current_best = loss
@@ -709,7 +726,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
                 epoch += 1
 
-            # Saving the model
+            ### ----------------------------------------------------------------------------------------------------------- ###
+            #### d) Saving the model as a checkpoint, the metrics in a pickle file and update the file report.txt
+            ### ----------------------------------------------------------------------------------------------------------- ###
 
             if step % save_step == 0:
                 evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
@@ -723,11 +742,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 file.close()
 
             step += 1
-
+    
+        # At the end of each epoch we save the model in a checkpoint file
         save_path = saver.save(session, folder_model + "/model.ckpt")
 
         # Initialize best model with model after epoch 1
-
         evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
         with open(folder_model + '/evolution.pkl', 'wb') as handle:
             pickle.dump(evolution, handle)
@@ -775,7 +794,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-p", "--path_training", required=True, help="")
     ap.add_argument("-m", "--path_model", required=True, help="")
-    ap.add_argument("-c", "--config_file", required=False, help="", default="~/.axondeepseg.json")
+    ap.add_argument("-co", "--config_file", required=False, help="", default="~/.axondeepseg.json")
     ap.add_argument("-m_init", "--path_model_init", required=False, help="")
     ap.add_argument("-gpu", "--GPU", required=False, help="")
 
