@@ -38,182 +38,76 @@ from config import generate_config
 # network_thresholds : list of float in [0,1] : the thresholds for the ground truthes labels.
 
 # network_weighted_cost : boolean : whether we use weighted cost for training or not.
-###########################
 
 
-# Create some wrappers for simplicity
-def conv2d(x, W, b, phase, strides=1, bn = True):
-    # Conv2D wrapper, with bias and relu activation
-    x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
+
+###### NEW FUNCTIONS
     
+def conv_relu(x, n_out_chan, k_size, k_stride, scope, 
+              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+              training_phase=True):
+    '''
+    Default data format is NHWC.
+    Initializers for weights and bias are already defined (default).
+    :param training_phase: Whether we are in the training phase (True) or testing phase (False)
+    '''
     
-    # We add then batch normalization. If we choose to use it (default), then we apply BN post-activation.
-    if bn:
-        h1 = tf.contrib.layers.batch_norm(x, center=True, scale=True, 
-                                          is_training=phase)
-        return tf.nn.relu(h1)
-    else: # Else we first ass the bias, then apply ReLU.
-        x = tf.nn.bias_add(x, b)
-        return tf.nn.relu(x)
-
-
-def maxpool2d(x, k=2):
-    return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1],
-                          padding='SAME')
-
-# Compute the weights and biases for the network.
-def compute_weights(config):
-    """
-    Create the weights and biases and defines how to initialize their values.
-    Input :
-        x : TF object to define, ensemble des patchs des images :graph input
-        config : dict : described in the header.
-        dropout : float between 0 and 1 : percentage of neurons kept, 
-        image_size : int : The image size
-
-    Output :
-        The U-net.
-    """
-    image_size = 256
-    n_input = image_size * image_size
-
-    learning_rate = config["network_learning_rate"]
-    n_classes = config["network_n_classes"]
-    dropout = config["network_dropout"]
-    depth = config["network_depth"]
-    number_of_convolutions_per_layer = config["network_convolution_per_layer"]
-    size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
-    features_per_convolution = config["network_features_per_convolution"]
-    downsampling = config["network_downsampling"]
-    weighted_cost = config["network_weighted_cost"]
-    thresh_indices = config["network_thresholds"]
-
-    # Create some wrappers for simplicity
-
-    if downsampling == 'convolution':
-        weights = {'upconv': [], 'finalconv': [], 'wb1': [], 'wb2': [], 'wc': [], 'we': [], 'pooling': []}
-        biases = {'upconv_b': [], 'finalconv_b': [], 'bb1': [], 'bb2': [], 'bc': [], 'be': [], 'pooling_b': []}
-    elif downsampling == 'maxpooling':
-        weights = {'upconv': [], 'finalconv': [], 'wb1': [], 'wb2': [], 'wc': [], 'we': []}
-        biases = {'upconv_b': [], 'finalconv_b': [], 'bb1': [], 'bb2': [], 'bc': [], 'be': []}
-    else:
-        print('Wrong downsampling method, please use ''maxpooling'' or ''convolution''.')
+    with tf.variable_scope(scope):
+        net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=k_size, stride=k_stride, 
+                                       activation_fn=None, weights_initializer = w_initializer, scope='convolution', 
+                                       variables_collections=tf.get_collection('variables')
+                                      )
+        #net = tf.contrib.layers.batch_norm(net, center=True, scale=True, is_training=training_phase,                       
+        #                                   scope='bn')
+        net = tf.nn.relu(net,'relu')
+        tf.add_to_collection('activations',net)
+        return net
+    
+def downconv(x, n_out_chan, scope, 
+              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+              training_phase=True):
+    
+    '''
+    Default data format is NHWC.
+    Initializers for weights and bias are already defined (default).
+    :param training_phase: Whether we are in the training phase (True) or testing phase (False)
+    '''
+    
+    with tf.variable_scope(scope):
+        net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=2, stride=2, 
+                             activation_fn=None, weights_initializer = w_initializer, scope='convolution')
         
-    ####################################################################
-    ######################### CONTRACTION PHASE ########################
-    ####################################################################
-    
-    for i in range(depth):
-
-        layer_convolutions_weights = []
-        layer_convolutions_biases = []
+        #net = tf.contrib.layers.batch_norm(net, center=True, scale=True, is_training=training_phase, 
+        #                                  scope='bn')
         
-        # Compute the layer's convolutions and biases.
-        for conv_number in range(number_of_convolutions_per_layer[i]):
-            
-            # We retrieve the parameters of the convolution
-            conv_size = size_of_convolutions_per_layer[i][conv_number]
-            num_features = features_per_convolution[i][conv_number]
-            if i == 0 and conv_number == 0: # Use 1 if it is the first convolution : input.
-                num_features_in = 1
-            
-            # We define how to initialize the weights and we add it to the previously defined wrappers
-            layer_convolutions_weights.append(
-                tf.Variable(tf.random_normal([conv_size, conv_size, num_features_in, num_features[1]],
-                                             stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features_in)))),
-                            name='wc' + str(conv_number + 1) + '1-%s' % i))
-            layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
-                                                                          stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features[1])))), name='bc' + str(conv_number + 1) + '1-%s' % i))
-            
-            # Actualisation of next convolution's input number.
-            num_features_in = num_features[1]
-            
-        # Downsampling phase
-        if downsampling == 'convolution':
-            weights_pool = tf.Variable(tf.random_normal([5, 5, num_features_in, num_features_in],
-                                                        stddev=math.sqrt(2.0 / (25 * float(num_features_in)))),
-                                       name='wb1-%s' % i)
-            biases_pool = tf.Variable(
-                tf.random_normal([num_features_in], stddev=math.sqrt(2.0 / (25 * float(num_features[1])))),
-                name='bc' + str(conv_number + 1) + '1-%s' % i)
-
-        # Store contraction layers weights & biases.
-        weights['wc'].append(layer_convolutions_weights)
-        biases['bc'].append(layer_convolutions_biases)
-        if downsampling == 'convolution':
-            weights['pooling'].append(weights_pool)
-            biases['pooling_b'].append(biases_pool)
-
-    ####################################################################
-    ########################### DEEPEST PHASE ##########################
-    ####################################################################
+        return tf.nn.relu(net,'relu')
     
-    # We now have gone through the contraction phase, and we are at the "bottom" of the U-Net
-    # We define the weights and biases of the bottom layer and store them in the wrappers
-    num_features_b = 2 * num_features_in
-    weights['wb1'] = tf.Variable(
-        tf.random_normal([3, 3, num_features_in, num_features_b], stddev=math.sqrt(2.0 / (9 * float(num_features_in)))),
-        name='wb1-%s' % i)
-    weights['wb2'] = tf.Variable(
-        tf.random_normal([3, 3, num_features_b, num_features_b], stddev=math.sqrt(2.0 / (9 * float(num_features_b)))),
-        name='wb2-%s' % i)
+def upconv(x, n_out_chan, scope, 
+              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+              training_phase=True):
     
-    biases['bb1'] = tf.Variable(tf.random_normal([num_features_b]), name='bb1-%s' % i)
-    biases['bb2'] = tf.Variable(tf.random_normal([num_features_b]), name='bb2-%s' % i)
-
-    num_features_in = num_features_b
-
-    ####################################################################
-    ########################## EXPANSION PHASE #########################
-    ####################################################################
+    '''
+    Default data format is NHWC.
+    Initializers for weights and bias are already defined (default).
+    :param training_phase: Whether we are in the training phase (True) or testing phase (False)
+    '''
     
-    for i in range(depth):
+    with tf.variable_scope(scope):
+        net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=2, stride=1, 
+                             activation_fn=None, weights_initializer = w_initializer, scope='convolution')
         
-        layer_convolutions_weights = []
-        layer_convolutions_biases = []
+        #net = tf.contrib.layers.batch_norm(net, center=True, scale=True, is_training=training_phase, 
+        #                                  scope='bn')
         
-        # We define the weights for the upconvolution
-        num_features = features_per_convolution[depth - i - 1][-1]
-        
-        weights['upconv'].append(
-            tf.Variable(tf.random_normal([2, 2, num_features_in, num_features[1]]), name='upconv-%s' % i))
-        biases['upconv_b'].append(tf.Variable(tf.random_normal([num_features[1]]), name='bupconv-%s' % i))
+        return tf.nn.relu(net,'relu')
+    
+    
 
-        # Then for each convolution we define the weights
-        for conv_number in reversed(range(number_of_convolutions_per_layer[depth - i - 1])):
-            
-            if conv_number == number_of_convolutions_per_layer[depth - i - 1] - 1:
-                num_features_in = features_per_convolution[depth - i - 1][-1][1] + num_features[1]
-                print('Input features layer : ', num_features_in)
-
-            # We climb the reversed layers 
-            conv_size = size_of_convolutions_per_layer[depth - i - 1][conv_number]
-            num_features = features_per_convolution[depth - i - 1][conv_number]
-            layer_convolutions_weights.append(
-                tf.Variable(tf.random_normal([conv_size, conv_size, num_features_in, num_features[1]],
-                                             stddev=math.sqrt(2.0 / (conv_size * conv_size * float(num_features_in)))),
-                            name='we' + str(conv_number + 1) + '1-%s' % i))
-            layer_convolutions_biases.append(tf.Variable(tf.random_normal([num_features[1]],
-                                                                          stddev=math.sqrt(2.0 / (
-                                                                          conv_size * conv_size * float(
-                                                                              num_features[1])))),
-                                                         name='be' + str(conv_number + 1) + '1-%s' % i))
-            # Actualisation of next convolution's input number.
-            num_features_in = num_features[1]
-
-        # Store expansion layers weights & biases.
-        weights['we'].append(layer_convolutions_weights)
-        biases['be'].append(layer_convolutions_biases)
-
-    # We finish by the final convolution that gives us the probabilities
-    weights['finalconv'] = tf.Variable(tf.random_normal([1, 1, num_features_in, n_classes]), name='finalconv-%s' % i)
-    biases['finalconv_b'] = tf.Variable(tf.random_normal([n_classes]), name='bfinalconv-%s' % i)
-
-    return weights,biases
+def maxpool(x, k_size, k_stride, scope, padding='VALID'):
+    return tf.contrib.layers.max_pool2d(x,k_size,stride=k_stride,padding=padding,scope=scope)
 
 
-# Create model
-def uconv_net(x, config, weights, biases, phase, image_size=256):
+def uconv_net(x, config, phase, image_size=256):
     """
     Create the U-net.
     Input :
@@ -236,7 +130,7 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
     downsampling = config["network_downsampling"]
 
     # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
-    x = tf.reshape(x, shape=[-1, image_size, image_size, 1])
+    net = tf.reshape(x, shape=[-1, image_size, image_size, 1])
     data_temp = x
     data_temp_size = [image_size]
     relu_results = []
@@ -251,85 +145,98 @@ def uconv_net(x, config, weights, biases, phase, image_size=256):
             print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
             print('Size:', size_of_convolutions_per_layer[i][conv_number])
 
-            if conv_number == 0:
-                convolution_c = conv2d(data_temp, weights['wc'][i][conv_number], biases['bc'][i][conv_number], phase, bn=True)
-            else:
-                convolution_c = conv2d(convolution_c, weights['wc'][i][conv_number], biases['bc'][i][conv_number], phase, bn=True)
+            net = conv_relu(net, features_per_convolution[i][conv_number][1], 
+                            size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
+                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                            training_phase=phase, scope='cconv-d'+str(i)+'-c'+str(conv_number))
                 
             # Adding summary of the activations for each layer and each convolution (except the downsampling convolution)
-            tf.summary.histogram('activations_contrac_d'+str(i)+'_cn'+str(conv_number), convolution_c)
-            
-        
-        relu_results.append(convolution_c)
+            #tf.summary.histogram('activations_c_d'+str(i)+'_cn'+str(conv_number), net)
+
+        relu_results.append(net) # We keep them for the upconvolutions
 
         if downsampling == 'convolution':
-            convolution_c = conv2d(convolution_c, weights['pooling'][i], biases['pooling_b'][i], phase, bn=True, strides=2)
+            net = downconv(net, features_per_convolution[i][conv_number][1],  
+                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                            training_phase=phase, scope='downconv-d'+str(i))
         else:
-            convolution_c = maxpool2d(convolution_c, k=2)
+            net = maxpool(net, k_size=2, k_stride=2, scope='downmp-d'+str(i))
 
         data_temp_size.append(data_temp_size[-1] / 2)
-        data_temp = convolution_c
+        data_temp = net
         
     ####################################################################
     ########################### DEEPEST PHASE ##########################
     ####################################################################
 
-    conv1 = conv2d(data_temp, weights['wb1'], biases['bb1'], phase, bn=True)
-    conv2 = conv2d(conv1, weights['wb2'], biases['bb2'], phase, bn=True)
-    data_temp_size.append(data_temp_size[-1])
-    data_temp = conv2
-    
-    # Adding summary of the activations for the deepest layers
-    tf.summary.histogram('activations_deepest_c0', conv1)
-    tf.summary.histogram('activations_deepest_c1', conv2)
+    # For the moment we keem the same number of channels as the last layer we went through
+    net = conv_relu(net, features_per_convolution[i][conv_number][1], 
+                    size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
+                    w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                    training_phase=phase, scope='deepconv1')
+    #tf.summary.histogram('activations_deepest_cn0', net) # Adding activations summary of deepest layers
 
+    net = conv_relu(net, features_per_convolution[i][conv_number][1], 
+                    size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
+                    w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                    training_phase=phase, scope='deepconv2')
+    #tf.summary.histogram('activations_deepest_cn1', net) # Adding activations summary of deepest layers
+
+    data_temp_size.append(data_temp_size[-1])
+    data_temp = net
+    
     ####################################################################
     ########################## EXPANSION PHASE #########################
     ####################################################################
     
-    for i in range(depth):
-        # Resizing + upconvolution
-        data_temp = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
-        upconv = conv2d(data_temp, weights['upconv'][i], biases['upconv_b'][i], phase, bn=True)
+    for i in range(depth):        
+        # Upsampling
+        net = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
+        
+        # Convolution
+        net = conv_relu(net, features_per_convolution[depth - i - 1][-1][1], 
+                        k_size=2, k_stride=1, 
+                        w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                        training_phase=phase, scope='upconv-d'+str(depth - i - 1))
+        
         data_temp_size.append(data_temp_size[-1] * 2)
 
         # concatenation (see U-net article)
-        upconv_concat = tf.concat(values=[tf.slice(relu_results[depth - i - 1], [0, 0, 0, 0],
-                                                                 [-1, data_temp_size[depth - i - 1],
-                                                                  data_temp_size[depth - i - 1], -1]), upconv],
-                                  axis=3)
+        net = tf.concat(values=[tf.slice(relu_results[depth - i - 1], [0, 0, 0, 0], [-1, data_temp_size[depth - i - 1],
+                                                             data_temp_size[depth - i - 1], -1]), net], axis=3)
         
         # Classic convolutions
-        for conv_number in range(number_of_convolutions_per_layer[i]):
+        for conv_number in range(number_of_convolutions_per_layer[depth - i - 1]):
             print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
             print('Size:', size_of_convolutions_per_layer[i][conv_number])
 
-            if conv_number == 0:
-                convolution_e = conv2d(upconv_concat, weights['we'][i][conv_number], biases['be'][i][conv_number], phase, bn=True)
-            else:
-                convolution_e = conv2d(convolution_e, weights['we'][i][conv_number], biases['be'][i][conv_number], phase, bn=True)
-                
-            # Adding summary of the activations for each layer and each convolution (except the upsampling convolution)
-            tf.summary.histogram('activations_expand_d'+str(depth-i-1)+'_cn'+str(conv_number), convolution_e)
+            net = conv_relu(net, features_per_convolution[depth - i - 1][conv_number][1], 
+                            size_of_convolutions_per_layer[depth - i - 1][conv_number], k_stride=1, 
+                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                            training_phase=phase, scope='econv-d'+str(i)+'-c'+str(conv_number))
         
+            # Adding summary of the activations for each layer and each convolution (except the upsampling convolution)
+            #tf.summary.histogram('activations_expand_d'+str(depth-i-1)+'_cn'+str(conv_number), net)
 
-        data_temp = convolution_e
+        data_temp = net
 
     # Final convolution and segmentation
-    finalconv = tf.nn.conv2d(convolution_e, weights['finalconv'], strides=[1, 1, 1, 1], padding='SAME')
     
+    finalconv = tf.contrib.layers.conv2d(net, num_outputs=n_classes, kernel_size=1, stride=1, scope='finalconv', padding='SAME')
+        
     # Adding summary of the activations for the last convolution
     tf.summary.histogram('activations_last', finalconv)
     
     # We also display the weights of the first kernel (can help to detect some mistakes)
-    first_layer_weights_reshaped = visualize_first_layer(weights['wc'][0][0], size_of_convolutions_per_layer[0][0], features_per_convolution[0][0][1])
-    tf.summary.image("Visualize_kernel", first_layer_weights_reshaped)
+    #first_layer_weights_reshaped = visualize_first_layer(weights['wc'][0][0], size_of_convolutions_per_layer[0][0], features_per_convolution[0][0][1])
+    #tf.summary.image("Visualize_kernel", first_layer_weights_reshaped)
     
     # Finally we compute the activations of the last layer
     final_result = tf.reshape(finalconv,
         [tf.shape(finalconv)[0], data_temp_size[-1] * data_temp_size[-1], n_classes])
 
     return final_result
+
     
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
@@ -358,7 +265,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     Accuracy = []
     Report = ''
     verbose = 1
-    activate_bn = True # We choose here if we want to use batch_normalization. True by default.
     
     # Results and Models
     folder_model = path_model
@@ -426,8 +332,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ### ------------------------------------------------------------------------------------------------------------------ ###
     #### 1 - Declaring the placeholders
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    x = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) # None relates to batch_size
-    y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes))
+    x = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="input") # None relates to batch_size
+    y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes), name="ground_truth")
     phase = tf.placeholder(tf.bool) # Tells us if we are in training phase of test phase. Used for batch_normalization
     if weighted_cost == True:
         spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) 
@@ -436,21 +342,19 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     # Implementation note : we could use a spatial_weights tensor with only ones, which would greatly simplify the rest of the code by removing a lot of if conditions. Nevertheless, for computational reasons, we prefer to avoid the multipliciation by the spatial weights if the associated matrix is composed of only ones. This position may be revised in the future.
     
-    ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 2 - Declaring the weights
-    ### ------------------------------------------------------------------------------------------------------------------ ###
-    weights, biases = compute_weights(config)
 
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 3 - Creating the graph associated to the prediction made by the U-net.
+    #### 2 - Creating the graph associated to the prediction made by the U-net.
     ### ------------------------------------------------------------------------------------------------------------------ ###
     
     # We select a GPU before creating the prediction graph. WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
+
+
     if gpu in ['gpu:0', 'gpu:1']:
         with tf.device('/' + gpu):
-            pred = uconv_net(x, config, weights, biases, phase)
+            pred = uconv_net(x, config, phase)
     else:
-        pred = uconv_net(x, config, weights, biases, phase)
+        pred = uconv_net(x, config, phase)
 
     # We also display the total number of variables
     total_parameters = 0
@@ -463,39 +367,48 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     print('tot_param = ',total_parameters)
     
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 4 - Adapting the dimensions of the differents tensors, then defining the optimization of the graph (loss + opt.)
+    #### 3 - Adapting the dimensions of the differents tensors, then defining the optimization of the graph (loss + opt.)
     ### ------------------------------------------------------------------------------------------------------------------ ###
     
-    # Reshaping pred and y so that they are understandable by softmax_cross_entropy  
-    pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]], name='Reshape_pred')
-    y_ = tf.reshape(tf.reshape(y,[-1,tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]), [-1,tf.shape(y)[-1]], name='Reshape_y')
+    # Reshaping pred and y so that they are understandable by softmax_cross_entropy 
+    with tf.name_scope('preds_reshaped'):
+        pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]])
+    with tf.name_scope('y_reshaped'):    
+        y_ = tf.reshape(tf.reshape(y,[-1,tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]), [-1,tf.shape(y)[-1]])
    
     # Define loss and optimizer
-    if weighted_cost == True:
-        # Reshaping the weights matrix to a vector of good length
-        spatial_weights_ = tf.reshape(tf.reshape(spatial_weights,[-1,tf.shape(spatial_weights)[1]*tf.shape(spatial_weights)[2]]), [-1], name='Reshape_spatial_weights')
-        cost = tf.reduce_mean(tf.multiply(spatial_weights_,tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
-    else:
-        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_))
+    with tf.name_scope('cost'):
+        if weighted_cost == True:    
+            spatial_weights_ = tf.reshape(tf.reshape(spatial_weights,[-1,tf.shape(spatial_weights)[1]*tf.shape(spatial_weights)[2]]), [-1])
+            cost = tf.reduce_mean(tf.multiply(spatial_weights_,tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
+        else:
+            cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_))
 
-    temp = set(tf.global_variables())  # trick to get variables generated by the optimizer
+    #temp = set(tf.global_variables())  # trick to get variables generated by the optimizer
     
     # We then define the optimization operation. 
-    if activate_bn:
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-        with tf.control_dependencies(update_ops):
-            # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
-            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
-    else: # In the case we don't use BN
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+    #update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    #with tf.control_dependencies(update_ops):
+    # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
+    # First we compute the gradients
+    grads_list = tf.train.AdamOptimizer(learning_rate=learning_rate).compute_gradients(cost)
+
+    # We make a summary of the gradients
+    for grad, weight in grads_list:
+        weight_grads_summary = tf.summary.histogram(weight.name + '_grad', grad)
+
+    # Then we continue the optimization as usual
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).apply_gradients(grads_list)    
+    
 
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 5 - Evaluating the model and storing the results to visualise them in TensorBoard
+    #### 4 - Evaluating the model and storing the results to visualise them in TensorBoard
     ### ------------------------------------------------------------------------------------------------------------------ ###
      
     # We evaluate the accuracy pixel-by-pixel
     correct_pred = tf.equal(tf.argmax(pred_, 1), tf.argmax(y_, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+    with tf.name_scope('accuracy_'):
+        accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
     
     # Defining list variables to keep track of the train error over one whole epoch instead of just one batch (these are the ones we are going to summarize)
     
@@ -507,9 +420,21 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     tf.summary.scalar('loss', training_loss)
     tf.summary.scalar('accuracy', training_acc)
+        
+    # Summaries
+    #sum_collection = 'act_summaries'
+    #activations = tf.get_collection(tf.GraphKeys.ACTIVATIONS)
+    #activations_summary = tf.contrib.layers.summarize_activations(activations, sum_collection)    
+    
+    summary_activations = tf.contrib.layers.summarize_collection("activations",
+                                                                 summarizer=tf.contrib.layers.summarize_activation)
+    #summary_variables = tf.contrib.layers.summarize_collection("variables", name_filter='.+weights_summary.+')    
+    #summary_weights = tf.contrib.layers.summarize_collection("WEIGHTS")
+    summary_variables = tf.contrib.layers.summarize_collection("variables", name_filter=None)    
+
     
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 6 - Processing summaries, that are used to visualize the training phase metrics on TensorBoard
+    #### 5 - Processing summaries, that are used to visualize the training phase metrics on TensorBoard
     ### ------------------------------------------------------------------------------------------------------------------ ###
  
     # We create a merged summary. It relates to all numeric data (histograms, kernels ... etc)
@@ -520,8 +445,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
     
     # Creating the operation giving the probabilities
-    softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_), (-1, image_size * image_size, n_classes)), (-1, image_size, image_size, n_classes)) # We compute the softmax predictions and reshape them to (b_s, imsz, imsz, n_classes)
-    probability_maps = tf.split(softmax_pred, n_classes, axis=3)
+    with tf.name_scope('prob_maps'):
+        softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_), (-1, image_size * image_size, n_classes)), (-1, image_size, image_size, n_classes)) # We compute the softmax predictions and reshape them to (b_s, imsz, imsz, n_classes)
+        probability_maps = tf.split(softmax_pred, n_classes, axis=3)
     
     # Adding a probability map for each class to the image summary
     for i, probmap in enumerate(probability_maps):
@@ -531,7 +457,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     images_merged_summaries = tf.summary.merge(L_im_summ)
  
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 7 - Initializing variables and summaries
+    #### 6 - Initializing variables and summaries
     ### ------------------------------------------------------------------------------------------------------------------ ###
  
     # We create the directories where we will store our model
