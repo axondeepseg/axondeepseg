@@ -346,6 +346,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     downsampling = config["network_downsampling"]
     weighted_cost = config["network_weighted_cost"]
     thresh_indices = config["network_thresholds"]
+    batch_size = config["network_batch_size"]
 
     # ----------------SAVING HYPERPARAMETERS TO USE THEM FOR apply_model-----------------------------------------------#
 
