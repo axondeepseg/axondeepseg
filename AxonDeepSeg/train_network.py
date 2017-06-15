@@ -74,7 +74,7 @@ def downconv(x, n_out_chan, scope,
     '''
     
     with tf.variable_scope(scope):
-        net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=2, stride=2, 
+        net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=5, stride=2, 
                              activation_fn=None, weights_initializer = w_initializer, scope='convolution')
         
         #net = tf.contrib.layers.batch_norm(net, center=True, scale=True, is_training=training_phase, 
@@ -93,7 +93,7 @@ def upconv(x, n_out_chan, scope,
     '''
     
     with tf.variable_scope(scope):
-        net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=2, stride=1, 
+        net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=3, stride=1, 
                              activation_fn=None, weights_initializer = w_initializer, scope='convolution')
         
         #net = tf.contrib.layers.batch_norm(net, center=True, scale=True, is_training=training_phase, 
@@ -128,6 +128,8 @@ def uconv_net(x, config, phase, image_size=256):
     size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
     features_per_convolution = config["network_features_per_convolution"]
     downsampling = config["network_downsampling"]
+    size_of_convolutions_per_bottom_layer = config["network_size_of_convolutions_per_bottom_layer"]
+    features_per_convolution_bottom_layer = config["network_features_per_convolution_bottom_layer"]
 
     # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
     net = tf.reshape(x, shape=[-1, image_size, image_size, 1])
@@ -150,9 +152,6 @@ def uconv_net(x, config, phase, image_size=256):
                             w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
                             training_phase=phase, scope='cconv-d'+str(i)+'-c'+str(conv_number))
                 
-            # Adding summary of the activations for each layer and each convolution (except the downsampling convolution)
-            #tf.summary.histogram('activations_c_d'+str(i)+'_cn'+str(conv_number), net)
-
         relu_results.append(net) # We keep them for the upconvolutions
 
         if downsampling == 'convolution':
@@ -170,17 +169,15 @@ def uconv_net(x, config, phase, image_size=256):
     ####################################################################
 
     # For the moment we keem the same number of channels as the last layer we went through
-    net = conv_relu(net, features_per_convolution[i][conv_number][1], 
-                    size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
+    net = conv_relu(net, features_per_convolution_bottom_layer, 
+                    size_of_convolutions_per_bottom_layer, k_stride=1, 
                     w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
                     training_phase=phase, scope='deepconv1')
-    #tf.summary.histogram('activations_deepest_cn0', net) # Adding activations summary of deepest layers
 
-    net = conv_relu(net, features_per_convolution[i][conv_number][1], 
+    net = conv_relu(net, features_per_convolution_bottom_layer, 
                     size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
                     w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
                     training_phase=phase, scope='deepconv2')
-    #tf.summary.histogram('activations_deepest_cn1', net) # Adding activations summary of deepest layers
 
     data_temp_size.append(data_temp_size[-1])
     data_temp = net
@@ -215,9 +212,6 @@ def uconv_net(x, config, phase, image_size=256):
                             w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
                             training_phase=phase, scope='econv-d'+str(i)+'-c'+str(conv_number))
         
-            # Adding summary of the activations for each layer and each convolution (except the upsampling convolution)
-            #tf.summary.histogram('activations_expand_d'+str(depth-i-1)+'_cn'+str(conv_number), net)
-
         data_temp = net
 
     # Final convolution and segmentation
@@ -240,7 +234,7 @@ def uconv_net(x, config, phase, image_size=256):
     
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
-                save_trainable=True, augmented_data=True, gpu=None, batch_size=1):
+                save_trainable=True, augmented_data=True, gpu=None):
     """
     Principal function of this script. Trains the model using TensorFlow.
     
@@ -288,6 +282,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     downsampling = config["network_downsampling"]
     weighted_cost = config["network_weighted_cost"]
     thresh_indices = config["network_thresholds"]
+    batch_size = config["network_batch_size"]
 
     # SAVING HYPERPARAMETERS TO USE THEM FOR apply_model
 
@@ -297,7 +292,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                        'network_thresholds': thresh_indices, 'weighted_cost': weighted_cost,
                        'network_convolution_per_layer': number_of_convolutions_per_layer,
                        'network_size_of_convolutions_per_layer': size_of_convolutions_per_layer,
-                       'network_features_per_convolution': features_per_convolution}
+                       'network_features_per_convolution': features_per_convolution,
+                       'network_batch_size': batch_size}
 
     with open(folder_model + '/hyperparameters.pkl', 'wb') as handle:
         pickle.dump(hyperparameters, handle)
@@ -334,11 +330,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ### ------------------------------------------------------------------------------------------------------------------ ###
     x = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="input") # None relates to batch_size
     y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes), name="ground_truth")
-    phase = tf.placeholder(tf.bool) # Tells us if we are in training phase of test phase. Used for batch_normalization
+    phase = tf.placeholder(tf.bool, name="training_phase") # Tells us if we are in training phase of test phase. Used for batch_normalization
     if weighted_cost == True:
-        spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size)) 
-    keep_prob = tf.placeholder(tf.float32)
-    adapt_learning_rate = tf.placeholder(tf.float32)
+        spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="spatial_weights") 
+    keep_prob = tf.placeholder(tf.float32, name="keep_prob")
+    adapt_learning_rate = tf.placeholder(tf.float32, name="learning_rate")
 
     # Implementation note : we could use a spatial_weights tensor with only ones, which would greatly simplify the rest of the code by removing a lot of if conditions. Nevertheless, for computational reasons, we prefer to avoid the multipliciation by the spatial weights if the associated matrix is composed of only ones. This position may be revised in the future.
     
@@ -412,8 +408,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     # Defining list variables to keep track of the train error over one whole epoch instead of just one batch (these are the ones we are going to summarize)
     
-    L_training_loss = tf.placeholder(tf.float32)
-    L_training_acc = tf.placeholder(tf.float32)
+    L_training_loss = tf.placeholder(tf.float32, name="List_training_loss")
+    L_training_acc = tf.placeholder(tf.float32, name="List_training_acc")
 
     training_loss = tf.reduce_mean(L_training_loss)
     training_acc = tf.reduce_mean(tf.cast(L_training_acc, tf.float32))
@@ -455,7 +451,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     # Merging the image summary
     images_merged_summaries = tf.summary.merge(L_im_summ)
- 
+
     ### ------------------------------------------------------------------------------------------------------------------ ###
     #### 6 - Initializing variables and summaries
     ### ------------------------------------------------------------------------------------------------------------------ ###
