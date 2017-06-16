@@ -44,7 +44,7 @@ from config import generate_config
 ###### NEW FUNCTIONS
     
 def conv_relu(x, n_out_chan, k_size, k_stride, scope, 
-              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
               training_phase=True):
     '''
     Default data format is NHWC.
@@ -54,12 +54,11 @@ def conv_relu(x, n_out_chan, k_size, k_stride, scope,
     
     with tf.variable_scope(scope):
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=k_size, stride=k_stride, 
-                                       activation_fn=None, weights_initializer = w_initializer, scope='convolution', 
+                                       activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
+                                       normalizer_params={'scale':True, 'is_training':training_phase, 'scope':'bn'},
+                                       weights_initializer = w_initializer, scope='convolution', 
                                        variables_collections=tf.get_collection('variables')
                                       )
-        #net = tf.contrib.layers.batch_norm(net, center=True, scale=True, is_training=training_phase,                       
-        #                                   scope='bn')
-        net = tf.nn.relu(net,'relu')
         tf.add_to_collection('activations',net)
         return net
     
@@ -75,12 +74,14 @@ def downconv(x, n_out_chan, scope,
     
     with tf.variable_scope(scope):
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=5, stride=2, 
-                             activation_fn=None, weights_initializer = w_initializer, scope='convolution')
+                                       activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
+                                       normalizer_params={'scale':True, 'is_training':training_phase, 'scope':'bn'},
+                                       weights_initializer = w_initializer, scope='convolution',
+                                       variables_collections=tf.get_collection('variables')
+                                      )
         
-        #net = tf.contrib.layers.batch_norm(net, center=True, scale=True, is_training=training_phase, 
-        #                                  scope='bn')
-        
-        return tf.nn.relu(net,'relu')
+        tf.add_to_collection('activations',net)
+        return net
     
 def upconv(x, n_out_chan, scope, 
               w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
@@ -94,12 +95,14 @@ def upconv(x, n_out_chan, scope,
     
     with tf.variable_scope(scope):
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=3, stride=1, 
-                             activation_fn=None, weights_initializer = w_initializer, scope='convolution')
+                                       activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
+                                       normalizer_params={'scale':True, 'is_training':training_phases, 'scope':'bn'},
+                                       weights_initializer = w_initializer, scope='convolution',
+                                       variables_collections=tf.get_collection('variables')
+                                      )
         
-        #net = tf.contrib.layers.batch_norm(net, center=True, scale=True, is_training=training_phase, 
-        #                                  scope='bn')
-        
-        return tf.nn.relu(net,'relu')
+        tf.add_to_collection('activations',net)
+        return net
     
     
 
@@ -128,8 +131,6 @@ def uconv_net(x, config, phase, image_size=256):
     size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
     features_per_convolution = config["network_features_per_convolution"]
     downsampling = config["network_downsampling"]
-    size_of_convolutions_per_bottom_layer = config["network_size_of_convolutions_per_bottom_layer"]
-    features_per_convolution_bottom_layer = config["network_features_per_convolution_bottom_layer"]
 
     # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
     net = tf.reshape(x, shape=[-1, image_size, image_size, 1])
@@ -149,14 +150,14 @@ def uconv_net(x, config, phase, image_size=256):
 
             net = conv_relu(net, features_per_convolution[i][conv_number][1], 
                             size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
-                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
                             training_phase=phase, scope='cconv-d'+str(i)+'-c'+str(conv_number))
                 
         relu_results.append(net) # We keep them for the upconvolutions
 
         if downsampling == 'convolution':
             net = downconv(net, features_per_convolution[i][conv_number][1],  
-                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
                             training_phase=phase, scope='downconv-d'+str(i))
         else:
             net = maxpool(net, k_size=2, k_stride=2, scope='downmp-d'+str(i))
@@ -169,14 +170,14 @@ def uconv_net(x, config, phase, image_size=256):
     ####################################################################
 
     # For the moment we keem the same number of channels as the last layer we went through
-    net = conv_relu(net, features_per_convolution_bottom_layer, 
-                    size_of_convolutions_per_bottom_layer, k_stride=1, 
-                    w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+    net = conv_relu(net, features_per_convolution[i][conv_number][1], 
+                    size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
+                    w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
                     training_phase=phase, scope='deepconv1')
 
-    net = conv_relu(net, features_per_convolution_bottom_layer, 
+    net = conv_relu(net, features_per_convolution[i][conv_number][1], 
                     size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
-                    w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                    w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
                     training_phase=phase, scope='deepconv2')
 
     data_temp_size.append(data_temp_size[-1])
@@ -193,7 +194,7 @@ def uconv_net(x, config, phase, image_size=256):
         # Convolution
         net = conv_relu(net, features_per_convolution[depth - i - 1][-1][1], 
                         k_size=2, k_stride=1, 
-                        w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                        w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
                         training_phase=phase, scope='upconv-d'+str(depth - i - 1))
         
         data_temp_size.append(data_temp_size[-1] * 2)
@@ -209,7 +210,7 @@ def uconv_net(x, config, phase, image_size=256):
 
             net = conv_relu(net, features_per_convolution[depth - i - 1][conv_number][1], 
                             size_of_convolutions_per_layer[depth - i - 1][conv_number], k_stride=1, 
-                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
+                            w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
                             training_phase=phase, scope='econv-d'+str(i)+'-c'+str(conv_number))
         
         data_temp = net
@@ -383,18 +384,18 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     #temp = set(tf.global_variables())  # trick to get variables generated by the optimizer
     
     # We then define the optimization operation. 
-    #update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    #with tf.control_dependencies(update_ops):
-    # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
-    # First we compute the gradients
-    grads_list = tf.train.AdamOptimizer(learning_rate=learning_rate).compute_gradients(cost)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
+        # First we compute the gradients
+        grads_list = tf.train.AdamOptimizer(learning_rate=learning_rate).compute_gradients(cost)
 
-    # We make a summary of the gradients
-    for grad, weight in grads_list:
-        weight_grads_summary = tf.summary.histogram(weight.name + '_grad', grad)
+        # We make a summary of the gradients
+        for grad, weight in grads_list:
+            weight_grads_summary = tf.summary.histogram(weight.name + '_grad', grad)
 
-    # Then we continue the optimization as usual
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).apply_gradients(grads_list)    
+        # Then we continue the optimization as usual
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).apply_gradients(grads_list)    
     
 
     ### ------------------------------------------------------------------------------------------------------------------ ###

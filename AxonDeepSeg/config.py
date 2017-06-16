@@ -40,8 +40,6 @@ def default_configuration():
                                                    range(depth)],
         "network_features_per_convolution": [[[64, 64] for k in range(number_of_convolutions_per_layer[i])] for i in
                                              range(depth)],
-        "network_size_of_convolutions_bottom_layer": 3,
-        "network_features_per_convolution_bottom_layer": 64,
         "network_thresholds": [0, 0.5],
         "network_weighted_cost": False,
         "network_downsampling": 'maxpooling',
