@@ -177,3 +177,19 @@ def flipping(patch):
     if s == 1:
         image, gt = [np.flipud(image), np.flipud(gt)]
     return [image, gt]
+
+def noise_addition(patch):
+
+    mu, sigma = 0, 0.05
+    noise = np.random.normal(mu, sigma, [256,256])
+    img_noise = patch[0]+noise
+
+    return [img_noise.astype(np.uint8), patch[1]]
+
+def noise_multiplication(patch):
+
+    mu, sigma = 1, 0.05
+    noise = np.random.normal(mu, sigma, [256,256])
+    img_noise = patch[0]*noise
+
+    return [img_noise.astype(np.uint8), patch[1]]

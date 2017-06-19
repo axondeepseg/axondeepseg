@@ -4,7 +4,7 @@ from scipy import ndimage
 import numpy as np
 import random
 import os
-from data_augmentation import shifting, rescaling, flipping, random_rotation, elastic
+from data_augmentation import shifting, rescaling, flipping, random_rotation, elastic, noise_addition, noise_multiplication
 #import matplotlib.pyplot as plt
 
 
