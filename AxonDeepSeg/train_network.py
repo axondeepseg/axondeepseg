@@ -301,8 +301,9 @@ def uconv_net(x, config, weights, biases, image_size=256):
     return final_result
     
 
+
 def train_model(path_trainingset, path_model, config, path_model_init=None,
-                save_trainable=True, augmented_data=True, gpu=None, batch_size=1):
+                save_trainable=True, data_augmentation=['shifting', 'rescaling', 'random_rotation', 'elastic', 'flipping', 'noise_addition'], gpu=None, batch_size=1):
     """
     :param path_trainingset: path of the train and validation set built from data_construction
     :param path_model: path to save the trained model
@@ -521,7 +522,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             # Compute the optimizer at each training iteration
             if weighted_cost == True:
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
-                                                                             augmented_data=augmented_data)
+                                                                             data_augmentation=['shifting', 'rescaling', 'random_rotation', 'elastic', 'flipping', 'noise_addition'])
                 
                 # if were just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in tensorboard.
@@ -550,7 +551,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     
                  
             else: # no weighted cost
-                batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, augmented_data=augmented_data)
+                batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, data_augmentation=['shifting', 'rescaling', 'random_rotation', 'elastic', 'flipping', 'noise_addition'])
 
                 # if were just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in tensorboard.
@@ -600,7 +601,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 data_validation.set_batch_start()
                 if weighted_cost == True:
                     batch_x, batch_y, weight = data_validation.next_batch_WithWeights(data_validation.get_size(), rnd=False,
-                                                                                      augmented_data=False)
+                                                                                      data_augmentation=[])
                     
                     loss, acc = session.run([cost, accuracy],
                                          feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1.})
@@ -608,7 +609,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, spatial_weights: weight})
 
                 else:
-                    batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, augmented_data=False)
+                    batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, data_augmentation=[])
                     loss, acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
 
                    # Writing the summary for this step of the training, to use in Tensorflow

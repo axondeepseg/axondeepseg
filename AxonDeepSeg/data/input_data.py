@@ -8,17 +8,26 @@ from data_augmentation import shifting, rescaling, flipping, random_rotation, el
 #import matplotlib.pyplot as plt
 
 
-def random_transformation(patch, thresh_indices = [0,0.5]):
+def random_transformation(patch, thresh_indices = [0,0.5], data_augmentation=[]):
     """
     :param patch: [image,mask].
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return: application of the random transformations to the pair [image,mask].
     """
-    patch = shifting(patch)
-    patch = rescaling(patch, thresh_indices = thresh_indices)
-    patch = random_rotation(patch, thresh_indices = thresh_indices)  
-    patch = elastic(patch, thresh_indices = thresh_indices)  
-    patch = flipping(patch) # used until now, the output is not really realistic.
+    if 'shifting' in data_augmentation:
+        patch = shifting(patch)
+    if 'rescaling' in data_augmentation:   
+        patch = rescaling(patch, thresh_indices = thresh_indices)
+    if 'random_rotation' in data_augmentation:
+        patch = random_rotation(patch, thresh_indices = thresh_indices)
+    if 'elastic' in data_augmentation:  
+        patch = elastic(patch, thresh_indices = thresh_indices)  
+    if 'flipping' in data_augmentation:
+        patch = flipping(patch) # used until now, the output is not really realistic.
+    if 'noise_addition' in data_augmentation:
+        patch = noise_addition(patch)
+    if 'noise_multiplication' in data_augmentation:
+        patch = noise_multiplication(patch)
        
     return patch
 
@@ -86,7 +95,7 @@ class input_data:
         self.batch_start = start
 
 
-    def next_batch(self, batch_size = 1, rnd = False, augmented_data = False):
+    def next_batch(self, batch_size = 1, rnd = False, data_augmentation=[]):
         """
         :param batch_size: number of images per batch to feed the network, 1 image is often enough.
         :param rnd: if True, batch is randomly taken into the training set.
@@ -113,8 +122,8 @@ class input_data:
             mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')            
             
             # Online data augmentation
-            if augmented_data:
-                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices) 
+            if data_augmentation:
+                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices, data_augmentation) 
             mask = patch_to_mask(mask, self.thresh_indices)
             
                 
@@ -139,7 +148,7 @@ class input_data:
         return [np.stack(batch_x), np.stack(batch_y)]
 
 
-    def next_batch_WithWeights(self, batch_size = 1, rnd = False, augmented_data = True):
+    def next_batch_WithWeights(self, batch_size = 1, rnd = False, data_augmentation=[]):
         """
         :param batch_size: number of images per batch to feed the network, 1 image is often enough.
         :param rnd: if True, batch is randomly taken into the training set.
@@ -163,8 +172,8 @@ class input_data:
             mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')
 
             #Data augmentation. If not, set the mask's values to the labels values.
-            if augmented_data:
-                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices)
+            if data_augmentation:
+                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices, data_augmentation)
             mask = patch_to_mask(mask, self.thresh_indices)
 
             #-----PreProcessing --------
