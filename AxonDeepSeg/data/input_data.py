@@ -123,7 +123,7 @@ class input_data:
             
             # Online data augmentation
             if data_augmentation:
-                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices, data_augmentation) 
+                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices, data_augmentation=data_augmentation) 
             mask = patch_to_mask(mask, self.thresh_indices)
             
                 
@@ -173,7 +173,7 @@ class input_data:
 
             #Data augmentation. If not, set the mask's values to the labels values.
             if data_augmentation:
-                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices, data_augmentation)
+                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices, data_augmentation=data_augmentation)
             mask = patch_to_mask(mask, self.thresh_indices)
 
             #-----PreProcessing --------
