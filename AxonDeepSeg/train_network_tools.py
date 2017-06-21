@@ -28,8 +28,8 @@ def conv_relu(x, n_out_chan, k_size, k_stride, scope,
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=k_size, stride=k_stride, 
                                        activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
                                        normalizer_params={'scale':True, 'is_training':training_phase, 'scope':'bn'},
-                                       weights_initializer = w_initializer, scope='convolution', 
-                                       variables_collections=tf.get_collection('variables')
+                                       weights_initializer = w_initializer, scope='convolution'#,
+                                       #variables_collections=tf.get_collection('variables')
                                       )
         tf.add_to_collection('activations',net)
         return net
@@ -48,8 +48,8 @@ def downconv(x, n_out_chan, scope,
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=5, stride=2, 
                                        activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
                                        normalizer_params={'scale':True, 'is_training':training_phase, 'scope':'bn'},
-                                       weights_initializer = w_initializer, scope='convolution',
-                                       variables_collections=tf.get_collection('variables')
+                                       weights_initializer = w_initializer, scope='convolution'#,
+                                       #variables_collections=tf.get_collection('variables')
                                       )
         
         tf.add_to_collection('activations',net)
@@ -68,9 +68,9 @@ def upconv(x, n_out_chan, scope,
     with tf.variable_scope(scope):
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=3, stride=1, 
                                        activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
-                                       normalizer_params={'scale':True, 'is_training':training_phases, 'scope':'bn'},
-                                       weights_initializer = w_initializer, scope='convolution',
-                                       variables_collections=tf.get_collection('variables')
+                                       normalizer_params={'scale':True, 'is_training':training_phase, 'scope':'bn'},
+                                       weights_initializer = w_initializer, scope='convolution'#,
+                                       #variables_collections=tf.get_collection('variables')
                                       )
         
         tf.add_to_collection('activations',net)

@@ -198,7 +198,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         # We make a summary of the gradients
         for grad, weight in grads_list:
-            weight_grads_summary = tf.summary.histogram(weight.name + '_grad', grad)
+            if 'weight' in weight.name:
+                # here we can split weight name by ':' to avoid the warning message we're getting
+                weight_grads_summary = tf.summary.histogram(weight.name + '_grad', grad)
 
         # Then we continue the optimization as usual
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).apply_gradients(grads_list)    
@@ -224,20 +226,23 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     tf.summary.scalar('loss', training_loss)
     tf.summary.scalar('accuracy', training_acc)
         
-    # Summaries
-    #sum_collection = 'act_summaries'
-    #activations = tf.get_collection(tf.GraphKeys.ACTIVATIONS)
-    #activations_summary = tf.contrib.layers.summarize_activations(activations, sum_collection)    
-    
+    # Summaries    
     summary_activations = tf.contrib.layers.summarize_collection("activations",
                                                                  summarizer=tf.contrib.layers.summarize_activation)
-    #summary_variables = tf.contrib.layers.summarize_collection("variables", name_filter='.+weights_summary.+')    
-    #summary_weights = tf.contrib.layers.summarize_collection("WEIGHTS")
-    summary_variables = tf.contrib.layers.summarize_collection("variables", name_filter=None)    
+    #summary_variables = tf.contrib.layers.summarize_collection("variables", name_filter='.+weights_summary.+') 
+    
+    # Creation of a collection containing only the information we want to summarize
+    
+    
+    for e in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
+        if ('Adam' not in e.name) and (('weights' in e.name) or ('moving' in e.name) or ('bias' in e.name)):
+            tf.add_to_collection('vals_to_summarize', e)
+    
+    summary_variables = tf.contrib.layers.summarize_collection('vals_to_summarize', name_filter=None)    
 
     
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 5 - Processing summaries, that are used to visualize the training phase metrics on TensorBoard
+    #### 5 - Processing summaries (numerical and images) that are used to visualize the training phase metrics on TensorBoard
     ### ------------------------------------------------------------------------------------------------------------------ ###
  
     # We create a merged summary. It relates to all numeric data (histograms, kernels ... etc)
