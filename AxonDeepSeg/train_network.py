@@ -41,7 +41,7 @@ from AxonDeepSeg.train_network_tools import *
 # network_weighted_cost : boolean : whether we use weighted cost for training or not.
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
-                save_trainable=True, augmented_data=True, gpu=None):
+                save_trainable=True, gpu=None):
     """
     Principal function of this script. Trains the model using TensorFlow.
     
@@ -90,8 +90,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     weighted_cost = config["network_weighted_cost"]
     thresh_indices = config["network_thresholds"]
     batch_size = config["network_batch_size"]
+    data_augmentation = config["network_data_augmentation"]
+    batch_norm = config["network_batch_norm"]
+    batch_norm_decay = config["network_batch_norm_decay"]
 
-    # SAVING HYPERPARAMETERS TO USE THEM FOR apply_model
+    # SAVING HYPERPARAMETERS TO USE THEM FOR apply_model. DEPRECATED, NOT USED -> TO DELETE
 
     hyperparameters = {'depth': depth, 'dropout': dropout, 'image_size': image_size,
                        'model_restored_path': path_model_init, 'learning_rate': learning_rate,
@@ -116,7 +119,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     max_epoch = 2500
     epoch_size = data_train.get_size()
-    # batch_size is defined in the call to the function (default = 1)
+    # batch_size is defined in the config file
     
     # Initilizating the text to write in report.txt
     Report += '\n\n---Savings---'
@@ -141,7 +144,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     if weighted_cost == True:
         spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="spatial_weights") 
     keep_prob = tf.placeholder(tf.float32, name="keep_prob")
-    adapt_learning_rate = tf.placeholder(tf.float32, name="learning_rate")
+    # adapt_learning_rate = tf.placeholder(tf.float32, name="learning_rate") # If the learning rate changes over epochs
 
     # Implementation note : we could use a spatial_weights tensor with only ones, which would greatly simplify the rest of the code by removing a lot of if conditions. Nevertheless, for computational reasons, we prefer to avoid the multipliciation by the spatial weights if the associated matrix is composed of only ones. This position may be revised in the future.
     
@@ -200,7 +203,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         for grad, weight in grads_list:
             if 'weight' in weight.name:
                 # here we can split weight name by ':' to avoid the warning message we're getting
-                weight_grads_summary = tf.summary.histogram(weight.name + '_grad', grad)
+                weight_grads_summary = tf.summary.histogram('_'.join(weight.name.split(':')) + '_grad', grad)
 
         # Then we continue the optimization as usual
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).apply_gradients(grads_list)    
@@ -226,18 +229,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     tf.summary.scalar('loss', training_loss)
     tf.summary.scalar('accuracy', training_acc)
         
-    # Summaries    
-    summary_activations = tf.contrib.layers.summarize_collection("activations",
-                                                                 summarizer=tf.contrib.layers.summarize_activation)
-    #summary_variables = tf.contrib.layers.summarize_collection("variables", name_filter='.+weights_summary.+') 
-    
     # Creation of a collection containing only the information we want to summarize
-    
-    
+
     for e in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
         if ('Adam' not in e.name) and (('weights' in e.name) or ('moving' in e.name) or ('bias' in e.name)):
             tf.add_to_collection('vals_to_summarize', e)
-    
+            
+    # Summaries   
+
+    summary_activations = tf.contrib.layers.summarize_collection("activations",
+                                                                 summarizer=tf.contrib.layers.summarize_activation)
     summary_variables = tf.contrib.layers.summarize_collection('vals_to_summarize', name_filter=None)    
 
     
@@ -346,7 +347,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             if weighted_cost == True:
                 # Extracting the batches
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
-                                                                             augmented_data=augmented_data)
+                                                                             augmented_data=data_augmentation)
                   
                 # Running the optimizer and computing the cost and accuracy.
                 stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
@@ -368,7 +369,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
   
             else: # No weighted cost
                 # Extracting batches
-                batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, augmented_data=augmented_data)
+                batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, augmented_data=data_augmentation)
                 
                 # Computing loss, accuracy and optimizing the weights
                 stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
@@ -423,7 +424,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 data_validation.set_batch_start()
                 if weighted_cost == True:
                     batch_x, batch_y, weight = data_validation.next_batch_WithWeights(data_validation.get_size(), rnd=False,
-                                                                                      augmented_data=False)
+                                                                                      augmented_data={'type':'none'})
                     
                     loss, acc = session.run([cost, accuracy],
                                          feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
@@ -431,7 +432,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, spatial_weights: weight, phase:False})
 
                 else:
-                    batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, augmented_data=False)
+                    batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, augmented_data={'type':'none'})
                     loss, acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1., phase:False})
 
                    # Writing the summary for this step of the training, to use in Tensorflow

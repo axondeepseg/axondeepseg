@@ -5,20 +5,57 @@ import numpy as np
 import random
 import os
 from data_augmentation import shifting, rescaling, flipping, random_rotation, elastic
+import functools
 #import matplotlib.pyplot as plt
 
+def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]):
+    
+    L_transformations = []
+    if transformations == {}:
+        L_transformations = [shifting, functools.partial(rescaling,thresh_indices=[0,0.5]),
+                       functools.partial(random_rotation, thresh_indices=[0,0.5]), 
+                       functools.partial(elastic,thresh_indices=[0,0.5]), flipping]    
+    else:
+        for k,v in transformations.iteritems():
+            if v == True:
+                if k.lower() == 'shifting':
+                    L_transformations.append(shifting)
+                elif k.lower() == 'rescaling':
+                    L_transformations.append(functools.partial(rescaling,thresh_indices=[0,0.5]))
+                elif k.lower() == 'random_rotation':
+                    L_transformations.append(functools.partial(random_rotation,thresh_indices=[0,0.5]))
+                elif k.lower() == 'elastic':
+                    L_transformations.append(functools.partial(elastic,thresh_indices=[0,0.5]))
+                elif k.lower() == 'flipping':
+                    L_transformations.append(flipping)
+                    
+    return L_transformations
 
-def random_transformation(patch, thresh_indices = [0,0.5]):
+
+def all_transformations(patch, thresh_indices = [0,0.5], transformations = {}):
     """
     :param patch: [image,mask].
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return: application of the random transformations to the pair [image,mask].
     """
-    patch = shifting(patch)
-    patch = rescaling(patch, thresh_indices = thresh_indices)
-    patch = random_rotation(patch, thresh_indices = thresh_indices)  
-    patch = elastic(patch, thresh_indices = thresh_indices)  
-    patch = flipping(patch) # used until now, the output is not really realistic.
+    
+    L_transformations = generate_list_transformations(transformations, thresh_indices)
+                    
+    for transfo in L_transformations:
+        patch = transfo(patch)
+       
+    return patch
+
+def random_transformation(patch, thresh_indices = [0,0.5], transformations = {}):
+    """
+    :param patch: [image,mask].
+    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
+    :return: application of a random transformation to the pair [image,mask].
+    """
+    
+    L_transformations = generate_list_transformations(transformations, thresh_indices)
+                    
+    patch = random.choice(L_transformations)(patch)
        
     return patch
 
@@ -86,7 +123,7 @@ class input_data:
         self.batch_start = start
 
 
-    def next_batch(self, batch_size = 1, rnd = False, augmented_data = False):
+    def next_batch(self, batch_size = 1, rnd = False, augmented_data = {'type':'None', 'transformations':{}}):
         """
         :param batch_size: number of images per batch to feed the network, 1 image is often enough.
         :param rnd: if True, batch is randomly taken into the training set.
@@ -113,8 +150,17 @@ class input_data:
             mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')            
             
             # Online data augmentation
-            if augmented_data:
-                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices) 
+            if augmented_data['type'].lower() == 'all':
+                [image, mask] = all_transformations([image, mask], 
+                                                    transformations = augmented_data['transformations'], 
+                                                    thresh_indices = self.thresh_indices) 
+            elif augmented_data['type'].lower() == 'random':
+                [image, mask] = random_transformation([image, mask], 
+                                                      transformations = augmented_data['transformations'], 
+                                                      thresh_indices = self.thresh_indices)
+            else:
+                pass
+            
             mask = patch_to_mask(mask, self.thresh_indices)
             
                 
@@ -139,7 +185,7 @@ class input_data:
         return [np.stack(batch_x), np.stack(batch_y)]
 
 
-    def next_batch_WithWeights(self, batch_size = 1, rnd = False, augmented_data = True):
+    def next_batch_WithWeights(self, batch_size = 1, rnd = False, augmented_data = {'type':'None', 'transformations':{}}):
         """
         :param batch_size: number of images per batch to feed the network, 1 image is often enough.
         :param rnd: if True, batch is randomly taken into the training set.
@@ -162,9 +208,17 @@ class input_data:
             image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
             mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')
 
-            #Data augmentation. If not, set the mask's values to the labels values.
-            if augmented_data:
-                [image, mask] = random_transformation([image, mask], thresh_indices = self.thresh_indices)
+            # Online data augmentation
+            if augmented_data['type'].lower() == 'all':
+                [image, mask] = all_transformations([image, mask], 
+                                                    transformations = augmented_data['transformations'], 
+                                                    thresh_indices = self.thresh_indices) 
+            elif augmented_data['type'].lower() == 'random':
+                [image, mask] = random_transformation([image, mask], 
+                                                      transformations = augmented_data['transformations'], 
+                                                      thresh_indices = self.thresh_indices)
+            else:
+                pass
             mask = patch_to_mask(mask, self.thresh_indices)
 
             #-----PreProcessing --------

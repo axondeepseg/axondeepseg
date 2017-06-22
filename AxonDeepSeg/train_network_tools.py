@@ -17,7 +17,7 @@ from config import generate_config
 
 def conv_relu(x, n_out_chan, k_size, k_stride, scope, 
               w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-              training_phase=True):
+              training_phase=True, bn_decay = 0.999):
     '''
     Default data format is NHWC.
     Initializers for weights and bias are already defined (default).
@@ -27,7 +27,8 @@ def conv_relu(x, n_out_chan, k_size, k_stride, scope,
     with tf.variable_scope(scope):
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=k_size, stride=k_stride, 
                                        activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
-                                       normalizer_params={'scale':True, 'is_training':training_phase, 'scope':'bn'},
+                                       normalizer_params={'scale':True, 'is_training':training_phase,
+                                                          'decay':bn_decay,'scope':'bn'},
                                        weights_initializer = w_initializer, scope='convolution'#,
                                        #variables_collections=tf.get_collection('variables')
                                       )
@@ -35,8 +36,8 @@ def conv_relu(x, n_out_chan, k_size, k_stride, scope,
         return net
     
 def downconv(x, n_out_chan, scope, 
-              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
-              training_phase=True):
+              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
+              training_phase=True, bn_decay = 0.999):
     
     '''
     Default data format is NHWC.
@@ -47,7 +48,8 @@ def downconv(x, n_out_chan, scope,
     with tf.variable_scope(scope):
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=5, stride=2, 
                                        activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
-                                       normalizer_params={'scale':True, 'is_training':training_phase, 'scope':'bn'},
+                                       normalizer_params={'scale':True, 'is_training':training_phase,
+                                                          'decay':bn_decay, 'scope':'bn'},
                                        weights_initializer = w_initializer, scope='convolution'#,
                                        #variables_collections=tf.get_collection('variables')
                                       )
@@ -56,8 +58,8 @@ def downconv(x, n_out_chan, scope,
         return net
     
 def upconv(x, n_out_chan, scope, 
-              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(uniform=False),
-              training_phase=True):
+              w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
+              training_phase=True, bn_decay = 0.999):
     
     '''
     Default data format is NHWC.
@@ -68,7 +70,8 @@ def upconv(x, n_out_chan, scope,
     with tf.variable_scope(scope):
         net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=3, stride=1, 
                                        activation_fn=tf.nn.relu, normalizer_fn=tf.contrib.layers.batch_norm,
-                                       normalizer_params={'scale':True, 'is_training':training_phase, 'scope':'bn'},
+                                       normalizer_params={'scale':True, 'is_training':training_phase,
+                                                          'decay':bn_decay, 'scope':'bn'},
                                        weights_initializer = w_initializer, scope='convolution'#,
                                        #variables_collections=tf.get_collection('variables')
                                       )
@@ -106,6 +109,7 @@ def uconv_net(x, config, phase, image_size=256):
     size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
     features_per_convolution = config["network_features_per_convolution"]
     downsampling = config["network_downsampling"]
+    bn_decay = config["network_batch_norm_decay"]
 
     # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
     net = tf.reshape(x, shape=[-1, image_size, image_size, 1])
@@ -126,14 +130,15 @@ def uconv_net(x, config, phase, image_size=256):
             net = conv_relu(net, features_per_convolution[i][conv_number][1], 
                             size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
                             w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                            training_phase=phase, scope='cconv-d'+str(i)+'-c'+str(conv_number))
+                            training_phase=phase, bn_decay = bn_decay,
+                            scope='cconv-d'+str(i)+'-c'+str(conv_number))
                 
         relu_results.append(net) # We keep them for the upconvolutions
 
         if downsampling == 'convolution':
             net = downconv(net, features_per_convolution[i][conv_number][1],  
                             w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                            training_phase=phase, scope='downconv-d'+str(i))
+                            training_phase=phase, bn_decay = bn_decay, scope='downconv-d'+str(i))
         else:
             net = maxpool(net, k_size=2, k_stride=2, scope='downmp-d'+str(i))
 
@@ -148,12 +153,12 @@ def uconv_net(x, config, phase, image_size=256):
     net = conv_relu(net, features_per_convolution[i][conv_number][1], 
                     size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
                     w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                    training_phase=phase, scope='deepconv1')
+                    training_phase=phase, bn_decay = bn_decay, scope='deepconv1')
 
     net = conv_relu(net, features_per_convolution[i][conv_number][1], 
                     size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
                     w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                    training_phase=phase, scope='deepconv2')
+                    training_phase=phase, bn_decay = bn_decay, scope='deepconv2')
 
     data_temp_size.append(data_temp_size[-1])
     data_temp = net
@@ -170,7 +175,7 @@ def uconv_net(x, config, phase, image_size=256):
         net = conv_relu(net, features_per_convolution[depth - i - 1][-1][1], 
                         k_size=2, k_stride=1, 
                         w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                        training_phase=phase, scope='upconv-d'+str(depth - i - 1))
+                        training_phase=phase, bn_decay = bn_decay, scope='upconv-d'+str(depth - i - 1))
         
         data_temp_size.append(data_temp_size[-1] * 2)
 
@@ -186,7 +191,8 @@ def uconv_net(x, config, phase, image_size=256):
             net = conv_relu(net, features_per_convolution[depth - i - 1][conv_number][1], 
                             size_of_convolutions_per_layer[depth - i - 1][conv_number], k_stride=1, 
                             w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                            training_phase=phase, scope='econv-d'+str(i)+'-c'+str(conv_number))
+                            training_phase=phase, bn_decay = bn_decay,
+                            scope='econv-d'+str(depth - i - 1)+'-c'+str(conv_number))
         
         data_temp = net
 
