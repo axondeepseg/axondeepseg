@@ -9,7 +9,7 @@ from scipy import io
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 from skimage import exposure
-from config import general_pixel_size, path_matlab, path_axonseg, generate_config
+from config_tools import general_pixel_size, path_matlab, path_axonseg, generate_config
 from AxonDeepSeg.train_network_tools import *
 
 #import matplotlib.pyplot as plt 

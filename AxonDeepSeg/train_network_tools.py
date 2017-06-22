@@ -7,7 +7,7 @@ import numpy as np
 import os
 import pickle
 from data.input_data import input_data
-from config import generate_config
+from config_tools import generate_config
 
 
 # Definition of functions
