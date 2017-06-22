@@ -5,6 +5,8 @@ Set the config variable.
 import ConfigParser as cp
 import os
 import json
+import collections
+
 
 config = cp.RawConfigParser()
 config.read(os.path.dirname(__file__) + '/data/config.cfg')
@@ -28,22 +30,43 @@ def validate_config(config):
 
 def default_configuration():
     """ Generate the default configuration."""
-    depth = 6
+    depth = 4
     number_of_convolutions_per_layer = [1 for i in range(depth)]
+    
     return {
-        "network_learning_rate": 0.0005,
         "network_n_classes": 2,
+        "network_thresholds": [0, 0.5],
+        "network_learning_rate": 0.0005,
+        "network_batch_size": 8,
         "network_dropout": 0.75,
-        "network_depth": 6,
+        "network_batch_norm_decay": 0.999,
+        "network_depth": 4,
         "network_convolution_per_layer": number_of_convolutions_per_layer,
         "network_size_of_convolutions_per_layer": [[3 for k in range(number_of_convolutions_per_layer[i])] for i in
                                                    range(depth)],
         "network_features_per_convolution": [[[64, 64] for k in range(number_of_convolutions_per_layer[i])] for i in
                                              range(depth)],
-        "network_thresholds": [0, 0.5],
+        "network_trainingset": 'SEM_2classes_reduced',
         "network_weighted_cost": False,
-        "network_downsampling": 'maxpooling'
+        "network_downsampling": 'maxpooling',
+        "network_batch_norm": True,
+        "network_data_augmentation": {'type':'all', 
+                                      'transformations':{'shifting':True, 'rescaling':True,
+                                                         'random_rotation':True, 'elastic':True, 'flipping':True,
+                                                         'noise_addition':True}
+                                     }
     }
+
+
+def update_config(d, u):
+    for k, v in u.iteritems():
+        if isinstance(v, collections.Mapping):
+            r = update_config(d.get(k, {}), v)
+            d[k] = r
+        else:
+            d[k] = u[k]
+    return d
+    
 
 
 def generate_config(config_path=None):
