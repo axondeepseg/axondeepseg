@@ -123,7 +123,7 @@ class input_data:
         self.batch_start = start
 
 
-    def next_batch(self, batch_size = 1, rnd = False, augmented_data = {'type':'None', 'transformations':{}}):
+    def next_batch(self, batch_size = 8, rnd = False, augmented_data = {'type':'None', 'transformations':{}}):
         """
         :param batch_size: number of images per batch to feed the network, 1 image is often enough.
         :param rnd: if True, batch is randomly taken into the training set.
@@ -185,7 +185,7 @@ class input_data:
         return [np.stack(batch_x), np.stack(batch_y)]
 
 
-    def next_batch_WithWeights(self, batch_size = 1, rnd = False, augmented_data = {'type':'None', 'transformations':{}}):
+    def next_batch_WithWeights(self, batch_size = 8, rnd = False, augmented_data = {'type':'None', 'transformations':{}}):
         """
         :param batch_size: number of images per batch to feed the network, 1 image is often enough.
         :param rnd: if True, batch is randomly taken into the training set.
