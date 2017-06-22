@@ -2,7 +2,7 @@
 Segment axon and myelin from microscopy data. Written in Python.
 Methods based on deep convolutional neural networks.
 The U-Net from ([Ronneberger et al.](https://arxiv.org/abs/1505.04597)) is used as a pixel classifier model.
-Then an MRF is applied for the post-processing.
+Then an MRF should be applied for the post-processing. # NOT WORKING FOR NOW :scripts in older branches.
 
 The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi et al.](http://journal.frontiersin.org/article/10.3389/fninf.2016.00037/full))
 
@@ -12,7 +12,7 @@ The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi e
 ### Prerequisites : 
   * **Python 2.7** : https://www.python.org/download/releases/2.7/
   * **PIP** : https://pip.pypa.io/en/stable/installing/
-  * **Tensorflow 0.11** (GPU enabled, Python 2.7) : https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html
+  * **Tensorflow 1.1** (GPU enabled, Python 2.7) : https://www.tensorflow.org/install/install_linux#installing_with_virtualenv
   * **OpenCV** (Python 2.7) : http://opencv.org/
   
 ### Prerequisites only for myelin segmentation :
@@ -28,21 +28,48 @@ The resulting axon segmentation mask feeds a myelin segmentation model ([Zaimi e
 Example dataset:
 https://www.dropbox.com/s/juybkrzzafgxkuu/victor.zip?dl=1
 
-##  Data Structure
+##  File Structure
 
-### To train
-<img align="middle" src="https://github.com/neuropoly/axondeepseg/blob/master/doc/stru_train.png" width="300px" />
 
-###  To segment 
-<img align="middle" src="https://github.com/neuropoly/axondeepseg/blob/master/doc/stru_seg.png" width="300px"  />
+axondeepseg
+-- AxonDeepSeg/
+---- Files related to the algorithm
+-- data/
+---- dataset_name1/
+------ training/
+-------- Train/
+---------- training images.png
+-------- Validation/
+---------- validation images.png
+------ testing/
+-------- testing image.png
+-------- pixel_size_in_micrometer.txt
+-------- ...
+------ raw/
+-------- raw images.png
+---- dataset_name2/
+---- ...
+-- models/
+---- model1/
+------ train/
+-------- summary for model1 for train set
+------ validation/
+-------- summary for model1 for validation set
+------ report.txt
+------ model.ckpt.meta
+------ ...
+---- model2/
+---- ...
+
+
 
 ### N.B.
-* the image needs to have the file name “image.jpg” and it needs to be jpg format. The mask needs to have the name “mask.jpg”. 
+* the image needs to have the file name “image.png” and it needs to be png format. The mask needs to have the name “mask.png”. 
 * Mask properties: axons: 255 ; background and myelin : 0  
 
 
 ## Guideline
-* [Guideline to run](https://github.com/neuropoly/axondeepseg/blob/master/guideline.py)
+* [Guideline to run](https://github.com/neuropoly/axondeepseg/guidelines/guideline.py)
 
 
-Copyright (c) 2016 NeuroPoly (Polytechnique Montreal)
+Copyright (c) 2017 NeuroPoly (Polytechnique Montreal)

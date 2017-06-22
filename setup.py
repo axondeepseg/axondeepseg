@@ -31,8 +31,8 @@ setup(
     url='https://github.com/neuropoly/axondeepseg',
 
     # Author details
-    author='Neuropoly - Victor Herman',
-    author_email='victor.herman3@gmail.com',
+    author='NeuroPoly Lab, Polytechnique Montreal',
+    author_email='neuropoly@googlegroups.com',
 
     # Choose your license
     license='MIT',
