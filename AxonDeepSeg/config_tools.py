@@ -126,8 +126,13 @@ def grid_config(L_struct, dict_params, base_config = default_configuration()):
     for param, L_values in dict_params.iteritems():
         temp_config = L_configs
         L_configs = []
-        for v in L_values:
-            rec_update(temp_config, {param:v})
+        if isinstance(L_values, collections.Iterable):            
+            for v in L_values:
+                rec_update(temp_config, {param:v})
+                L_configs.append(copy.deepcopy(temp_config))
+        # If it's just a value we just take this value
+        else:
+            rec_update(temp_config, {param:L_values})
             L_configs.append(copy.deepcopy(temp_config))
 
     # Finally we flatten the resulting nested list and we return a dictionnary with each key being the name of a model and the value being the configuration dictionnary
