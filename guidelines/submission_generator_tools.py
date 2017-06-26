@@ -52,7 +52,7 @@ def generate_guilliminjob(path_project, path_venv, bashname, configfile, config,
     with open(os.path.join(path_model, configfile), 'w') as f:
         json.dump(config, f, indent=2)
         
-    name_model = path_model.split('/')[-2]
+    name_model = path_model.split('/')[-1]
 
     file = open(os.path.join(path_model, bashname),"w")
     file.write("#!/bin/bash \n")
