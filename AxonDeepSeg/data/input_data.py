@@ -88,45 +88,65 @@ class input_data:
     Data to feed the learning/validating of the CNN
     """
 
-    def __init__(self, trainingset_path, type = 'train', thresh_indices = [0,0.5], image_size = 256):
+    def __init__(self, trainingset_path, type_ = 'train', batch_size = 8, thresh_indices = [0,0.5], image_size = 256):
         """
         Input: 
             trainingset_path : string : path to the trainingset folder containing 2 folders Validation and Train
                                     with images and ground truthes.
-            type : string 'train' or 'validation' : for the network's training.
+            type_ : string 'train' or 'validation' : for the network's training.
             thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
         Output:
             None.
         """
-        if type == 'train' : # Data for the train !!!!!!!!! change to Training
+        if type_ == 'train' : # Data for train
             self.path = trainingset_path+'/Train/'
             self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
+            self.each_sample_once = False
 
-        if type == 'validation': # Data for the validation
+        if type_ == 'validation': # Data for validation
             self.path = trainingset_path+'/Validation/'
             self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
+            self.each_sample_once = True
 
         self.size_image = image_size
         self.n_labels = 2
-        self.batch_start = 0
-        self.thresh_indices = thresh_indices
+        self.samples_seen = 0
+        self.thresh_indices = thresh_indices        
+        self.batch_size = batch_size
+        self.samples_list = self.reset_set(type_=type_)
+        self.epoch_size = len(self.samples_list)
+
 
     def get_size(self):
         return self.set_size
+    
+    def reset_set(self, type_= 'train', shuffle=True):
+        '''
+        Reset the set.
+        :param shuffle: If True, the set is shuffled, so that each batch won't systematically contain the same images.
+        :return list: List of ids of training samples
+        '''
+        
+        self.sample_seen = 0
+        
+        if type_ == 'train':
+            # Generation of a shuffled list of images      
+            samples_list = range(self.set_size)
+            if shuffle:
+                np.random.shuffle(samples_list)
+
+            # Adding X images so that all batches have the same size.
+            rem = self.set_size % self.batch_size
+            if rem != 0:
+                samples_list += np.random.choice(samples_list, rem, replace=False).tolist()
+        else:
+            samples_list = range(self.set_size)
+            
+        return samples_list
 
 
-    def set_batch_start(self, start = 0):
+    def next_batch(self, augmented_data = {'type':'None', 'transformations':{}}, each_sample_once=False):
         """
-        :param start: starting indice of the data reading by the network.
-        :return:
-        """
-        self.batch_start = start
-
-
-    def next_batch(self, batch_size = 8, rnd = False, augmented_data = {'type':'None', 'transformations':{}}):
-        """
-        :param batch_size: number of images per batch to feed the network, 1 image is often enough.
-        :param rnd: if True, batch is randomly taken into the training set.
         :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process.
         :return: The pair [batch_x (data), batch_y (prediction)] to feed the network.
         """
@@ -136,14 +156,10 @@ class input_data:
 
         # Set the range of indices
         # Read the image and mask files.
-        for i in range(batch_size) :
-            if rnd :
-                indice = random.choice(range(self.set_size))
-            else :
-                indice = self.batch_start
-                self.batch_start += 1
-                if self.batch_start >= self.set_size:
-                    self.batch_start= 0
+        for i in range(self.batch_size) :
+            # We take the next sample to see
+            indice = self.samples_list.pop(0)
+            self.sample_seen += 1
 
             # We are reading directly the images. Range of values : 0-255
             image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
@@ -180,15 +196,22 @@ class input_data:
 
             batch_x.append(image)
             batch_y.append(real_mask)
+            
+            # If we are at the end of an epoch, we reset the list of samples, so that during next epoch all sets will be different.
+            if self.sample_seen == self.epoch_size:
+                if each_sample_once:
+                    self.samples_list = self.reset_set(type_ = 'validation')
+                    break
+                else:
+                    self.samples_list = self.reset_set(type_ = 'train')
+
         
-        # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them
-        return [np.stack(batch_x), np.stack(batch_y)]
+        # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them 
+        return transform_batches([batch_x, batch_y])
 
 
-    def next_batch_WithWeights(self, batch_size = 8, rnd = False, augmented_data = {'type':'None', 'transformations':{}}):
+    def next_batch_WithWeights(self, augmented_data = {'type':'None', 'transformations':{}}, each_sample_once=False):        
         """
-        :param batch_size: number of images per batch to feed the network, 1 image is often enough.
-        :param rnd: if True, batch is randomly taken into the training set.
         :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process.
         :return: The triplet [batch_x (data), batch_y (prediction), weights (based on distance to edges)] to feed the network.
         """
@@ -196,14 +219,10 @@ class input_data:
         batch_y = []
         batch_w = []
         
-        for i in range(batch_size) :
-            if rnd :
-                indice = random.choice(range(self.set_size))
-            else :
-                indice = self.batch_start
-                self.batch_start += 1
-                if self.batch_start >= self.set_size:
-                    self.batch_start= 0
+        for i in range(self.batch_size) :
+            # We take the next sample to see
+            indice = self.samples_list.pop(0)
+            self.sample_seen += 1
 
             image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
             mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')
@@ -292,12 +311,49 @@ class input_data:
             batch_x.append(image)
             batch_y.append(real_mask)
             batch_w.append(real_weights)
+            
+            # If we are at the end of an epoch, we reset the list of samples, so that during next epoch all sets will be different.
+            if self.sample_seen == self.epoch_size:
+                if each_sample_once:
+                    self.samples_list = self.reset_set(type_ = 'validation')
+                    break
+                else:
+                    self.samples_list = self.reset_set(type_ = 'train')
 
-        # We then stack the matrices we generated and return them
-        return [np.stack(batch_x), np.stack(batch_y), np.stack(batch_w)]
+
+        # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them        
+        return transform_batches([batch_x, batch_y, batch_w])
 
     def read_batch(self, batch_y, size_batch):
         images = batch_y.reshape(size_batch, self.size_image, self.size_image, self.n_labels)
         return images
+    
+    
+def transform_batches(list_batches):
+    '''
+    Transform batches so that they are readable by Tensorflow (good shapes)
+    :param list_batches: [batch_x, batch_y, (batch_w)]
+    :return transformed_batches: Returns the batches with good shapes for tensorflow
+    '''
+    batch_x = list_batches[0]
+    batch_y = list_batches[1]
+    if len(list_batches) == 3:
+        batch_w = list_batches[2]
+        
+    if len(batch_y) == 1: # If we have only one image in the list np.stack won't work
+        transformed_batches = []
+        transformed_batches.append(np.reshape(batch_x[0], (1, batch_x[0].shape[0], batch_x[0].shape[1])))
+        transformed_batches.append(np.reshape(batch_y[0], (1, batch_y[0].shape[0], batch_y[0].shape[1], -1)))
+        
+        if len(list_batches) == 3:
+            transformed_batches.append(np.reshape(batch_w[0], (1, batch_w[0].shape[0], batch_w[0].shape[1])))
+            
+    else:
+        transformed_batches = [np.stack(batch_x), np.stack(batch_y)]
+         
+        if len(list_batches) == 3:
+            transformed_batches.append(np.stack(batch_w))
+        
+    return transformed_batches
     
     

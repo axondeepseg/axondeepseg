@@ -93,6 +93,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     data_augmentation = config["network_data_augmentation"]
     batch_norm = config["network_batch_norm"]
     batch_norm_decay = config["network_batch_norm_decay"]
+    batch_size_validation = 8
+
 
     # SAVING HYPERPARAMETERS TO USE THEM FOR apply_model. DEPRECATED, NOT USED -> TO DELETE
 
@@ -110,15 +112,17 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         
     # Loading the datasets
-    data_train = input_data(trainingset_path=path_trainingset, type='train', thresh_indices=thresh_indices)
-    data_validation = input_data(trainingset_path=path_trainingset, type='validation', thresh_indices=thresh_indices)
+    data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
+                            thresh_indices=thresh_indices)
+    data_validation = input_data(trainingset_path=path_trainingset, type_='validation', batch_size=batch_size_validation,
+                                 thresh_indices=thresh_indices)
     
-    batch_size_validation = data_validation.get_size()
+    n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
 
     # Main loop parameters
     
     max_epoch = 2500
-    epoch_size = data_train.get_size()
+    epoch_size = data_train.epoch_size
     # batch_size is defined in the config file
     
     # Initilizating the text to write in report.txt
@@ -302,6 +306,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         last_epoch = 0
         epoch_training_loss = []
         epoch_training_acc = []
+        epoch_validation_loss = []
+        epoch_validation_acc = []
         acc_current_best = 0
         loss_current_best = 10000
 
@@ -346,8 +352,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             # Compute the optimizer at each training iteration
             if weighted_cost == True:
                 # Extracting the batches
-                batch_x, batch_y, weight = data_train.next_batch_WithWeights(batch_size, rnd=True,
-                                                                             augmented_data=data_augmentation)
+                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data=data_augmentation, each_sample_once=False)
                   
                 # Running the optimizer and computing the cost and accuracy.
                 stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
@@ -358,7 +363,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 
                 # If we just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in TensorBoard.
-                if step % epoch_size == 0:            
+                if step*batch_size % epoch_size == 0:            
                     # Writing the summary
                     summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, spatial_weights: weight, phase:True})
                     train_writer.add_summary(summary, epoch)
@@ -369,7 +374,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
   
             else: # No weighted cost
                 # Extracting batches
-                batch_x, batch_y = data_train.next_batch(batch_size, rnd=True, augmented_data=data_augmentation)
+                batch_x, batch_y = data_train.next_batch(augmented_data=data_augmentation, each_sample_once=False)
                 
                 # Computing loss, accuracy and optimizing the weights
                 stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
@@ -380,7 +385,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
                 # If were just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in tensorboard.
-                if step % epoch_size == 0:
+                if step*batch_size % epoch_size == 0:
                                         
                     # Writing the summary
                     summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, phase:True})
@@ -398,7 +403,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     
             # Every now and then we display the performance of the network on the training set, on the current batch.
             # Note : this part is not really used right now.
-            if step % display_step == 0:
+            if step*batch_size % display_step == 0:
                 # Calculate batch loss and accuracy
                 if weighted_cost == True:
                     loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
@@ -418,31 +423,57 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
             # At the end of every epoch we compute the performance of our network on the validation set and we
             # save the summaries to see them on TensorBoard
-            if step % epoch_size == 0:
-
-                # We retrieve the validation set, and we compute the loss and accuracy on the whole validation set
-                data_validation.set_batch_start()
+            if step*batch_size % epoch_size == 0:
+                
                 if weighted_cost == True:
-                    batch_x, batch_y, weight = data_validation.next_batch_WithWeights(data_validation.get_size(), rnd=False,
-                                                                                      augmented_data={'type':'none'})
+                    epoch_validation_loss = []
+                    epoch_validation_acc = []
+                    for i in range(n_iter_val):
+
+                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data={'type':'none'}, each_sample_once=True)
+
+                        step_loss, step_acc = session.run([cost, accuracy],
+                                                feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
+                        factor = float(batch_x.shape[0])/data_validation.set_size
+                        epoch_validation_loss.append(factor*step_loss)
+                        epoch_validation_acc.append(factor*step_acc)
+                        
+                    # We have computed each validation batch but they must not be taken with the same weight when calculating the batch_size, which is why we added a factor in front of each step loss / step acc.
+                    epoch_validation_loss = [np.sum(epoch_validation_loss)]
+                    epoch_validation_acc = [np.sum(epoch_validation_acc)]                    
                     
-                    loss, acc = session.run([cost, accuracy],
-                                         feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
                     # Writing the summary for this step of the training, to use in Tensorflow
-                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, spatial_weights: weight, phase:False})
+                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, spatial_weights: weight, phase:False})
+
 
                 else:
-                    batch_x, batch_y = data_validation.next_batch(data_validation.get_size(), rnd=False, augmented_data={'type':'none'})
-                    loss, acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1., phase:False})
+                    epoch_validation_loss = []
+                    epoch_validation_acc = []
+                    for i in range(n_iter_val):    
+                        batch_x, batch_y = data_validation.next_batch(augmented_data={'type':'none'}, each_sample_once=True)
+                        step_loss, step_acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1., phase:False})
+                        
+                        factor = float(batch_x.shape[0])/data_validation.set_size
+                        epoch_validation_loss.append(factor*step_loss)
+                        epoch_validation_acc.append(factor*step_acc)
+                       
 
-                   # Writing the summary for this step of the training, to use in Tensorflow
-                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: loss, L_training_acc: acc, phase:False})
+                    # We have computed each validation batch but they must not be taken with the same weight when calculating the batch_size, which is why we added a factor in front of each step loss / step acc.
+                    epoch_validation_loss = [np.sum(epoch_validation_loss)]
+                    epoch_validation_acc = [np.sum(epoch_validation_acc)]     
+                                        
+                    # Writing the summary for this step of the training, to use in Tensorflow
+                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, phase:False})
                     
                 validation_writer.add_summary(summary, epoch)
                 validation_writer.add_summary(im_summary_val, epoch)
 
                 # We also keep the metrics in lists so that we can save them in a pickle file later.
                 # We display the metrics (evaluated on the validation set).
+                
+                acc = np.mean(epoch_validation_acc)
+                loss = np.mean(epoch_validation_loss)
+                
                 Accuracy.append(acc)
                 Loss.append(loss)
                 Epoch.append(epoch)
@@ -467,7 +498,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             #### d) Saving the model as a checkpoint, the metrics in a pickle file and update the file report.txt
             ### ----------------------------------------------------------------------------------------------------------- ###
 
-            if step % save_step == 0:
+            if step*batch_size % save_step == 0:
                 evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
                 with open(folder_model + '/evolution.pkl', 'wb') as handle:
                     pickle.dump(evolution, handle)
