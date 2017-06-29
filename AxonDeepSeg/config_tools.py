@@ -40,7 +40,7 @@ def default_configuration():
         "network_learning_rate": 0.0005,
         "network_batch_size": 8,
         "network_dropout": 0.75,
-        "network_batch_norm_decay": 0.999,
+        "network_batch_norm_decay": 0.8,
         "network_depth": 4,
         "network_convolution_per_layer": [3,3,3,3],
         "network_size_of_convolutions_per_layer": [[5,5,5],[3,3,3],[3,3,3],[3,3,3]],
@@ -140,7 +140,7 @@ def grid_config(L_struct, dict_params, base_config = default_configuration()):
     
     #config_names = [generate_name_config(config)+'_'+str(i)+'-'+str(int(time.time()))[-3:] for i,config in enumerate(L_configs)]
     #print L_configs
-    return {generate_name_config(config)+'_'+str(i)+'-'+str(int(time.time()))[-3:]:config for i,config in enumerate(L_configs)}
+    return {generate_name_config(config)+'_'+str(i)+'-'+str(int(time.time()))[-4:]:config for i,config in enumerate(L_configs)}
             
 
 ## ----------------------------------------------------------------------------------------------------------------

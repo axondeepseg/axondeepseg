@@ -6,11 +6,11 @@ import pandas as pd
 
 def remove_struct(df):
     L_to_remove = ['n_classes', 'size_of_convolutions_per_layer', 'features_per_convolution', 'depth', 'convolution_per_layer',
-                   'thresholds', 'data_augmentation.transformations.elastic', 'data_augmentation.transformations.flipping',
-                   'data_augmentation.transformations.noise_addition',           
-                   'data_augmentation.transformations.random_rotation',
-                   'data_augmentation.transformations.rescaling',
-                   'data_augmentation.transformations.shifting']
+                   'thresholds', '3_data_augmentation.transformations.elastic', '4_data_augmentation.transformations.flipping',
+                   'data_augmentation.transformations.5_noise_addition',           
+                   'data_augmentation.transformations.2_random_rotation',
+                   'data_augmentation.transformations.1_rescaling',
+                   'data_augmentation.transformations.0_shifting']
     for param in L_to_remove:
         df = df.drop(param, axis=1, errors='ignore')
     return df
