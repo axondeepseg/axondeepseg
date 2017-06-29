@@ -54,9 +54,9 @@ def default_configuration():
         "network_downsampling": 'convolution',
         "network_batch_norm": True,
         "network_data_augmentation": {'type':'all', 
-                                      'transformations':{'shifting':True, 'rescaling':True,
-                                                         'random_rotation':True, 'elastic':True, 'flipping':True,
-                                                         'noise_addition':True}
+                                      'transformations':{'0_shifting':True, '1_rescaling':True,
+                                                         '2_random_rotation':True, '3_elastic':True, '4_flipping':True,
+                                                         '5_noise_addition':False}
                                      }
     }
 

@@ -17,6 +17,7 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
                        functools.partial(elastic,thresh_indices=[0,0.5]), flipping]    
     else:
         for k,v in transformations.iteritems():
+            k = k.split('_')[-1]
             if v == True:
                 if k.lower() == 'shifting':
                     L_transformations.append(shifting)
