@@ -93,6 +93,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     data_augmentation = config["network_data_augmentation"]
     batch_norm = config["network_batch_norm"]
     batch_norm_decay = config["network_batch_norm_decay"]
+    
+    # Decay parameters
+    additional_parameters = config["network_additional_parameters"]
+    batch_norm_decay_decay_activate = additional_parameters["batch_norm_decay_decay_activate"]
+    batch_norm_decay_ending_decay = additional_parameters["batch_norm_decay_ending_decay"]
+    batch_norm_decay_decay_period = additional_parameters["batch_norm_decay_decay_period"]
+    learning_rate_decay_activate = additional_parameters["learning_rate_decay_activate"]
+    learning_rate_decay_period = additional_parameters["learning_rate_decay_period"]
+    learning_rate_decay_rate = additional_parameters["learning_rate_decay_rate"]
+    
     batch_size_validation = 8
 
 
@@ -140,31 +150,41 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ########################################################################################################################
     
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 1 - Declaring the placeholders
+    #### 1 - Declaring the placeholders and other variables
     ### ------------------------------------------------------------------------------------------------------------------ ###
+    
     x = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="input") # None relates to batch_size
     y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes), name="ground_truth")
     phase = tf.placeholder(tf.bool, name="training_phase") # Tells us if we are in training phase of test phase. Used for batch_normalization
     if weighted_cost == True:
         spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="spatial_weights") 
     keep_prob = tf.placeholder(tf.float32, name="keep_prob")
-    # adapt_learning_rate = tf.placeholder(tf.float32, name="learning_rate") # If the learning rate changes over epochs
+    adapt_learning_rate = tf.placeholder(tf.float32, name="learning_rate") # If the learning rate changes over epochs
+    adapt_bn_decay = tf.placeholder(tf.float32, name="batch_norm_decay") # If the learning rate changes over epochs
+    global_step = tf.Variable(0, trainable=False, name='global_step')
 
     # Implementation note : we could use a spatial_weights tensor with only ones, which would greatly simplify the rest of the code by removing a lot of if conditions. Nevertheless, for computational reasons, we prefer to avoid the multipliciation by the spatial weights if the associated matrix is composed of only ones. This position may be revised in the future.
-    
-
+  
     ### ------------------------------------------------------------------------------------------------------------------ ###
     #### 2 - Creating the graph associated to the prediction made by the U-net.
     ### ------------------------------------------------------------------------------------------------------------------ ###
     
-    # We select a GPU before creating the prediction graph. WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
+    # We update the batch_norm_decay if needed
 
+    adapt_bn_decay = inverted_exponential_decay(batch_norm_decay, batch_norm_decay_ending_decay, global_step,
+                                                batch_norm_decay_decay_period, staircase=False)
+    tf.summary.scalar('adapt_bnd', adapt_bn_decay)
+    
+    if batch_norm_decay_decay_activate is False:
+        adapt_bn_decay = None
+    
+    # We select a GPU before creating the prediction graph. WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
 
     if gpu in ['gpu:0', 'gpu:1']:
         with tf.device('/' + gpu):
-            pred = uconv_net(x, config, phase)
+            pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
     else:
-        pred = uconv_net(x, config, phase)
+        pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
 
     # We also display the total number of variables
     total_parameters = 0
@@ -180,6 +200,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     #### 3 - Adapting the dimensions of the differents tensors, then defining the optimization of the graph (loss + opt.)
     ### ------------------------------------------------------------------------------------------------------------------ ###
     
+    # First, we prepare the terrain for the decaying learning rate and we update (decay) the batch norm decay (which should be called batch norm momentum).
+    if learning_rate_decay_activate:
+        adapt_learning_rate = tf.train.exponential_decay(learning_rate, global_step, 
+                                                     learning_rate_decay_period, learning_rate_decay_rate, staircase=True)
+        tf.summary.scalar('adapt_lr', adapt_learning_rate)
+
+    else:
+        adapt_learning_rate = learning_rate
+    
+
     # Reshaping pred and y so that they are understandable by softmax_cross_entropy 
     with tf.name_scope('preds_reshaped'):
         pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]])
@@ -196,12 +226,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     #temp = set(tf.global_variables())  # trick to get variables generated by the optimizer
     
-    # We then define the optimization operation. 
+    # We then define the Adam optimization operation. We do it in two times to obtain the gradients, so we can use them in TensorBoard.
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
         # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
         # First we compute the gradients
-        grads_list = tf.train.AdamOptimizer(learning_rate=learning_rate).compute_gradients(cost)
+        grads_list = tf.train.AdamOptimizer(learning_rate=adapt_learning_rate).compute_gradients(cost)
 
         # We make a summary of the gradients
         for grad, weight in grads_list:
@@ -210,7 +240,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 weight_grads_summary = tf.summary.histogram('_'.join(weight.name.split(':')) + '_grad', grad)
 
         # Then we continue the optimization as usual
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).apply_gradients(grads_list)    
+        optimizer = tf.train.AdamOptimizer(learning_rate=adapt_learning_rate).apply_gradients(grads_list, global_step=global_step)   
     
 
     ### ------------------------------------------------------------------------------------------------------------------ ###
@@ -554,6 +584,14 @@ def visualize_first_layer(W_conv1, filter_size, n_filter):
     W1_e = tf.reshape(W1_d, [1, w_display*filter_size, w_display*filter_size, 1])
     
     return W1_e
+
+def inverted_exponential_decay(a, b, global_step, decay_period, staircase=False):
+    if staircase:
+        return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.int32)/decay_period))
+    else:
+        return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.float64)/decay_period))
+
+
         
 # To Call the training in the terminal
 

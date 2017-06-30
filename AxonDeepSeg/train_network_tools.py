@@ -100,7 +100,7 @@ def maxpool(x, k_size, k_stride, scope, padding='VALID'):
 # ------------------------ NETWORK STRUCTURE
 
 
-def uconv_net(x, config, phase, image_size=256):
+def uconv_net(x, config, phase, image_size=256, bn_updated_decay = None):
     """
     Create the U-net.
     Input :
@@ -121,7 +121,10 @@ def uconv_net(x, config, phase, image_size=256):
     features_per_convolution = config["network_features_per_convolution"]
     downsampling = config["network_downsampling"]
     activate_bn = config["network_batch_norm"]
-    bn_decay = config["network_batch_norm_decay"]
+    if bn_updated_decay is None:
+        bn_decay = config["network_batch_norm_decay"]
+    else:
+        bn_decay = bn_updated_decay
 
     # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
     net = tf.reshape(x, shape=[-1, image_size, image_size, 1])

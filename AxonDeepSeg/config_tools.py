@@ -37,10 +37,11 @@ def default_configuration():
     return {
         "network_n_classes": 2,
         "network_thresholds": [0, 0.5],
-        "network_learning_rate": 0.0005,
+        "network_learning_rate": 0.001,
+        "network_learning_rate_decay_period": 100,
         "network_batch_size": 8,
         "network_dropout": 0.75,
-        "network_batch_norm_decay": 0.999,
+        "network_batch_norm_decay": 0.9,
         "network_depth": 4,
         "network_convolution_per_layer": [3,3,3,3],
         "network_size_of_convolutions_per_layer": [[5,5,5],[3,3,3],[3,3,3],[3,3,3]],
@@ -57,7 +58,14 @@ def default_configuration():
                                       'transformations':{'0_shifting':True, '1_rescaling':True,
                                                          '2_random_rotation':True, '3_elastic':True, '4_flipping':True,
                                                          '5_noise_addition':False}
-                                     }
+                                     },
+        "network_additional_parameters":{'learning_rate_decay_activate':False,
+                                         'learning_rate_decay_period':120,
+                                         'learning_rate_decay_rate':0.99,
+                                         'batch_norm_decay_decay_activate':False,
+                                         'batch_norm_decay_ending_decay':0.999,
+                                         'batch_norm_decay_decay_period':2400
+                                        }
     }
 
 
@@ -196,8 +204,6 @@ def generate_name_config(config):
     
     name = ''
     
-
-
     # Downsampling
     if config['network_downsampling'] == 'convolution':
         name += 'cv_'
