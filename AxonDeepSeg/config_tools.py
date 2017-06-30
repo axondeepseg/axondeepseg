@@ -101,7 +101,7 @@ def generate_config(config_path=None):
 
 def rec_update(elem, update_dict):
     if type(elem) == dict:
-        return elem.update(update_dict)
+        return update_config(elem,update_dict)
     elif type(elem) == list:
         return [rec_update(e, update_dict) for e in elem]
     else:

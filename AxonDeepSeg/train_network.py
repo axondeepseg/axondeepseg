@@ -170,12 +170,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ### ------------------------------------------------------------------------------------------------------------------ ###
     
     # We update the batch_norm_decay if needed
-
-    adapt_bn_decay = inverted_exponential_decay(batch_norm_decay, batch_norm_decay_ending_decay, global_step,
-                                                batch_norm_decay_decay_period, staircase=False)
-    tf.summary.scalar('adapt_bnd', adapt_bn_decay)
     
-    if batch_norm_decay_decay_activate is False:
+    if batch_norm_decay_decay_activate:
+        adapt_bn_decay = inverted_exponential_decay(batch_norm_decay, batch_norm_decay_ending_decay, global_step,
+                                                    batch_norm_decay_decay_period, staircase=False)
+        tf.summary.scalar('adapt_bnd', adapt_bn_decay)
+    else:
         adapt_bn_decay = None
     
     # We select a GPU before creating the prediction graph. WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
