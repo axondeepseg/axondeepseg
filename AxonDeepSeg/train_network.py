@@ -194,7 +194,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         for dim in shape:
             variable_parametes *= dim.value
         total_parameters += variable_parametes
-    print('tot_param = ',total_parameters)
+
+    output_params = 'tot_param = ' + str(total_parameters)
+    print(output_params)
+    
+    Report += '\n'+output_params+'\n'
     
     ### ------------------------------------------------------------------------------------------------------------------ ###
     #### 3 - Adapting the dimensions of the differents tensors, then defining the optimization of the graph (loss + opt.)
