@@ -147,7 +147,7 @@ def grid_config(L_struct, dict_params, base_config = default_configuration()):
     
     #config_names = [generate_name_config(config)+'_'+str(i)+'-'+str(int(time.time()))[-3:] for i,config in enumerate(L_configs)]
     #print L_configs
-    return {generate_name_config(config)+'_'+str(i)+'-'+str(int(time.time()))[-3:]:config for i,config in enumerate(L_configs)}
+    return {generate_name_config(config)+'_'+str(i)+'-'+str(int(time.time()))[-4:]:config for i,config in enumerate(L_configs)}
             
 
 ## ----------------------------------------------------------------------------------------------------------------

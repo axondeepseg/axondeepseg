@@ -165,18 +165,18 @@ def uconv_net(x, config, phase, image_size=256, bn_updated_decay = None):
     ####################################################################
 
     # For the moment we keem the same number of channels as the last layer we went through
-    net = conv_relu(net, features_per_convolution[i][conv_number][1], 
-                    size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
-                    w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                    training_phase=phase, activate_bn=activate_bn, bn_decay = bn_decay, scope='deepconv1')
-
-    net = conv_relu(net, features_per_convolution[i][conv_number][1], 
-                    size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
-                    w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                    training_phase=phase, activate_bn=activate_bn, bn_decay = bn_decay, scope='deepconv2')
-
-    data_temp_size.append(data_temp_size[-1])
-    data_temp = net
+    #net = conv_relu(net, features_per_convolution[i][conv_number][1], 
+    #                size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
+    #                w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
+    #                training_phase=phase, activate_bn=activate_bn, bn_decay = bn_decay, scope='deepconv1')
+    #
+    #net = conv_relu(net, features_per_convolution[i][conv_number][1], 
+    #                size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
+    #                w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
+    #                training_phase=phase, activate_bn=activate_bn, bn_decay = bn_decay, scope='deepconv2')
+    #
+    #data_temp_size.append(data_temp_size[-1])
+    #data_temp = net
     
     ####################################################################
     ########################## EXPANSION PHASE #########################
