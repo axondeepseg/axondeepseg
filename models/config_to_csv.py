@@ -11,8 +11,11 @@ def remove_struct(df):
                    'data_augmentation.transformations.random_rotation',
                    'data_augmentation.transformations.rescaling',
                    'data_augmentation.transformations.shifting']
-    for param in L_to_remove:
-        df = df.drop(param, axis=1, errors='ignore')
+    L_to_keep = ['0_name', 'trainingset', 'learning_rate', 'dropout', 'batch_norm_decay',
+                 'additional_parameters.learning_rate_decay_activate', 'additional_parameters.batch_norm_decay_decay_activate']
+    for param in df.columns.tolist():
+        if param not in L_to_keep:
+            df = df.drop(param, axis=1, errors='ignore')
     return df
 
 def config_decode(array_config, path_model):

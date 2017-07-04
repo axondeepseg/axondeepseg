@@ -38,7 +38,6 @@ def default_configuration():
         "network_n_classes": 2,
         "network_thresholds": [0, 0.5],
         "network_learning_rate": 0.001,
-        "network_learning_rate_decay_period": 100,
         "network_batch_size": 8,
         "network_dropout": 0.75,
         "network_batch_norm_decay": 0.9,
