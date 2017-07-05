@@ -518,13 +518,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 print '\n\n----Scores on validation:---' + output_2
 
                 # Saving the model if it's the best one
-                if epoch == 1:
-                    acc_current_best = acc
-                    loss_current_best = loss
+                #if epoch == 1:
+                #    acc_current_best = acc
+                #    loss_current_best = loss
 
                     # If new model is better than the last one, update best model
-                elif (acc > acc_current_best and loss < loss_current_best):
-                    save_path = saver.save(session, folder_model + "/best_model.ckpt")
+                #elif (acc > acc_current_best and loss < loss_current_best):
+                #    save_path = saver.save(session, folder_model + "/best_model.ckpt")
 
                 epoch += 1
 
