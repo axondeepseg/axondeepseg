@@ -6,7 +6,7 @@ import random
 import os
 from data_augmentation import shifting, rescaling, flipping, random_rotation, elastic
 import functools
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]):
     
@@ -60,25 +60,57 @@ def random_transformation(patch, thresh_indices = [0,0.5], transformations = {})
        
     return patch
 
-def patch_to_mask(patch, thresh_indices=[0, 0.5]):
+def labellize_mask_2d(patch, thresh_indices=[0, 0.5]):
     '''
-    Process a patch so that the pixels between two threshold values are set to the closest threshold, effectively
+    Process a patch with 8 bit pixels ([0-255]) so that the pixels between two threshold values are set to the closest threshold, effectively
     enabling the creation of a mask with as many different values as there are thresholds.
+
+    Returns mask in [0-1] domain
     '''
-
-    for indice,value in enumerate(thresh_indices[:-1]):
-        if np.max(patch[1]) > 1.001:
-            thresh_inf = np.int(255*value)
-            thresh_sup = np.int(255*thresh_indices[indice+1])
-        else:
-            thresh_inf = value
-            thresh_sup = thresh_indices[indice+1]   
-
-            patch[1][(patch[1] >= thresh_inf) & (patch[1] < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-
-            patch[1][(patch[1] >= thresh_indices[-1])] = 1
+    mask = np.zeros_like(patch)
+    for indice in range(len(thresh_indices)-1):
+        
+        thresh_inf_8bit = 255*thresh_indices[indice]
+        thresh_sup_8bit = 255*thresh_indices[indice+1]
+        
+        idx = np.where((patch >= thresh_inf_8bit) & (patch < thresh_sup_8bit))
+        mask[idx] = np.mean([thresh_inf_8bit/255,thresh_sup_8bit/255])
+   
+    mask[(patch >= 255*thresh_indices[-1])] = 1
 
     return patch
+
+
+def transform_batches(list_batches):
+    '''
+    Transform batches so that they are readable by Tensorflow (good shapes)
+    :param list_batches: [batch_x, batch_y, (batch_w)]
+    :return transformed_batches: Returns the batches with good shapes for tensorflow
+    '''
+    batch_x = list_batches[0]
+    batch_y = list_batches[1]
+    if len(list_batches) == 3:
+        batch_w = list_batches[2]
+        
+    if len(batch_y) == 1: # If we have only one image in the list np.stack won't work
+        transformed_batches = []
+        transformed_batches.append(np.reshape(batch_x[0], (1, batch_x[0].shape[0], batch_x[0].shape[1])))
+        transformed_batches.append(np.reshape(batch_y[0], (1, batch_y[0].shape[0], batch_y[0].shape[1], -1)))
+        
+        if len(list_batches) == 3:
+            transformed_batches.append(np.reshape(batch_w[0], (1, batch_w[0].shape[0], batch_w[0].shape[1])))
+            
+    else:
+        transformed_batches = [np.stack(batch_x), np.stack(batch_y)]
+         
+        if len(list_batches) == 3:
+            transformed_batches.append(np.stack(batch_w))
+        
+    return transformed_batches
+
+
+
+    
 
 
 #######################################################################################################################
@@ -163,9 +195,9 @@ class input_data:
             self.sample_seen += 1
 
             # We are reading directly the images. Range of values : 0-255
-            image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
-            mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')            
-            
+            image = self.read_image('image', indice)
+            mask = self.read_image('mask', indice)
+                        
             # Online data augmentation
             if augmented_data['type'].lower() == 'all':
                 [image, mask] = all_transformations([image, mask], 
@@ -176,23 +208,26 @@ class input_data:
                                                       transformations = augmented_data['transformations'], 
                                                       thresh_indices = self.thresh_indices)
             else:
-                pass
-            
-            mask = patch_to_mask(mask, self.thresh_indices)
-            
+                pass            
                 
-            #-----PreProcessing --------
+            # We still have 8-bit images and mask (0-255). We are now going to normalize the images (inputs) and labellize the masks
+     
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
-            #---------------------------
+            mask = labellize_mask_2d(mask, self.thresh_indices) #shape (256, 256), values float 0.0-1.0
             
+           
+            # We now convert the mask of depth 1 with range of values going for 0 to 1 to a 3-D mask with a layer of depth per class, and only 0s and 1s
             n = len(self.thresh_indices)
-
+            
             # Working out the real mask (sparse cube with n depth layer for each class)
             real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
+            thresh_indices = [255*x for x in self.thresh_indices]
+
+
             for class_ in range(n-1):
-                real_mask[:,:,class_] = (mask[:,:] >= self.thresh_indices[class_]) * (mask[:,:] <                                    self.thresh_indices[class_+1])
-            real_mask[:,:,n-1] = (mask > self.thresh_indices[n-1])
+                real_mask[:,:,class_] = (mask[:,:] >= thresh_indices[class_]) * (mask[:,:] <                                    thresh_indices[class_+1])
+            real_mask[:,:,-1] = (mask[:,:] >= thresh_indices[-1])
             real_mask = real_mask.astype(np.uint8)
 
             batch_x.append(image)
@@ -225,8 +260,8 @@ class input_data:
             indice = self.samples_list.pop(0)
             self.sample_seen += 1
 
-            image = imread(self.path + 'image_%s.png' % indice, flatten=False, mode='L')
-            mask = imread(self.path + 'mask_%s.png' % indice, flatten=False, mode='L')
+            image = self.read_image('image', indice)
+            mask = self.read_image('mask', indice)
 
             # Online data augmentation
             if augmented_data['type'].lower() == 'all':
@@ -324,37 +359,15 @@ class input_data:
 
         # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them        
         return transform_batches([batch_x, batch_y, batch_w])
+    
+    def read_image(self, type_, i):
+        '''
+        :param i: indice of the image or mask to read.
+        :return image: the loaded image with 8 bit pixels, range of values being [0,288] 
+        '''
 
-    def read_batch(self, batch_y, size_batch):
-        images = batch_y.reshape(size_batch, self.size_image, self.size_image, self.n_labels)
-        return images
-    
-    
-def transform_batches(list_batches):
-    '''
-    Transform batches so that they are readable by Tensorflow (good shapes)
-    :param list_batches: [batch_x, batch_y, (batch_w)]
-    :return transformed_batches: Returns the batches with good shapes for tensorflow
-    '''
-    batch_x = list_batches[0]
-    batch_y = list_batches[1]
-    if len(list_batches) == 3:
-        batch_w = list_batches[2]
-        
-    if len(batch_y) == 1: # If we have only one image in the list np.stack won't work
-        transformed_batches = []
-        transformed_batches.append(np.reshape(batch_x[0], (1, batch_x[0].shape[0], batch_x[0].shape[1])))
-        transformed_batches.append(np.reshape(batch_y[0], (1, batch_y[0].shape[0], batch_y[0].shape[1], -1)))
-        
-        if len(list_batches) == 3:
-            transformed_batches.append(np.reshape(batch_w[0], (1, batch_w[0].shape[0], batch_w[0].shape[1])))
-            
-    else:
-        transformed_batches = [np.stack(batch_x), np.stack(batch_y)]
-         
-        if len(list_batches) == 3:
-            transformed_batches.append(np.stack(batch_w))
-        
-    return transformed_batches
+        # Loading the image using 8-bit pixels (0-255)
+        return imread(self.path + str(type_) + '_%s.png' % i, flatten=False, mode='L')
+
     
     

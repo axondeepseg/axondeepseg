@@ -15,6 +15,9 @@ from patch_extraction import extract_patch
 #######################################################################################################################
 #                                                Data Augmentation                                                    #
 #######################################################################################################################
+
+# We find here the functions that perform transformations to images and mask. 
+# All functions take 8-bit images and return 8-bit images
 def shifting(patch):
     """
     :param patch: [image,mask]
@@ -60,21 +63,7 @@ def rescaling(patch, thresh_indices = [0,0.5]): #indices to indexes.
             image_rescale, mask_rescale = patches[i]
 
         mask_rescale = np.array(mask_rescale)
-
-        for indice,value in enumerate(thresh_indices[:-1]):
-            if np.max(mask_rescale) > 1.001:
-                thresh_inf = np.int(255*value)
-                thresh_sup = np.int(255*thresh_indices[indice+1])
-            else:
-                thresh_inf = value
-                thresh_sup = thresh_indices[indice+1]   
-
-            mask_rescale[(mask_rescale >= thresh_inf) & (mask_rescale < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-
-        mask_rescale[(mask_rescale >= thresh_indices[-1])] = 1
-
-        rescaled_patch = [image_rescale.astype(np.uint8), mask_rescale]
-
+        rescaled_patch = [image_rescale.astype(np.uint8), mask_rescale.astype(np.uint8)]
     return rescaled_patch
 
 
@@ -92,19 +81,7 @@ def random_rotation(patch, thresh_indices = [0,0.5]):
     image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True)
     gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
 
-    for indice,value in enumerate(thresh_indices[:-1]):
-        if np.max(gt_rotated) > 1.001:
-            thresh_inf = np.int(255*value)
-            thresh_sup = np.int(255*thresh_indices[indice+1])
-        else:
-            thresh_inf = value
-            thresh_sup = thresh_indices[indice+1]      
-        
-        gt_rotated[(gt_rotated >= thresh_inf) & (gt_rotated < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-    
-    gt_rotated[gt_rotated >= thresh_sup] = 1
-
-    return [image_rotated.astype(np.uint8), gt_rotated]
+    return [image_rotated.astype(np.uint8), gt_rotated.astype(np.uint8)]
 
 
 def elastic_transform(image, gt, alpha, sigma, thresh_indices = [0,0.5]):
@@ -139,18 +116,8 @@ def elastic_transform(image, gt, alpha, sigma, thresh_indices = [0,0.5]):
     elastic_gt = map_coordinates(gt, indices, order=1).reshape(shape)
     elastic_gt = np.array(elastic_gt)
 
-    for indice,value in enumerate(thresh_indices[:-1]):
-        if np.max(elastic_gt) > 1.001:
-            thresh_inf = np.int(255*value)
-            thresh_sup = np.int(255*thresh_indices[indice+1])
-        else:
-            thresh_inf = value
-            thresh_sup = thresh_indices[indice+1]
-        elastic_gt[(elastic_gt >= thresh_inf) & (elastic_gt < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
 
-    elastic_gt[elastic_gt >= thresh_sup] = 1
-
-    return [elastic_image, elastic_gt]
+    return [elastic_image.astype(np.uint8), elastic_gt.astype(np.uint8)]
 
 def elastic(patch, thresh_indices = [0,0.5]):
     """

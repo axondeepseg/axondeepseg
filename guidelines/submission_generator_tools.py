@@ -38,6 +38,8 @@ def generate_heliosjob(path_project, path_venv, bashname, configfile, config, pa
         file.write(" -i ")
         file.write(str(path_model_init))
         
+    print name_model + ' created ...'
+        
     file.close()
 
 ## ----------------------------------------------------------------------------------------------------------------
@@ -74,5 +76,7 @@ def generate_guilliminjob(path_project, path_venv, bashname, configfile, config,
     if path_model_init:
         file.write(" -i ")
         file.write(str(path_model_init))
+        
+    print name_model + ' created ...'
         
     file.close()
