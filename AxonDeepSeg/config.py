@@ -56,7 +56,7 @@ def generate_config(config_path=None):
     config = default_configuration()
     with open(config_path) as conf_file:
         user_conf = json.load(conf_file)
-        config.extend(user_conf)
+        config.update(user_conf)
 
     if not validate_config(config):
         raise ValueError('Invalid configuration file')
