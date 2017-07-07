@@ -73,7 +73,7 @@ def labellize_mask_2d(patch, thresh_indices=[0, 0.5]):
         thresh_inf_8bit = 255*thresh_indices[indice]
         thresh_sup_8bit = 255*thresh_indices[indice+1]
         
-        idx = np.where((patch >= thresh_inf_8bit) & (patch < thresh_sup_8bit))
+        idx = np.where((patch >= thresh_inf_8bit) & (patch < thresh_sup_8bit)) # returns (x, y) of the corresponding indices
         mask[idx] = np.mean([thresh_inf_8bit/255,thresh_sup_8bit/255])
    
     mask[(patch >= 255*thresh_indices[-1])] = 1
@@ -215,8 +215,6 @@ class input_data:
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             mask = labellize_mask_2d(mask, self.thresh_indices) #shape (256, 256), values float 0.0-1.0
-            
-           
             # We now convert the mask of depth 1 with range of values going for 0 to 1 to a 3-D mask with a layer of depth per class, and only 0s and 1s
             n = len(self.thresh_indices)
             
@@ -239,7 +237,6 @@ class input_data:
                     break
                 else:
                     self.samples_list = self.reset_set(type_ = 'train')
-
         
         # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them 
         return transform_batches([batch_x, batch_y])

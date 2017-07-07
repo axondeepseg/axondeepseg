@@ -218,12 +218,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     with tf.name_scope('preds_reshaped'):
         pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]])
     with tf.name_scope('y_reshaped'):    
-        y_ = tf.reshape(tf.reshape(y,[-1,tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]), [-1,tf.shape(y)[-1]])
+        y_ = tf.reshape(y, [-1,tf.shape(y)[-1]])
    
     # Define loss and optimizer
     with tf.name_scope('cost'):
         if weighted_cost == True:    
-            spatial_weights_ = tf.reshape(tf.reshape(spatial_weights,[-1,tf.shape(spatial_weights)[1]*tf.shape(spatial_weights)[2]]), [-1])
+            spatial_weights_ = tf.reshape(spatial_weights,[-1])
             cost = tf.reduce_mean(tf.multiply(spatial_weights_,tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
         else:
             cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_))
@@ -291,6 +291,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # We also create a summary specific to images. We add images of the input and the probability maps predicted by the u-net
     L_im_summ = []
     L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
+    if debug_mode:
+        L_im_summ.append(tf.summary.image('mask', y))
     
     # Creating the operation giving the probabilities
     with tf.name_scope('prob_maps'):
