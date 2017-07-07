@@ -30,6 +30,24 @@ def result_mapping(folder_models, path_datatest):
     return 'segmented'
 
 
+def map_model_to_images(folder_model, path_datatests):
+    """
+    Apply one trained model to all the specified images
+    """
+
+    for root in os.listdir(path_datatests):
+        if 'DS_Store' not in root:
+            # Subpath image to apply
+            subpath_image = os.path.join(path_datatests, root)
+
+            # Load config
+            with open(folder_model + 'config_network.json', 'r') as fd:
+                config_network = json.loads(fd.read())
+
+            axon_segmentation(subpath_image, folder_model, config_network, imagename='segmentation_' + root + '.png')
+            print 'Segmentation ' + str(root) + ' done.'
+
+
 
 
 
