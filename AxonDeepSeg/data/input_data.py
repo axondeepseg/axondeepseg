@@ -16,19 +16,30 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
                        functools.partial(random_rotation, thresh_indices=[0,0.5]), 
                        functools.partial(elastic,thresh_indices=[0,0.5]), flipping]    
     else:
+        L_c = []
         for k,v in transformations.iteritems():
-            k = k.split('_')[-1]
-            if v == True:
-                if k.lower() == 'shifting':
-                    L_transformations.append(shifting)
-                elif k.lower() == 'rescaling':
-                    L_transformations.append(functools.partial(rescaling,thresh_indices=[0,0.5]))
-                elif k.lower() == 'random_rotation':
-                    L_transformations.append(functools.partial(random_rotation,thresh_indices=[0,0.5]))
-                elif k.lower() == 'elastic':
-                    L_transformations.append(functools.partial(elastic,thresh_indices=[0,0.5]))
-                elif k.lower() == 'flipping':
-                    L_transformations.append(flipping)
+            if v==True:
+                L_k = k.split('_')
+                number = L_k.pop(0)
+                k = '_'.join(L_k)
+                c = (number,k)
+                L_c.append(c)
+        # We sort the transformations to make by the number preceding the transformation in the dict in the config file        
+        L_c_sorted = sorted(L_c, key=lambda x: x[0]) 
+        
+        # Creation of the list of transformations to apply
+        for tup in L_c_sorted:
+            k = tup[1]
+            if k.lower() == 'shifting':
+                L_transformations.append(shifting)
+            elif k.lower() == 'rescaling':
+                L_transformations.append(functools.partial(rescaling,thresh_indices=[0,0.5]))
+            elif k.lower() == 'random_rotation':
+                L_transformations.append(functools.partial(random_rotation,thresh_indices=[0,0.5]))
+            elif k.lower() == 'elastic':
+                L_transformations.append(functools.partial(elastic,thresh_indices=[0,0.5]))
+            elif k.lower() == 'flipping':
+                L_transformations.append(flipping)
                     
     return L_transformations
 

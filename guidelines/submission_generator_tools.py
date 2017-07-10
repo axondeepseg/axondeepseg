@@ -23,6 +23,7 @@ def generate_heliosjob(path_project, path_venv, bashname, configfile, config, pa
     file.write("#PBS -A rrp-355-aa \n")
     file.write("#PBS -l walltime="+str(walltime)+" \n")
     file.write("#PBS -l nodes=1:gpus=1 \n")
+    file.write("#PBS -l feature=k80 \n")
     file.write("cd $SCRATCH/"+path_project+ "/axondeepseg/models/" + name_model + "/ \n")
     file.write("source "+path_venv+"/bin/activate \n")
     file.write("module load compilers/gcc/4.8.5 compilers/java/1.8 apps/buildtools compilers/swig apps/git apps/bazel/0.4.3 \n")
