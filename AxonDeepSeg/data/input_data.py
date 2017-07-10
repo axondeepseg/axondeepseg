@@ -16,30 +16,19 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
                        functools.partial(random_rotation, thresh_indices=[0,0.5]), 
                        functools.partial(elastic,thresh_indices=[0,0.5]), flipping]    
     else:
-        L_c = []
         for k,v in transformations.iteritems():
-            if v==True:
-                L_k = k.split('_')
-                number = L_k.pop(0)
-                k = '_'.join(L_k)
-                c = (number,k)
-                L_c.append(c)
-        # We sort the transformations to make by the number preceding the transformation in the dict in the config file        
-        L_c_sorted = sorted(L_c, key=lambda x: x[0]) 
-        
-        # Creation of the list of transformations to apply
-        for tup in L_c_sorted:
-            k = tup[1]
-            if k.lower() == 'shifting':
-                L_transformations.append(shifting)
-            elif k.lower() == 'rescaling':
-                L_transformations.append(functools.partial(rescaling,thresh_indices=[0,0.5]))
-            elif k.lower() == 'random_rotation':
-                L_transformations.append(functools.partial(random_rotation,thresh_indices=[0,0.5]))
-            elif k.lower() == 'elastic':
-                L_transformations.append(functools.partial(elastic,thresh_indices=[0,0.5]))
-            elif k.lower() == 'flipping':
-                L_transformations.append(flipping)
+            k = k.split('_')[-1]
+            if v == True:
+                if k.lower() == 'shifting':
+                    L_transformations.append(shifting)
+                elif k.lower() == 'rescaling':
+                    L_transformations.append(functools.partial(rescaling,thresh_indices=[0,0.5]))
+                elif k.lower() == 'random_rotation':
+                    L_transformations.append(functools.partial(random_rotation,thresh_indices=[0,0.5]))
+                elif k.lower() == 'elastic':
+                    L_transformations.append(functools.partial(elastic,thresh_indices=[0,0.5]))
+                elif k.lower() == 'flipping':
+                    L_transformations.append(flipping)
                     
     return L_transformations
 
@@ -288,25 +277,29 @@ class input_data:
             #---------------------------
             mask = labellize_mask_2d(mask, self.thresh_indices) # mask intensity float between 0-1
 
+            n = len(self.thresh_indices) # number of classes
+        
+            # Working out the real mask (sparse cube with n depth layer for each class)
+            thresh_indices = [255*x for x in self.thresh_indices]
+            real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
+            
+            for class_ in range(n-1):
+                real_mask[:,:,class_] = (mask[:,:] >= thresh_indices[class_]) * (mask[:,:] <                                    thresh_indices[class_+1])
+            real_mask[:,:,-1] = (mask[:,:] >= thresh_indices[-1])
+            real_mask = real_mask.astype(np.uint8)
+            
+
             # Create a weight map for each class (background is the first class, equal to 1
            
             weights_intermediate = np.ones((self.size_image * self.size_image,len(self.thresh_indices)))
             #weights_intermediate = np.zeros((self.size_image, self.size_image, len(self.thresh_indices[1:])))
 
             for indice,class_ in enumerate(self.thresh_indices[1:]):
-                # For each class starting except background
-                mask_class = np.asarray(list(mask))
                 
-                if class_ != self.thresh_indices[-1]:
-                    mask_class[mask_class != np.mean([self.thresh_indices[indice - 1], class_])] = 0
-                    mask_class[mask_class == np.mean([self.thresh_indices[indice - 1],class_])]=1
-                else:
-                    mask_class[mask_class != 1]=0
-
-                to_use = np.asarray(255*mask_class,dtype='uint8')
-                to_use[to_use <= np.min(to_use)] = 0
-                weight = ndimage.distance_transform_edt(to_use)
-                weight[weight==0]=np.max(weight)
+                mask_class = real_mask[:,:,indice]
+                mask_class_8bit = np.asarray(255*mask_class,dtype='uint8')
+                weight = ndimage.distance_transform_edt(mask_class_8bit)                                
+                weight[weight==0] = np.max(weight)
 
                 if class_ == self.thresh_indices[1]:
                     w0 = 0.5
@@ -314,7 +307,7 @@ class input_data:
                     w0 = 1
 
                 sigma = 2
-                weight = 1 + w0*np.exp(-(weight/sigma)**2/2)
+                weight = 1 + w0*np.exp(-(weight.astype(np.float64)/sigma)**2/2)
                 #weight = weight/np.max(weight)
                 weights_intermediate[:,indice] = weight.reshape(-1, 1)[:,0]
                 #weights_intermediate[:, :, indice] = weight
@@ -330,9 +323,6 @@ class input_data:
                 plt.show()'''
             
             # Generating the mask with the real labels as well as the matrix of the weights
-            
-            n = len(self.thresh_indices) #number of classes
-
             weights_intermediate = np.reshape(weights_intermediate,[mask.shape[0], mask.shape[1], n])
             
             # Working out the real mask (sparse cube with n depth layer for each class)
