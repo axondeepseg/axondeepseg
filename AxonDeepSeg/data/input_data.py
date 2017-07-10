@@ -287,13 +287,11 @@ class input_data:
                 real_mask[:,:,class_] = (mask[:,:] >= thresh_indices[class_]) * (mask[:,:] <                                    thresh_indices[class_+1])
             real_mask[:,:,-1] = (mask[:,:] >= thresh_indices[-1])
             real_mask = real_mask.astype(np.uint8)
-            
 
             # Create a weight map for each class (background is the first class, equal to 1
-           
             weights_intermediate = np.ones((self.size_image * self.size_image,len(self.thresh_indices)))
-            #weights_intermediate = np.zeros((self.size_image, self.size_image, len(self.thresh_indices[1:])))
 
+            # Classical method to compute weights
             for indice,class_ in enumerate(self.thresh_indices[1:]):
                 
                 mask_class = real_mask[:,:,indice]
@@ -308,37 +306,22 @@ class input_data:
 
                 sigma = 2
                 weight = 1 + w0*np.exp(-(weight.astype(np.float64)/sigma)**2/2)
-                #weight = weight/np.max(weight)
                 weights_intermediate[:,indice] = weight.reshape(-1, 1)[:,0]
-                #weights_intermediate[:, :, indice] = weight
-
-                '''plt.figure()
-                plt.subplot(2,2,1)
-                plt.imshow(mask,cmap='gray')
-                plt.title('Ground truth')
-                plt.subplot(2,2,2)
-                plt.imshow(weight, interpolation='nearest', cmap='gray',vmin=1)
-                plt.title('Weight map')
-                plt.colorbar(ticks=[1, 10])
-                plt.show()'''
             
+
             # Generating the mask with the real labels as well as the matrix of the weights
             weights_intermediate = np.reshape(weights_intermediate,[mask.shape[0], mask.shape[1], n])
             
-            # Working out the real mask (sparse cube with n depth layer for each class)
-            thresh_indices = [255*x for x in self.thresh_indices]
-            real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
-            for class_ in range(n-1):
-                real_mask[:,:,class_] = (mask[:,:] >= thresh_indices[class_]) * (mask[:,:] <                                    thresh_indices[class_+1])
-            real_mask[:,:,-1] = (mask[:,:] >= thresh_indices[-1])
-            real_mask = real_mask.astype(np.uint8)
-            
             # Working out the real weights (sparse matrix with the weights associated with each pixel)
-            
             real_weights = np.zeros([mask.shape[0], mask.shape[1]])            
+            #for class_ in range(n):
+            #    real_weights += np.multiply(real_mask[:,:,class_],weights_intermediate[:,:,class_])
+            
+            balance_weights = [1.1, 1, 1.3]
+            
             for class_ in range(n):
-                real_weights += np.multiply(real_mask[:,:,class_],weights_intermediate[:,:,class_])
-                
+                real_weights += np.multiply(real_mask[:,:,class_],balance_weights[class_])
+            
             
             # We have now loaded the good image, a mask (under the shape of a matrix, with different labels) that still needs to be converted to a volume (meaning, a sparse cube where each layer of depth relates to a class)
             
