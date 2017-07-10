@@ -41,7 +41,7 @@ from AxonDeepSeg.train_network_tools import *
 # network_weighted_cost : boolean : whether we use weighted cost for training or not.
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
-                save_trainable=True, gpu=None):
+                save_trainable=True, gpu=None, debug_mode=False):
     """
     Principal function of this script. Trains the model using TensorFlow.
     
@@ -218,12 +218,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     with tf.name_scope('preds_reshaped'):
         pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]])
     with tf.name_scope('y_reshaped'):    
-        y_ = tf.reshape(tf.reshape(y,[-1,tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]), [-1,tf.shape(y)[-1]])
+        y_ = tf.reshape(y, [-1,tf.shape(y)[-1]])
    
     # Define loss and optimizer
     with tf.name_scope('cost'):
         if weighted_cost == True:    
-            spatial_weights_ = tf.reshape(tf.reshape(spatial_weights,[-1,tf.shape(spatial_weights)[1]*tf.shape(spatial_weights)[2]]), [-1])
+            spatial_weights_ = tf.reshape(spatial_weights,[-1])
             cost = tf.reduce_mean(tf.multiply(spatial_weights_,tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
         else:
             cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_))
@@ -236,12 +236,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
         # First we compute the gradients
         grads_list = tf.train.AdamOptimizer(learning_rate=adapt_learning_rate).compute_gradients(cost)
-
-        # We make a summary of the gradients
-        for grad, weight in grads_list:
-            if 'weight' in weight.name:
-                # here we can split weight name by ':' to avoid the warning message we're getting
-                weight_grads_summary = tf.summary.histogram('_'.join(weight.name.split(':')) + '_grad', grad)
+        
+        if debug_mode == True:
+            # We make a summary of the gradients
+            for grad, weight in grads_list:
+                if 'weight' in weight.name:
+                    # here we can split weight name by ':' to avoid the warning message we're getting
+                    weight_grads_summary = tf.summary.histogram('_'.join(weight.name.split(':')) + '_grad', grad)
 
         # Then we continue the optimization as usual
         optimizer = tf.train.AdamOptimizer(learning_rate=adapt_learning_rate).apply_gradients(grads_list, global_step=global_step)   
@@ -274,10 +275,10 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             tf.add_to_collection('vals_to_summarize', e)
             
     # Summaries   
-
-    summary_activations = tf.contrib.layers.summarize_collection("activations",
-                                                                 summarizer=tf.contrib.layers.summarize_activation)
-    summary_variables = tf.contrib.layers.summarize_collection('vals_to_summarize', name_filter=None)    
+    if debug_mode == True:
+        summary_activations = tf.contrib.layers.summarize_collection("activations",
+                                                                     summarizer=tf.contrib.layers.summarize_activation)
+        summary_variables = tf.contrib.layers.summarize_collection('vals_to_summarize', name_filter=None)    
 
     
     ### ------------------------------------------------------------------------------------------------------------------ ###
@@ -290,6 +291,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # We also create a summary specific to images. We add images of the input and the probability maps predicted by the u-net
     L_im_summ = []
     L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
+    if debug_mode:
+        L_im_summ.append(tf.summary.image('mask', y))
     
     # Creating the operation giving the probabilities
     with tf.name_scope('prob_maps'):
@@ -556,38 +559,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         print("Model saved in file: %s" % save_path)
         print "Optimization Finished!"
         
-
-def visualize_first_layer(W_conv1, filter_size, n_filter):
-    '''
-    :param W_conv1: weights of the first convolution of the first layer
-    :return W1_e: pre-processed data to be added to the summary. Will be used to visualize the kernels of the first layer
-    '''
-        
-    w_display = int(np.ceil(np.sqrt(n_filter)))
-    n_filter_completion = int(w_display*w_display - n_filter) # Number of blank filters to add to ensure the display
-        
-    # modifiying variables to take into account the added padding for better visualisation
-    
-    filter_size = filter_size + 2
-    
-    # Note: the dimensions in comment are the ones from the current model
-    W1_a = tf.pad(W_conv1,[[1,1],[1,1],[0,0], [0,0]])                       # [6, 6, 1, 10] 
-    W1pad= tf.zeros([filter_size, filter_size, 1, 1])        # [5, 5, 1, 6]  - four zero kernels for padding
-    # We have a 4 by 4 grid of kernel visualizations. Therefore, we concatenate 6 empty filters
-        
-    W1_b = tf.concat([W1_a] + n_filter_completion * [W1pad], axis=3)   # [5, 5, 1, 16]    
-    
-    W1_c = tf.split(W1_b, w_display*w_display, axis=3 )         # 16 x [5, 5, 1, 1]
-    
-    # Ici fonction qui ajoute du blanc autour
-        
-    L_rows = []
-    for i in range(w_display):
-        L_rows.append(tf.concat(W1_c[0+i*w_display:(i+1)*w_display], axis=0))    # [20, 5, 1, 1] for each element of the list
-    W1_d = tf.concat(L_rows, axis=1) # [20, 20, 1, 1]
-    W1_e = tf.reshape(W1_d, [1, w_display*filter_size, w_display*filter_size, 1])
-    
-    return W1_e
 
 def inverted_exponential_decay(a, b, global_step, decay_period, staircase=False):
     if staircase:

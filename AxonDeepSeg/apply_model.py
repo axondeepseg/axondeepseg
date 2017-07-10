@@ -175,19 +175,15 @@ def apply_convnet(path_my_data, path_model, config):
     for i in range(len(data)):
         print 'processing patch %s on %s' % (i + 1, len(data))
         batch_x = np.asarray([data[i]])
-        p = sess.run(pred, feed_dict={x: batch_x})
-
+        p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (1, size_image*size_image, n_classes).
+        # The first dim is the number of batches (which is one)
         p = p[0,:,:]
-        Mask = np.zeros_like(p[:, 0])
+        Mask = np.zeros_like(p[:, 0]) # We now have a vector
         for pixel in range(len(p[:, 0])):
             Mask[pixel] = np.argmax(p[pixel, :])
 
-        if np.max(Mask)!=0:
-            Mask = Mask.reshape(256, 256)/np.max(Mask)
 
-        else: 
-            Mask = Mask.reshape(256,256)
-
+        Mask = Mask.reshape(256,256) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
         predictions.append(Mask)
 
     sess.close()
@@ -197,22 +193,11 @@ def apply_convnet(path_my_data, path_model, config):
 
     h_size, w_size = image_init.shape
     prediction_rescaled = patches2im(predictions, positions, h_size, w_size)
-
+    #labellize_mask_2d()
     prediction = rescale(prediction_rescaled, 1 / rescale_coeff)
+    prediction = prediction.astype(np.uint8) # Rescaling operation can change the vlue of the pixels to float.
 
-    # Rescaling and set indices to integer values
-    for indice,value in enumerate(thresh_indices[:-1]):
-        if np.max(prediction) > 1.001:
-            thresh_inf = np.int(255*value)
-            thresh_sup = np.int(255*thresh_indices[indice+1])
-        else:
-            thresh_inf = value
-            thresh_sup = thresh_indices[indice+1]   
-
-        prediction[(prediction >= thresh_inf) & (prediction < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-
-    prediction[(prediction >= thresh_indices[-1])] = 1
-
+    # Image returned is of same shape as total image and with each pixel being the class it's been attributed to   
     return prediction
 
     #######################################################################################################################
@@ -235,26 +220,22 @@ def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg
     img = imread(path_img, flatten=False, mode='L')
 
     # ------ Apply ConvNets ------- #
-    prediction = apply_convnet(path_my_data, path_model, config)
-    thresh_indices = config.get("network_thresholds", [0, 0.5])
-
-    prediction = rescale(prediction.astype(float), rescale_coeff)
-
-    for indice,value in enumerate(thresh_indices[:-1]):
-        if np.max(prediction) > 1.001:
-            thresh_inf = np.int(255*value)
-            thresh_sup = np.int(255*thresh_indices[indice+1])
-        else:
-            thresh_inf = value
-            thresh_sup = thresh_indices[indice+1]   
-
-        prediction[(prediction >= thresh_inf) & (prediction < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-
-    prediction[(prediction >= thresh_indices[-1])] = 1
-
-    #prediction = rescale(prediction.astype(float), 1 / rescale_coeff)
-    prediction = resize(prediction.astype(float), img.shape)
-
+    prediction = apply_convnet(path_my_data, path_model, config) # Predictions are shape of image, value = class of pixel
+    
+    # We now transform the prediction to an image
+    n_classes = config['network_n_classes']
+    paint_vals = [int(255*float(i)/(n_classes - 1)) for i in range(n_classes)]
+    
+    print 'pvals', paint_vals
+    
+    # Now we create the mask with values in range 0-255
+    mask = np.zeros_like(prediction)
+    for i in range(n_classes):
+        mask[prediction == i] = paint_vals[i]
+        
+    print 'uniquepred', np.unique(prediction)
+    print 'uniquemask', np.unique(mask)
+    
     # ------ Saving results ------- #
     results = {}
 
@@ -263,7 +244,7 @@ def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg
     with open(path_my_data + '/results.pkl', 'wb') as handle:
         pickle.dump(results, handle)
 
-    imsave(path_my_data + '/'+imagename, prediction, 'png')
+    imsave(path_my_data + '/'+imagename, mask, 'png')
 
 
 # ---------------------------------------------------------------------------------------------------------

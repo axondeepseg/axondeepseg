@@ -73,7 +73,7 @@ def labellize_mask_2d(patch, thresh_indices=[0, 0.5]):
         thresh_inf_8bit = 255*thresh_indices[indice]
         thresh_sup_8bit = 255*thresh_indices[indice+1]
         
-        idx = np.where((patch >= thresh_inf_8bit) & (patch < thresh_sup_8bit))
+        idx = np.where((patch >= thresh_inf_8bit) & (patch < thresh_sup_8bit)) # returns (x, y) of the corresponding indices
         mask[idx] = np.mean([thresh_inf_8bit/255,thresh_sup_8bit/255])
    
     mask[(patch >= 255*thresh_indices[-1])] = 1
@@ -215,15 +215,12 @@ class input_data:
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             mask = labellize_mask_2d(mask, self.thresh_indices) #shape (256, 256), values float 0.0-1.0
-            
-           
             # We now convert the mask of depth 1 with range of values going for 0 to 1 to a 3-D mask with a layer of depth per class, and only 0s and 1s
             n = len(self.thresh_indices)
             
             # Working out the real mask (sparse cube with n depth layer for each class)
             real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
             thresh_indices = [255*x for x in self.thresh_indices]
-
 
             for class_ in range(n-1):
                 real_mask[:,:,class_] = (mask[:,:] >= thresh_indices[class_]) * (mask[:,:] <                                    thresh_indices[class_+1])
@@ -240,7 +237,6 @@ class input_data:
                     break
                 else:
                     self.samples_list = self.reset_set(type_ = 'train')
-
         
         # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them 
         return transform_batches([batch_x, batch_y])
@@ -274,45 +270,49 @@ class input_data:
                                                       thresh_indices = self.thresh_indices)
             else:
                 pass
-            mask = patch_to_mask(mask, self.thresh_indices)
 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization
             image = (image - np.mean(image))/np.std(image) #data whitening
             #---------------------------
+            mask = labellize_mask_2d(mask, self.thresh_indices) # mask intensity float between 0-1
+
+            n = len(self.thresh_indices) # number of classes
+        
+            # Working out the real mask (sparse cube with n depth layer for each class)
+            thresh_indices = [255*x for x in self.thresh_indices]
+            real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
+            
+            for class_ in range(n-1):
+                real_mask[:,:,class_] = (mask[:,:] >= thresh_indices[class_]) * (mask[:,:] <                                    thresh_indices[class_+1])
+            real_mask[:,:,-1] = (mask[:,:] >= thresh_indices[-1])
+            real_mask = real_mask.astype(np.uint8)
+            
 
             # Create a weight map for each class (background is the first class, equal to 1
-            
-            
+           
             weights_intermediate = np.ones((self.size_image * self.size_image,len(self.thresh_indices)))
             #weights_intermediate = np.zeros((self.size_image, self.size_image, len(self.thresh_indices[1:])))
 
-            for indice,classe in enumerate(self.thresh_indices[1:]):
+            for indice,class_ in enumerate(self.thresh_indices[1:]):
+                
+                mask_class = real_mask[:,:,indice]
+                mask_class_8bit = np.asarray(255*mask_class,dtype='uint8')
+                weight = ndimage.distance_transform_edt(mask_class_8bit)                                
+                weight[weight==0] = np.max(weight)
 
-                mask_classe = np.asarray(list(mask))
-                if classe!=self.thresh_indices[-1]:
-                    mask_classe[mask_classe != np.mean([self.thresh_indices[indice - 1], classe])] = 0
-                    mask_classe[mask_classe==np.mean([self.thresh_indices[indice-1],classe])]=1
-                else:
-                    mask_classe[mask_classe!=1]=0
-
-                to_use = np.asarray(255*mask_classe,dtype='uint8')
-                to_use[to_use <= np.min(to_use)] = 0
-                weight = ndimage.distance_transform_edt(to_use)
-                weight[weight==0]=np.max(weight)
-
-                if classe == self.thresh_indices[1]:
+                if class_ == self.thresh_indices[1]:
                     w0 = 0.5
                 else :
                     w0 = 1
 
                 sigma = 2
-                weight = 1 + w0*np.exp(-(weight/sigma)**2/2)
+                weight = 1 + w0*np.exp(-(weight.astype(np.float64)/sigma)**2/2)
                 #weight = weight/np.max(weight)
                 weights_intermediate[:,indice] = weight.reshape(-1, 1)[:,0]
                 #weights_intermediate[:, :, indice] = weight
 
-                """plt.figure()
+                '''plt.figure()
                 plt.subplot(2,2,1)
                 plt.imshow(mask,cmap='gray')
                 plt.title('Ground truth')
@@ -320,19 +320,17 @@ class input_data:
                 plt.imshow(weight, interpolation='nearest', cmap='gray',vmin=1)
                 plt.title('Weight map')
                 plt.colorbar(ticks=[1, 10])
-                plt.show()"""
+                plt.show()'''
             
             # Generating the mask with the real labels as well as the matrix of the weights
-            
-            n = len(self.thresh_indices) #number of classes
-
             weights_intermediate = np.reshape(weights_intermediate,[mask.shape[0], mask.shape[1], n])
             
             # Working out the real mask (sparse cube with n depth layer for each class)
+            thresh_indices = [255*x for x in self.thresh_indices]
             real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
             for class_ in range(n-1):
-                real_mask[:,:,class_] = (mask[:,:] >= self.thresh_indices[class_]) * (mask[:,:] <                                    self.thresh_indices[class_+1])
-            real_mask[:,:,n-1] = (mask > self.thresh_indices[n-1])
+                real_mask[:,:,class_] = (mask[:,:] >= thresh_indices[class_]) * (mask[:,:] <                                    thresh_indices[class_+1])
+            real_mask[:,:,-1] = (mask[:,:] >= thresh_indices[-1])
             real_mask = real_mask.astype(np.uint8)
             
             # Working out the real weights (sparse matrix with the weights associated with each pixel)
