@@ -40,7 +40,7 @@ from AxonDeepSeg.train_network_tools import *
 
 # network_weighted_cost : boolean : whether we use weighted cost for training or not.
 
-def train_model(path_model, config, path_model_init=None,
+def train_model(path_trainingset, path_model, config, path_model_init=None,
                 save_trainable=True, gpu=None, debug_mode=False):
     """
     Principal function of this script. Trains the model using TensorFlow.
@@ -90,7 +90,6 @@ def train_model(path_model, config, path_model_init=None,
     data_augmentation = config["network_data_augmentation"]
     batch_norm = config["network_batch_norm"]
     batch_norm_decay = config["network_batch_norm_decay"]
-    trainingset_name = config["network_trainingset"]
     
     # Decay parameters
     additional_parameters = config["network_additional_parameters"]
@@ -120,9 +119,9 @@ def train_model(path_model, config, path_model_init=None,
 
         
     # Loading the datasets
-    data_train = input_data(trainingset_path=os.path.join('../data/', trainingset_name, 'training/'), type_='train', batch_size=batch_size,
+    data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
                             thresh_indices=thresh_indices)
-    data_validation = input_data(trainingset_path=os.path.join('../data/', trainingset_name, 'training/'), type_='validation', batch_size=batch_size_validation,
+    data_validation = input_data(trainingset_path=path_trainingset, type_='validation', batch_size=batch_size_validation,
                                  thresh_indices=thresh_indices)
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
