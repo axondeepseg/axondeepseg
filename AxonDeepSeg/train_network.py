@@ -40,18 +40,15 @@ from AxonDeepSeg.train_network_tools import *
 
 # network_weighted_cost : boolean : whether we use weighted cost for training or not.
 
-def train_model(path_trainingset, path_model, config, path_model_init=None,
+def train_model(path_model, config, path_model_init=None,
                 save_trainable=True, gpu=None, debug_mode=False):
     """
     Principal function of this script. Trains the model using TensorFlow.
     
-    :param path_trainingset: path of the train and validation set built from data_construction
     :param path_model: path to save the trained model
     :param config: dict: network's parameters described in the header.
     :param path_model_init: (option) path of the model to initialize  the training
-    :param learning_rate: learning_rate of the optimiser
     :param save_trainable: if True, only weights are saved. If false the variables from the optimisers are saved too
-    :param verbose:
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return:
     """
@@ -93,6 +90,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     data_augmentation = config["network_data_augmentation"]
     batch_norm = config["network_batch_norm"]
     batch_norm_decay = config["network_batch_norm_decay"]
+    trainingset_name = config["network_trainingset"]
     
     # Decay parameters
     additional_parameters = config["network_additional_parameters"]
@@ -122,9 +120,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         
     # Loading the datasets
-    data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
+    data_train = input_data(trainingset_path=os.path.join('../data/', trainingset_name, 'training/'), type_='train', batch_size=batch_size,
                             thresh_indices=thresh_indices)
-    data_validation = input_data(trainingset_path=path_trainingset, type_='validation', batch_size=batch_size_validation,
+    data_validation = input_data(trainingset_path=os.path.join('../data/', trainingset_name, 'training/'), type_='validation', batch_size=batch_size_validation,
                                  thresh_indices=thresh_indices)
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
@@ -389,7 +387,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             # Compute the optimizer at each training iteration
             if weighted_cost == True:
                 # Extracting the batches
-                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data=data_augmentation, each_sample_once=False)
+                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data=data_augmentation,                                                                              weights_modifier=config["network_weighted_cost_parameters"],
+                                                                             each_sample_once=False)
                   
                 # Running the optimizer and computing the cost and accuracy.
                 stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
@@ -467,7 +466,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_validation_acc = []
                     for i in range(n_iter_val):
 
-                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data={'type':'none'}, each_sample_once=True)
+                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data={'type':'none'},                                                                              weights_modifier=config["network_weighted_cost_parameters"],
+                                                                                          each_sample_once=True)
 
                         step_loss, step_acc = session.run([cost, accuracy],
                                                 feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})

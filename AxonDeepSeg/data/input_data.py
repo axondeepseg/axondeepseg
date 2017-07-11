@@ -265,7 +265,7 @@ class input_data:
         return transform_batches([batch_x, batch_y])
 
 
-    def next_batch_WithWeights(self, augmented_data = {'type':'None', 'transformations':{}}, each_sample_once=False):        
+    def next_batch_WithWeights(self, augmented_data = {'type':'None', 'transformations':{}}, weights_modifier = {'balanced_activate':True, 'boundaries_activate':False}, each_sample_once=False):        
         """
         :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process.
         :return: The triplet [batch_x (data), batch_y (prediction), weights (based on distance to edges)] to feed the network.
@@ -311,39 +311,41 @@ class input_data:
             real_mask[:,:,-1] = (mask[:,:] >= thresh_indices[-1])
             real_mask = real_mask.astype(np.uint8)
 
-            # Create a weight map for each class (background is the first class, equal to 1
-            weights_intermediate = np.ones((self.size_image * self.size_image,len(self.thresh_indices)))
-
-            # Classical method to compute weights
-            for indice,class_ in enumerate(self.thresh_indices[1:]):
-                
-                mask_class = real_mask[:,:,indice]
-                mask_class_8bit = np.asarray(255*mask_class,dtype='uint8')
-                weight = ndimage.distance_transform_edt(mask_class_8bit)                                
-                weight[weight==0] = np.max(weight)
-
-                if class_ == self.thresh_indices[1]:
-                    w0 = 0.5
-                else :
-                    w0 = 1
-
-                sigma = 2
-                weight = 1 + w0*np.exp(-(weight.astype(np.float64)/sigma)**2/2)
-                weights_intermediate[:,indice] = weight.reshape(-1, 1)[:,0]
+            if weights_modifier['boundaries_activate'] == True:
+                # Create a weight map for each class (background is the first class, equal to 1
+                weights_intermediate = np.ones((self.size_image * self.size_image,len(self.thresh_indices)))
+    
+                # Classical method to compute weights
+                for indice,class_ in enumerate(self.thresh_indices[1:]):
+                    
+                    mask_class = real_mask[:,:,indice]
+                    mask_class_8bit = np.asarray(255*mask_class,dtype='uint8')
+                    weight = ndimage.distance_transform_edt(mask_class_8bit)                                
+                    weight[weight==0] = np.max(weight)
+    
+                    if class_ == self.thresh_indices[1]:
+                            w0 = 0.5
+                    else :
+                        w0 = 1
+    
+                    sigma = weights_modifier['boundaries_sigma']
+                    weight = 1 + w0*np.exp(-(weight.astype(np.float64)/sigma)**2/2)
+                    weights_intermediate[:,indice] = weight.reshape(-1, 1)[:,0]
             
 
-            # Generating the mask with the real labels as well as the matrix of the weights
-            weights_intermediate = np.reshape(weights_intermediate,[mask.shape[0], mask.shape[1], n])
+                # Generating the mask with the real labels as well as the matrix of the weights
+                weights_intermediate = np.reshape(weights_intermediate,[mask.shape[0], mask.shape[1], n])
             
             # Working out the real weights (sparse matrix with the weights associated with each pixel)
-            real_weights = np.zeros([mask.shape[0], mask.shape[1]])            
-            #for class_ in range(n):
-            #    real_weights += np.multiply(real_mask[:,:,class_],weights_intermediate[:,:,class_])
-            
-            balance_weights = [1.1, 1, 1.3]
+            real_weights = np.zeros([mask.shape[0], mask.shape[1]])                       
             
             for class_ in range(n):
-                real_weights += np.multiply(np.multiply(real_mask[:,:,class_],balance_weights[class_]), weights_intermediate[:,:,class_])
+                weights_multiplier = 1
+                if weights_modifier['balanced_activate'] == True:
+                    weights_multiplier = np.multiply(weights_multiplier, weights_modifier['balanced_weights'][class_])
+                if weights_modifier['boundaries_activate'] == True:
+                    weights_multiplier = np.multiply(weights_multiplier, weights_intermediate[:,:,class_])
+                real_weights += np.multiply(real_mask[:,:,class_],weights_multiplier)
             
             
             # We have now loaded the good image, a mask (under the shape of a matrix, with different labels) that still needs to be converted to a volume (meaning, a sparse cube where each layer of depth relates to a class)

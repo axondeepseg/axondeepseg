@@ -37,34 +37,39 @@ def default_configuration():
     return {
         "network_n_classes": 2,
         "network_thresholds": [0, 0.5],
-        "network_learning_rate": 0.001,
         "network_batch_size": 8,
         "network_dropout": 0.75,
-        "network_batch_norm_decay": 0.9,
         "network_depth": 4,
-        "network_convolution_per_layer": [3,3,3,3],
+        "network_convolution_per_layer": [2,2,2,2],
         "network_size_of_convolutions_per_layer": [[5,5,5],[3,3,3],[3,3,3],[3,3,3]],
-        "network_features_per_convolution": [[[16,32],[32,32],[32,32]], 
-                                             [[32,64],[64,64],[64,64]], 
-                                             [[64,128],[128,128],[128,128]],
-                                             [[128,256],[256,256],[256,256]]
+        "network_features_per_convolution": [[[1,16],[16,16]], 
+                                             [[16,32],[32,32]], 
+                                             [[32,64],[64,64]],
+                                             [[64,128],[128,128]]
                                             ],
         "network_trainingset": 'SEM_2classes_reduced',
-        "network_weighted_cost": False,
         "network_downsampling": 'convolution',
-        "network_batch_norm": True,
         "network_data_augmentation": {'type':'all', 
                                       'transformations':{'0_shifting':True, '1_rescaling':True,
                                                          '2_random_rotation':True, '3_elastic':True, '4_flipping':True,
                                                          '5_noise_addition':False}
                                      },
+        "network_learning_rate": 0.001,
+        "network_batch_norm": True,
+        "network_batch_norm_decay": 0.9,
         "network_additional_parameters":{'learning_rate_decay_activate':False,
                                          'learning_rate_decay_period':120,
                                          'learning_rate_decay_rate':0.99,
                                          'batch_norm_decay_decay_activate':False,
                                          'batch_norm_decay_ending_decay':0.999,
                                          'batch_norm_decay_decay_period':2400
-                                        }
+                                        },
+        "network_weighted_cost": False,
+        "network_weighted_cost_parameters":{'balanced_activate':True,
+                                            'balanced_weights':[1.1, 1, 1.3],
+                                            'boundaries_activate':False,
+                                            'boundaries_sigma':2
+                                           }
     }
 
 
