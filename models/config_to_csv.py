@@ -3,14 +3,9 @@ import json
 import csv
 from pandas.io.json import json_normalize
 import pandas as pd
+from prettytable import PrettyTable
 
 def remove_struct(df):
-    L_to_remove = ['n_classes', 'size_of_convolutions_per_layer', 'features_per_convolution', 'depth', 'convolution_per_layer',
-                   'thresholds', 'data_augmentation.transformations.elastic', 'data_augmentation.transformations.flipping',
-                   'data_augmentation.transformations.noise_addition',           
-                   'data_augmentation.transformations.random_rotation',
-                   'data_augmentation.transformations.rescaling',
-                   'data_augmentation.transformations.shifting']
     L_to_keep = ['0_name', 'trainingset', 'learning_rate', 'dropout', 'batch_norm_decay',
                  'additional_parameters.learning_rate_decay_activate', 'additional_parameters.batch_norm_decay_decay_activate']
     for param in df.columns.tolist():
@@ -18,7 +13,7 @@ def remove_struct(df):
             df = df.drop(param, axis=1, errors='ignore')
     return df
 
-def config_decode(array_config, path_model):
+def config_decode(array_config, path_model, type_):
     # Loading and flattening json file
     path_config = os.path.join(path_model, 'config_network.json')
     model_name = path_model.split('/')[-1]
@@ -27,14 +22,14 @@ def config_decode(array_config, path_model):
         config = json.loads(config_file.read())
         config_flatten = json_normalize(config)
         config_flatten.rename(columns=lambda x: x[8:], inplace=True)
-        config_flatten = remove_struct(config_flatten)
+        if type_ == 'describe':
+            config_flatten = remove_struct(config_flatten)
         config_flatten.insert(0,'0_name',model_name)
-
         # Appending to existing dataframe
         res = array_config.append(config_flatten)
         return res
 
-def main():
+def describe(write_model):
     models = pd.DataFrame()
 
     for root in os.listdir(os.path.curdir)[:]:
@@ -42,11 +37,63 @@ def main():
             subpath_data = os.path.join(os.path.curdir, root)
             for data in os.listdir(subpath_data):
                 if 'config_network' in data:
-                    models = config_decode(models, subpath_data)
+                    models = config_decode(models, subpath_data, 'describe')
     
     models.reindex_axis(sorted(models.columns), axis=1)
     models = models.fillna('None')
-    models.to_csv('models_description.csv', index=False)
+    if write_model:
+        models.to_csv('models_description.csv', index=False)
+
+    # Now we display the differences between the dataframes
+    t = PrettyTable(models.columns.tolist())
+    for index, rows in models.iterrows():
+        t.add_row(rows)
+    print t
+    
+def compare(compare_models):
+    models = pd.DataFrame()
+    
+    L_models = []
+    L_models.append(compare_models[0])
+    L_models.append(compare_models[1])
+        
+    for model_name in L_models:
+        for root in os.listdir(os.path.curdir)[:]:
+            if (os.path.isdir(root)) and (root[-len(model_name):] == model_name):
+                subpath_data = os.path.join(os.path.curdir, root)
+                for data in os.listdir(subpath_data):
+                    if 'config_network' in data:
+                        models = config_decode(models, subpath_data, 'compare')  
+    models.index = [0,1]
+
+    # Now we display the differences between the dataframes
+    t = PrettyTable(['param', L_models[0], L_models[1]])
+    for col in models.columns:
+        if (models.loc[0,col] != models.loc[1,col]) and (str(col) != '0_name'):
+            t.add_row([str(col), str(models.loc[0,col]), str(models.loc[1,col])])
+    print t
+# -------------------------------------------------------------------------------------------------------------                 
+# -------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------
+                        
+def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-d", "--describe", required=False, action='store_true', help="")
+    ap.add_argument("-w", "--write", required=False, action='store_true', help="")
+    ap.add_argument("-c", "--compare", required=False, nargs=2, help="")
+
+    args = vars(ap.parse_args())
+    describe_models = args["describe"]
+    write_model = args["write"]
+    compare_models = args["compare"]
+
+    if describe_models:
+        describe(write_model)
+    else:
+        compare(compare_models)
+        
+
 
 if __name__ == '__main__':
     main()

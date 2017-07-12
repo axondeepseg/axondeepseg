@@ -63,12 +63,12 @@ def im2patches(img, size=256):
     else:
         q_h, r_h = divmod(h, size)
         q_w, r_w = divmod(w, size)
-
+                
         r2_h = size - r_h
         r2_w = size - r_w
         q2_h = q_h + 1
         q2_w = q_w + 1
-
+        
         q3_h, r3_h = divmod(r2_h, q_h)
         q3_w, r3_w = divmod(r2_w, q_w)
 
@@ -124,14 +124,14 @@ def apply_convnet(path_my_data, path_model, config):
     print '\n\n ---Start axon segmentation on %s---' % path_my_data
 
     path_img = path_my_data + '/image.png'
-    img = imread(path_img, flatten=False, mode='L')
+    img_org = imread(path_img, flatten=False, mode='L')
 
     file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
 
     # set the resolution to the general_pixel_size
     rescale_coeff = pixel_size / general_pixel_size
-    img = (rescale(img, rescale_coeff) * 256).astype(int)
+    img = (rescale(img_org, rescale_coeff) * 256).astype(int)
 
     batch_size = 1
 
@@ -194,7 +194,7 @@ def apply_convnet(path_my_data, path_model, config):
     h_size, w_size = image_init.shape
     prediction_rescaled = patches2im(predictions, positions, h_size, w_size)
     #labellize_mask_2d()
-    prediction = rescale(prediction_rescaled, 1 / rescale_coeff)
+    prediction = resize(prediction_rescaled, img_org.shape)
     prediction = prediction.astype(np.uint8) # Rescaling operation can change the vlue of the pixels to float.
 
     # Image returned is of same shape as total image and with each pixel being the class it's been attributed to   
@@ -226,23 +226,19 @@ def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg
     n_classes = config['network_n_classes']
     paint_vals = [int(255*float(i)/(n_classes - 1)) for i in range(n_classes)]
     
-    print 'pvals', paint_vals
     
     # Now we create the mask with values in range 0-255
     mask = np.zeros_like(prediction)
     for i in range(n_classes):
         mask[prediction == i] = paint_vals[i]
-        
-    print 'uniquepred', np.unique(prediction)
-    print 'uniquemask', np.unique(mask)
-    
+            
     # ------ Saving results ------- #
     results = {}
 
     results['prediction'] = prediction
 
-    with open(path_my_data + '/results.pkl', 'wb') as handle:
-        pickle.dump(results, handle)
+    #with open(path_my_data + '/results.pkl', 'wb') as handle:
+    #    pickle.dump(results, handle)
 
     imsave(path_my_data + '/'+imagename, mask, 'png')
 

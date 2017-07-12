@@ -56,13 +56,13 @@ def default_configuration():
                                      },
         "network_learning_rate": 0.001,
         "network_batch_norm": True,
-        "network_batch_norm_decay": 0.9,
-        "network_additional_parameters":{'learning_rate_decay_activate':False,
+        "network_batch_norm_decay": 0.7,
+        "network_additional_parameters":{'learning_rate_decay_activate':True,
                                          'learning_rate_decay_period':120,
                                          'learning_rate_decay_rate':0.99,
-                                         'batch_norm_decay_decay_activate':False,
-                                         'batch_norm_decay_ending_decay':0.999,
-                                         'batch_norm_decay_decay_period':2400
+                                         'batch_norm_decay_decay_activate':True,
+                                         'batch_norm_decay_ending_decay':0.9,
+                                         'batch_norm_decay_decay_period':4800
                                         },
         "network_weighted_cost": False,
         "network_weighted_cost_parameters":{'balanced_activate':True,
