@@ -342,9 +342,9 @@ class input_data:
             for class_ in range(n):
                 weights_multiplier = 1
                 if weights_modifier['balanced_activate'] == True:
-                    balanced_weights = weights_modifier['balanced_weights'][class_]
-                    balanced_weights = balanced_weights/np.mean(balanced_weights)
-                    weights_multiplier = np.multiply(weights_multiplier, balanced_weights)
+                    balanced_factor = weights_modifier['balanced_weights'][class_]
+                    balanced_factor = balanced_factor/np.mean(weights_modifier['balanced_weights'])
+                    weights_multiplier = np.multiply(weights_multiplier, balanced_factor)
                 if weights_modifier['boundaries_activate'] == True:
                     weights_multiplier = np.multiply(weights_multiplier, weights_intermediate[:,:,class_])
                 real_weights += np.multiply(real_mask[:,:,class_],weights_multiplier)
