@@ -48,6 +48,7 @@ def default_configuration():
                                              [[64,128],[128,128]]
                                             ],
         "network_trainingset": 'SEM_2classes_reduced',
+        "network_trainingset_patchsize" : 256,
         "network_downsampling": 'convolution',
         "network_data_augmentation": {'type':'all', 
                                       'transformations':{'0_shifting':True, '1_rescaling':True,

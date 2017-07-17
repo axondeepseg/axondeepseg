@@ -9,7 +9,7 @@ from scipy import io
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 from skimage import exposure
-from config_tools import general_pixel_size, path_matlab, path_axonseg, generate_config
+from config_tools import general_pixel_size
 from AxonDeepSeg.train_network_tools import *
 
 #import matplotlib.pyplot as plt 
@@ -53,7 +53,7 @@ def im2patches(img, size=256):
 
     h, w = img.shape
 
-    if (h == 256 and w == 256):
+    if (h == size and w == size):
         patch = img
         patch = exposure.equalize_hist(patch)
         patch = (patch - np.mean(patch)) / np.std(patch)
@@ -96,7 +96,7 @@ def im2patches(img, size=256):
     return [img, patches, positions]
 
 
-def patches2im(predictions, positions, image_height, image_width):
+def patches2im(predictions, positions, image_height, image_width, patch_size):
     """
     :param predictions: list of the segmentation masks on the patches
     :param positions: positions of the segmentations masks
@@ -106,8 +106,8 @@ def patches2im(predictions, positions, image_height, image_width):
     """
     image = np.zeros((image_height, image_width))
     for pred, pos in zip(predictions, positions):
-        reshaped_pred = np.reshape(pred, [256, 256])
-        image[pos[0]:pos[0] + 256, pos[1]:pos[1] + 256] = reshaped_pred
+        reshaped_pred = np.reshape(pred, [patch_size, patch_size])
+        image[pos[0]:pos[0] + patch_size, pos[1]:pos[1] + patch_size] = reshaped_pred
     return image
 
 
@@ -137,7 +137,7 @@ def apply_convnet(path_my_data, path_model, config):
 
     ###############
     # Network Parameters
-    image_size = 256
+    patch_size = config["network_trainingset_patchsize"]
     thresh_indices = config["network_thresholds"]
     ##############
 
@@ -145,14 +145,9 @@ def apply_convnet(path_my_data, path_model, config):
     if not os.path.exists(folder_model):
         os.makedirs(folder_model)
 
-    if os.path.exists(folder_model + '/hyperparameters.pkl'):
-        print 'hyperparameters detected in the model'
-        hyperparameters = pickle.load(open(folder_model + '/hyperparameters.pkl', "rb"))
-        image_size = hyperparameters['image_size']
-
     # --------------------SAME ALGORITHM IN TRAIN_model---------------------------
 
-    x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
+    x = tf.placeholder(tf.float32, shape=(batch_size, patch_size, patch_size))
 
     ####################################################
 
@@ -162,7 +157,7 @@ def apply_convnet(path_my_data, path_model, config):
     saver = tf.train.Saver(tf.global_variables())
 
     # Image to batch
-    image_init, data, positions = im2patches(img, 256)
+    image_init, data, positions = im2patches(img, patch_size)
     predictions = []
 
     # Launch the graph
@@ -183,7 +178,7 @@ def apply_convnet(path_my_data, path_model, config):
             Mask[pixel] = np.argmax(p[pixel, :])
 
 
-        Mask = Mask.reshape(256,256) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
+        Mask = Mask.reshape(patch_size,patch_size) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
         predictions.append(Mask)
 
     sess.close()

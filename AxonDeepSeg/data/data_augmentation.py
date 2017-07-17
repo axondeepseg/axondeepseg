@@ -18,7 +18,7 @@ from patch_extraction import extract_patch
 
 # We find here the functions that perform transformations to images and mask. 
 # All functions take 8-bit images and return 8-bit images
-def shifting(patch):
+def shifting(patch, patch_size):
     """
     :param patch: [image,mask]
     :return: random shifting of the pair [image,mask]
@@ -28,8 +28,8 @@ def shifting(patch):
     mask = np.pad(patch[1],size_shift, mode = "reflect")
     begin_h = np.random.randint(2*size_shift-1)
     begin_w = np.random.randint(2*size_shift-1)
-    shifted_image = img[begin_h:begin_h+256,begin_w:begin_w+256]
-    shifted_mask = mask[begin_h:begin_h+256,begin_w:begin_w+256]
+    shifted_image = img[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size]
+    shifted_mask = mask[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size]
 
     return [shifted_image,shifted_mask]
 
@@ -52,13 +52,13 @@ def rescaling(patch, thresh_indices = [0,0.5]): #indices to indexes.
         image_rescale = rescale(patch[0], scale, preserve_range= True)
         mask_rescale = rescale(patch[1], scale, preserve_range= True)
         s_r = mask_rescale.shape[0]
-        q_h, r_h = divmod(256-s_r,2)
+        q_h, r_h = divmod(patch_size-s_r,2)
 
         if q_h > 0:
             image_rescale = np.pad(image_rescale,(q_h, q_h+r_h), mode = "reflect")
             mask_rescale = np.pad(mask_rescale,(q_h, q_h+r_h), mode = "reflect")
         else:           
-            patches = extract_patch(image_rescale, mask_rescale, 256)
+            patches = extract_patch(image_rescale, mask_rescale, patch_size)
             i = np.random.randint(len(patches), size=1)[0]
             image_rescale, mask_rescale = patches[i]
 
