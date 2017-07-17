@@ -18,12 +18,13 @@ from patch_extraction import extract_patch
 
 # We find here the functions that perform transformations to images and mask. 
 # All functions take 8-bit images and return 8-bit images
-def shifting(patch, patch_size):
+def shifting(patch):
     """
     :param patch: [image,mask]
     :return: random shifting of the pair [image,mask]
     """
     size_shift = 10
+    patch_size = patch[0].shape[0]
     img = np.pad(patch[0],size_shift, mode = "reflect")
     mask = np.pad(patch[1],size_shift, mode = "reflect")
     begin_h = np.random.randint(2*size_shift-1)
@@ -44,6 +45,7 @@ def rescaling(patch, thresh_indices = [0,0.5]): #indices to indexes.
     """
 
     scale = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
+    patch_size = patch[0].shape[0]
 
     if scale == 1.0:
         rescaled_patch = patch

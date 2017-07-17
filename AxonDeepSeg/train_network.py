@@ -120,9 +120,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         
     # Loading the datasets
     data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
-                            thresh_indices=thresh_indices)
+                            thresh_indices=thresh_indices, image_size=image_size)
     data_validation = input_data(trainingset_path=path_trainingset, type_='validation', batch_size=batch_size_validation,
-                                 thresh_indices=thresh_indices)
+                                 thresh_indices=thresh_indices, image_size=image_size)
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
 
