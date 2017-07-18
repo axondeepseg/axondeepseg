@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import tensorflow as tf
 import math
 import os
+import tensorflow as tf
 import pickle
 import numpy as np
 from scipy import io
@@ -11,6 +11,7 @@ from skimage.transform import rescale, resize
 from skimage import exposure
 from config_tools import general_pixel_size, path_matlab, path_axonseg, generate_config
 from AxonDeepSeg.train_network_tools import *
+
 
 #import matplotlib.pyplot as plt 
 
@@ -112,7 +113,7 @@ def patches2im(predictions, positions, image_height, image_width):
 
 
 
-def apply_convnet(path_my_data, path_model, config):
+def apply_convnet(path_my_data, path_model, config, batch_size=1):
     """
     :param path_my_data: folder of the image to segment. Must contain image.png
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -120,8 +121,10 @@ def apply_convnet(path_my_data, path_model, config):
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return: prediction, the mask of the segmentation
     """
+    from logging import WARN
+    tf.logging.set_verbosity(WARN)
 
-    print '\n\n ---Start axon segmentation on %s---' % path_my_data
+    #print '\n\n ---Start axon segmentation on %s---' % path_my_data
 
     path_img = path_my_data + '/image.png'
     img_org = imread(path_img, flatten=False, mode='L')
@@ -132,8 +135,6 @@ def apply_convnet(path_my_data, path_model, config):
     # set the resolution to the general_pixel_size
     rescale_coeff = pixel_size / general_pixel_size
     img = (rescale(img_org, rescale_coeff) * 256).astype(int)
-
-    batch_size = 1
 
     ###############
     # Network Parameters
@@ -146,45 +147,55 @@ def apply_convnet(path_my_data, path_model, config):
         os.makedirs(folder_model)
 
     if os.path.exists(folder_model + '/hyperparameters.pkl'):
-        print 'hyperparameters detected in the model'
+        #print 'hyperparameters detected in the model'
         hyperparameters = pickle.load(open(folder_model + '/hyperparameters.pkl', "rb"))
         image_size = hyperparameters['image_size']
 
     # --------------------SAME ALGORITHM IN TRAIN_model---------------------------
 
-    x = tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size))
+    x = tf.placeholder(tf.float32, shape=(None, image_size, image_size))
 
     ####################################################
 
     # Call the model
-    pred = uconv_net(x, config, phase=False)
+    pred = uconv_net(x, config, phase=False, verbose=False)
 
     saver = tf.train.Saver(tf.global_variables())
 
     # Image to batch
     image_init, data, positions = im2patches(img, 256)
     predictions = []
+    
+    # Limit the size
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
+    
 
     # Launch the graph
-    sess = tf.Session()
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     saver = tf.train.import_meta_graph(path_model + '/model.ckpt.meta')
     saver.restore(sess, tf.train.latest_checkpoint(path_model))
 
     # --------------------- Apply the segmentation to each patch of the images--------------------------------
+    n_patches = len(data)
+    it, rem = divmod(n_patches, batch_size)
 
-    for i in range(len(data)):
-        print 'processing patch %s on %s' % (i + 1, len(data))
-        batch_x = np.asarray([data[i]])
-        p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (1, size_image*size_image, n_classes).
-        # The first dim is the number of batches (which is one)
-        p = p[0,:,:]
-        Mask = np.zeros_like(p[:, 0]) # We now have a vector
-        for pixel in range(len(p[:, 0])):
-            Mask[pixel] = np.argmax(p[pixel, :])
-
-
-        Mask = Mask.reshape(256,256) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
-        predictions.append(Mask)
+    for i in range(it):
+        #print 'processing patch %s on %s' % (i+1, it)
+        batch_x = np.asarray(data[i*batch_size:(i+1)*batch_size])
+        p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).          
+        Mask = np.argmax(p,axis=2)    
+        Mask = Mask.reshape(batch_size, 256,256) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
+        predictions.extend(np.split(Mask, batch_size, axis=0))
+        
+    # Last batch
+    if rem != 0:
+        #print 'processing last patch'
+        batch_x = np.asarray(data[it*batch_size:])
+        p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).          
+        Mask = np.argmax(p,axis=2)    
+        Mask = Mask.reshape(rem, 256,256) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
+        predictions.extend(np.split(Mask, rem, axis=0))
+        
 
     sess.close()
     tf.reset_default_graph()
@@ -202,7 +213,7 @@ def apply_convnet(path_my_data, path_model, config):
 
     #######################################################################################################################
 
-def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png'):
+def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png', batch_size=1):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -220,7 +231,7 @@ def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg
     img = imread(path_img, flatten=False, mode='L')
 
     # ------ Apply ConvNets ------- #
-    prediction = apply_convnet(path_my_data, path_model, config) # Predictions are shape of image, value = class of pixel
+    prediction = apply_convnet(path_my_data, path_model, config, batch_size) # Predictions are shape of image, value = class of pixel
     
     # We now transform the prediction to an image
     n_classes = config['network_n_classes']
