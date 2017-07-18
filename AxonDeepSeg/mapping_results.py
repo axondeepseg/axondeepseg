@@ -45,6 +45,11 @@ def map_model_to_images(folder_model, path_datatests, batch_size=1):
                 config_network = json.loads(fd.read())
 
             axon_segmentation(subpath_image, folder_model, config_network, imagename='segmentation_' + root + '.png', batch_size=batch_size)
+            
+            file = open(path_datatests + "/report.txt", 'a')
+            output_text = str(root) + ' done ..\n'
+            file.write(output_text)
+            file.close()
             #print 'Segmentation ' + str(root) + ' done.'
 
 
