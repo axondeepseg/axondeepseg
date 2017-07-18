@@ -36,12 +36,12 @@ def map_model_to_images(folder_model, path_datatests, batch_size=1):
     """
 
     for root in tqdm(os.listdir(path_datatests), desc='images'):
-        if 'DS_Store' not in root:
+        if 'DS_Store' not in root and 'txt' not in root:
             # Subpath image to apply
             subpath_image = os.path.join(path_datatests, root)
 
             # Load config
-            with open(folder_model + 'config_network.json', 'r') as fd:
+            with open(os.path.join(folder_model, 'config_network.json'), 'r') as fd:
                 config_network = json.loads(fd.read())
 
             axon_segmentation(subpath_image, folder_model, config_network, imagename='segmentation_' + root + '.png', batch_size=batch_size)
