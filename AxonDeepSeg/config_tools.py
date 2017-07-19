@@ -35,8 +35,8 @@ def default_configuration():
     """ Generate the default configuration."""
     
     return {
-        "network_n_classes": 2,
-        "network_thresholds": [0, 0.5],
+        "network_n_classes": 3,
+        "network_thresholds": [0, 0.2, 0.8],
         "network_batch_size": 8,
         "network_dropout": 0.75,
         "network_depth": 4,
@@ -47,11 +47,11 @@ def default_configuration():
                                              [[32,64],[64,64]],
                                              [[64,128],[128,128]]
                                             ],
-        "network_trainingset": 'SEM_2classes_reduced',
+        "network_trainingset": 'SEM_3classes_reduced',
         "network_downsampling": 'convolution',
         "network_data_augmentation": {'type':'all', 
                                       'transformations':{'0_shifting':True, '1_rescaling':True,
-                                                         '2_random_rotation':True, '3_elastic':True, '4_flipping':True,
+                                                         '2_random_rotation':False, '3_elastic':True, '4_flipping':True,
                                                          '5_noise_addition':False}
                                      },
         "network_learning_rate": 0.001,
@@ -64,7 +64,7 @@ def default_configuration():
                                          'batch_norm_decay_ending_decay':0.9,
                                          'batch_norm_decay_decay_period':4800
                                         },
-        "network_weighted_cost": False,
+        "network_weighted_cost": True,
         "network_weighted_cost_parameters":{'balanced_activate':True,
                                             'balanced_weights':[1.1, 1, 1.3],
                                             'boundaries_activate':False,

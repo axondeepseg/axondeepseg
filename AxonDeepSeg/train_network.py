@@ -41,7 +41,7 @@ from AxonDeepSeg.train_network_tools import *
 # network_weighted_cost : boolean : whether we use weighted cost for training or not.
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
-                save_trainable=True, gpu=None, debug_mode=False):
+                save_trainable=True, gpu=None, debug_mode=False, gpu_per = 1.0):
     """
     Principal function of this script. Trains the model using TensorFlow.
     
@@ -327,8 +327,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ########################################################################################################################
 
     Report += '\n\n---Intermediary results---\n'
+    
+    # Limiting the memory used by the training
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_per)
 
-    with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as session:
+    with tf.Session(config=tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options)) as session:
         
         # Session initialized !
         

@@ -35,8 +35,8 @@ def map_model_to_images(folder_model, path_datatests, batch_size=1):
     Apply one trained model to all the specified images
     """
 
-    for root in tqdm(os.listdir(path_datatests), desc='images'):
-        if 'DS_Store' not in root:
+    for root in tqdm(os.listdir(path_datatests), desc=path_datatests[-7:]):
+        if 'DS_Store' not in root and 'txt' not in root:
             # Subpath image to apply
             subpath_image = os.path.join(path_datatests, root)
 
