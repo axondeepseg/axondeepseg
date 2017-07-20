@@ -235,7 +235,7 @@ def apply_convnet(path_my_data, path_model, config, batch_size=1, pred_proba=Fal
 
     #######################################################################################################################
 
-def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png', batch_size=1, pred_proba=False):
+def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png', batch_size=1, pred_proba=False, write_mode=True):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -259,25 +259,18 @@ def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg
         prediction = apply_convnet(path_my_data, path_model, config,
                                                      batch_size)  # Predictions are shape of image, value = class of pixel
     
-    # We now transform the prediction to an image
-    n_classes = config['network_n_classes']
-    paint_vals = [int(255*float(i)/(n_classes - 1)) for i in range(n_classes)]
-    
-    
-    # Now we create the mask with values in range 0-255
-    mask = np.zeros_like(prediction)
-    for i in range(n_classes):
-        mask[prediction == i] = paint_vals[i]
-            
-    # ------ Saving results ------- #
-    #results = {}
+    # Final part of the function : generating the image if needed/ returning values
+    if write_mode:
+        # We now transform the prediction to an image
+        n_classes = config['network_n_classes']
+        paint_vals = [int(255*float(i)/(n_classes - 1)) for i in range(n_classes)]
 
-    #results['prediction'] = prediction
-
-    #with open(path_my_data + '/results.pkl', 'wb') as handle:
-    #    pickle.dump(results, handle)
-
-    imsave(path_my_data + '/'+imagename, mask, 'png')
+        # Now we create the mask with values in range 0-255
+        mask = np.zeros_like(prediction)
+        for i in range(n_classes):
+            mask[prediction == i] = paint_vals[i]
+        # Then we save the image
+        imsave(path_my_data + '/'+imagename, mask, 'png')
     if pred_proba:
         return prediction, prediction_proba
     else:
