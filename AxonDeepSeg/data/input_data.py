@@ -8,6 +8,7 @@ from data_augmentation import shifting, rescaling, flipping, random_rotation, el
 import functools
 import matplotlib.pyplot as plt
 
+
 def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]):
     
     L_transformations = []
@@ -40,18 +41,6 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
                 L_transformations.append(functools.partial(elastic,thresh_indices=[0,0.5]))
             elif k.lower() == 'flipping':
                 L_transformations.append(flipping)
-            k = k.split('_')[-1]
-            if v == True:
-                if k.lower() == 'shifting':
-                    L_transformations.append(shifting)
-                elif k.lower() == 'rescaling':
-                    L_transformations.append(functools.partial(rescaling,thresh_indices=[0,0.5]))
-                elif k.lower() == 'random_rotation':
-                    L_transformations.append(functools.partial(random_rotation,thresh_indices=[0,0.5]))
-                elif k.lower() == 'elastic':
-                    L_transformations.append(functools.partial(elastic,thresh_indices=[0,0.5]))
-                elif k.lower() == 'flipping':
-                    L_transformations.append(flipping)
                       
     return L_transformations
 
@@ -338,15 +327,17 @@ class input_data:
             
             # Working out the real weights (sparse matrix with the weights associated with each pixel)
             real_weights = np.zeros([mask.shape[0], mask.shape[1]])                       
+            balanced_weights = weights_modifier['balanced_weights']
             
             for class_ in range(n):
+                mean_weights = np.mean(weights_modifier['balanced_weights'])
                 weights_multiplier = 1
                 if weights_modifier['balanced_activate'] == True:
-                    balanced_weights = weights_modifier['balanced_weights'][class_]
-                    balanced_weights = balanced_weights/np.mean(balanced_weights)
-                    weights_multiplier = np.multiply(weights_multiplier, balanced_weights)
+                    balanced_factor = weights_modifier['balanced_weights'][class_] / mean_weights
+                    weights_multiplier = np.multiply(weights_multiplier, balanced_factor)
                 if weights_modifier['boundaries_activate'] == True:
                     weights_multiplier = np.multiply(weights_multiplier, weights_intermediate[:,:,class_])
+                
                 real_weights += np.multiply(real_mask[:,:,class_],weights_multiplier)
             
             

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import tensorflow as tf
 import math
 import os
+import tensorflow as tf
 import pickle
 import numpy as np
 from scipy import io
@@ -11,6 +11,9 @@ from skimage.transform import rescale, resize
 from skimage import exposure
 from config_tools import general_pixel_size
 from AxonDeepSeg.train_network_tools import *
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+
 
 #import matplotlib.pyplot as plt 
 
@@ -44,75 +47,92 @@ from AxonDeepSeg.train_network_tools import *
 ###########################
 
 
-def im2patches(img, size=256):
-    """
-    :param img: image to segment.
-    :param size: size of the patches to extract (must be the same as used in the learning)
-    :return: [img, patches, positions of the patches]
-    """
 
-    h, w = img.shape
 
-    if (h == size and w == size):
-        patch = img
+## New version of im 2 patches
+
+def im2patches(img, crop_value=25, scw=256):
+    # First we crop the image to get the context
+    cropped = img[crop_value:-crop_value, crop_value:-crop_value]
+    
+    # Then we create patches using the prediction window
+    spw = scw-2*crop_value #size prediction windows
+    
+    qh, rh = divmod(cropped.shape[0], spw)
+    qw, rw = divmod(cropped.shape[1], spw)
+    
+    # Creating positions of prediction windows
+    L_h = [spw*e for e in range(qh)]
+    L_w = [spw*e for e in range(qw)]
+    
+    # Then if there is a remainder we take the last positions (overlap on the last predictions)
+    if rh != 0:
+        L_h.append(cropped.shape[0] - spw)
+    if rw != 0:
+        L_w.append(cropped.shape[1] - spw)
+    
+    xx, yy = np.meshgrid(L_h, L_w)
+    P = [np.ravel(xx), np.ravel(yy)]
+    L_pos = [[P[0][i], P[1][i]] for i in range(len(P[0]))]
+    
+    # These positions are also the positions of the context windows in the base image coordinates !
+    L_patches = []
+    for e in L_pos:
+        patch = img[e[0]:e[0]+scw,e[1]:e[1]+scw]
         patch = exposure.equalize_hist(patch)
         patch = (patch - np.mean(patch)) / np.std(patch)
-        positions = [[0, 0]]
-        patches = [patch]
+        L_patches.append(patch)
+                         
+    return [img, L_patches, L_pos]
 
-    else:
-        q_h, r_h = divmod(h, size)
-        q_w, r_w = divmod(w, size)
+
+def patches2im(L_patches, L_pos, cropped_value = 25, scw=256):
+    spw = scw-2*cropped_value
+    #L_pred = [e[cropped_value:-cropped_value,cropped_value:-cropped_value] for e in L_patches]
+    # First : extraction of the predictions
+    h_l, w_l = np.max(np.stack(L_pos), axis=0)
+    L_pred = []
+    new_img = np.zeros((h_l+scw,w_l+scw))
+    for i,e in enumerate(L_patches):
+        if L_pos[i][0] == 0:
+            if L_pos[i][1] == 0:
+                new_img[0:cropped_value,0:cropped_value] = e[0:cropped_value,0:cropped_value]
+                new_img[cropped_value:scw-cropped_value, 0:cropped_value] = e[cropped_value:-cropped_value,0:cropped_value]
+                new_img[0:cropped_value, cropped_value:scw-cropped_value] = e[0:cropped_value,cropped_value:-cropped_value]
+            else:
+                if L_pos[i][1] == w_l:
+                    new_img[0:cropped_value,-cropped_value:] = e[0:cropped_value,-cropped_value:]
+                new_img[0:cropped_value,L_pos[i][1]+cropped_value:L_pos[i][1]+scw-cropped_value] = e[0:cropped_value,cropped_value:-cropped_value]
                 
-        r2_h = size - r_h
-        r2_w = size - r_w
-        q2_h = q_h + 1
-        q2_w = q_w + 1
+        if L_pos[i][1] == 0:
+            if L_pos[i][0] != 0:
+                new_img[L_pos[i][0]+cropped_value:L_pos[i][0]+scw-cropped_value, 0:cropped_value] = e[cropped_value:-cropped_value, 0:cropped_value]
         
-        q3_h, r3_h = divmod(r2_h, q_h)
-        q3_w, r3_w = divmod(r2_w, q_w)
+        if L_pos[i][0] == h_l:
+            if L_pos[i][1] == w_l:
+                new_img[-cropped_value:,-cropped_value:] = e[-cropped_value:,-cropped_value:]
+                new_img[h_l+cropped_value:-cropped_value, -cropped_value:] = e[cropped_value:-cropped_value,-cropped_value:]
+                new_img[-cropped_value:, w_l+cropped_value:-cropped_value] = e[-cropped_value:,cropped_value:-cropped_value]
+            else:
+                if L_pos[i][1] == 0:
+                    new_img[-cropped_value:,0:cropped_value] = e[-cropped_value:,0:cropped_value]
 
-        dataset = []
-        positions = []
-        pos = 0
-        while pos + size <= h:
-            pos2 = 0
-            while pos2 + size <= w:
-                patch = img[pos:pos + size, pos2:pos2 + size]
-                patch = exposure.equalize_hist(patch)
-                patch = (patch - np.mean(patch)) / np.std(patch)
+                    
+                new_img[-cropped_value:,L_pos[i][1]+cropped_value:L_pos[i][1]+scw-cropped_value] = e[-cropped_value:,cropped_value:-cropped_value]
+        if L_pos[i][1] == w_l:
+            if L_pos[i][1] != h_l:
+                new_img[L_pos[i][0]+cropped_value:L_pos[i][0]+scw-cropped_value, -cropped_value:] = e[cropped_value:-cropped_value, -cropped_value:]
 
-                dataset.append(patch)
-                positions.append([pos, pos2])
-                pos2 = size + pos2 - q3_w
-                if pos2 + size > w:
-                    pos2 = pos2 - r3_w
-
-            pos = size + pos - q3_h
-            if pos + size > h:
-                pos = pos - r3_h
-
-        patches = np.asarray(dataset)
-    return [img, patches, positions]
+                
+    L_pred = [e[cropped_value:-cropped_value,cropped_value:-cropped_value] for e in L_patches]
+    L_pos_corr = [[e[0]+cropped_value, e[1]+cropped_value] for e in L_pos]
+    for i,e in enumerate(L_pos_corr):
+        new_img[e[0]:e[0]+spw, e[1]:e[1]+spw] = L_pred[i]
+        
+    return new_img
 
 
-def patches2im(predictions, positions, image_height, image_width, patch_size):
-    """
-    :param predictions: list of the segmentation masks on the patches
-    :param positions: positions of the segmentations masks
-    :param h_size: height of the image to reconstruct
-    :param w_size: width of the image to reconstruct
-    :return: reconstructed segmentation on the full image from the masks and their positions
-    """
-    image = np.zeros((image_height, image_width))
-    for pred, pos in zip(predictions, positions):
-        reshaped_pred = np.reshape(pred, [patch_size, patch_size])
-        image[pos[0]:pos[0] + patch_size, pos[1]:pos[1] + patch_size] = reshaped_pred
-    return image
-
-
-
-def apply_convnet(path_my_data, path_model, config):
+def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25):
     """
     :param path_my_data: folder of the image to segment. Must contain image.png
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -120,8 +140,10 @@ def apply_convnet(path_my_data, path_model, config):
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return: prediction, the mask of the segmentation
     """
+    from logging import WARN
+    tf.logging.set_verbosity(WARN)
 
-    print '\n\n ---Start axon segmentation on %s---' % path_my_data
+    #print '\n\n ---Start axon segmentation on %s---' % path_my_data
 
     path_img = path_my_data + '/image.png'
     img_org = imread(path_img, flatten=False, mode='L')
@@ -133,8 +155,6 @@ def apply_convnet(path_my_data, path_model, config):
     rescale_coeff = pixel_size / general_pixel_size
     img = (rescale(img_org, rescale_coeff) * 256).astype(int)
 
-    batch_size = 1
-
     ###############
     # Network Parameters
     patch_size = config["network_trainingset_patchsize"]
@@ -145,49 +165,63 @@ def apply_convnet(path_my_data, path_model, config):
     if not os.path.exists(folder_model):
         os.makedirs(folder_model)
 
+    if os.path.exists(folder_model + '/hyperparameters.pkl'):
+        #print 'hyperparameters detected in the model'
+        hyperparameters = pickle.load(open(folder_model + '/hyperparameters.pkl', "rb"))
+        image_size = hyperparameters['image_size']
+
     # --------------------SAME ALGORITHM IN TRAIN_model---------------------------
 
-    x = tf.placeholder(tf.float32, shape=(batch_size, patch_size, patch_size))
+    x = tf.placeholder(tf.float32, shape=(None, image_size, image_size))
 
     ####################################################
 
     # Call the model
-    pred = uconv_net(x, config, phase=False)
+    pred = uconv_net(x, config, phase=False, verbose=False)
 
     saver = tf.train.Saver(tf.global_variables())
 
     # Image to batch
-    image_init, data, positions = im2patches(img, patch_size)
+    image_init, data, positions = im2patches(img, crop_value, image_size)
     predictions = []
+    
+    # Limit the size
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
+    
 
     # Launch the graph
-    sess = tf.Session()
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     saver = tf.train.import_meta_graph(path_model + '/model.ckpt.meta')
     saver.restore(sess, tf.train.latest_checkpoint(path_model))
 
     # --------------------- Apply the segmentation to each patch of the images--------------------------------
+    n_patches = len(data)
+    it, rem = divmod(n_patches, batch_size)
 
-    for i in range(len(data)):
-        print 'processing patch %s on %s' % (i + 1, len(data))
-        batch_x = np.asarray([data[i]])
-        p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (1, size_image*size_image, n_classes).
-        # The first dim is the number of batches (which is one)
-        p = p[0,:,:]
-        Mask = np.zeros_like(p[:, 0]) # We now have a vector
-        for pixel in range(len(p[:, 0])):
-            Mask[pixel] = np.argmax(p[pixel, :])
-
-
-        Mask = Mask.reshape(patch_size,patch_size) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
-        predictions.append(Mask)
-
+    for i in tqdm(range(it)):
+        #print 'processing patch %s on %s' % (i+1, it)
+        batch_x = np.asarray(data[i*batch_size:(i+1)*batch_size])
+        p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).          
+        Mask = np.argmax(p,axis=2)    
+        Mask = Mask.reshape(batch_size, 256,256) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
+        predictions.extend([np.squeeze(e) for e in np.split(Mask, batch_size, axis=0)])
+        
+    # Last batch
+    if rem != 0:
+        #print 'processing last patch'
+        batch_x = np.asarray(data[it*batch_size:])
+        p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).          
+        Mask = np.argmax(p,axis=2)    
+        Mask = Mask.reshape(rem, 256,256) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
+        predictions.extend([np.squeeze(e) for e in np.split(Mask, rem, axis=0)])
+        
     sess.close()
     tf.reset_default_graph()
 
     # -----------------------Merge each segmented patch to reconstruct the total segmentation
 
     h_size, w_size = image_init.shape
-    prediction_rescaled = patches2im(predictions, positions, h_size, w_size)
+    prediction_rescaled = patches2im(predictions, positions, crop_value, image_size)
     #labellize_mask_2d()
     prediction = resize(prediction_rescaled, img_org.shape)
     prediction = prediction.astype(np.uint8) # Rescaling operation can change the vlue of the pixels to float.
@@ -197,7 +231,7 @@ def apply_convnet(path_my_data, path_model, config):
 
     #######################################################################################################################
 
-def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png'):
+def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png', crop_value = 25, batch_size=1):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -215,7 +249,7 @@ def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg
     img = imread(path_img, flatten=False, mode='L')
 
     # ------ Apply ConvNets ------- #
-    prediction = apply_convnet(path_my_data, path_model, config) # Predictions are shape of image, value = class of pixel
+    prediction = apply_convnet(path_my_data, path_model, config, batch_size, crop_value = crop_value) # Predictions are shape of image, value = class of pixel
     
     # We now transform the prediction to an image
     n_classes = config['network_n_classes']

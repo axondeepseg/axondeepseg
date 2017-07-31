@@ -100,7 +100,7 @@ def maxpool(x, k_size, k_stride, scope, padding='VALID'):
 # ------------------------ NETWORK STRUCTURE
 
 
-def uconv_net(x, config, phase, image_size=256, bn_updated_decay = None):
+def uconv_net(x, config, phase, image_size=256, bn_updated_decay = None, verbose = True):
     """
     Create the U-net.
     Input :
@@ -139,8 +139,9 @@ def uconv_net(x, config, phase, image_size=256, bn_updated_decay = None):
     for i in range(depth):
 
         for conv_number in range(number_of_convolutions_per_layer[i]):
-            print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
-            print('Size:', size_of_convolutions_per_layer[i][conv_number])
+            if verbose:
+                print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
+                print('Size:', size_of_convolutions_per_layer[i][conv_number])
 
             net = conv_relu(net, features_per_convolution[i][conv_number][1], 
                             size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
@@ -200,8 +201,9 @@ def uconv_net(x, config, phase, image_size=256, bn_updated_decay = None):
         
         # Classic convolutions
         for conv_number in range(number_of_convolutions_per_layer[depth - i - 1]):
-            print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
-            print('Size:', size_of_convolutions_per_layer[i][conv_number])
+            if verbose:
+                print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
+                print('Size:', size_of_convolutions_per_layer[i][conv_number])
 
             net = conv_relu(net, features_per_convolution[depth - i - 1][conv_number][1], 
                             size_of_convolutions_per_layer[depth - i - 1][conv_number], k_stride=1, 
