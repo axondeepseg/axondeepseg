@@ -3,18 +3,20 @@ import shutil
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
 import random
-from ..config import general_pixel_size
+from ..config import path_matlab, path_axonseg
+import numpy as np
 from patch_extraction import extract_patch
-from input_data import labellize_mask_2d
+from tqdm import tqdm
 
 
-def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.8], random_seed = None, patch_size=256):
+def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.8], random_seed = None, patch_size=256, general_pixel_size=0.02):
     """
     :param path_data: folder including all images used for the training. Each image is represented by a a folder
     including image.png and mask.png (ground truth) and a .txt file named pixel_size_in_micrometer.
     :param trainingset_path: path of the resulting trainingset
     :param trainRatio: ratio of the training patches over the total . (High ratio : good learning but poor estimation of the performance)
     :param thresh_indices: list of float in [0,1[.
+    :param general_pixel_size: factor used to scale the data. Common values are 0.2 (for SEM, 256-sized patches) and 0.02 (for TEM, 256-sized patches)
 
     WARNING with 3 classes, labels should be [0,0.1,0.8], it was designed for .jpeg
     :param random_seed: the random seed to use when generating the dataset. Enables to generate the same train and validation set if given the same raw dataset.
@@ -30,7 +32,8 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
     random.seed(random_seed) #Setting the random seed in order to get reproducible results.
     
     i = 0
-    for root in os.listdir(path_data)[:]:
+    print "Beginning patch extraction..."
+    for root in tqdm(os.listdir(path_data)[:]):
 
         if '.DS_Store' not in root :
             subpath_data = os.path.join(path_data, root)
@@ -43,7 +46,7 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
                 if 'image' in data:
                     img = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
                     img = rescale(img, rescale_coeff, preserve_range=True).astype(int)
-                elif 'mask' in data:
+                elif 'mask.png' in data:
                     mask_init = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
                     mask = rescale(mask_init, rescale_coeff, preserve_range=True)
 
@@ -55,7 +58,7 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
             else:
                 patches += extract_patch(img, mask, patch_size)
             i+=1
-
+    print "Patch extraction done..."
     validationRatio = 1-trainRatio
     size_validation = int(validationRatio*len(patches))
 
