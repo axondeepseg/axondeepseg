@@ -2,6 +2,7 @@ import os
 import shutil
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
+from AxonDeepSeg.data.input_data import labellize_mask_2d
 import random
 from ..config import path_matlab, path_axonseg
 import numpy as np
@@ -9,7 +10,7 @@ from patch_extraction import extract_patch
 from tqdm import tqdm
 
 
-def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.8], random_seed = None, patch_size=256, general_pixel_size=0.02):
+def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.8], random_seed = None, patch_size=256, general_pixel_size=0.2):
     """
     :param path_data: folder including all images used for the training. Each image is represented by a a folder
     including image.png and mask.png (ground truth) and a .txt file named pixel_size_in_micrometer.
@@ -59,12 +60,17 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
                 patches += extract_patch(img, mask, patch_size)
             i+=1
     print "Patch extraction done..."
+    
     validationRatio = 1-trainRatio
     size_validation = int(validationRatio*len(patches))
 
     random.shuffle(patches)
-    patches_train = patches[:-size_validation]
-    patches_validation = patches[-size_validation:]
+    if size_validation == 0:
+        patches_validation = []
+        patches_train = patches
+    else:
+        patches_train = patches[:-size_validation]
+        patches_validation = patches[-size_validation:]
 
     if not os.path.exists(trainingset_path):
         os.makedirs(trainingset_path)

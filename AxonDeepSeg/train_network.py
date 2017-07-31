@@ -179,9 +179,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     if gpu in ['gpu:0', 'gpu:1']:
         with tf.device('/' + gpu):
-            pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
+            pred = uconv_net(x, config, phase, image_size = image_size, bn_updated_decay = adapt_bn_decay)
     else:
-        pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
+        pred = uconv_net(x, config, phase, image_size = image_size, bn_updated_decay = adapt_bn_decay)
 
     # We also display the total number of variables
     total_parameters = 0
