@@ -59,11 +59,11 @@ def default_configuration():
         "network_trainingset_patchsize": 256,
         "network_batch_norm_decay": 0.7,
         "network_additional_parameters":{'learning_rate_decay_activate':True,
-                                         'learning_rate_decay_period':120,
+                                         'learning_rate_decay_period':10,
                                          'learning_rate_decay_rate':0.99,
                                          'batch_norm_decay_decay_activate':True,
                                          'batch_norm_decay_ending_decay':0.9,
-                                         'batch_norm_decay_decay_period':4800
+                                         'batch_norm_decay_decay_period':50
                                         },
         "network_weighted_cost": True,
         "network_weighted_cost_parameters":{'balanced_activate':True,

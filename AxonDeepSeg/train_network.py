@@ -170,7 +170,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     if batch_norm_decay_decay_activate:
         adapt_bn_decay = inverted_exponential_decay(batch_norm_decay, batch_norm_decay_ending_decay, global_step,
-                                                    batch_norm_decay_decay_period, staircase=False)
+                                                    batch_norm_decay_decay_period*epoch_size, staircase=False)
         tf.summary.scalar('adapt_bnd', adapt_bn_decay)
     else:
         adapt_bn_decay = None
@@ -204,7 +204,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # First, we prepare the terrain for the decaying learning rate and we update (decay) the batch norm decay (which should be called batch norm momentum).
     if learning_rate_decay_activate:
         adapt_learning_rate = tf.train.exponential_decay(learning_rate, global_step, 
-                                                     learning_rate_decay_period, learning_rate_decay_rate, staircase=True)
+                                                     int(learning_rate_decay_period*epoch_size/batch_size), learning_rate_decay_rate, staircase=True)
         tf.summary.scalar('adapt_lr', adapt_learning_rate)
 
     else:
