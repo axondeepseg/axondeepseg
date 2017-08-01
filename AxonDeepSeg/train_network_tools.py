@@ -100,7 +100,7 @@ def maxpool(x, k_size, k_stride, scope, padding='VALID'):
 # ------------------------ NETWORK STRUCTURE
 
 
-def uconv_net(x, config, phase, image_size=256, bn_updated_decay = None, verbose = True):
+def uconv_net(x, config, phase, bn_updated_decay = None, verbose = True):
     """
     Create the U-net.
     Input :
@@ -113,7 +113,7 @@ def uconv_net(x, config, phase, image_size=256, bn_updated_decay = None, verbose
     """
     
     # Load the variables
-    image_size = image_size
+    image_size = config["network_trainingset_patchsize"]
     n_classes = config["network_n_classes"]
     depth = config["network_depth"]
     number_of_convolutions_per_layer = config["network_convolution_per_layer"]

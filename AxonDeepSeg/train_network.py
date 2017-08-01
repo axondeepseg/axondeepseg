@@ -73,8 +73,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     save_step = 600
 
     # Network Parameters
-    image_size = 256
-    n_input = image_size * image_size
 
     learning_rate = config["network_learning_rate"]
     n_classes = config["network_n_classes"]
@@ -90,6 +88,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     data_augmentation = config["network_data_augmentation"]
     batch_norm = config["network_batch_norm"]
     batch_norm_decay = config["network_batch_norm_decay"]
+    image_size = config["network_trainingset_patchsize"]
     
     # Decay parameters
     additional_parameters = config["network_additional_parameters"]
@@ -101,6 +100,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     learning_rate_decay_rate = additional_parameters["learning_rate_decay_rate"]
     
     batch_size_validation = 8
+    n_input = image_size * image_size
 
 
     # SAVING HYPERPARAMETERS TO USE THEM FOR apply_model. DEPRECATED, NOT USED -> TO DELETE
@@ -120,9 +120,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         
     # Loading the datasets
     data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
-                            thresh_indices=thresh_indices)
+                            thresh_indices=thresh_indices, image_size=image_size)
     data_validation = input_data(trainingset_path=path_trainingset, type_='validation', batch_size=batch_size_validation,
-                                 thresh_indices=thresh_indices)
+                                 thresh_indices=thresh_indices, image_size=image_size)
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
 

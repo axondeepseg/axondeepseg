@@ -56,6 +56,7 @@ def default_configuration():
                                      },
         "network_learning_rate": 0.001,
         "network_batch_norm": True,
+        "network_trainingset_patchsize": 256,
         "network_batch_norm_decay": 0.7,
         "network_additional_parameters":{'learning_rate_decay_activate':True,
                                          'learning_rate_decay_period':120,

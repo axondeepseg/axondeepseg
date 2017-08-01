@@ -1,8 +1,8 @@
 import os
 import shutil
 from scipy.misc import imread, imsave
-from sklearn import preprocessing
 from skimage.transform import rescale
+from AxonDeepSeg.data.input_data import labellize_mask_2d
 import random
 from ..config import path_matlab, path_axonseg
 import numpy as np
@@ -10,7 +10,7 @@ from patch_extraction import extract_patch
 from tqdm import tqdm
 
 
-def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.8], random_seed = None, general_pixel_size = 0.02):
+def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.8], random_seed = None, patch_size=256, general_pixel_size=0.2):
     """
     :param path_data: folder including all images used for the training. Each image is represented by a a folder
     including image.png and mask.png (ground truth) and a .txt file named pixel_size_in_micrometer.
@@ -46,36 +46,31 @@ def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices
             for data in os.listdir(subpath_data):
                 if 'image' in data:
                     img = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
-                    img = (rescale(img, rescale_coeff)*256).astype(int)
+                    img = rescale(img, rescale_coeff, preserve_range=True).astype(int)
                 elif 'mask.png' in data:
                     mask_init = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
-                    mask = (rescale(mask_init, rescale_coeff)*256)
+                    mask = rescale(mask_init, rescale_coeff, preserve_range=True)
 
                     # Set the mask values to the classes' values
-                    for indice,value in enumerate(thresh_indices[:-1]):
-                        if np.max(mask) > 1.001: # because of numerical values.
-                            thresh_inf = np.int(255*value)
-                            thresh_sup = np.int(255*thresh_indices[indice+1])
-                        else:
-                            thresh_inf = value
-                            thresh_sup = thresh_indices[indice+1]   
-
-                        mask[(mask >= thresh_inf) & (mask < thresh_sup)] = np.mean([value,thresh_indices[indice+1]])
-
-                    mask[mask>=thresh_sup] = 1
+                    mask = labellize_mask_2d(mask, thresh_indices)  # shape (256, 256), values float 0.0-1.0
 
             if i == 0:
-                patches = extract_patch(img, mask, 256)
+                patches = extract_patch(img, mask, patch_size)
             else:
-                patches += extract_patch(img, mask, 256)
+                patches += extract_patch(img, mask, patch_size)
             i+=1
     print "Patch extraction done..."
+    
     validationRatio = 1-trainRatio
     size_validation = int(validationRatio*len(patches))
 
     random.shuffle(patches)
-    patches_train = patches[:-size_validation]
-    patches_validation = patches[-size_validation:]
+    if size_validation == 0:
+        patches_validation = []
+        patches_train = patches
+    else:
+        patches_train = patches[:-size_validation]
+        patches_validation = patches[-size_validation:]
 
     if not os.path.exists(trainingset_path):
         os.makedirs(trainingset_path)
