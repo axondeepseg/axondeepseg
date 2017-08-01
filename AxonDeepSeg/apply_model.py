@@ -190,6 +190,7 @@ def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25,
     # --------------------- Apply the segmentation to each patch of the images--------------------------------
     n_patches = len(data)
     it, rem = divmod(n_patches, batch_size)
+    
 
     for i in tqdm(range(it)):
         #print 'processing patch %s on %s' % (i+1, it)
@@ -198,15 +199,6 @@ def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25,
         Mask = np.argmax(p,axis=2)    
         Mask = Mask.reshape(batch_size, patch_size,patch_size) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
         predictions.extend([np.squeeze(e) for e in np.split(Mask, batch_size, axis=0)])
-        
-        plt.figure(i, figsize=(8,12))
-        plt.subplot(2,1,1)
-        plt.imshow(data[0])
-        plt.title('img ' + str(i));
-        plt.subplot(2,1,2)
-        plt.imshow(p.reshape((512,512)))
-        plt.title('p ' + str(i))
-        plt.show();
         
     # Last batch
     if rem != 0:
