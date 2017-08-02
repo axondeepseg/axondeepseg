@@ -9,7 +9,7 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
     """
     Calculates segmentation score by keeping an only true centroids as TP.
     Excess of centroids detected for a unique object is counted by diffusion (Excess/TP+FN)
-    Returns sensitivity (TP/P), precision (FP/TP+FN) and diffusion
+    Returns sensitivity (TP/P), precision (TP/TP+FN) and diffusion
 
     :param img: image to segment
     :param groundtruth: groundtruth of the image
@@ -134,3 +134,17 @@ def dice(img, groundtruth, prediction, min_area=3):
         i += 1
     dice_scores = df[df['area'] > min_area]
     return dice_scores
+
+def pw_dice(img1, img2):
+    """
+    img1 and img2 are boolean masks ndarrays
+    This functions compute the pixel-wise dice coefficient (not axon-wise but pixel wise)
+    """
+
+    img_sum = img1.sum() + img2.sum()
+    if img_sum == 0:
+        return 1
+
+    intersection = np.logical_and(img1, img2)
+    # Return the global dice coefficient
+    return 2. * intersection.sum() / img_sum

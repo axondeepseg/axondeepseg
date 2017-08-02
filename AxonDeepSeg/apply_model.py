@@ -12,6 +12,7 @@ from skimage import exposure
 from AxonDeepSeg.train_network_tools import *
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from config_tools import update_config, default_configuration
 
 
 #import matplotlib.pyplot as plt 
@@ -234,6 +235,9 @@ def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg
     AxonMask.mat is saved in the image_path to feed the detection of Myelin
     /AxonSeg.jpeg is saved in the image_path
     """
+    
+    # Ensuring that the config file is alright
+    config = update_config(default_configuration(), config)
 
     file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
     pixel_size = float(file.read())
