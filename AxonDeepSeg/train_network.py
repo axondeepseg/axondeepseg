@@ -62,6 +62,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     Epoch = []
     Accuracy = []
     Report = ''
+    output_2 = ''
     verbose = 1
     
     # Results and Models
@@ -329,9 +330,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     Report += '\n\n---Intermediary results---\n'
     
     # Limiting the memory used by the training
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_per)
+    config_gpu = tf.ConfigProto(log_device_placement=True)
+    config_gpu.gpu_options.per_process_gpu_memory_fraction = gpu_per
+    #config_gpu.gpu_options.allow_growth = True
 
-    with tf.Session(config=tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options)) as session:
+    with tf.Session(config=config_gpu) as session:
         
         # Session initialized !
         

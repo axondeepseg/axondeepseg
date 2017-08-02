@@ -6,7 +6,7 @@ from AxonDeepSeg.config_tools import *
 
 ## ----------------------------------------------------------------------------------------------------------------
 
-def generate_heliosjob(path_project, path_venv, bashname, configfile, config, path_trainingset, path_model, path_model_init = None, walltime=43200):
+def generate_heliosjob(path_project, path_venv, bashname, configfile, config, path_trainingset, path_model, path_model_init = None, walltime=43200, gpu_per=1.0):
     """Generate config file given a config dict. Generate the corresponding submission."""
 
     if not os.path.exists(path_model):
@@ -38,6 +38,9 @@ def generate_heliosjob(path_project, path_venv, bashname, configfile, config, pa
     if path_model_init:
         file.write(" -i ")
         file.write(str(path_model_init))
+    if gpu_per != 1.0:
+        file.write(" -g ")
+        file.write(str(gpu_per))
         
     print name_model + ' created ...'
         
@@ -46,7 +49,7 @@ def generate_heliosjob(path_project, path_venv, bashname, configfile, config, pa
 ## ----------------------------------------------------------------------------------------------------------------
     
     
-def generate_guilliminjob(path_project, path_venv, bashname, configfile, config, path_trainingset, path_model,path_model_init = None, walltime=43200):
+def generate_guilliminjob(path_project, path_venv, bashname, configfile, config, path_trainingset, path_model,path_model_init = None, walltime=43200, gpu_per=1.0):
     """Generate config file given a config dict. Generate the corresponding submission."""
 
     if not os.path.exists(path_model):
@@ -77,6 +80,9 @@ def generate_guilliminjob(path_project, path_venv, bashname, configfile, config,
     if path_model_init:
         file.write(" -i ")
         file.write(str(path_model_init))
+    if gpu_per != 1.0:
+        file.write(" -g ")
+        file.write(str(gpu_per))
         
     print name_model + ' created ...'
         
