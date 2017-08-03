@@ -67,13 +67,18 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     # Results and Models
     folder_model = path_model
+    
     if not os.path.exists(folder_model):
         os.makedirs(folder_model)
  
     display_step = 100
     save_step = 600
+    
+    save_last_epoch_freq = 50
+    save_best_moving_avg_epoch_freq = 5
+    save_best_moving_avg_window = 10
 
-    # Network Parameters
+    # ------- Network Parameters
 
     learning_rate = config["network_learning_rate"]
     n_classes = config["network_n_classes"]
@@ -526,13 +531,23 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 print '\n\n----Scores on validation:---' + output_2
 
                 # Saving the model if it's the best one
-                #if epoch == 1:
-                #    acc_current_best = acc
-                #    loss_current_best = loss
+                if epoch == 1: # First epoch is 1, not 0
+                    acc_current_best = acc
+                    loss_current_best = loss
 
-                    # If new model is better than the last one, update best model
-                #elif (acc > acc_current_best and loss < loss_current_best):
-                #    save_path = saver.save(session, folder_model + "/best_model.ckpt")
+                # At each check frequency defined we look if the moving average is better
+                elif ((epoch >= max(save_best_moving_avg_epoch_freq, save_best_moving_avg_window)) and (epoch%save_best_moving_avg_epoch_freq == 0)):
+                    acc_moving_avg = np.mean(Accuracy[-save_best_moving_avg_window:])
+                    loss_moving_avg = np.mean(Loss[-save_best_moving_avg_window:])
+                    if acc_moving_avg > acc_current_best:
+                        save_path = saver.save(session, folder_model + "/best_acc_model.ckpt")
+                        acc_current_best = acc_moving_avg
+                        print("Best accuracy model saved in file: %s" % save_path)
+                    if loss_moving_avg < loss_current_best:
+                        save_path = saver.save(session, folder_model + "/best_loss_model.ckpt")
+                        loss_current_best = loss_moving_avg
+                        print("Best loss model saved in file: %s" % save_path)
+
 
                 epoch += 1
 
@@ -540,7 +555,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             #### d) Saving the model as a checkpoint, the metrics in a pickle file and update the file report.txt
             ### ----------------------------------------------------------------------------------------------------------- ###
 
-            if step*batch_size % save_step == 0:
+            # Moreover at a frequency we save the model regardless of the performance
+            if epoch % save_last_epoch_freq == 0:
                 evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
                 with open(folder_model + '/evolution.pkl', 'wb') as handle:
                     pickle.dump(evolution, handle)
@@ -569,7 +585,7 @@ def inverted_exponential_decay(a, b, global_step, decay_period, staircase=False)
     if staircase:
         return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.int32)/decay_period))
     else:
-        return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.float64)/decay_period))
+        return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.float32)/decay_period))
 
 
         

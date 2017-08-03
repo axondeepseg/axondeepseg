@@ -11,6 +11,8 @@ import random
 import os
 from patch_extraction import extract_patch
 
+import matplotlib.pyplot as plt
+
 
 #######################################################################################################################
 #                                                Data Augmentation                                                    #
@@ -18,13 +20,15 @@ from patch_extraction import extract_patch
 
 # We find here the functions that perform transformations to images and mask. 
 # All functions take 8-bit images and return 8-bit images
-def shifting(patch):
+
+def shifting(patch, max_percentage_shift = 0.1):
     """
     :param patch: [image,mask]
     :return: random shifting of the pair [image,mask]
     """
-    size_shift = 10
+
     patch_size = patch[0].shape[0]
+    size_shift = int(max_percentage_shift*patch_size)
     img = np.pad(patch[0],size_shift, mode = "reflect")
     mask = np.pad(patch[1],size_shift, mode = "reflect")
     begin_h = np.random.randint(2*size_shift-1)
@@ -44,9 +48,9 @@ def rescaling(patch, thresh_indices = [0,0.5]): #indices to indexes.
     --- Rescaling reinforces axons size diversity ---
     """
 
-    scale = random.choice([0.5, 0.75, 1.0, 1.5, 2.0])
+    scale = random.choice([0.8, 0.9, 1.0, 1.1, 1.2])
     patch_size = patch[0].shape[0]
-
+    #print 'scale : ', scale
     if scale == 1.0:
         rescaled_patch = patch
 
@@ -59,10 +63,12 @@ def rescaling(patch, thresh_indices = [0,0.5]): #indices to indexes.
         if q_h > 0:
             image_rescale = np.pad(image_rescale,(q_h, q_h+r_h), mode = "reflect")
             mask_rescale = np.pad(mask_rescale,(q_h, q_h+r_h), mode = "reflect")
+
         else:           
             patches = extract_patch(image_rescale, mask_rescale, patch_size)
             i = np.random.randint(len(patches), size=1)[0]
             image_rescale, mask_rescale = patches[i]
+
 
         mask_rescale = np.array(mask_rescale)
         rescaled_patch = [image_rescale.astype(np.uint8), mask_rescale.astype(np.uint8)]
