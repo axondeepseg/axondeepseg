@@ -120,7 +120,7 @@ def generate_cedarjob(path_project, path_venv, bashname, configfile, config, pat
     file.write("#SBATCH --output="+ name_model +".out \n")
     
     
-    file.write("cd $SCRATCH/"+path_project+ "/axondeepseg/models/" + name_model + "/ \n")
+    file.write("cd /home/maxwab/scratch/"+path_project+ "/axondeepseg/models/" + name_model + "/ \n")
     file.write("source "+path_venv+"/bin/activate \n")
     file.write("python ../../AxonDeepSeg/trainingforhelios.py -co ")
     file.write(str(configfile))
