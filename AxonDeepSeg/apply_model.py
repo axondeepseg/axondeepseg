@@ -15,9 +15,6 @@ from tqdm import tqdm
 from config_tools import update_config, default_configuration
 
 
-#import matplotlib.pyplot as plt 
-
-
 ########## HEADER ##########
 # Config file description :
 
@@ -132,7 +129,7 @@ def patches2im(L_patches, L_pos, cropped_value = 25, scw=256):
     return new_img
 
 
-def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25, general_pixel_size=0.2):
+def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25, general_pixel_size=0.2, pred_proba = False):
     """
     :param path_my_data: folder of the image to segment. Must contain image.png
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -159,6 +156,7 @@ def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25,
     # Network Parameters
     patch_size = config["network_trainingset_patchsize"]
     thresh_indices = config["network_thresholds"]
+    n_classes = config["network_n_classes"]
     ##############
 
     folder_model = path_model
@@ -177,7 +175,8 @@ def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25,
 
     # Image to batch
     image_init, data, positions = im2patches(img, crop_value, patch_size)
-    predictions = []
+    predictions_list = []
+    predictions_proba_list = []
     
     # Limit the size
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0)
@@ -197,10 +196,16 @@ def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25,
         #print 'processing patch %s on %s' % (i+1, it)
         batch_x = np.asarray(data[i*batch_size:(i+1)*batch_size])
         p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).          
-        Mask = np.argmax(p,axis=2)    
-        Mask = Mask.reshape(batch_size, patch_size,patch_size) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
-        predictions.extend([np.squeeze(e) for e in np.split(Mask, batch_size, axis=0)])
-        
+        # Generating the mask for each element of the batch
+        Mask = np.argmax(p,axis=2)
+        Mask = Mask.reshape(batch_size, patch_size, patch_size) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
+        predictions_list.extend([np.squeeze(e) for e in np.split(Mask, batch_size, axis=0)])
+
+        if pred_proba:
+            # Generating the probas for each element of the batch (basically changing the shape of the prediction)
+            p = p.reshape(batch_size, patch_size, patch_size, n_classes)
+            predictions_proba_list.extend([np.squeeze(e) for e in np.split(p, batch_size, axis=0)])
+
     # Last batch
     if rem != 0:
         #print 'processing last patch'
@@ -208,25 +213,37 @@ def apply_convnet(path_my_data, path_model, config, batch_size=1, crop_value=25,
         p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).          
         Mask = np.argmax(p,axis=2)    
         Mask = Mask.reshape(rem, patch_size,patch_size) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
-        predictions.extend([np.squeeze(e) for e in np.split(Mask, rem, axis=0)])
-        
+        predictions_list.extend([np.squeeze(e) for e in np.split(Mask, rem, axis=0)])
+        if pred_proba:
+            # Generating the probas for each element of the batch (basically changing the shape of the prediction)
+            p = p.reshape(rem, patch_size, patch_size, n_classes)
+            predictions_proba_list.extend([np.squeeze(e) for e in np.split(p, rem, axis=0)])
     sess.close()
     tf.reset_default_graph()
-
+    
     # -----------------------Merge each segmented patch to reconstruct the total segmentation
 
-    h_size, w_size = image_init.shape
-    prediction_rescaled = patches2im(predictions, positions, crop_value, patch_size)
-    #labellize_mask_2d()
-    prediction = resize(prediction_rescaled, img_org.shape)
-    prediction = prediction.astype(np.uint8) # Rescaling operation can change the vlue of the pixels to float.
+    prediction_stitched = patches2im(predictions_list, positions, crop_value, patch_size)
+    prediction = resize(prediction_stitched, img_org.shape)
+    prediction = prediction.astype(np.uint8) # Rescaling operation can change the value of the pixels to float.
+    if pred_proba:
+        # We generate the predict proba matrix
 
-    # Image returned is of same shape as total image and with each pixel being the class it's been attributed to   
-    return prediction
+        tmp = np.split(np.stack(predictions_proba_list, axis=0), n_classes, axis=-1)
+        predictions_proba_list = [map(np.squeeze, np.split(e, n_patches, axis=0)) for e in
+                             tmp]  # We now have a list (n_classes elements) of list (n_patches elements)
+        
+        prediction_proba_stitched = [patches2im(e, positions, crop_value, patch_size) for e in predictions_proba_list]
+        prediction_proba = np.stack([resize(e, img_org.shape) for e in prediction_proba_stitched], axis=-1)
+
+    # Image returned is of same shape as total image and with each pixel being the class it's been attributed to
+        return prediction, prediction_proba
+    else:
+        return prediction
 
     #######################################################################################################################
 
-def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png', crop_value = 25, batch_size=1, general_pixel_size=0.2):
+def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg.png', batch_size=1, crop_value = 25, general_pixel_size=0.1, pred_proba=False, write_mode=True):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -247,28 +264,27 @@ def axon_segmentation(path_my_data, path_model, config, imagename = 'AxonDeepSeg
     img = imread(path_img, flatten=False, mode='L')
 
     # ------ Apply ConvNets ------- #
-    prediction = apply_convnet(path_my_data, path_model, config, batch_size, crop_value = crop_value, general_pixel_size = general_pixel_size) # Predictions are shape of image, value = class of pixel
-    
-    # We now transform the prediction to an image
-    n_classes = config['network_n_classes']
-    paint_vals = [int(255*float(i)/(n_classes - 1)) for i in range(n_classes)]
-    
-    
-    # Now we create the mask with values in range 0-255
-    mask = np.zeros_like(prediction)
-    for i in range(n_classes):
-        mask[prediction == i] = paint_vals[i]
-            
-    # ------ Saving results ------- #
-    results = {}
+    if pred_proba:
+        prediction, prediction_proba = apply_convnet(path_my_data, path_model, config, batch_size, crop_value = crop_value, general_pixel_size = general_pixel_size, pred_proba=pred_proba) # Predictions are shape of image, value = class of pixel
+    else:
+        prediction = apply_convnet(path_my_data, path_model, config,
+                                                     batch_size, crop_value = crop_value, general_pixel_size = general_pixel_size)  # Predictions are shape of image, value = class of pixel
+    # Final part of the function : generating the image if needed/ returning values
+    if write_mode:
+        # We now transform the prediction to an image
+        n_classes = config['network_n_classes']
+        paint_vals = [int(255*float(i)/(n_classes - 1)) for i in range(n_classes)]
 
-    results['prediction'] = prediction
-
-    #with open(path_my_data + '/results.pkl', 'wb') as handle:
-    #    pickle.dump(results, handle)
-
-    imsave(path_my_data + '/'+imagename, mask, 'png')
-
+        # Now we create the mask with values in range 0-255
+        mask = np.zeros_like(prediction)
+        for i in range(n_classes):
+            mask[prediction == i] = paint_vals[i]
+        # Then we save the image
+        imsave(path_my_data + '/'+imagename, mask, 'png')
+    if pred_proba:
+        return prediction, prediction_proba
+    else:
+        return prediction
 
 # ---------------------------------------------------------------------------------------------------------
 
