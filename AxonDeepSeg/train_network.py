@@ -530,7 +530,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 output_2 += '\n Loss: ' + str(loss) + ';'
                 print '\n\n----Scores on validation:---' + output_2
 
-                # Saving the model if it's the best one
+                # Saving the model if it's the best one. We only do this check at the end of an epoch
                 if epoch == 1: # First epoch is 1, not 0
                     acc_current_best = acc
                     loss_current_best = loss
@@ -548,28 +548,31 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                         loss_current_best = loss_moving_avg
                         print("Best loss model saved in file: %s" % save_path)
 
+                ### ------------------------------------------------------------------------------------------------------- ###
+                #### d) Saving the model as a checkpoint, the metrics in a pickle file and update the file report.txt
+                ### ------------------------------------------------------------------------------------------------------- ###
 
+                # Moreover at a frequency we save the model regardless of the performance
+                if epoch % save_last_epoch_freq == 0:
+                    evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
+                    with open(folder_model + '/evolution.pkl', 'wb') as handle:
+                        pickle.dump(evolution, handle)
+                    save_path = saver.save(session, folder_model + "/model.ckpt")
+
+                    print("Model saved in file: %s" % save_path)
+                    file = open(folder_model + "/report.txt", 'w')
+                    file.write(Report + output_2)
+                    file.close()
+                
+                # Increase the epoch #
                 epoch += 1
-
-            ### ----------------------------------------------------------------------------------------------------------- ###
-            #### d) Saving the model as a checkpoint, the metrics in a pickle file and update the file report.txt
-            ### ----------------------------------------------------------------------------------------------------------- ###
-
-            # Moreover at a frequency we save the model regardless of the performance
-            if epoch % save_last_epoch_freq == 0:
-                evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
-                with open(folder_model + '/evolution.pkl', 'wb') as handle:
-                    pickle.dump(evolution, handle)
-                save_path = saver.save(session, folder_model + "/model.ckpt")
-
-                print("Model saved in file: %s" % save_path)
-                file = open(folder_model + "/report.txt", 'w')
-                file.write(Report + output_2)
-                file.close()
-
+            
+            # Increase the step #
             step += 1
+
+            
     
-        # At the end of each epoch we save the model in a checkpoint file
+        # At the end of the training we save the model in a checkpoint file
         save_path = saver.save(session, folder_model + "/model.ckpt")
 
         # Initialize best model with model after epoch 1
