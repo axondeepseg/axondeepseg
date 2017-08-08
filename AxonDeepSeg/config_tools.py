@@ -134,9 +134,7 @@ def grid_config(L_struct, dict_params, base_config = default_configuration()):
         tmp = copy.deepcopy(base_config)
         tmp.update(generate_struct(structure))
         L_configs.append(tmp)
-        
-    print len(L_configs)
-        
+                
                 
     # Then we create the grid thanks to the params.
     for param, L_values in dict_params.iteritems():

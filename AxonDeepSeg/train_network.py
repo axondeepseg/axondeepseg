@@ -540,13 +540,33 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     acc_moving_avg = np.mean(Accuracy[-save_best_moving_avg_window:])
                     loss_moving_avg = np.mean(Loss[-save_best_moving_avg_window:])
                     if acc_moving_avg > acc_current_best:
+                        
                         save_path = saver.save(session, folder_model + "/best_acc_model.ckpt")
                         acc_current_best = acc_moving_avg
                         print("Best accuracy model saved in file: %s" % save_path)
+                        
+                        # Saving the evolution in a pickle file
+                        evolution = {'loss': np.mean(Loss[-10:]), 
+                                     'steps': epoch, 
+                                     'accuracy': np.mean(Accuracy[-10:])}
+                        
+                        with open(folder_model + '/best_acc_stats.pkl', 'w') as handle:
+                            pickle.dump(evolution, handle)
+                        
                     if loss_moving_avg < loss_current_best:
+                        
                         save_path = saver.save(session, folder_model + "/best_loss_model.ckpt")
                         loss_current_best = loss_moving_avg
                         print("Best loss model saved in file: %s" % save_path)
+                        
+                        # Saving the evolution in a pickle file
+                        evolution = {'loss': np.mean(Loss[-10:]), 
+                                     'steps': epoch, 
+                                     'accuracy': np.mean(Accuracy[-10:])}
+                        
+                        with open(folder_model + '/best_loss_stats.pkl', 'w') as handle:
+                            pickle.dump(evolution, handle)
+                        
 
                 ### ------------------------------------------------------------------------------------------------------- ###
                 #### d) Saving the model as a checkpoint, the metrics in a pickle file and update the file report.txt
@@ -560,6 +580,14 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     save_path = saver.save(session, folder_model + "/model.ckpt")
 
                     print("Model saved in file: %s" % save_path)
+
+                    evolution = {'loss': np.mean(Loss[-10:]), 
+                                 'steps': epoch, 
+                                 'accuracy': np.mean(Accuracy[-10:])}
+
+                    with open(folder_model + '/evolution_stats.pkl', 'w') as handle:
+                        pickle.dump(evolution, handle)
+                    
                     file = open(folder_model + "/report.txt", 'w')
                     file.write(Report + output_2)
                     file.close()
