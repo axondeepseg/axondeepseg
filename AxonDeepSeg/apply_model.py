@@ -92,6 +92,7 @@ def patches2im(L_patches, L_pos, cropped_value = 25, scw=256):
     h_l, w_l = np.max(np.stack(L_pos), axis=0)
     L_pred = []
     new_img = np.zeros((h_l+scw,w_l+scw))
+
     for i,e in enumerate(L_patches):
         if L_pos[i][0] == 0:
             if L_pos[i][1] == 0:
@@ -131,7 +132,7 @@ def patches2im(L_patches, L_pos, cropped_value = 25, scw=256):
     return new_img
 
 
-def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_size=1, crop_value=25, general_pixel_size=0.1, pred_proba = False):
+def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_size=1, crop_value=25, general_pixel_sizes=[0.1], pred_proba = False):
     """
     :param path_my_data: folder of the image to segment. Must contain image.png
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -152,7 +153,7 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
     pixel_sizes = [float(file_.read()) for file_ in files]
 
     # set the resolution to the general_pixel_size
-    rescale_coeffs = [pixel_size / general_pixel_size for pixel_size in pixel_sizes]
+    rescale_coeffs = [pixel_size / general_pixel_sizes[i] for i,pixel_size in enumerate(pixel_sizes)]
     imgs = [rescale(img_org, rescale_coeffs[i], preserve_range=True).astype(int) for i,img_org in enumerate(img_orgs)]
     
 
@@ -196,12 +197,12 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
     saver.restore(sess, path_model + '/' + ckpt_name + '.ckpt')
     
     # --------------------- Apply the segmentation to each patch of the images--------------------------------
-    n_patches = len(data)
+    n_patches = len(L_data)
     it, rem = divmod(n_patches, batch_size)
 
     for i in tqdm(range(it)):
         #print 'processing patch %s on %s' % (i+1, it)
-        batch_x = np.asarray(data[i*batch_size:(i+1)*batch_size])
+        batch_x = np.asarray(L_data[i*batch_size:(i+1)*batch_size])
         p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).          
         # Generating the mask for each element of the batch
         Mask = np.argmax(p,axis=2)
@@ -216,7 +217,7 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
     # Last batch
     if rem != 0:
         #print 'processing last patch'
-        batch_x = np.asarray(data[it*batch_size:])
+        batch_x = np.asarray(L_data[it*batch_size:])
         p = sess.run(pred, feed_dict={x: batch_x}) # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).          
         Mask = np.argmax(p,axis=2)    
         Mask = Mask.reshape(rem, patch_size,patch_size) # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
@@ -224,40 +225,52 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
         if pred_proba:
             # Generating the probas for each element of the batch (basically changing the shape of the prediction)
             p = p.reshape(rem, patch_size, patch_size, n_classes)
+            # Reshaping and adding to the preivous list (each patch is now of size (patch_size, patch_size, n_classes) )
             predictions_proba_list.extend([np.squeeze(e) for e in np.split(p, rem, axis=0)])
     sess.close()
     tf.reset_default_graph()
     
-    # Now we have to transform the list of predictions in list of lists, one for each image
+    # Now we have to transform the list of predictions in list of lists, one for each full image : we put in each sublist the patches corresponding to a full image.
     L_predictions = []
     L_predictions_proba = []
-    L_n_patches = np.cumsum([0] + L_n_patches)
-    for i,e in enumerate(L_n_patches[:-1]):
+    L_n_patches_cum = np.cumsum([0] + L_n_patches)
+    for i,e in enumerate(L_n_patches_cum[:-1]):
         i0 = e
-        i1 = L_n_patches[i+1]
+        i1 = L_n_patches_cum[i+1]
         L_predictions.append(predictions_list[i0:i1])
         L_predictions_proba.append(predictions_proba_list[i0:i1])
-    
-    # -----------------------Merge each segmented patch to reconstruct the total segmentation
-
-    prediction_stitcheds = [patches2im(predictions_list, L_positions[i], crop_value, patch_size) for i,predictions_list in enumerate(L_predictions)]
-    predictions = [resize(prediction_stitched, img_org[i].shape) for i, prediction_stitched in enumerate(prediction_stitcheds)]
+            
+    # We merge each segmented patch to reconstruct the total segmentation
+    prediction_stitcheds = [patches2im(pred_list, L_positions[i], crop_value, patch_size) for i,pred_list in enumerate(L_predictions)]
+    predictions = [resize(prediction_stitched, img_orgs[i].shape) for i, prediction_stitched in enumerate(prediction_stitcheds)]
     predictions = [prediction.astype(np.uint8) for prediction in predictions] # Rescaling operation can change the value of the pixels to float.
 
     if pred_proba:
+        # First we create an empty list that will store all processed prediction_proba (meaning reshaped so that each element of the list corresponds to a predicted image, each element being of shape (patch_size, patch_size, n_classes)
         predictions_proba = []
-        for prediction_proba_list in L_predictions_proba:
+        # L_predictions_proba is 
+        for i, prediction_proba_list in enumerate(L_predictions_proba):
             # We generate the predict proba matrix
-            tmp = np.split(np.stack(predictions_proba_list, axis=0), n_classes, axis=-1)
-            predictions_proba_list = [map(np.squeeze, np.split(e, n_patches, axis=0)) for e in
+            tmp = np.split(np.stack(prediction_proba_list, axis=0), n_classes, axis=-1)
+            predictions_proba_list = [map(np.squeeze, np.split(e, L_n_patches[i], axis=0)) for e in
                                  tmp]  # We now have a list (n_classes elements) of list (n_patches elements)
-
-            prediction_proba_stitched = [patches2im(e, positions, crop_value, patch_size) for e in predictions_proba_list]
-            prediction_proba = np.stack([resize(e, img_org.shape) for e in prediction_proba_stitched], axis=-1)
+            # [ class0:[ patch0:[], patch1:[], ...], class1:[ patch0:[], patch1:[],... ] ... ]
+            
+            #for k in range(len(predictions_proba_list)):
+                #print 'npatches ', L_n_patches[i]
+                #print 'len ',i,', ', len(predictions_proba_list[k])
+            
+            # Stitching each class
+            prediction_proba_stitched = [patches2im(e, L_positions[i], crop_value, patch_size) for j,e in enumerate(predictions_proba_list)] # for each class, we have a list of patches
+            #prediction_proba_stitched = []
+            #for j,e in enumerate(predictions_proba_list):
+                #prediction_proba_stitched.append(patches2im(e, L_positions[i], crop_value, patch_size))
+            
+            # Stacking in order to have juste one image with a depth of 3, one for each class
+            prediction_proba = np.stack([resize(e, img_orgs[i].shape) for e in prediction_proba_stitched], axis=-1)
+            predictions_proba.append(prediction_proba)
 
         # Image returned is of same shape as total image and with each pixel being the class it's been attributed to
-        
-
         return predictions, predictions_proba
     else:
         return predictions
@@ -274,19 +287,21 @@ def axon_segmentation(path_my_datas, path_model, config, ckpt_name = 'model', im
     /AxonSeg.jpeg is saved in the image_path
     """
     # Processing input so they are lists in every situation
-    if type(path_my_datas) == str:
+    if type(path_my_datas) != list:
         path_my_datas = [path_my_datas]
-        # Now the first three arguments are always lists
+    if type(general_pixel_sizes) != list:
+        general_pixel_sizes = [general_pixel_sizes]
+    # Now the first three arguments are always lists
 
     # Ensuring that the config file is alright
     config = update_config(default_configuration(), config)
 
     # ------ Apply ConvNets ------- #
     if pred_proba:
-        prediction, prediction_proba = apply_convnet(path_my_datas, path_model, config, ckpt_name = ckpt_name, batch_size = batch_size, crop_value = crop_value, general_pixel_size = general_pixel_size, pred_proba=pred_proba) # Predictions are shape of image, value = class of pixel
+        prediction, prediction_proba = apply_convnet(path_my_datas, path_model, config, ckpt_name = ckpt_name, batch_size = batch_size, crop_value = crop_value, general_pixel_sizes = general_pixel_sizes, pred_proba=pred_proba) # Predictions are shape of image, value = class of pixel
     else:
         prediction = apply_convnet(path_my_datas, path_model, config, ckpt_name = ckpt_name,
-                                                     batch_size=batch_size, crop_value = crop_value, general_pixel_size = general_pixel_size)  # Predictions are shape of image, value = class of pixel
+                                                     batch_size=batch_size, crop_value = crop_value, general_pixel_sizes = general_pixel_sizes)  # Predictions are shape of image, value = class of pixel
 
     # Final part of the function : generating the image if needed/ returning values
     if write_mode:
@@ -296,7 +311,6 @@ def axon_segmentation(path_my_datas, path_model, config, ckpt_name = 'model', im
             paint_vals = [int(255*float(i)/(n_classes - 1)) for i in range(n_classes)]
 
             # Now we create the mask with values in range 0-255
-
             mask = np.zeros_like(pred)
             for i in range(n_classes):
                 mask[pred == i] = paint_vals[i]
