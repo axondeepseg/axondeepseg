@@ -10,99 +10,175 @@ from patch_extraction import extract_patch
 from tqdm import tqdm
 
 
-def build_dataset(path_data, trainingset_path, trainRatio = 0.80, thresh_indices = [0,0.8], random_seed = None, patch_size=256, general_pixel_size=0.2):
-    """
-    :param path_data: folder including all images used for the training. Each image is represented by a a folder
-    including image.png and mask.png (ground truth) and a .txt file named pixel_size_in_micrometer.
-    :param trainingset_path: path of the resulting trainingset
-    :param trainRatio: ratio of the training patches over the total . (High ratio : good learning but poor estimation of the performance)
-    :param thresh_indices: list of float in [0,1[.
-    :param general_pixel_size: factor used to scale the data. Common values are 0.2 (for SEM, 256-sized patches) and 0.02 (for TEM, 256-sized patches)
-
-    WARNING with 3 classes, labels should be [0,0.1,0.8], it was designed for .jpeg
-    :param random_seed: the random seed to use when generating the dataset. Enables to generate the same train and validation set if given the same raw dataset.
-    
-    :return: no return
-
-    Every 256 by 256 patches are extracted from the images with a very low overlapping.
-    They are regrouped by category folder : \Train and \Validation.
-    Each data is represented by the patch, image_i.png, and its groundtruth, mask_i.png
-    A rescaling is also added to set the pixel size at the value of the general_pixel_size
-    """
-    
-    random.seed(random_seed) #Setting the random seed in order to get reproducible results.
-    
-    i = 0
-    print "Beginning patch extraction..."
-    for root in tqdm(os.listdir(path_data)[:]):
-
-        if '.DS_Store' not in root :
-            subpath_data = os.path.join(path_data, root)
-
-            file = open(subpath_data+'/pixel_size_in_micrometer.txt', 'r')
+def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.2, 0.8], random_seed = None, patch_size=256, general_pixel_size=0.2):
+    '''
+    Note: this functions needs to be run as many times as there are different general pixel size (thus different acquisition types / resolutions).
+    '''
+    # First we define where we are going to store the patched data
+    if not os.path.exists(path_patched_data):
+        os.makedirs(path_patched_data)
+        
+    # Loop over each raw image folder
+    for img_folder in tqdm(os.listdir(path_raw_data)):
+        path_img_folder = os.path.join(path_raw_data, img_folder)
+        if os.path.isdir(path_img_folder):
+            # We are now in the image folder.
+            file = open(path_img_folder+'/pixel_size_in_micrometer.txt', 'r')
             pixel_size = float(file.read())
             rescale_coeff = pixel_size/general_pixel_size # Used to set the resolution to the general_pixel_size
-
-            for data in os.listdir(subpath_data):
-                if 'image' in data:
-                    img = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
+            
+            # We go through every file in the image folder
+            for data in os.listdir(path_img_folder):
+                if 'image' in data: # If it's the raw image.
+                    img = imread(os.path.join(path_img_folder, data), flatten=False, mode='L')
                     img = rescale(img, rescale_coeff, preserve_range=True).astype(int)
+                  
                 elif 'mask.png' in data:
-                    mask_init = imread(os.path.join(subpath_data, data), flatten=False, mode='L')
+                    mask_init = imread(os.path.join(path_img_folder, data), flatten=False, mode='L')
                     mask = rescale(mask_init, rescale_coeff, preserve_range=True)
 
                     # Set the mask values to the classes' values
                     mask = labellize_mask_2d(mask, thresh_indices)  # shape (256, 256), values float 0.0-1.0
 
-            if i == 0:
-                patches = extract_patch(img, mask, patch_size)
-            else:
-                patches += extract_patch(img, mask, patch_size)
-            i+=1
-    print "Patch extraction done..."
+            patches = extract_patch(img, mask, patch_size)
+            # The patch extraction is done, now we put the new patches in the corresponding folders
+            
+            # We create it if it does not exist
+            path_patched_folder = os.path.join(path_patched_data,img_folder)
+            if not os.path.exists(path_patched_folder):
+                os.makedirs(path_patched_folder)
+            
+            for j, patch in enumerate(patches):
+                imsave(os.path.join(path_patched_folder,'image_%s.png'%j), patch[0],'png')
+                imsave(os.path.join(path_patched_folder,'mask_%s.png'%j), patch[1],'png')
+
+def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed = None):
+    '''
+    Note: Here a dataset is either a trainingset, a validation set or a testing set. For flexiblity purposes you will need to 
+    '''
     
-    validationRatio = 1-trainRatio
-    size_validation = int(validationRatio*len(patches))
-
-    random.shuffle(patches)
-    if size_validation == 0:
-        patches_validation = []
-        patches_train = patches
-    else:
-        patches_train = patches[:-size_validation]
-        patches_validation = patches[-size_validation:]
-
-    if not os.path.exists(trainingset_path):
-        os.makedirs(trainingset_path)
-        os.makedirs(trainingset_path+'/raw/')
-        os.makedirs(trainingset_path+'/testing/')
+    np.random.seed(random_seed)
+    # First we define where we are going to store the patched data
+    if not os.path.exists(path_dataset):
+        os.makedirs(path_dataset)  
         
+    if type_ == 'unique':
+        i = 0 # Total patches index
+        # We loop through all folders containing patches
+        for patches_folder in tqdm(os.listdir(path_patched_data)):
+            path_patches_folder = os.path.join(path_patched_data, patches_folder)
+            if os.path.isdir(path_patches_folder):
+                # We are now in the patches folder
+                L_img, L_mask = [], []
+                for data in os.listdir(path_patches_folder):
+                    data_name = data[:-4].split('_')
+                    if 'image' in data:
+                        img = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
+                        L_img.append((img, int(data_name[-1])))
 
-    folder_train = trainingset_path+'/training/Train'
+                    elif 'mask' in data:
+                        mask = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
+                        L_mask.append((mask, int(data_name[-1])))
+                # Now we sort the patches to be sure we get them in the right order
+                L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
 
-    if os.path.exists(folder_train):
-        shutil.rmtree(folder_train)
-    if not os.path.exists(folder_train):
-        os.makedirs(folder_train)
+                # Saving the images in the new folder
+                for img,k in L_img_sorted:
+                    imsave(os.path.join(path_dataset,'image_%s.png'%i), img, 'png')
+                    imsave(os.path.join(path_dataset,'mask_%s.png'%i), L_mask_sorted[k][0], 'png')
+                    i = i+1
+                    
+    elif type_ == 'mixed':
+        i = 0
+        # We determine which acquisition type we are going to upsample (understand : take the same images multiple times)
+        SEM_patches_folder = os.path.join(path_patched_data,'SEM')
+        TEM_patches_folder = os.path.join(path_patched_data,'TEM')
+        
+        SEM_len = sum([len(files) for r, d, files in os.walk(SEM_patches_folder)])
+        TEM_len = sum([len(files) for r, d, files in os.walk(TEM_patches_folder)])
+ 
+        if SEM_len < TEM_len:
+            minority_patches_folder = SEM_patches_folder
+            majority_patches_folder = TEM_patches_folder
+            len_minority = SEM_len
+            len_majority = TEM_len
+        else:
+            minority_patches_folder = TEM_patches_folder
+            majority_patches_folder = SEM_patches_folder
+            len_minority = TEM_len
+            len_majority = SEM_len
+                    
+        # First we move all patches from the majority acquisition type to the new dataset
+        for patches_folder in tqdm(os.listdir(majority_patches_folder)):
+            path_patches_folder = os.path.join(majority_patches_folder, patches_folder)
+            if os.path.isdir(path_patches_folder):
+                # We are now in the patches folder
+                L_img, L_mask = [], []
+                for data in os.listdir(path_patches_folder):
+                    data_name = data[:-4].split('_')
+                    if 'image' in data:
+                        img = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
+                        L_img.append((img, int(data_name[-1])))
 
-    folder_validation = trainingset_path+'/training/Validation' # change to Validation.
+                    elif 'mask' in data:
+                        mask = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
+                        L_mask.append((mask, int(data_name[-1])))
+                # Now we sort the patches to be sure we get them in the right order
+                L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
 
-    if os.path.exists(folder_validation):
-        shutil.rmtree(folder_validation)
-    if not os.path.exists(folder_validation):
-        os.makedirs(folder_validation)
+                # Saving the images in the new folder
+                for img,k in L_img_sorted:
+                    imsave(os.path.join(path_dataset,'image_%s.png'%i), img, 'png')
+                    imsave(os.path.join(path_dataset,'mask_%s.png'%i), L_mask_sorted[k][0], 'png')
+                    i = i+1
+        # Then we stratify - oversample the minority acquisition to the new dataset
+        
+        # We determine the ratio to take
+        ratio = float(len_majority)/len_minority
 
-    j = 0
-    for patch in patches_train:
-        imsave(folder_train+'/image_%s.png'%j, patch[0],'png')
-        imsave(folder_train+'/mask_%s.png'%j, patch[1],'png')
-        j += 1
+        # We go through each image folder in the minorty patches
+        for patches_folder in tqdm(os.listdir(minority_patches_folder)):
+            path_patches_folder = os.path.join(minority_patches_folder, patches_folder)
+            if os.path.isdir(path_patches_folder):
+                # We are now in the patches folder
+                n_img = np.floor(len(os.listdir(path_patches_folder)[:])/2)
+                
+                # We load every image
+                for data in os.listdir(path_patches_folder):
+                    data_name = data[:-4].split('_')
+                    if 'image' in data:
+                        img = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
+                        L_img.append((img, int(data_name[-1])))
 
-    k=0
-    for patch in patches_validation:
-        imsave(folder_validation+'/image_%s.png'%k, patch[0], 'png')
-        imsave(folder_validation+'/mask_%s.png'%k, patch[1], 'png')
-        k += 1
+                    elif 'mask' in data:
+                        mask = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
+                        L_mask.append((mask, int(data_name[-1])))
+                        
+                # Now we sort the patches to be sure we get them in the right order
+                L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
+                L_merged_sorted = np.asarray([L_img_sorted[j] + L_mask_sorted[j] for j in range(len(L_img_sorted))])
+                
+                # We create a new array composed of enough elements so that the two types of acquisitions are balanced
+                L_elements_to_save = L_merged_sorted[np.random.choice(int(L_merged_sorted.shape[0]),int(np.ceil(ratio*n_img)), replace=True),:]
+                for j in range(L_elements_to_save.shape[0]):
+                    img = L_elements_to_save[j][0]
+                    mask = L_elements_to_save[j][2]
+                    imsave(os.path.join(path_dataset,'image_%s.png'%i), img, 'png')
+                    imsave(os.path.join(path_dataset,'mask_%s.png'%i), mask, 'png')
+                    i = i+1            
+
+
+def sort_list_files(list_patches, list_masks):
+    # We sort the transformations to make by the number preceding the transformation in the dict in the config file        
+    return sorted(list_patches, key=lambda x: int(x[1])), sorted(list_masks, key=lambda x: int(x[1]))
+    
+    
+
+
+
+
+
+
 
 
 

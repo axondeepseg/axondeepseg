@@ -132,7 +132,7 @@ def patches2im(L_patches, L_pos, cropped_value = 25, scw=256):
     return new_img
 
 
-def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_size=1, crop_value=25, general_pixel_sizes=[0.1], pred_proba = False):
+def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_size=1, crop_value=25, general_pixel_sizes=[0.1], pred_proba = False, gpu_per=1.0):
     """
     :param path_my_data: folder of the image to segment. Must contain image.png
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -144,18 +144,22 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
     tf.logging.set_verbosity(WARN)
 
     #print '\n\n ---Start axon segmentation on %s---' % path_my_data
-    
+    print "Loading images ..."
     path_imgs = [path_my_data + '/image.png' for path_my_data in path_my_datas]
-    img_orgs = [imread(path_img, flatten=False, mode='L') for path_img in path_imgs]
+    img_orgs = []
+    for path_img in tqdm(path_imgs):
+        img_orgs.append(imread(path_img, flatten=False, mode='L'))
 
-    file = open(path_my_data + '/pixel_size_in_micrometer.txt', 'r')
     files = [open(path_my_data + '/pixel_size_in_micrometer.txt', 'r') for path_my_data in path_my_datas]
     pixel_sizes = [float(file_.read()) for file_ in files]
 
     # set the resolution to the general_pixel_size
+    print "Rescaling images ..."
     rescale_coeffs = [pixel_size / general_pixel_sizes[i] for i,pixel_size in enumerate(pixel_sizes)]
-    imgs = [rescale(img_org, rescale_coeffs[i], preserve_range=True).astype(int) for i,img_org in enumerate(img_orgs)]
     
+    imgs = []
+    for i,img_org in tqdm(enumerate(img_orgs)):
+        imgs.append(rescale(img_org, rescale_coeffs[i], preserve_range=True).astype(int))
 
     ###############
     # Network Parameters
@@ -168,6 +172,7 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
         os.makedirs(folder_model)
         
     # Construction of the graph    
+    print "Graph construction ..."
     x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size))
     pred = uconv_net(x, config, phase=False, verbose=False) # Inference time
     
@@ -176,7 +181,7 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
 
     # Image to batch
     L_image_init, L_data, L_positions, L_n_patches = [], [], [], []
-    for img in imgs:
+    for img in tqdm(imgs):
         image_init, data, positions = im2patches(img, crop_value, patch_size)
         L_image_init.append(image_init)
         L_data.append(data)
@@ -189,14 +194,14 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
     predictions_proba_list = []
 
     # Limit the size
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_per)
 
     # Launch the session. This is the part that takes time, and we are now going to process all images by loading the session just once.
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-    #saver = tf.train.import_meta_graph(path_model + '/' + ckpt_name + '.ckpt.meta')
-    saver.restore(sess, path_model + '/' + ckpt_name + '.ckpt')
+    saver.restore(sess, os.path.join(path_model, ckpt_name + '.ckpt'))
     
     # --------------------- Apply the segmentation to each patch of the images--------------------------------
+    print "Beginning inference ..."
     n_patches = len(L_data)
     it, rem = divmod(n_patches, batch_size)
 
@@ -231,6 +236,9 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
     tf.reset_default_graph()
     
     # Now we have to transform the list of predictions in list of lists, one for each full image : we put in each sublist the patches corresponding to a full image.
+    
+    print "Reshaping predictions ..."
+    
     L_predictions = []
     L_predictions_proba = []
     L_n_patches_cum = np.cumsum([0] + L_n_patches)
@@ -277,7 +285,7 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
 
     #######################################################################################################################
 
-def axon_segmentation(path_my_datas, path_model, config, ckpt_name = 'model', imagename = 'AxonDeepSeg.png', batch_size=1, crop_value = 25, general_pixel_sizes=0.1, pred_proba=False, write_mode=True):
+def axon_segmentation(path_my_datas, path_model, config, ckpt_name = 'model', imagename = 'AxonDeepSeg.png', batch_size=1, crop_value = 25, general_pixel_sizes=0.1, pred_proba=False, write_mode=True, gpu_per = 1.0):
     """
     :param path_my_data: folder of the image to segment. Must contain image.jpg
     :param path_model: folder of the model of segmentation. Must contain model.ckpt
@@ -298,22 +306,22 @@ def axon_segmentation(path_my_datas, path_model, config, ckpt_name = 'model', im
 
     # ------ Apply ConvNets ------- #
     if pred_proba:
-        prediction, prediction_proba = apply_convnet(path_my_datas, path_model, config, ckpt_name = ckpt_name, batch_size = batch_size, crop_value = crop_value, general_pixel_sizes = general_pixel_sizes, pred_proba=pred_proba) # Predictions are shape of image, value = class of pixel
+        prediction, prediction_proba = apply_convnet(path_my_datas, path_model, config, ckpt_name = ckpt_name, batch_size = batch_size, crop_value = crop_value, general_pixel_sizes = general_pixel_sizes, pred_proba=pred_proba, gpu_per = gpu_per) # Predictions are shape of image, value = class of pixel
     else:
         prediction = apply_convnet(path_my_datas, path_model, config, ckpt_name = ckpt_name,
-                                                     batch_size=batch_size, crop_value = crop_value, general_pixel_sizes = general_pixel_sizes)  # Predictions are shape of image, value = class of pixel
+                                                     batch_size=batch_size, crop_value = crop_value, general_pixel_sizes = general_pixel_sizes, gpu_per = gpu_per)  # Predictions are shape of image, value = class of pixel
 
     # Final part of the function : generating the image if needed/ returning values
     if write_mode:
         for i,pred in enumerate(prediction):
             # We now transform the prediction to an image
             n_classes = config['network_n_classes']
-            paint_vals = [int(255*float(i)/(n_classes - 1)) for i in range(n_classes)]
+            paint_vals = [int(255*float(j)/(n_classes - 1)) for j in range(n_classes)]
 
             # Now we create the mask with values in range 0-255
             mask = np.zeros_like(pred)
-            for i in range(n_classes):
-                mask[pred == i] = paint_vals[i]
+            for j in range(n_classes):
+                mask[pred == j] = paint_vals[j]
             # Then we save the image
             imsave(path_my_datas[i] + '/'+imagename, mask, 'png')
     if pred_proba:

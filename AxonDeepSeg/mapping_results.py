@@ -30,29 +30,33 @@ def result_mapping(folder_models, path_datatest):
 
     return 'segmented'
 
-def map_model_to_images(folder_model, path_datatests, batch_size=1):
+def map_model_to_images(folder_model, path_datatests, batch_size=1, gps=0.1, crop_value=25, gpu_per=1.0):
     """
     Apply one trained model to all the specified images
     """
 
-    for root in tqdm(os.listdir(path_datatests), desc=path_datatests[-7:]):
-        if 'DS_Store' not in root and 'txt' not in root:
-            # Subpath image to apply
-            subpath_image = os.path.join(path_datatests, root)
-            # Subpath image to apply
-            subpath_image = os.path.join(path_datatests, root)
-
-            # Load config
-            with open(os.path.join(folder_model, 'config_network.json'), 'r') as fd:
-                config_network = json.loads(fd.read())
-
-            axon_segmentation(subpath_image, folder_model, config_network, imagename='segmentation_' + root + '.png', batch_size=batch_size)
+    # Load config
+    with open(os.path.join(folder_model, 'config_network.json'), 'r') as fd:
+        config_network = json.loads(fd.read())
+    
+    path_images = [os.path.join(path_datatests,e) for e in os.listdir(path_datatests)[:] if os.path.isdir(os.path.join(path_datatests,e))]
+    n_images = len(path_images)
+    path_images_list = list(segment_list(path_images,20))
+    
+    if type(gps) != list:
+        gps = n_images*[gps]
+    gps_list = list(segment_list(gps,20))
+    
+    for i,path_images_iter in enumerate(path_images_list):
+        gps_iter = gps_list[i]
+        axon_segmentation(path_images_iter, folder_model, config_network, imagename='segmentation.png', batch_size=batch_size, write_mode=True,pred_proba=False,general_pixel_sizes=gps_iter, crop_value = crop_value, gpu_per=gpu_per)
             
-            file = open(path_datatests + "/report.txt", 'a')
-            output_text = str(root) + ' done ..\n'
-            file.write(output_text)
-            file.close()
-            #print 'Segmentation ' + str(root) + ' done.'
+            
+def segment_list(l, n):
+    # For item i in a range that is a length of l,
+    for i in range(0, len(l), n):
+        # Create an index range for l of n items:
+        yield l[i:i+n]
 
 
 
