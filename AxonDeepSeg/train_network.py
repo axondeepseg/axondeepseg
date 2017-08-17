@@ -9,7 +9,8 @@ import pickle
 from data.input_data import input_data
 from config_tools import generate_config
 from AxonDeepSeg.train_network_tools import *
-
+from datetime import datetime
+import time
 
 # import matplotlib.pyplot as plt
 
@@ -122,7 +123,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     with open(folder_model + '/hyperparameters.pkl', 'wb') as handle:
         pickle.dump(hyperparameters, handle)
-
         
     # Loading the datasets
     data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
@@ -388,6 +388,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         #### 2 - Main loop: training the neural network
         ### --------------------------------------------------------------------------------------------------------------- ###
         
+        t0 = 0
         while epoch < max_epoch:
             
             ### ----------------------------------------------------------------------------------------------------------- ###
@@ -443,33 +444,15 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_training_acc = []
 
             ### ----------------------------------------------------------------------------------------------------------- ###
-            #### b) Evaluating and displaying the performance on the training set
-            ### ----------------------------------------------------------------------------------------------------------- ###
-
-                    
-            # Every now and then we display the performance of the network on the training set, on the current batch.
-            # Note : this part is not really used right now.
-            if step*batch_size % display_step == 0:
-                # Calculate batch loss and accuracy
-                if weighted_cost == True:
-                    loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
-                                                                               spatial_weights: weight, keep_prob: 1., phase:False})
-                else:
-                    loss, acc, p = session.run([cost, accuracy, pred], feed_dict={x: batch_x, y: batch_y,
-                                                                               keep_prob: 1., phase:False})
-                if verbose == 2:
-                    outputs = "Iter " + str(step * batch_size) + ", Minibatch Loss= " + \
-                              "{:.6f}".format(loss) + ", Training Accuracy= " + \
-                              "{:.5f}".format(acc)
-                    print outputs
-
-            ### ----------------------------------------------------------------------------------------------------------- ###
             #### c) Evaluating the performance on the validation set. Keep track of it on TensorBoard and in a pickle file.
             ### ----------------------------------------------------------------------------------------------------------- ###
-
+            
             # At the end of every epoch we compute the performance of our network on the validation set and we
             # save the summaries to see them on TensorBoard
             if step*batch_size % epoch_size == 0:
+                if verbose >= 2:
+                    t1 = time.time()
+                    dt01 = t1 - t0 # time taken for the training phase
                 
                 if weighted_cost == True:
                     epoch_validation_loss = []
@@ -524,11 +507,18 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 Accuracy.append(acc)
                 Loss.append(loss)
                 Epoch.append(epoch)
-
                 output_2 = '\n----\n Last epoch: ' + str(epoch)
                 output_2 += '\n Accuracy: ' + str(acc) + ';'
                 output_2 += '\n Loss: ' + str(loss) + ';'
-                print '\n\n----Scores on validation:---' + output_2
+                
+                output_training = str(datetime.now()) + '-epoch:'+str(epoch)+'-loss:'+str(loss) + '-acc:'+str(acc)
+                print output_training
+                
+                if verbose >= 2:
+                    t2 = time.time()
+                    dt12 = t2 - t1 # Time needed for the validation phase
+                    t0 = time.time() # Début d'une boucle
+                    print 'time analysis-training:+'+str(dt01)+'-validating:'+str(dt12)
 
                 # Saving the model if it's the best one. We only do this check at the end of an epoch
                 if epoch == 1: # First epoch is 1, not 0
@@ -594,6 +584,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 
                 # Increase the epoch #
                 epoch += 1
+                
             
             # Increase the step #
             step += 1

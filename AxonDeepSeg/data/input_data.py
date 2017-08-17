@@ -133,13 +133,14 @@ class input_data:
     Data to feed the learning/validating of the CNN
     """
 
-    def __init__(self, trainingset_path, type_ = 'train', batch_size = 8, thresh_indices = [0,0.5], image_size = 256):
+    def __init__(self, trainingset_path, type_ = 'train', batch_size = 8, thresh_indices = [0,0.5], image_size = 256, preload_all=True):
         """
         Input: 
             trainingset_path : string : path to the trainingset folder containing 2 folders Validation and Train
                                     with images and ground truthes.
             type_ : string 'train' or 'validation' : for the network's training.
             thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
+            preload_all : if put to True, will load every image into the memory.
         Output:
             None.
         """
@@ -160,7 +161,18 @@ class input_data:
         self.batch_size = batch_size
         self.samples_list = self.reset_set(type_=type_)
         self.epoch_size = len(self.samples_list)
-
+        self.preload_all = preload_all
+        self.loaded_data = None
+        
+        # Loading all images if asked so
+        
+        if preload_all:
+            self.loaded_data = {}
+            for id_image in self.samples_list:
+                 # We are reading directly the images. Range of values : 0-255
+                image = self.read_image('image', id_image)
+                mask = self.read_image('mask', id_image)
+                self.loaded_data.update({str(id_image):[image,mask]})        
 
     def get_size(self):
         return self.set_size
@@ -206,10 +218,13 @@ class input_data:
             indice = self.samples_list.pop(0)
             self.sample_seen += 1
 
-            # We are reading directly the images. Range of values : 0-255
-            image = self.read_image('image', indice)
-            mask = self.read_image('mask', indice)
-                        
+            # We are reading directly the images. Range of values : 0-255            
+            if self.preload_all:
+                image, mask = self.loaded_data[str(indice)]
+            else:
+                image = self.read_image('image', indice)
+                mask = self.read_image('mask', indice)
+                
             # Online data augmentation
             if augmented_data['type'].lower() == 'all':
                 [image, mask] = all_transformations([image, mask], 
@@ -268,9 +283,13 @@ class input_data:
             indice = self.samples_list.pop(0)
             self.sample_seen += 1
 
-            image = self.read_image('image', indice)
-            mask = self.read_image('mask', indice)
+            if self.preload_all:
+                image, mask = self.loaded_data[str(indice)]
+            else:
+                image = self.read_image('image', indice)
+                mask = self.read_image('mask', indice)
 
+            
             # Online data augmentation
             if augmented_data['type'].lower() == 'all':
                 [image, mask] = all_transformations([image, mask], 
@@ -366,7 +385,7 @@ class input_data:
         '''
 
         # Loading the image using 8-bit pixels (0-255)
-        return imread(self.path + str(type_) + '_%s.png' % i, flatten=False, mode='L')
+        return imread(os.path.join(self.path,str(type_) + '_%s.png' % i), flatten=False, mode='L')
 
     
     
