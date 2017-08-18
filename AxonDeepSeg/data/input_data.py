@@ -6,7 +6,6 @@ import random
 import os
 from data_augmentation import shifting, rescaling, flipping, random_rotation, elastic
 import functools
-import matplotlib.pyplot as plt
 
 
 def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]):
