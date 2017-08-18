@@ -58,12 +58,13 @@ def default_configuration():
         "network_batch_norm": True,
         "network_trainingset_patchsize": 256,
         "network_batch_norm_decay": 0.7,
-        "network_additional_parameters":{'learning_rate_decay_activate':True,
-                                         'learning_rate_decay_period':10,
+        "network_additional_parameters":{'learning_rate_decay_type':'exponential',
+                                         'learning_rate_decay_activate':True,
+                                         'learning_rate_decay_period':4000, # In images seen, not in epoch or in number of batches
                                          'learning_rate_decay_rate':0.99,
                                          'batch_norm_decay_decay_activate':True,
                                          'batch_norm_decay_ending_decay':0.9,
-                                         'batch_norm_decay_decay_period':50
+                                         'batch_norm_decay_decay_period':4000
                                         },
         "network_weighted_cost": True,
         "network_weighted_cost_parameters":{'balanced_activate':True,

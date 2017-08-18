@@ -105,6 +105,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     learning_rate_decay_activate = additional_parameters["learning_rate_decay_activate"]
     learning_rate_decay_period = additional_parameters["learning_rate_decay_period"]
     learning_rate_decay_rate = additional_parameters["learning_rate_decay_rate"]
+    learning_rate_decay_type = additional_parameters["learning_rate_decay_type"]
     
     batch_size_validation = 8
     n_input = image_size * image_size
@@ -175,8 +176,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # We update the batch_norm_decay if needed
     
     if batch_norm_decay_decay_activate:
-        adapt_bn_decay = inverted_exponential_decay(batch_norm_decay, batch_norm_decay_ending_decay, global_step,
-                                                    batch_norm_decay_decay_period*epoch_size, staircase=False)
+        adapt_bn_decay = inverted_exponential_decay(batch_norm_decay, batch_norm_decay_ending_decay, global_step*batch_size,
+                                                    batch_norm_decay_decay_period, staircase=False)
         tf.summary.scalar('adapt_bnd', adapt_bn_decay)
     else:
         adapt_bn_decay = None
@@ -209,8 +210,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     # First, we prepare the terrain for the decaying learning rate and we update (decay) the batch norm decay (which should be called batch norm momentum).
     if learning_rate_decay_activate:
-        adapt_learning_rate = tf.train.exponential_decay(learning_rate, global_step, 
-                                                     int(learning_rate_decay_period*epoch_size/batch_size), learning_rate_decay_rate, staircase=True)
+        # Each decay period is expressed in number of images seen
+        if learning_rate_decay_type == 'polynomial':
+            adapt_learning_rate = poly_decay(global_step*batch_size, learning_rate, learning_rate_decay_period)
+        else:
+            adapt_learning_rate = tf.train.exponential_decay(learning_rate, global_step*batch_size, 
+                                                     int(learning_rate_decay_period), learning_rate_decay_rate, staircase=False)
         tf.summary.scalar('adapt_lr', adapt_learning_rate)
 
     else:
@@ -400,7 +405,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 # Extracting the batches
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data=data_augmentation,                                                                              weights_modifier=config["network_weighted_cost_parameters"],
                                                                              each_sample_once=False)
-                  
+                
                 # Running the optimizer and computing the cost and accuracy.
                 stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
                                                        spatial_weights: weight,
@@ -603,12 +608,23 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         print "Optimization Finished!"
         
 
-def inverted_exponential_decay(a, b, global_step, decay_period, staircase=False):
+def inverted_exponential_decay(a, b, global_step, decay_period_images_seen, staircase=False):
     if staircase:
-        return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.int32)/decay_period))
+        q, r = divmod(tf.cast(global_step, tf.int32)/decay_period_images_seen)
+        return a + (b - a)*(1 - tf.exp(-q))
     else:
-        return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.float32)/decay_period))
+        return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.float32)/decay_period_images_seen))
 
+def poly_decay(step, initial_lrate, decay_period_images_seen):
+    '''
+    decay_period_images_seen: the decay period in terms of images seen by the network (1 epoch of 10 batches of 6 images each means that 1 epoch = 60 images seen). Thus this value must be a multiple of the number of batches
+    step: number of images seen by the network since the beginning of the training.
+    '''
+    # The magical poly decay scheduler
+    # Works for every problem haha.
+    factor = 1.0 - (tf.cast(step,tf.float32) / float(decay_period_images_seen))
+    lrate = initial_lrate * np.power(factor, 0.9)
+    return lrate
 
         
 # To Call the training in the terminal
