@@ -6,8 +6,7 @@ import pandas as pd
 from prettytable import PrettyTable
 
 def remove_struct(df):
-    L_to_keep = ['0_name', 'trainingset', 'learning_rate', 'dropout', 'batch_norm_decay',
-                 'additional_parameters.learning_rate_decay_activate', 'additional_parameters.batch_norm_decay_decay_activate']
+    L_to_keep = ['0_name', 'trainingset', 'learning_rate', 'dropout', 'depth', 'features_per_convolution']
     for param in df.columns.tolist():
         if param not in L_to_keep:
             df = df.drop(param, axis=1, errors='ignore')
@@ -72,6 +71,21 @@ def compare(compare_models):
         if (models.loc[0,col] != models.loc[1,col]) and (str(col) != '0_name'):
             t.add_row([str(col), str(models.loc[0,col]), str(models.loc[1,col])])
     print t
+    
+def describe_model(model_name):
+    models = pd.DataFrame()
+    for root in os.listdir(os.path.curdir)[:]:
+        if (os.path.isdir(root)) and (root[-len(model_name):] == model_name):
+            subpath_data = os.path.join(os.path.curdir, root)
+            for data in os.listdir(subpath_data):
+                if 'config_network' in data:
+                    models = config_decode(models, subpath_data, 'compare')  
+    # Now we display the differences between the dataframes
+    t = PrettyTable(['param', model_name])
+    for col in models.columns:
+        if (str(col) != '0_name'):
+            t.add_row([str(col), str(models.loc[0,col])])
+    print t
 # -------------------------------------------------------------------------------------------------------------                 
 # -------------------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------------------
@@ -82,14 +96,18 @@ def main():
     ap.add_argument("-d", "--describe", required=False, action='store_true', help="")
     ap.add_argument("-w", "--write", required=False, action='store_true', help="")
     ap.add_argument("-c", "--compare", required=False, nargs=2, help="")
+    ap.add_argument("-l", "--listconfig", required=False, nargs=1, help="")
 
     args = vars(ap.parse_args())
     describe_models = args["describe"]
     write_model = args["write"]
     compare_models = args["compare"]
-
+    model_config = args["listconfig"]
+    
     if describe_models:
         describe(write_model)
+    elif model_config is not None:
+        describe_model(model_config[0])
     else:
         compare(compare_models)
         
