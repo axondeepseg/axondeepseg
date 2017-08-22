@@ -213,6 +213,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         # Each decay period is expressed in number of images seen
         if learning_rate_decay_type == 'polynomial':
             adapt_learning_rate = poly_decay(global_step*batch_size, learning_rate, learning_rate_decay_period)
+            max_epoch = learning_rate_decay_period/epoch_size
         else:
             adapt_learning_rate = tf.train.exponential_decay(learning_rate, global_step*batch_size, 
                                                      int(learning_rate_decay_period), learning_rate_decay_rate, staircase=False)
@@ -410,8 +411,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
                                                        spatial_weights: weight,
                                                        keep_prob: dropout, phase:True})
+                                
                 epoch_training_loss.append(stepcost)
                 epoch_training_acc.append(stepacc)
+                
+                # Printing some info
+                #print 'epoch_size:'+str(epoch_size)+'-global_step:'+str(global_step)
                 
                 # If we just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in TensorBoard.
@@ -610,7 +615,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
 def inverted_exponential_decay(a, b, global_step, decay_period_images_seen, staircase=False):
     if staircase:
-        q, r = divmod(tf.cast(global_step, tf.int32)/decay_period_images_seen)
+        q, r = divmod(tf.cast(global_step, tf.int32),decay_period_images_seen)
         return a + (b - a)*(1 - tf.exp(-q))
     else:
         return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.float32)/decay_period_images_seen))
@@ -625,6 +630,20 @@ def poly_decay(step, initial_lrate, decay_period_images_seen):
     factor = 1.0 - (tf.cast(step,tf.float32) / float(decay_period_images_seen))
     lrate = initial_lrate * np.power(factor, 0.9)
     return lrate
+
+def pw_dice(img1, img2):
+    """
+    img1 and img2 are boolean masks ndarrays
+    This functions compute the pixel-wise dice coefficient (not axon-wise but pixel wise)
+    """
+
+    img_sum = img1.sum() + img2.sum()
+    if img_sum == 0:
+        return 1
+
+    intersection = np.logical_and(img1, img2)
+    # Return the global dice coefficient
+    return 2. * intersection.sum() / img_sum
 
         
 # To Call the training in the terminal

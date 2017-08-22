@@ -17,7 +17,7 @@ from config_tools import generate_config
 
 def conv_relu(x, n_out_chan, k_size, k_stride, scope, 
               w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-              training_phase=True, activate_bn = True, bn_decay = 0.999):
+              training_phase=True, activate_bn = True, bn_decay = 0.999, keep_prob=1.0):
     '''
     Default data format is NHWC.
     Initializers for weights and bias are already defined (default).
@@ -36,6 +36,7 @@ def conv_relu(x, n_out_chan, k_size, k_stride, scope,
             net = tf.contrib.layers.conv2d(x, num_outputs=n_out_chan, kernel_size=k_size, stride=k_stride, 
                                        activation_fn=tf.nn.relu, weights_initializer = w_initializer, scope='convolution'
                                       )
+        net = tf.contrib.layers.dropout(net, keep_prob=keep_prob, is_training=training_phase)
         tf.add_to_collection('activations',net)
         return net
     
@@ -116,6 +117,7 @@ def uconv_net(x, config, phase, bn_updated_decay = None, verbose = True):
     image_size = config["network_trainingset_patchsize"]
     n_classes = config["network_n_classes"]
     depth = config["network_depth"]
+    dropout = config["network_dropout"]
     number_of_convolutions_per_layer = config["network_convolution_per_layer"]
     size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
     features_per_convolution = config["network_features_per_convolution"]
@@ -147,6 +149,7 @@ def uconv_net(x, config, phase, bn_updated_decay = None, verbose = True):
                             size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
                             w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
                             training_phase=phase, activate_bn=activate_bn, bn_decay = bn_decay,
+                            keep_prob=dropout,
                             scope='cconv-d'+str(i)+'-c'+str(conv_number))
                 
         relu_results.append(net) # We keep them for the upconvolutions
@@ -209,6 +212,7 @@ def uconv_net(x, config, phase, bn_updated_decay = None, verbose = True):
                             size_of_convolutions_per_layer[depth - i - 1][conv_number], k_stride=1, 
                             w_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
                             training_phase=phase, activate_bn=activate_bn, bn_decay = bn_decay,
+                            keep_prob=dropout,
                             scope='econv-d'+str(depth-i-1)+'-c'+str(conv_number))
         
         data_temp = net

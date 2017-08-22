@@ -194,7 +194,7 @@ class input_data:
             # Adding X images so that all batches have the same size.
             rem = self.set_size % self.batch_size
             if rem != 0:
-                samples_list += np.random.choice(samples_list, rem, replace=False).tolist()
+                samples_list += np.random.choice(samples_list, self.batch_size - rem, replace=False).tolist()
         else:
             samples_list = range(self.set_size)
             
