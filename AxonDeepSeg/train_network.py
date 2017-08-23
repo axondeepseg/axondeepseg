@@ -258,25 +258,41 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
 
     ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 4 - Evaluating the model and storing the results to visualise them in TensorBoard
+    #### 4 - Constructing the metrics and storing the results to visualise them in TensorBoard
     ### ------------------------------------------------------------------------------------------------------------------ ###
      
     # We evaluate the accuracy pixel-by-pixel
     correct_pred = tf.equal(tf.argmax(pred_, 1), tf.argmax(y_, 1))
+    
     with tf.name_scope('accuracy_'):
         accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+        
+    # Now we create the pixel-wise dice
+    
+    pred_absolute = tf.cast(tf.equal(pred, tf.expand_dims(tf.reduce_max(pred, axis=-1),axis=-1)), tf.float32)
+    
+    dice = pw_dices(pred_absolute, tf.reshape(y,[-1, tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]))
+    dice = tf.reduce_mean(dice, axis=0)
+    _, pw_dice_myelin, pw_dice_axon = tf.split(dice, n_classes, axis=-1)
     
     # Defining list variables to keep track of the train error over one whole epoch instead of just one batch (these are the ones we are going to summarize)
     
     L_training_loss = tf.placeholder(tf.float32, name="List_training_loss")
     L_training_acc = tf.placeholder(tf.float32, name="List_training_acc")
+    L_dice_myelin = tf.placeholder(tf.float32, name="List_dice_myelin")
+    L_dice_axon = tf.placeholder(tf.float32, name="List_dice_axon")
 
     training_loss = tf.reduce_mean(L_training_loss)
     training_acc = tf.reduce_mean(tf.cast(L_training_acc, tf.float32))
+    dice_myelin = tf.reduce_mean(L_dice_myelin)
+    dice_axon = tf.reduce_mean(L_dice_axon)
     
     tf.summary.scalar('loss', training_loss)
     tf.summary.scalar('accuracy', training_acc)
-        
+    tf.summary.scalar('dice_myelin', dice_myelin)
+    tf.summary.scalar('dice_axon', dice_axon)
+
+    
     # Creation of a collection containing only the information we want to summarize
 
     for e in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
@@ -359,6 +375,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         epoch_training_acc = []
         epoch_validation_loss = []
         epoch_validation_acc = []
+        epoch_training_dice_myelin, epoch_training_dice_axon, epoch_validation_dice_myelin, epoch_validation_dice_axon = [], [], [], []
         acc_current_best = 0
         loss_current_best = 10000
 
@@ -408,34 +425,36 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                                                              each_sample_once=False)
                 
                 # Running the optimizer and computing the cost and accuracy.
-                stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                                       spatial_weights: weight,
-                                                       keep_prob: dropout, phase:True})
+                stepcost, stepacc, _, step_dice_myelin, step_dice_axon = session.run([cost, accuracy, optimizer, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: dropout, phase:True})
                                 
                 epoch_training_loss.append(stepcost)
                 epoch_training_acc.append(stepacc)
+                epoch_training_dice_myelin.append(step_dice_myelin)
+                epoch_training_dice_axon.append(step_dice_axon)
                 
                 # Printing some info
                 #print 'epoch_size:'+str(epoch_size)+'-global_step:'+str(global_step)
                 
                 # If we just finished an epoch, we summarize the performance of the
                 # net on the training set to see it in TensorBoard.
-                if step*batch_size % epoch_size == 0:            
+                if step*batch_size % epoch_size == 0:      
+                    
                     # Writing the summary
-                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, spatial_weights: weight, phase:True})
+                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin: epoch_training_dice_myelin, L_dice_axon:epoch_training_dice_axon, spatial_weights: weight, phase:True})
                     train_writer.add_summary(summary, epoch)
                     train_writer.add_summary(im_summary, epoch)
                     
                     epoch_training_loss = []
                     epoch_training_acc = []
+                    epoch_training_dice_myelin = []
+                    epoch_training_dice_axon = []
   
             else: # No weighted cost
                 # Extracting batches
                 batch_x, batch_y = data_train.next_batch(augmented_data=data_augmentation, each_sample_once=False)
                 
                 # Computing loss, accuracy and optimizing the weights
-                stepcost, stepacc, _ = session.run([cost, accuracy, optimizer], feed_dict={x: batch_x, y: batch_y,
-                                                   keep_prob: dropout, phase:True})
+                stepcost, stepacc, _ , step_dice_myelin, step_dice_axon= session.run([cost, accuracy, optimizer, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, phase:True})
                 # Evaluating the loss and the accuracy for the dataset
                 epoch_training_loss.append(stepcost)
                 epoch_training_acc.append(stepacc)
@@ -445,13 +464,15 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if step*batch_size % epoch_size == 0:
                                         
                     # Writing the summary
-                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, phase:True})
+                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:True})
                     
                     train_writer.add_summary(summary, epoch)
                     train_writer.add_summary(im_summary, epoch)
 
                     epoch_training_loss = []
                     epoch_training_acc = []
+                    epoch_training_dice_myelin = []
+                    epoch_training_dice_axon = []
 
             ### ----------------------------------------------------------------------------------------------------------- ###
             #### c) Evaluating the performance on the validation set. Keep track of it on TensorBoard and in a pickle file.
@@ -467,43 +488,55 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if weighted_cost == True:
                     epoch_validation_loss = []
                     epoch_validation_acc = []
+                    epoch_validation_dice_myelin = []
+                    epoch_validation_dice_axon = []
                     for i in range(n_iter_val):
 
                         batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data={'type':'none'},                                                                              weights_modifier=config["network_weighted_cost_parameters"],
                                                                                           each_sample_once=True)
 
-                        step_loss, step_acc = session.run([cost, accuracy],
-                                                feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
+                        step_loss, step_acc, step_dice_myelin, step_dice_axon = session.run([cost, accuracy, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
                         factor = float(batch_x.shape[0])/data_validation.set_size
                         epoch_validation_loss.append(factor*step_loss)
                         epoch_validation_acc.append(factor*step_acc)
+                        epoch_validation_dice_myelin.append(factor*step_dice_myelin)
+                        epoch_validation_dice_axon.append(factor*step_dice_axon)
                         
                     # We have computed each validation batch but they must not be taken with the same weight when calculating the batch_size, which is why we added a factor in front of each step loss / step acc.
                     epoch_validation_loss = [np.sum(epoch_validation_loss)]
-                    epoch_validation_acc = [np.sum(epoch_validation_acc)]                    
+                    epoch_validation_acc = [np.sum(epoch_validation_acc)]
+                    epoch_validation_dice_myelin = [np.sum(epoch_validation_dice_myelin)]
+                    epoch_validation_dice_axon = [np.sum(epoch_validation_dice_axon)]
                     
                     # Writing the summary for this step of the training, to use in Tensorflow
-                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, spatial_weights: weight, phase:False})
+                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, spatial_weights: weight, phase:False})
 
 
                 else:
                     epoch_validation_loss = []
                     epoch_validation_acc = []
+                    epoch_validation_dice_myelin = []
+                    epoch_validation_dice_axon = []
+                    
                     for i in range(n_iter_val):    
                         batch_x, batch_y = data_validation.next_batch(augmented_data={'type':'none'}, each_sample_once=True)
-                        step_loss, step_acc = session.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y, keep_prob: 1., phase:False})
+                        step_loss, step_acc, step_dice_myelin, step_dice_axon = session.run([cost, accuracy, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, keep_prob: 1., phase:False})
                         
                         factor = float(batch_x.shape[0])/data_validation.set_size
                         epoch_validation_loss.append(factor*step_loss)
                         epoch_validation_acc.append(factor*step_acc)
+                        epoch_validation_dice_myelin = [np.sum(epoch_validation_dice_myelin)]
+                        epoch_validation_dice_axon = [np.sum(epoch_validation_dice_axon)]
                        
 
                     # We have computed each validation batch but they must not be taken with the same weight when calculating the batch_size, which is why we added a factor in front of each step loss / step acc.
                     epoch_validation_loss = [np.sum(epoch_validation_loss)]
                     epoch_validation_acc = [np.sum(epoch_validation_acc)]     
+                    epoch_validation_dice_myelin = [epoch_validation_dice_myelin]
+                    epoch_validation_dice_axon = [epoch_validation_dice_axon]
                                         
                     # Writing the summary for this step of the training, to use in Tensorflow
-                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, phase:False})
+                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:False})
                     
                 validation_writer.add_summary(summary, epoch)
                 validation_writer.add_summary(im_summary_val, epoch)
@@ -631,19 +664,13 @@ def poly_decay(step, initial_lrate, decay_period_images_seen):
     lrate = initial_lrate * np.power(factor, 0.9)
     return lrate
 
-def pw_dice(img1, img2):
-    """
-    img1 and img2 are boolean masks ndarrays
-    This functions compute the pixel-wise dice coefficient (not axon-wise but pixel wise)
-    """
 
-    img_sum = img1.sum() + img2.sum()
-    if img_sum == 0:
-        return 1
-
-    intersection = np.logical_and(img1, img2)
-    # Return the global dice coefficient
-    return 2. * intersection.sum() / img_sum
+def pw_dices(prediction, gt):
+    sum_ = tf.reduce_sum(prediction, axis=1) + tf.reduce_sum(gt, axis=1)
+    intersection = tf.logical_and(tf.cast(prediction, tf.bool), tf.cast(gt, tf.bool))
+    return tf.multiply(2., tf.div(tf.reduce_sum(tf.cast(intersection, tf.float32),axis=1), sum_))
+    
+   
 
         
 # To Call the training in the terminal
