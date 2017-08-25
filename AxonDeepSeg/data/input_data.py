@@ -4,25 +4,31 @@ from scipy import ndimage
 import numpy as np
 import random
 import os
-from data_augmentation import shifting, rescaling, flipping, random_rotation, elastic
+from data_augmentation import *
 import functools
+import copy
 
 
-def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]):
+def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5], verbose=0):
     
     L_transformations = []
+
+    dict_transformations = {'shifting':shifting,
+                            'rescaling':rescaling,
+                            'random_rotation':random_rotation,
+                            'elastic':elastic,
+                            'flipping':flipping,
+                            'gaussian_blur':gaussian_blur
+                           }
+    
     if transformations == {}:
-        L_transformations = [shifting, functools.partial(rescaling,thresh_indices=[0,0.5]),
-                       functools.partial(random_rotation, thresh_indices=[0,0.5]), 
-                       functools.partial(elastic,thresh_indices=[0,0.5]), flipping]    
+        L_transformations = [v for k,v in dict_transformations.iteritems()]
     else:
         L_c = []
         for k,v in transformations.iteritems():
-            if v==True:
-                L_k = k.split('_')
-                number = L_k.pop(0)
-                k = '_'.join(L_k)
-                c = (number,k)
+            if (k != 'type') and (v['activate']==True):
+                number = v['order']
+                c = (number,k,v)
                 L_c.append(c)
         # We sort the transformations to make by the number preceding the transformation in the dict in the config file        
         L_c_sorted = sorted(L_c, key=lambda x: x[0]) 
@@ -30,42 +36,35 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
         # Creation of the list of transformations to apply
         for tup in L_c_sorted:
             k = tup[1]
-            if k.lower() == 'shifting':
-                L_transformations.append(shifting)
-            elif k.lower() == 'rescaling':
-                L_transformations.append(functools.partial(rescaling,thresh_indices=[0,0.5]))
-            elif k.lower() == 'random_rotation':
-                L_transformations.append(functools.partial(random_rotation,thresh_indices=[0,0.5]))
-            elif k.lower() == 'elastic':
-                L_transformations.append(functools.partial(elastic,thresh_indices=[0,0.5]))
-            elif k.lower() == 'flipping':
-                L_transformations.append(flipping)
-                      
+            v = tup[2]
+            map(v.pop, ['order','activate'])
+            L_transformations.append(functools.partial(dict_transformations[k], verbose=verbose, **v))
+            
     return L_transformations
 
 
-def all_transformations(patch, thresh_indices = [0,0.5], transformations = {}):
+def all_transformations(patch, thresh_indices = [0,0.5], transformations = {}, verbose=0):
     """
     :param patch: [image,mask].
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return: application of the random transformations to the pair [image,mask].
     """
     
-    L_transformations = generate_list_transformations(transformations, thresh_indices)
+    L_transformations = generate_list_transformations(transformations, thresh_indices, verbose=verbose)
                     
     for transfo in L_transformations:
         patch = transfo(patch)
        
     return patch
 
-def random_transformation(patch, thresh_indices = [0,0.5], transformations = {}):
+def random_transformation(patch, thresh_indices = [0,0.5], transformations = {}, verbose=0):
     """
     :param patch: [image,mask].
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return: application of a random transformation to the pair [image,mask].
     """
     
-    L_transformations = generate_list_transformations(transformations, thresh_indices)
+    L_transformations = generate_list_transformations(transformations, thresh_indices, verbose=verbose)
                     
     patch = random.choice(L_transformations)(patch)
        
@@ -201,7 +200,7 @@ class input_data:
         return samples_list
 
 
-    def next_batch(self, augmented_data = {'type':'None', 'transformations':{}}, each_sample_once=False):
+    def next_batch(self, augmented_data_ = {'type':'None'}, each_sample_once=False, data_aug_verbose=0):
         """
         :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process.
         :return: The pair [batch_x (data), batch_y (prediction)] to feed the network.
@@ -209,10 +208,12 @@ class input_data:
                 
         batch_x = []
         batch_y = []
-
+        
         # Set the range of indices
         # Read the image and mask files.
         for i in range(self.batch_size) :
+            augmented_data = copy.deepcopy(augmented_data_)
+
             # We take the next sample to see
             indice = self.samples_list.pop(0)
             self.sample_seen += 1
@@ -226,13 +227,17 @@ class input_data:
                 
             # Online data augmentation
             if augmented_data['type'].lower() == 'all':
+                augmented_data.pop('type')
                 [image, mask] = all_transformations([image, mask], 
-                                                    transformations = augmented_data['transformations'], 
-                                                    thresh_indices = self.thresh_indices) 
+                                                    transformations = augmented_data, 
+                                                    thresh_indices = self.thresh_indices,
+                                                    verbose=data_aug_verbose) 
             elif augmented_data['type'].lower() == 'random':
+                augmented_data.pop('type')
                 [image, mask] = random_transformation([image, mask], 
-                                                      transformations = augmented_data['transformations'], 
-                                                      thresh_indices = self.thresh_indices)
+                                                      transformations = augmented_data, 
+                                                      thresh_indices = self.thresh_indices,
+                                                      verbose=data_aug_verbose)
             else:
                 pass            
                 
@@ -268,7 +273,7 @@ class input_data:
         return transform_batches([batch_x, batch_y])
 
 
-    def next_batch_WithWeights(self, augmented_data = {'type':'None', 'transformations':{}}, weights_modifier = {'balanced_activate':True, 'boundaries_activate':False}, each_sample_once=False):        
+    def next_batch_WithWeights(self, augmented_data_ = {'type':'None'}, weights_modifier = {'balanced_activate':True, 'boundaries_activate':False}, each_sample_once=False, data_aug_verbose=0):        
         """
         :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process.
         :return: The triplet [batch_x (data), batch_y (prediction), weights (based on distance to edges)] to feed the network.
@@ -276,8 +281,10 @@ class input_data:
         batch_x = []
         batch_y = []
         batch_w = []
-        
+
         for i in range(self.batch_size) :
+            augmented_data = copy.deepcopy(augmented_data_)
+
             # We take the next sample to see
             indice = self.samples_list.pop(0)
             self.sample_seen += 1
@@ -291,15 +298,20 @@ class input_data:
             
             # Online data augmentation
             if augmented_data['type'].lower() == 'all':
+                augmented_data.pop('type')
                 [image, mask] = all_transformations([image, mask], 
-                                                    transformations = augmented_data['transformations'], 
-                                                    thresh_indices = self.thresh_indices) 
+                                                    transformations = augmented_data, 
+                                                    thresh_indices = self.thresh_indices,
+                                                    verbose=data_aug_verbose) 
+                
             elif augmented_data['type'].lower() == 'random':
+                augmented_data.pop('type')
                 [image, mask] = random_transformation([image, mask], 
-                                                      transformations = augmented_data['transformations'], 
-                                                      thresh_indices = self.thresh_indices)
+                                                      transformations = augmented_data, 
+                                                      thresh_indices = self.thresh_indices,
+                                                      verbose=data_aug_verbose)
             else:
-                pass
+                pass 
 
             #-----PreProcessing --------
             image = exposure.equalize_hist(image) #histogram equalization

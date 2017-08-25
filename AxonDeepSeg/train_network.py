@@ -292,15 +292,15 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     tf.summary.scalar('dice_myelin', dice_myelin)
     tf.summary.scalar('dice_axon', dice_axon)
 
-    
-    # Creation of a collection containing only the information we want to summarize
-
-    for e in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
-        if ('Adam' not in e.name) and (('weights' in e.name) or ('moving' in e.name) or ('bias' in e.name)):
-            tf.add_to_collection('vals_to_summarize', e)
-            
     # Summaries   
     if debug_mode == True:
+        
+        # Creation of a collection containing only the information we want to summarize
+        for e in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
+            if ('Adam' not in e.name) and (('weights' in e.name) or ('moving' in e.name) or ('bias' in e.name)):
+                tf.add_to_collection('vals_to_summarize', e)
+            
+
         summary_activations = tf.contrib.layers.summarize_collection("activations",
                                                                      summarizer=tf.contrib.layers.summarize_activation)
         summary_variables = tf.contrib.layers.summarize_collection('vals_to_summarize', name_filter=None)    
@@ -312,24 +312,26 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
  
     # We create a merged summary. It relates to all numeric data (histograms, kernels ... etc)
     merged_summaries = tf.summary.merge_all()
+    
+    if debug_mode: # We only save the images if we are in debug mode.
 
-    # We also create a summary specific to images. We add images of the input and the probability maps predicted by the u-net
-    L_im_summ = []
-    L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
-    if debug_mode:
+        # We also create a summary specific to images. We add images of the input and the probability maps predicted by the u-net
+        L_im_summ = []
+        L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
+    
         L_im_summ.append(tf.summary.image('mask', y))
     
-    # Creating the operation giving the probabilities
-    with tf.name_scope('prob_maps'):
-        softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_), (-1, image_size * image_size, n_classes)), (-1, image_size, image_size, n_classes)) # We compute the softmax predictions and reshape them to (b_s, imsz, imsz, n_classes)
-        probability_maps = tf.split(softmax_pred, n_classes, axis=3)
+        # Creating the operation giving the probabilities
+        with tf.name_scope('prob_maps'):
+            softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_), (-1, image_size * image_size, n_classes)), (-1, image_size, image_size, n_classes)) # We compute the softmax predictions and reshape them to (b_s, imsz, imsz, n_classes)
+            probability_maps = tf.split(softmax_pred, n_classes, axis=3)
     
-    # Adding a probability map for each class to the image summary
-    for i, probmap in enumerate(probability_maps):
-        L_im_summ.append(tf.summary.image('probability_map_class_'+str(i), probmap))
+        # Adding a probability map for each class to the image summary
+        for i, probmap in enumerate(probability_maps):
+            L_im_summ.append(tf.summary.image('probability_map_class_'+str(i), probmap))
     
-    # Merging the image summary
-    images_merged_summaries = tf.summary.merge(L_im_summ)
+        # Merging the image summary
+        images_merged_summaries = tf.summary.merge(L_im_summ)
 
     ### ------------------------------------------------------------------------------------------------------------------ ###
     #### 6 - Initializing variables and summaries
@@ -421,7 +423,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             # Compute the optimizer at each training iteration
             if weighted_cost == True:
                 # Extracting the batches
-                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data=data_augmentation,                                                                              weights_modifier=config["network_weighted_cost_parameters"],
+                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data_=data_augmentation,                                                                              weights_modifier=config["network_weighted_cost_parameters"],
                                                                              each_sample_once=False)
                 
                 # Running the optimizer and computing the cost and accuracy.
@@ -440,9 +442,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if step*batch_size % epoch_size == 0:      
                     
                     # Writing the summary
-                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin: epoch_training_dice_myelin, L_dice_axon:epoch_training_dice_axon, spatial_weights: weight, phase:True})
-                    train_writer.add_summary(summary, epoch)
-                    train_writer.add_summary(im_summary, epoch)
+                    if debug_mode:
+                        summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin: epoch_training_dice_myelin, L_dice_axon:epoch_training_dice_axon, spatial_weights: weight, phase:True})
+                        train_writer.add_summary(summary, epoch)
+                        train_writer.add_summary(im_summary, epoch)
+                    else:
+                        summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin: epoch_training_dice_myelin, L_dice_axon:epoch_training_dice_axon, spatial_weights: weight, phase:True})
+                        train_writer.add_summary(summary, epoch)
                     
                     epoch_training_loss = []
                     epoch_training_acc = []
@@ -451,7 +457,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
   
             else: # No weighted cost
                 # Extracting batches
-                batch_x, batch_y = data_train.next_batch(augmented_data=data_augmentation, each_sample_once=False)
+                batch_x, batch_y = data_train.next_batch(augmented_data_=data_augmentation, each_sample_once=False)
                 
                 # Computing loss, accuracy and optimizing the weights
                 stepcost, stepacc, _ , step_dice_myelin, step_dice_axon= session.run([cost, accuracy, optimizer, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, phase:True})
@@ -464,10 +470,15 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if step*batch_size % epoch_size == 0:
                                         
                     # Writing the summary
-                    summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:True})
+                    if debug_mode:
+                        summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:True})
                     
-                    train_writer.add_summary(summary, epoch)
-                    train_writer.add_summary(im_summary, epoch)
+                        train_writer.add_summary(summary, epoch)
+                        train_writer.add_summary(im_summary, epoch)
+                    else:
+                        summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:True})
+                    
+                        train_writer.add_summary(summary, epoch)
 
                     epoch_training_loss = []
                     epoch_training_acc = []
@@ -492,7 +503,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_validation_dice_axon = []
                     for i in range(n_iter_val):
 
-                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data={'type':'none'},                                                                              weights_modifier=config["network_weighted_cost_parameters"],
+                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data_={'type':'none'},                                                                              weights_modifier=config["network_weighted_cost_parameters"],
                                                                                           each_sample_once=True)
 
                         step_loss, step_acc, step_dice_myelin, step_dice_axon = session.run([cost, accuracy, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
@@ -509,7 +520,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_validation_dice_axon = [np.sum(epoch_validation_dice_axon)]
                     
                     # Writing the summary for this step of the training, to use in Tensorflow
-                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, spatial_weights: weight, phase:False})
+                    if debug_mode:
+                        summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, spatial_weights: weight, phase:False})
+                    else:
+                        summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, spatial_weights: weight, phase:False})
+
 
 
                 else:
@@ -536,10 +551,14 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_validation_dice_axon = [epoch_validation_dice_axon]
                                         
                     # Writing the summary for this step of the training, to use in Tensorflow
-                    summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:False})
-                    
+                    if debug_mode:
+                        summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:False})
+                    else:
+                        summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:False})
+
                 validation_writer.add_summary(summary, epoch)
-                validation_writer.add_summary(im_summary_val, epoch)
+                if debug_mode:
+                    validation_writer.add_summary(im_summary_val, epoch)
 
                 # We also keep the metrics in lists so that we can save them in a pickle file later.
                 # We display the metrics (evaluated on the validation set).
