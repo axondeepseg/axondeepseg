@@ -6,6 +6,7 @@ import math
 import numpy as np
 import os
 import pickle
+import collections
 from data.input_data import input_data
 from config_tools import generate_config
 from AxonDeepSeg.train_network_tools import *
@@ -78,53 +79,41 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     save_last_epoch_freq = 50
     save_best_moving_avg_epoch_freq = 5
     save_best_moving_avg_window = 10
+    
+    batch_size_validation = 8
+
 
     # ------- Network Parameters
 
-    learning_rate = config["network_learning_rate"]
-    n_classes = config["network_n_classes"]
-    dropout = config["network_dropout"]
-    depth = config["network_depth"]
-    number_of_convolutions_per_layer = config["network_convolution_per_layer"]
-    size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
-    features_per_convolution = config["network_features_per_convolution"]
-    downsampling = config["network_downsampling"]
-    weighted_cost = config["network_weighted_cost"]
-    thresh_indices = config["network_thresholds"]
-    batch_size = config["network_batch_size"]
-    data_augmentation = config["network_data_augmentation"]
-    batch_norm = config["network_batch_norm"]
-    batch_norm_decay = config["network_batch_norm_decay"]
-    image_size = config["network_trainingset_patchsize"]
+    learning_rate = config["learning_rate"]
+    n_classes = config["n_classes"]
+    dropout = config["dropout"]
+    depth = config["depth"]
+    number_of_convolutions_per_layer = config["convolution_per_layer"]
+    size_of_convolutions_per_layer = config["size_of_convolutions_per_layer"]
+    features_per_convolution = config["features_per_convolution"]
+    downsampling = config["downsampling"]
+    weighted_cost = config["weighted_cost_activate"]
+    thresh_indices = config["thresholds"]
+    batch_size = config["batch_size"]
+    batch_norm = config["batch_norm_activate"]
+    batch_norm_decay = config["batch_norm_decay_starting_decay"]
+    image_size = config["trainingset_patchsize"]
     
+    data_augmentation = generate_dict_da(config)
+    weights_modifier = generate_dict_weights(config)
+   
     # Decay parameters
-    additional_parameters = config["network_additional_parameters"]
-    batch_norm_decay_decay_activate = additional_parameters["batch_norm_decay_decay_activate"]
-    batch_norm_decay_ending_decay = additional_parameters["batch_norm_decay_ending_decay"]
-    batch_norm_decay_decay_period = additional_parameters["batch_norm_decay_decay_period"]
-    learning_rate_decay_activate = additional_parameters["learning_rate_decay_activate"]
-    learning_rate_decay_period = additional_parameters["learning_rate_decay_period"]
-    learning_rate_decay_rate = additional_parameters["learning_rate_decay_rate"]
-    learning_rate_decay_type = additional_parameters["learning_rate_decay_type"]
-    
-    batch_size_validation = 8
-    n_input = image_size * image_size
+    batch_norm_decay_decay_activate = config["batch_norm_decay_decay_activate"]
+    batch_norm_decay_ending_decay = config["batch_norm_decay_ending_decay"]
+    batch_norm_decay_decay_period = config["batch_norm_decay_decay_period"]
+    learning_rate_decay_activate = config["learning_rate_decay_activate"]
+    learning_rate_decay_period = config["learning_rate_decay_period"]
+    learning_rate_decay_rate = config["learning_rate_decay_rate"]
+    learning_rate_decay_type = config["learning_rate_decay_type"]
 
 
-    # SAVING HYPERPARAMETERS TO USE THEM FOR apply_model. DEPRECATED, NOT USED -> TO DELETE
 
-    hyperparameters = {'depth': depth, 'dropout': dropout, 'image_size': image_size,
-                       'model_restored_path': path_model_init, 'learning_rate': learning_rate,
-                       'network_n_classes': n_classes, 'network_downsampling': downsampling,
-                       'network_thresholds': thresh_indices, 'weighted_cost': weighted_cost,
-                       'network_convolution_per_layer': number_of_convolutions_per_layer,
-                       'network_size_of_convolutions_per_layer': size_of_convolutions_per_layer,
-                       'network_features_per_convolution': features_per_convolution,
-                       'network_batch_size': batch_size}
-
-    with open(folder_model + '/hyperparameters.pkl', 'wb') as handle:
-        pickle.dump(hyperparameters, handle)
-        
     # Loading the datasets
     data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
                             thresh_indices=thresh_indices, image_size=image_size)
@@ -132,12 +121,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                  thresh_indices=thresh_indices, image_size=image_size)
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
-
+    n_input = image_size * image_size
     # Main loop parameters
-    
+
     max_epoch = 2500
     epoch_size = data_train.epoch_size
-    # batch_size is defined in the config file
     
     # Initilizating the text to write in report.txt
     Report += '\n\n---Savings---'
@@ -423,7 +411,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             # Compute the optimizer at each training iteration
             if weighted_cost == True:
                 # Extracting the batches
-                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data_=data_augmentation,                                                                              weights_modifier=config["network_weighted_cost_parameters"],
+                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data_=data_augmentation,                                                                              weights_modifier=weights_modifier,
                                                                              each_sample_once=False)
                 
                 # Running the optimizer and computing the cost and accuracy.
@@ -503,7 +491,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_validation_dice_axon = []
                     for i in range(n_iter_val):
 
-                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data_={'type':'none'},                                                                              weights_modifier=config["network_weighted_cost_parameters"],
+                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data_={'type':'none'},                                                                              weights_modifier=weights_modifier,
                                                                                           each_sample_once=True)
 
                         step_loss, step_acc, step_dice_myelin, step_dice_axon = session.run([cost, accuracy, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
@@ -689,8 +677,44 @@ def pw_dices(prediction, gt):
     intersection = tf.logical_and(tf.cast(prediction, tf.bool), tf.cast(gt, tf.bool))
     return tf.multiply(2., tf.div(tf.reduce_sum(tf.cast(intersection, tf.float32),axis=1), sum_))
     
-   
+def generate_dict_weights(config):
+    
+    weights_modifier = {}
+    for key, val in config.iteritems():
+        if key == 'weighted_cost_activate':
+            update_recur_dict(weights_modifier, {key:val})
+        elif key[:13] == 'weighted_cost':
+            key1, key2 = key[13:].split('-')
+            if key2 != 'activate':
+                update_recur_dict(weights_modifier, {key2:val})
+    return weights_modifier
+    
+def generate_dict_da(config):
+    '''
+    We extract the parameters related to data augmentation and we change the structure so that it's understandable by the input_data file.
+    '''
+    transformations = {}
+    for key, val in config.iteritems():
+        if key == 'da-type':
+            key1, key2 = key.split('-')
+            update_recur_dict(transformations,{key2:val})
+        elif key[:3] == 'da-':
+            key1, key2 = key[3:].split('-')
+            update_dict = {key1:{key2:val}}
+            update_recur_dict(transformations, update_dict)
+            
+    return transformations
 
+
+def update_recur_dict(d, u):
+    for k, v in u.iteritems():
+        if isinstance(v, collections.Mapping):
+            r = update_recur_dict(d.get(k, {}), v)
+            d[k] = r
+        else:
+            d[k] = u[k]
+    return d
+    
         
 # To Call the training in the terminal
 

@@ -163,9 +163,9 @@ def apply_convnet(path_my_datas, path_model, config, ckpt_name = 'model', batch_
 
     ###############
     # Network Parameters
-    patch_size = config["network_trainingset_patchsize"]
-    thresh_indices = config["network_thresholds"]
-    n_classes = config["network_n_classes"]
+    patch_size = config["trainingset_patchsize"]
+    thresh_indices = config["thresholds"]
+    n_classes = config["n_classes"]
     
     folder_model = path_model
     if not os.path.exists(folder_model):
@@ -315,7 +315,7 @@ def axon_segmentation(path_my_datas, path_model, config, ckpt_name = 'model', im
     if write_mode:
         for i,pred in enumerate(prediction):
             # We now transform the prediction to an image
-            n_classes = config['network_n_classes']
+            n_classes = config['n_classes']
             paint_vals = [int(255*float(j)/(n_classes - 1)) for j in range(n_classes)]
 
             # Now we create the mask with values in range 0-255

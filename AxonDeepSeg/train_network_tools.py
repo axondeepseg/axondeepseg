@@ -114,20 +114,23 @@ def uconv_net(x, config, phase, bn_updated_decay = None, verbose = True):
     """
     
     # Load the variables
-    image_size = config["network_trainingset_patchsize"]
-    n_classes = config["network_n_classes"]
-    depth = config["network_depth"]
-    dropout = config["network_dropout"]
-    number_of_convolutions_per_layer = config["network_convolution_per_layer"]
-    size_of_convolutions_per_layer = config["network_size_of_convolutions_per_layer"]
-    features_per_convolution = config["network_features_per_convolution"]
-    downsampling = config["network_downsampling"]
-    activate_bn = config["network_batch_norm"]
+    image_size = config["trainingset_patchsize"]
+    n_classes = config["n_classes"]
+    depth = config["depth"]
+    dropout = config["dropout"]
+    number_of_convolutions_per_layer = config["convolution_per_layer"]
+    size_of_convolutions_per_layer = config["size_of_convolutions_per_layer"]
+    features_per_convolution = config["features_per_convolution"]
+    downsampling = config["downsampling"]
+    activate_bn = config["batch_norm_activate"]
     if bn_updated_decay is None:
-        bn_decay = config["network_batch_norm_decay"]
+        bn_decay = config["batch_norm_decay_starting_decay"]
     else:
         bn_decay = bn_updated_decay
-
+        
+    print features_per_convolution
+    print number_of_convolutions_per_layer
+    
     # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
     net = tf.reshape(x, shape=[-1, image_size, image_size, 1])
     data_temp = x

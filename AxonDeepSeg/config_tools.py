@@ -33,63 +33,62 @@ def validate_config(config):
 
 def default_configuration():
     """ Generate the default configuration."""
+    tmp = {'batch_norm_decay_decay_activate': True,
+ 'batch_norm_decay_decay_period': 24000,
+ 'batch_norm_decay_starting_decay': 0.7,
+ 'batch_norm_decay_ending_decay': 0.9,
+ 'learning_rate_decay_activate': True,
+ 'learning_rate_decay_period': 16000,
+ 'learning_rate_decay_rate': 0.99,
+ 'learning_rate_decay_type': 'exponential',
+ 'batch_norm_activate': True,
+ 'batch_size': 8,
+ 'convolution_per_layer': [3, 3, 3, 3],
+ 'da-elastic-activate': True,
+ 'da-elastic-alpha_max': 9,
+ 'da-elastic-order': 3,
+ 'da-flipping-activate': True,
+ 'da-flipping-order': 4,
+ 'da-gaussian_blur-activate': True,
+ 'da-gaussian_blur-order': 6,
+ 'da-gaussian_blur-sigma_max': 3,
+ 'da-noise_addition-activate': False,
+ 'da-noise_addition-order': 5,
+ 'da-random_rotation-activate': False,
+ 'da-random_rotation-high_bound': 89,
+ 'da-random_rotation-low_bound': 5,
+ 'da-random_rotation-order': 2,
+ 'da-rescaling-activate': False,
+ 'da-rescaling-factor_max': 1.2,
+ 'da-rescaling-order': 1,
+ 'da-shifting-activate': True,
+ 'da-shifting-order': 0,
+ 'da-shifting-percentage_max': 0.1,
+ 'da-type': 'all',
+ 'depth': 4,
+ 'downsampling': 'convolution',
+ 'dropout': 0.75,
+ 'features_per_convolution': [[[1, 16], [16, 16]],
+  [[16, 32], [32, 32]],
+  [[32, 64], [64, 64]],
+  [[64, 128], [128, 128]]],
+ 'learning_rate': 0.001,
+ 'n_classes': 3,
+ 'size_of_convolutions_per_layer': [[5, 5, 5],
+  [3, 3, 3],
+  [3, 3, 3],
+  [3, 3, 3]],
+ 'thresholds': [0, 0.2, 0.8],
+ 'trainingset': 'SEM_3c_512',
+ 'trainingset_patchsize': 512,
+ 'weighted_cost_activate': True,
+ 'weighted_cost-balanced_activate': True,
+ 'weighted_cost-balanced_weights': [1.1, 1, 1.3],
+ 'weighted_cost-boundaries_activate': False,
+ 'weighted_cost-boundaries_sigma': 2}
     
-    return {
-        "network_n_classes": 3,
-        "network_thresholds": [0, 0.2, 0.8],
-        "network_batch_size": 8,
-        "network_dropout": 0.75,
-        "network_depth": 4,
-        "network_convolution_per_layer": [3,3,3,3],
-        "network_size_of_convolutions_per_layer": [[5,5,5],[3,3,3],[3,3,3],[3,3,3]],
-        "network_features_per_convolution": [[[1,16],[16,16]], 
-                                             [[16,32],[32,32]], 
-                                             [[32,64],[64,64]],
-                                             [[64,128],[128,128]]
-                                            ],
-        "network_trainingset": 'SEM_3classes_reduced',
-        "network_downsampling": 'convolution',
-        "network_data_augmentation": {'type':'all', 
-                                      'shifting':{'order':0,
-                                                  'activate':True,
-                                                  'percentage_max':0.1}, 
-                                      'rescaling':{'order':1,
-                                                   'activate':False,
-                                                   'factor_max':1.2},
-                                      'random_rotation':{'order':2,
-                                                         'activate':False,
-                                                         'low_bound':5,
-                                                         'high_bound':89},
-                                      'elastic':{'order':3,
-                                                 'activate':True,
-                                                 'alpha_max':9}, 
-                                      'flipping':{'order':4,
-                                                  'activate':True},
-                                      'noise_addition':{'order':5,
-                                                        'activate':False},
-                                      'gaussian_blur':{'order':6, 
-                                              'activate':True,
-                                              'sigma_max':3},
-                                     },
-        "network_learning_rate": 0.001,
-        "network_batch_norm": True,
-        "network_trainingset_patchsize": 512,
-        "network_batch_norm_decay": 0.7,
-        "network_additional_parameters":{'learning_rate_decay_type':'exponential',
-                                         'learning_rate_decay_activate':True,
-                                         'learning_rate_decay_period':16000, # In images seen, not in epoch or in number of batches
-                                         'learning_rate_decay_rate':0.99,
-                                         'batch_norm_decay_decay_activate':True,
-                                         'batch_norm_decay_ending_decay':0.9,
-                                         'batch_norm_decay_decay_period':24000
-                                        },
-        "network_weighted_cost": True,
-        "network_weighted_cost_parameters":{'balanced_activate':True,
-                                            'balanced_weights':[1.1, 1, 1.3],
-                                            'boundaries_activate':False,
-                                            'boundaries_sigma':2
-                                           }
-    }
+
+    return tmp
 
 
 def update_config(d, u):
@@ -229,25 +228,25 @@ def generate_name_config(config):
     name = ''
     
     # Downsampling
-    if config['network_downsampling'] == 'convolution':
+    if config['downsampling'] == 'convolution':
         name += 'cv_'
-    elif config['network_downsampling'] == 'maxpooling':
+    elif config['downsampling'] == 'maxpooling':
         name += 'mp_'
             
     # Number of classes
     
-    name += str(config['network_n_classes']) + 'c_'
+    name += str(config['n_classes']) + 'c_'
     
     # Depth
-    name += 'd' + str(config['network_depth']) + '_'
+    name += 'd' + str(config['depth']) + '_'
 
     # Number of convolutions per layer
     # Here we make the supposition that the number of convo per layer is the same for every layer
-    name += 'c' + str(config['network_convolution_per_layer'][1]) + '_'
+    name += 'c' + str(config['convolution_per_layer'][1]) + '_'
 
     # Size of convolutions per layer
     # Here we make the supposition that the size of convo is the same for every layer
-    name += 'k' + str(config['network_size_of_convolutions_per_layer'][1][0]) + '_'
+    name += 'k' + str(config['size_of_convolutions_per_layer'][1][0]) + '_'
 
     # We don't mention the batch size anymore as we are doing 8 by default
 
@@ -261,14 +260,14 @@ def generate_name_config(config):
 def generate_struct(dict_struct):
    
     network_feature_per_convolution = generate_features(depth=len(dict_struct['structure']),
-                                                        network_first_num_features=dict_struct['network_first_num_features'],
+                                                        network_first_num_features=dict_struct['first_num_features'],
                                                         features_augmentation=dict_struct['features_augmentation'],
                                                        network_convolution_per_layer=[len(e) for e in dict_struct['structure']]
                                                        )
 
     
-    return {'network_depth':len(dict_struct['structure']),
-            'network_features_per_convolution':network_feature_per_convolution,
-            'network_size_of_convolutions_per_layer':dict_struct['structure'],
-            'network_convolution_per_layer':[len(e) for e in dict_struct['structure']]
+    return {'depth':len(dict_struct['structure']),
+            'features_per_convolution':network_feature_per_convolution,
+            'size_of_convolutions_per_layer':dict_struct['structure'],
+            'convolution_per_layer':[len(e) for e in dict_struct['structure']]
            }
