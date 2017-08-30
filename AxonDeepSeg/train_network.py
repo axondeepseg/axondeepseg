@@ -112,8 +112,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     learning_rate_decay_rate = config["learning_rate_decay_rate"]
     learning_rate_decay_type = config["learning_rate_decay_type"]
 
-
-
     # Loading the datasets
     data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
                             thresh_indices=thresh_indices, image_size=image_size)
@@ -122,8 +120,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
     n_input = image_size * image_size
+    
     # Main loop parameters
-
     max_epoch = 2500
     epoch_size = data_train.epoch_size
     
@@ -261,7 +259,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     
     dice = pw_dices(pred_absolute, tf.reshape(y,[-1, tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]))
     dice = tf.reduce_mean(dice, axis=0)
-    _, pw_dice_myelin, pw_dice_axon = tf.split(dice, n_classes, axis=-1)
+    _, pw_dice_myelin, pw_dice_axon = tf.split(dice, n_classes, axis=0)
     
     # Defining list variables to keep track of the train error over one whole epoch instead of just one batch (these are the ones we are going to summarize)
     

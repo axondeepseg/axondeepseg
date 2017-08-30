@@ -53,7 +53,7 @@ def rescaling(patch, factor_max=1.2, verbose=0): #indices to indexes.
     low_bound = 1.0*factor_max
     high_bound = 1.0/factor_max
 
-    scale = np.random.uniform(low_bound, high_bound, 1)
+    scale = np.random.uniform(low_bound, high_bound, 1)[0]
     if verbose >= 1:
         print 'rescaling factor: ', scale
         

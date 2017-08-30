@@ -68,10 +68,10 @@ def default_configuration():
  'depth': 4,
  'downsampling': 'convolution',
  'dropout': 0.75,
- 'features_per_convolution': [[[1, 16], [16, 16]],
-  [[16, 32], [32, 32]],
-  [[32, 64], [64, 64]],
-  [[64, 128], [128, 128]]],
+ 'features_per_convolution': [[[1, 16], [16, 16], [16, 16]],
+  [[16, 32], [32, 32], [32, 32]],
+  [[32, 64], [64, 64], [64, 64]],
+  [[64, 128], [128, 128], [128, 128]]],
  'learning_rate': 0.001,
  'n_classes': 3,
  'size_of_convolutions_per_layer': [[5, 5, 5],
@@ -86,8 +86,6 @@ def default_configuration():
  'weighted_cost-balanced_weights': [1.1, 1, 1.3],
  'weighted_cost-boundaries_activate': False,
  'weighted_cost-boundaries_sigma': 2}
-    
-
     return tmp
 
 
