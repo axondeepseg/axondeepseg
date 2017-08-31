@@ -683,8 +683,7 @@ def generate_dict_weights(config):
             update_recur_dict(weights_modifier, {key:val})
         elif key[:13] == 'weighted_cost':
             key1, key2 = key[13:].split('-')
-            if key2 != 'activate':
-                update_recur_dict(weights_modifier, {key2:val})
+            update_recur_dict(weights_modifier, {key2:val})
     return weights_modifier
     
 def generate_dict_da(config):

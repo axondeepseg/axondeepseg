@@ -50,16 +50,17 @@ def rescaling(patch, factor_max=1.2, verbose=0): #indices to indexes.
     --- Rescaling reinforces axons size diversity ---
     """
     
-    low_bound = 1.0*factor_max
-    high_bound = 1.0/factor_max
+    low_bound = 1.0/factor_max
+    high_bound = 1.0*factor_max
 
     scale = np.random.uniform(low_bound, high_bound, 1)[0]
     if verbose >= 1:
         print 'rescaling factor: ', scale
         
     patch_size = patch[0].shape[0]
+    new_patch_size = int(patch_size*scale)
     
-    if scale == 1.0:
+    if new_patch_size == patch_size or new_patch_size == patch_size-1:
         rescaled_patch = patch
     else :
         image_rescale = rescale(patch[0], scale, preserve_range= True)
