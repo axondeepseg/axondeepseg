@@ -60,7 +60,7 @@ def rescaling(patch, factor_max=1.2, verbose=0): #indices to indexes.
     patch_size = patch[0].shape[0]
     new_patch_size = int(patch_size*scale)
     
-    if new_patch_size == patch_size or new_patch_size == patch_size-1:
+    if (new_patch_size <= patch_size+5) and (new_patch_size >= patch_size-5): # To avoid having q_h = 0
         rescaled_patch = patch
     else :
         image_rescale = rescale(patch[0], scale, preserve_range= True)
