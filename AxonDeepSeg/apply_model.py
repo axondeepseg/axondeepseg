@@ -1,52 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import math
-import os
-import tensorflow as tf
-import pickle
-import numpy as np
-from scipy import io
+
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 from skimage import exposure
 from AxonDeepSeg.train_network_tools import *
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 from config_tools import update_config, default_configuration
 
 from time import time
-
-
-########## HEADER ##########
-# Config file description :
-
-# network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
-
-# network_n_classes : int : number of labels in the output. Default : 2.
-
-# network_dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
-
-# network_depth : int : number of layers. Default : 6.
-
-# network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
-
-# network_size_of_convolutions_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer]] : Describe the size of each convolution filter.
-# Default : [[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)].
-
-# network_features_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
-# Default : [[64 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_layer[k][1] = network_features_per_layer[k+1][0].
-
-# network_trainingset : string : describe the trainingset for the network.
-
-# network_downsampling : string 'maxpooling' or 'convolution' : the downsampling method.
-
-# network_thresholds : list of float in [0,1] : the thresholds for the ground truthes labels.
-
-# network_weighted_cost : boolean : whether we use weighted cost for training or not.
-###########################
-
-
-
 
 ## New version of im 2 patches
 
