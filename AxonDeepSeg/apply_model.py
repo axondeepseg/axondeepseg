@@ -13,7 +13,7 @@ from patch_management_tools import im2patches_overlap, patches2im_overlap
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict, acquisitions_names = None,
                   ckpt_name='model', inference_batch_size=1,
                   overlap_value=25, resampled_resolutions=[0.1], prediction_proba_activate=False,
-                  gpu_per=1.0, verbose_mode=0):
+                  gpu_per=1.0, verbosity_level=0):
 
     '''
     Preprocesses the images, transform them into patches, applies the network, stitches the predictions and return them.
@@ -28,7 +28,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     :param resampled_resolutions: List of resolutions (flaots) to resample to before performing inference.
     :param prediction_proba_activate: Boolean, whether to compute the probability maps or not.
     :param gpu_per: Float, percentage of GPU to use if we use it.
-    :param verbose_mode: Int, how much information to display.
+    :param verbosity_level: Int, how much information to display.
     :return: List of segmentations, and list of probability maps if requested.
     '''
 
@@ -46,7 +46,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     ########### STEP 1: we load and rescale the acquisitions, and transform them into patches.
 
     rs_acquisitions, rs_coeffs, original_acquisitions_shapes = load_acquisitions(
-        path_acquisitions, acquisitions_resolutions, resampled_resolutions, verbose_mode=verbose_mode)
+        path_acquisitions, acquisitions_resolutions, resampled_resolutions, verbose_mode=verbosity_level)
 
     # If we are unable to load the model, we return an error message
     if not os.path.exists(path_model_folder):
@@ -58,7 +58,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     ########### STEP 2: Construction of Tensorflow's computing graph and restoration of the session
 
     # Construction of the graph
-    if verbose_mode>=2:
+    if verbosity_level>=2:
         print "Graph construction ..."
     x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size))
     pred = uconv_net(x, config_dict, phase=False, verbose=False)  # Inference
@@ -74,7 +74,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
     ########### STEP 3: Inference
 
-    if verbose_mode>=2:
+    if verbosity_level>=2:
         print "Beginning inference ..."
 
     n_patches = len(L_data)
@@ -86,7 +86,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     # Inference of complete batches
     for i in range(it):
 
-        if verbose_mode>=3:
+        if verbosity_level>=3:
             print 'processing patch %s on %s' % (i+1, it)
 
         batch_x = np.asarray(L_data[i * inference_batch_size:(i + 1) * inference_batch_size])
@@ -112,7 +112,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
     if rem != 0:
 
-        if verbose_mode>=4:
+        if verbosity_level>=4:
             print 'processing last patch'
 
         batch_x = np.asarray(L_data[it * inference_batch_size:])
@@ -171,7 +171,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_model_folder, config_dict, ckpt_name='model',
                       segmentations_filenames=['AxonDeepSeg.png'], inference_batch_size=1,
                       overlap_value=25, resampled_resolutions=0.1,
-                      prediction_proba_activate=False, write_mode=True, gpu_per=1.0):
+                      prediction_proba_activate=False, write_mode=True, gpu_per=1.0, verbosity_level=0):
 
     '''
     Wrapper performing the segmentation of all the requested acquisitions and generates (if requested) the segmentation
@@ -188,6 +188,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     :param prediction_proba_activate: Boolean, whether to compute probability maps or not.
     :param write_mode: Boolean, whether to create segmentation images or not.
     :param gpu_per: Percentage of the GPU to use, if we use it.
+    :param verbosity_level: Int, level of verbosity. The higher, the more information is displayed.
     :return: List of predictions, and optionally of probability maps.
     '''
 
@@ -215,14 +216,16 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
                                                      inference_batch_size=inference_batch_size, overlap_value=overlap_value,
                                                      resampled_resolutions=resampled_resolutions,
                                                      prediction_proba_activate=prediction_proba_activate,
-                                                     gpu_per=gpu_per)  # Predictions are shape of image, value = class of pixel
+                                                     gpu_per=gpu_per, verbosity_level=verbosity_level)
+        # Predictions are shape of image, value = class of pixel
     else:
         prediction = apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder,
                                    config_dict, ckpt_name=ckpt_name,
                                    inference_batch_size=inference_batch_size, overlap_value=overlap_value,
                                    resampled_resolutions=resampled_resolutions,
                                    prediction_proba_activate=prediction_proba_activate,
-                                   gpu_per=gpu_per)  # Predictions are shape of image, value = class of pixel
+                                   gpu_per=gpu_per, verbosity_level=verbosity_level)
+        # Predictions are shape of image, value = class of pixel
 
     # Final part of the function : generating the image if needed/ returning values
     if write_mode:
