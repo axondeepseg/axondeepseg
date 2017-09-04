@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import tensorflow as tf
 import time
 import math
 import numpy as np
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2' # Get rid of Tensorflow warnings.
+import tensorflow as tf
 import pickle
 from data.input_data import input_data
 from config_tools import generate_config
@@ -127,10 +128,7 @@ def uconv_net(x, config, phase, bn_updated_decay = None, verbose = True):
         bn_decay = config["batch_norm_decay_starting_decay"]
     else:
         bn_decay = bn_updated_decay
-        
-    print features_per_convolution
-    print number_of_convolutions_per_layer
-    
+
     # Input picture shape is [batch_size, height, width, number_channels_in] (number_channels_in = 1 for the input layer)
     net = tf.reshape(x, shape=[-1, image_size, image_size, 1])
     data_temp = x

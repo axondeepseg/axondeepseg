@@ -9,6 +9,7 @@
 
 from AxonDeepSeg.apply_model import axon_segmentation
 import os, json
+from tqdm import tqdm
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model_v1"
@@ -34,7 +35,7 @@ def segment_folders(type_, path_testing_images_folder, path_model,
     '''
 
     # We loop over all image folders in the specified folded and we segment them one by one.
-    for image_folder in os.listdir(path_testing_images_folder):
+    for image_folder in tqdm(os.listdir(path_testing_images_folder), desc='Segmentation...'):
 
         path_image_folder = os.path.join(path_testing_images_folder, image_folder)
         if os.path.isdir(path_image_folder):
@@ -47,10 +48,11 @@ def segment_folders(type_, path_testing_images_folder, path_model,
 
                     # Performing the segmentation
                     segmented_image_name = segmented_image_prefix + file_
-                    axon_segmentation(path_my_datas=path_image_folder, path_model=path_model,
-                                      config=config, ckpt_name='model',
-                                      batch_size=1, crop_value=overlap_value, imagename=segmented_image_name,
-                                      general_pixel_sizes=resolution_model, pred_proba=False, write_mode=True)
+                    axon_segmentation(path_acquisitions_folders=path_image_folder, acquisitions_filenames=['image.png'],
+                                      path_model_folder=path_model,
+                                      config_dict=config, ckpt_name='model',
+                                      inference_batch_size=1, overlap_value=overlap_value, segmentations_filenames=segmented_image_name,
+                                      resampled_resolutions=resolution_model, prediction_proba_activate=False, write_mode=True)
 
                 # Else we perform the segmentation for the first image that is a png file and not a segmented image
 
@@ -58,11 +60,13 @@ def segment_folders(type_, path_testing_images_folder, path_model,
 
                     # Performing the segmentation
                     segmented_image_name = segmented_image_prefix + file_
-                    axon_segmentation(path_my_datas=path_image_folder, config=config, ckpt_name='model',
-                                      batch_size=1, crop_value=overlap_value, imagename=segmented_image_name,
-                                      general_pixel_sizes=resolution_model, pred_proba=False, write_mode=True)
+                    axon_segmentation(path_acquisitions_folders=path_image_folder, acquisitions_filenames=[file_],
+                                      config_dict=config, ckpt_name='model',
+                                      inference_batch_size=1, overlap_value=overlap_value, segmentations_filenames=[segmented_image_name],
+                                      resampled_resolutions=resolution_model, prediction_proba_activate=False, write_mode=True)
 
-                    # The segmentation has been done for this image folder, we go to the next one.
+        # The segmentation has been done for this image folder, we go to the next one.
+
     return None
 
 def generate_default_parameters(type_acquisition):
