@@ -33,7 +33,7 @@ First, install the python module virtualenv via pip:
 
 ``pip install --upgrade virtualenv``
 
-Once pip is installed, you have to choose a folder where you virtual environments will be stored.
+Once the module virtualenv is installed, you have to choose a folder where you virtual environments will be stored.
 We suggest to install them in your home directory. We will continue this guide assuming that we store the
 virtual environments in a directory in your home folder, but it is up to you to choose where you want to store them.
 
@@ -121,7 +121,6 @@ In order to test the installation and follow our guidelines, switch to the curre
 Models
 -------------------------------------------------------------------------------
 
-Present the two models. Range of resolution where they have good performance.
 Two models are available by default. You can download them `here <https://www.dropbox.com/sh/k71wnag0ztz0cpu/AADUGOC8SpLd7FWLtIBmVG7pa?dl=0>`_.
 
 * A SEM model, that works at a resolution of 0.1 micrometer per pixel.
@@ -146,7 +145,7 @@ The acquisitions you want to segment must be stored following a particular archi
     -- pixel_size_in_micrometer.txt
 
 .. NOTE ::
-   The acquisitions must be saved in a png format.
+   The acquisitions must be saved in png format.
 
 * The file *acquisition.png* is the image to segment.
 * The file *pixel_size_in_micrometer.txt* contains a single float number corresponding to the resolution of the acquisition, that is the size of a pixel, in micrometer.
