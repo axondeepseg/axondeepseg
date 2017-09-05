@@ -26,7 +26,7 @@ def result_mapping(folder_models, path_datatest):
 			with open(subpath_model + filename, 'r') as fd:
 				config_network = json.loads(fd.read())
 
-			axon_segmentation(path_datatest, subpath_model, config_network, imagename='segmentation_' + root + '.png')
+			axon_segmentation(path_datatest, subpath_model, config_network, segmentations_filenames='segmentation_' + root + '.png')
 
     return 'segmented'
 
@@ -49,7 +49,7 @@ def map_model_to_images(folder_model, path_datatests, batch_size=1, gps=0.1, cro
     
     for i,path_images_iter in enumerate(path_images_list):
         gps_iter = gps_list[i]
-        axon_segmentation(path_images_iter, folder_model, config_network, imagename='segmentation.png', batch_size=batch_size, write_mode=True,pred_proba=False,general_pixel_sizes=gps_iter, crop_value = crop_value, gpu_per=gpu_per)
+        axon_segmentation(path_images_iter, folder_model, config_network, segmentations_filenames='segmentation.png', inference_batch_size=batch_size, write_mode=True, prediction_proba_activate=False, resampled_resolutions=gps_iter, overlap_value= crop_value, gpu_per=gpu_per)
             
             
 def segment_list(l, n):

@@ -24,7 +24,7 @@ how to install and how to use AxonDeepSeg to create segmentations for your own d
    :maxdepth: 4
    :caption: Contents:
 
-   documentation
+   documentation.rst
 
 
 Indices and tables
