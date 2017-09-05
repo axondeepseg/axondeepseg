@@ -203,6 +203,7 @@ def main():
     resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
     segmented_image_prefix = "segmentation_"
 
+    # Going through all paths passed into arguments
     for current_path_target in path_target_list:
 
         if (current_path_target[-4:] == '.png') and (not os.path.isdir(current_path_target)):
@@ -212,7 +213,7 @@ def main():
                           resolution_model, segmented_image_prefix, verbosity_level=verbosity_level)
         else:
 
-            # Performing the segmentation over all folders containing acquisitions in the specified folder
+            # Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
             segment_folders(type_, current_path_target, path_model, overlap_value, config,
                         resolution_model, segmented_image_prefix, verbosity_level=verbosity_level)
 

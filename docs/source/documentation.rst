@@ -10,16 +10,44 @@ Getting Started
 The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
 instructions are provided to help you use AxonDeepSeg.
 
+Installing python
+-------------------------------------------------------------------------------
+
+First, you should make sure that Python 2.7 is installed on your computer. Run the following command in the terminal:
+
+``python -V``
+
+The version of python should be displayed in the terminal. If not, you have to install Python 2.7 on your computer.
+To do that, you can follow the instructions given on
+`the official python wiki <https://wiki.python.org/moin/BeginnersGuide/Download>`_.
+
 Installing pip
 -------------------------------------------------------------------------------
 
-The first step is to ensure that pip is installed. Pip is a tool that helps you manage your python modules.
+The second step is to ensure that pip is installed. Pip is a tool that helps you manage your python modules.
 To check that, run the following command in your terminal:
 
 ``pip -V``
 
 If the result of this command is the version of pip as well as its installation path, you're all set!
 Else, you can follow the instructions to install it `at this URL <https://pip.pypa.io/en/stable/installing/>`_.
+
+We also recommend to upgrade to the last version of pip:
+
+``pip install --upgrade pip``
+
+Installing git
+-------------------------------------------------------------------------------
+
+In order to download the software AxonDeepSeg, you also need to make sure that a recent version of git
+is installed on your computer. Run:
+
+``git``
+
+in your terminal to check if git is installed. If there is an error or if you want to upgrade git to the last existing
+version, you can follow the documentation on
+`the official website <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>`_.
+
 
 Installing a virtual environment
 -------------------------------------------------------------------------------
@@ -41,15 +69,7 @@ First, navigate to your home directory:
 
 ``cd ~``
 
-Then, create the directory where you will store your virtual environments:
-
-``mkdir venv_folder``
-
-Then, move to this newly created directory:
-
-``cd venv_folder``
-
-You can now create a virtual environment. We will name it ads_venv.
+We will now create a virtual environment. For clarity, we will name it ads_venv.
 
 ``virtualenv ads_venv``
 
@@ -70,7 +90,7 @@ To see which python modules are installed, you can run:
 Installing AxonDeepSeg
 -------------------------------------------------------------------------------
 
-We are now going to install AxonDeepSeg.
+We are now going to install the software AxonDeepSeg.
 
 .. CAUTION ::
    Make sure that the virtual environment is activated before you run the following command.
@@ -93,14 +113,15 @@ First, install all the modules required using the following command:
    * scikit-image==0.13.0
    * scipy==0.19.0
 
-Now, create the directory where you will store the source files from the project. For that, we are going to create
-a new folder in your home directory.
+
+
+Now is the time to clone the AxonDeepSeg project from GitHub. First, go to the place you want to download the template
+to. In our case, we are going to use our home directory:
+
 
 ``cd ~``
 
-``mkdir projects ; cd projects``
-
-Now is the time to clone the AxonDeepSeg project from GitHub.
+You can now download the software by cloning the repository using the following command:
 
 ``git clone https://github.com/neuropoly/axondeepseg.git``
 
