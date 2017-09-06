@@ -1,9 +1,7 @@
 import os
-import shutil
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
 from AxonDeepSeg.data_management.input_data import labellize_mask_2d
-import random
 import numpy as np
 from patch_extraction import extract_patch
 from tqdm import tqdm
@@ -13,7 +11,7 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
     '''
     Note: this functions needs to be run as many times as there are different general pixel size (thus different acquisition types / resolutions).
     '''
-    # First we define where we are going to store the patched data
+    # First we define where we are going to store the patched data and we create the directory if it does not exist.
     if not os.path.exists(path_patched_data):
         os.makedirs(path_patched_data)
         
