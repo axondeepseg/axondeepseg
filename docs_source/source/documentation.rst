@@ -127,33 +127,22 @@ The script to launch is called **axondeepseg**. It takes several arguments:
     * 1 displays additionally the path of the image that was just segmented.
     * 2 displays additionally information about the current step of the segmentation of the current acquisition.
 
-* **o**: (optional) overlap value. Number of pixel to use when overlapping predictions. The higher, the more time the segmentation will take. Default 25.
-
-To segment the tem acquisition we just downloaded with a detail of the steps of the segmentation, run the following command::
+To segment one of the image that we downloaded (here, an SEM image), run the following command::
 
     axondeepseg -t SEM -p test_sem_image/image1_sem/77.png -v 2
 
-The script will automatically read the acquisition resolution.
+The script will automatically read the acquisition resolution encoded in the file: *pixel_size_in_micrometer.txt*
 The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
 The segmented acquisition itself will be saved in the same folder as the acquisition image, with the prefix 'segmentation_', in png format.
 
-You can also decide to segment multiple acquisitions at the same time.
-In that case, each acquisition must be located in its own folder.
-Each folder must hence contain at minimum a .png acquisition image to segment, and a pixel_size_in_micrometer.txt file
-where the resolution of the acquisition is stored, in micrometer per pixel.
-All these acquisitions folders must then be located in the same global folder.
-
-When using the segmentation script, you then just have to indicate the path to the global folder, like this::
+To segment multiple images, please use the folder structure explained above, i.e., each image should be in a separate folder. Then, the path to segment will be the parent folder that contains each separate sub-folder::
 
     axondeepseg -t SEM -p test_sem_image/
 
-This line will segment all acquisitions in acquisition folders contained in the directory test_sem_image.
-Each segmentation will be saved in the same folder as its corresponding acquisition.
+Each output segmentation will be saved in the corresponding sub-folder.
 
 .. NOTE ::
-   When looking in an acquisition folder for an acquisition to segment, the script will first look for an image named
-   'image.png'. If found, it will segment it. Else, it will segment the first .png file which name does not begin with
-   'segmentation_'.
+   If there is multiple .png files inside a sub-folder, then AxonDeepSeg will ignore all files which names contains 'segmentation', so that if you want to re-run a segmentation, it will select the image.
 
 Finally, you can segment multiple images and folders at the same time, using the following command::
 
