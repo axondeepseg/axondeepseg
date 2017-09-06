@@ -1,0 +1,323 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Introduction &#8212; AxonDeepSeg 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to AxonDeepSeg !" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>AxonDeepSeg is an open-source software using deep learning and aiming at automatically segmenting axons and myelin
+sheaths from the spinal cord tissue.</p>
+<p>AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechnique Montréal.</p>
+</div>
+<div class="section" id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
+instructions are provided to help you use AxonDeepSeg.</p>
+<div class="section" id="installing-python">
+<h2>Installing python<a class="headerlink" href="#installing-python" title="Permalink to this headline">¶</a></h2>
+<p>First, you should make sure that Python 2.7 is installed on your computer. Run the following command in the terminal:</p>
+<p><code class="docutils literal"><span class="pre">python</span> <span class="pre">-V</span></code></p>
+<p>The version of python should be displayed in the terminal. If not, you have to install Python 2.7 on your computer.
+To do that, you can follow the instructions given on
+<a class="reference external" href="https://wiki.python.org/moin/BeginnersGuide/Download">the official python wiki</a>.</p>
+</div>
+<div class="section" id="installing-pip">
+<h2>Installing pip<a class="headerlink" href="#installing-pip" title="Permalink to this headline">¶</a></h2>
+<p>The second step is to ensure that pip is installed. Pip is a tool that helps you manage your python modules.
+To check that, run the following command in your terminal:</p>
+<p><code class="docutils literal"><span class="pre">pip</span> <span class="pre">-V</span></code></p>
+<p>If the result of this command is the version of pip as well as its installation path, you’re all set!
+Else, you can follow the instructions to install it <a class="reference external" href="https://pip.pypa.io/en/stable/installing/">at this URL</a>.</p>
+<p>We also recommend to upgrade to the last version of pip:</p>
+<p><code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">pip</span></code></p>
+</div>
+<div class="section" id="installing-git">
+<h2>Installing git<a class="headerlink" href="#installing-git" title="Permalink to this headline">¶</a></h2>
+<p>In order to download the software AxonDeepSeg, you also need to make sure that a recent version of git
+is installed on your computer. Run:</p>
+<p><code class="docutils literal"><span class="pre">git</span></code></p>
+<p>in your terminal to check if git is installed. If there is an error or if you want to upgrade git to the last existing
+version, you can follow the documentation on
+<a class="reference external" href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">the official website</a>.</p>
+</div>
+<div class="section" id="installing-a-virtual-environment">
+<h2>Installing a virtual environment<a class="headerlink" href="#installing-a-virtual-environment" title="Permalink to this headline">¶</a></h2>
+<p>Before installing AxonDeepSeg, we will need to set up a virtual environment.
+A virtual environment is a tool that lets you install specific versions of the python modules you want.
+It will allow AxonDeepSeg to run with respect to its module requirements,
+without affecting the rest of your python installation.</p>
+<p>First, install the python module virtualenv via pip:</p>
+<p><code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">virtualenv</span></code></p>
+<p>Once the module virtualenv is installed, you have to choose a folder where you virtual environments will be stored.
+We suggest to install them in your home directory. We will continue this guide assuming that we store the
+virtual environments in a directory in your home folder, but it is up to you to choose where you want to store them.</p>
+<p>First, navigate to your home directory:</p>
+<p><code class="docutils literal"><span class="pre">cd</span> <span class="pre">~</span></code></p>
+<p>We will now create a virtual environment. For clarity, we will name it ads_venv.</p>
+<p><code class="docutils literal"><span class="pre">virtualenv</span> <span class="pre">ads_venv</span></code></p>
+<p>To activate it, run the following command:</p>
+<p><code class="docutils literal"><span class="pre">source</span> <span class="pre">ads_venv/bin/activate</span></code></p>
+<p>If you performed all the steps correctly, your username in the console should now be preceded by the name of your
+virtual environment between parenthesis, like this:</p>
+<p><code class="docutils literal"><span class="pre">(ads_venv)</span> <span class="pre">username&#64;hostname</span> <span class="pre">/home/...</span></code></p>
+<p>To see which python modules are installed, you can run:</p>
+<p><code class="docutils literal"><span class="pre">pip</span> <span class="pre">list</span></code></p>
+</div>
+<div class="section" id="installing-axondeepseg">
+<h2>Installing AxonDeepSeg<a class="headerlink" href="#installing-axondeepseg" title="Permalink to this headline">¶</a></h2>
+<p>We are now going to install the software AxonDeepSeg.</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">Make sure that the virtual environment is activated before you run the following command.</p>
+</div>
+<p>First, install all the modules required using the following command:</p>
+<p><code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">numpy</span> <span class="pre">pandas</span> <span class="pre">tabulate</span> <span class="pre">pillow</span> <span class="pre">tensorflow</span> <span class="pre">tqdm</span> <span class="pre">mpld3</span> <span class="pre">sklearn</span> <span class="pre">scikit-image</span> <span class="pre">scipy</span></code></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For information, here is a list of requirements for AxonDeepSeg. The program may work with earlier versions of
+these modules.
+* numpy==1.13.1
+* pandas==0.20.1
+* tabulate tabulate==0.7.7
+* Pillow==4.1.1
+* tensorflow==1.3.0
+* tqdm==4.14.0
+* mpld3==0.3
+* scikit-learn==0.18.1
+* scikit-image==0.13.0
+* scipy==0.19.0</p>
+</div>
+<p>Now is the time to clone the AxonDeepSeg project from GitHub. First, go to the place you want to download the template
+to. In our case, we are going to use our home directory:</p>
+<p><code class="docutils literal"><span class="pre">cd</span> <span class="pre">~</span></code></p>
+<p>You can now download the software by cloning the repository using the following command:</p>
+<p><code class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/neuropoly/axondeepseg.git</span></code></p>
+<p>Once the download is done, go inside the downloaded directory.</p>
+<p><code class="docutils literal"><span class="pre">cd</span> <span class="pre">axondeepseg</span></code></p>
+<p>And install AxonDeepSeg by running the following command:</p>
+<p><code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p>
+<p>AxonDeepSeg is now installed.</p>
+<p>In order to test the installation and follow our guidelines, switch to the current branch:</p>
+<p><code class="docutils literal"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">public_version</span></code></p>
+</div>
+<div class="section" id="models">
+<h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
+<p>Two models are available by default. You can download them <a class="reference external" href="https://www.dropbox.com/sh/k71wnag0ztz0cpu/AADUGOC8SpLd7FWLtIBmVG7pa?dl=0">here</a>.</p>
+<ul class="simple">
+<li>A SEM model, that works at a resolution of 0.1 micrometer per pixel.</li>
+<li>A TEM model, that works at a resolution of 0.01 micrometer per pixel.</li>
+</ul>
+<p>The easiest and most convenient solution is to put these two models in the models/ folder from AxonDeepSeg root directory.
+Your architecture would thus look like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span><span class="o">/</span>
+<span class="o">--</span> <span class="n">models</span><span class="o">/</span>
+<span class="o">----</span> <span class="n">defaults</span><span class="o">/</span>
+<span class="o">------</span> <span class="n">default_SEM_model_v1</span>
+<span class="o">------</span> <span class="n">default_TEM_model_v1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="acquisitions">
+<h2>Acquisitions<a class="headerlink" href="#acquisitions" title="Permalink to this headline">¶</a></h2>
+<p>The acquisitions you want to segment must be stored following a particular architecture.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acquisition_folder</span><span class="o">/</span>
+<span class="o">--</span> <span class="n">acquisition</span><span class="o">.</span><span class="n">png</span>
+<span class="o">--</span> <span class="n">pixel_size_in_micrometer</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The acquisitions must be saved in png format.</p>
+</div>
+<ul class="simple">
+<li>The file <em>acquisition.png</em> is the image to segment.</li>
+<li>The file <em>pixel_size_in_micrometer.txt</em> contains a single float number corresponding to the resolution of the acquisition, that is the size of a pixel, in micrometer.</li>
+</ul>
+<p>If you want to test AxonDeepSeg, you can download the test data available <a class="reference external" href="https://www.dropbox.com/sh/xftifr8dr4je0o7/AADgF5l-2M4Z9WOdh9xvcVDva?dl=0">here</a>.</p>
+</div>
+<div class="section" id="using-axondeepseg">
+<h2>Using AxonDeepSeg<a class="headerlink" href="#using-axondeepseg" title="Permalink to this headline">¶</a></h2>
+<p>To learn to use AxonDeepSeg, you will need some acquisitions image to segment. If you don’t have some,
+you can download the test data using the instructions in the Acquisitions part of this tutorial.</p>
+<p>We are going to put the data in the data folder from AxonDeepSeg root directory. Note that this is not an obligation, as
+you will be able to segment data even if it is not located inside the AxonDeepSeg directory.</p>
+<p>Once you have downloaded the default models and the test data, go to the AxonDeepSeg folder in
+the axondeepseg root directory. In our case:</p>
+<p><code class="docutils literal"><span class="pre">cd</span> <span class="pre">~/projects/axondeepseg/AxonDeepSeg</span></code></p>
+<p>The script to launch is called <em>segment.py</em>. It takes several arguments:</p>
+<ul>
+<li><p class="first">t: type of the acquisition. SEM or TEM.</p>
+</li>
+<li><p class="first">p: path to the acquisition.</p>
+</li>
+<li><p class="first">v: (optional) verbosity level. Default 0.</p>
+<blockquote>
+<div><ul class="simple">
+<li>0 displays only a progress bar indicating the advancement of the segmentations.</li>
+<li>2 displays information about the current step of the segmentation of the current acquisition.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">o: (optional) overlap value. Number of pixel to use when overlapping predictions. The higher, the more time the segmentation will take. Default 25.</p>
+</li>
+</ul>
+<p>To segment the tem acquisition we just downloaded with a detail of the steps of the segmentation, run the following command:</p>
+<p><code class="docutils literal"><span class="pre">python</span> <span class="pre">segment.py</span> <span class="pre">-t</span> <span class="pre">SEM</span> <span class="pre">-p</span> <span class="pre">../data/test_segmentation/test_sem_image/image1_sem/77.png</span> <span class="pre">-v</span> <span class="pre">2</span></code></p>
+<p>The script will automatically read the acquisition resolution.
+The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
+The segmented acquisition itself will be saved in the same folder as the acquisition image, with the prefix ‘<a href="#id2"><span class="problematic" id="id3">segmentation_</span></a>’, in png format.</p>
+<p>You can also decide to segment multiple acquisitions at the same time.
+In that case, each acquisition must be located in its own folder.
+Each folder must hence contain at minimum a .png acquisition image to segment, and a pixel_size_in_micrometer.txt file
+where the resolution of the acquisition is stored, in micrometer per pixel.
+All these acquisitions folders must then be located in the same global folder.</p>
+<p>When using the segmentation script, you then just have to indicate the path to the global folder, like this:</p>
+<p><code class="docutils literal"><span class="pre">python</span> <span class="pre">segment.py</span> <span class="pre">-t</span> <span class="pre">SEM</span> <span class="pre">-p</span> <span class="pre">../data/test_segmentation/test_sem_image/</span></code></p>
+<p>This line will segment all acquisitions in acquisition folders contained in the directory test_sem_image.
+Each segmentation will be saved in the same folder as its corresponding acquisition.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When looking in an acquisition folder for an acquisition to segment, the script will first look for an image named
+‘image.png’. If found, it will segment it. Else, it will segment the first .png file which name does not begin with
+‘<a href="#id4"><span class="problematic" id="id5">segmentation_</span></a>’.</p>
+</div>
+<p>Finally, you can segment multiple images and folders at the same time, using the following command:</p>
+<p><code class="docutils literal"><span class="pre">python</span> <span class="pre">segment.py</span> <span class="pre">-t</span> <span class="pre">SEM</span> <span class="pre">-p</span> <span class="pre">../data/test_segmentation/test_sem_image/</span> <span class="pre">../data/test_segmentation/test_sem_image_2/image2_sem/95.png</span> <span class="pre">-o</span> <span class="pre">40</span></code></p>
+<p>The previous command will segment all the acquisitions in the folders located in the test_sem_image directory,
+as well as the acquisition 95.png, with an overlap value of 40 pixels.</p>
+</div>
+</div>
+<div class="section" id="licensing">
+<h1>Licensing<a class="headerlink" href="#licensing" title="Permalink to this headline">¶</a></h1>
+<p>MIT.</p>
+</div>
+<div class="section" id="acknowledgements">
+<h1>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h1>
+<p>todo</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=neuropoly&repo=axondeepseg&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installing-python">Installing python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-pip">Installing pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-git">Installing git</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-a-virtual-environment">Installing a virtual environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-axondeepseg">Installing AxonDeepSeg</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acquisitions">Acquisitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-axondeepseg">Using AxonDeepSeg</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#licensing">Licensing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to AxonDeepSeg !</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, NeuroPoly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/documentation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/neuropoly/axondeepseg" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
