@@ -27,6 +27,6 @@ guidelines/test_weights\.ipynb
 
 *.pkl
 
-notebooks/test_weights\.ipynb
-
 notebooks/\.ipynb_checkpoints/
+
+notebooks/test_weights\.ipynb

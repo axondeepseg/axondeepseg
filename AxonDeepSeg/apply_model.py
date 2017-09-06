@@ -3,7 +3,7 @@
 
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
-from AxonDeepSeg.train_network_tools import *
+from AxonDeepSeg.network_construction import *
 from tqdm import tqdm
 from config_tools import update_config, default_configuration
 import os
