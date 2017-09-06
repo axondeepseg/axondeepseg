@@ -124,7 +124,8 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 * **v**: (optional) verbosity level. Default 0.
 
     * 0 displays only a progress bar indicating the advancement of the segmentations.
-    * 2 displays information about the current step of the segmentation of the current acquisition.
+    * 1 displays additionally the path of the image that was just segmented.
+    * 2 displays additionally information about the current step of the segmentation of the current acquisition.
 
 * **o**: (optional) overlap value. Number of pixel to use when overlapping predictions. The higher, the more time the segmentation will take. Default 25.
 

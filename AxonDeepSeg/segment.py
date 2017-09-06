@@ -55,6 +55,9 @@ def segment_image(type_, path_testing_image, path_model,
                           resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
                           prediction_proba_activate=False, write_mode=True)
 
+        if verbosity_level >= 1:
+            print "Image {0} segmented.".format(path_testing_image)
+
     else:
 
         print "The path {0} does not exist.".format(path_testing_image)
@@ -102,6 +105,9 @@ def segment_folders(type_, path_testing_images_folder, path_model,
                                       resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
                                       prediction_proba_activate=False, write_mode=True)
 
+                    if verbosity_level >= 1:
+                        print "Image {0} segmented.".format(os.path.join(path_image_folder, file_))
+
                 # Else we perform the segmentation for the first image that is a png file and not a segmented image
 
                 elif (file_[-4:] == ".png") and (not (file_[:len(segmented_image_prefix)] == segmented_image_prefix)):
@@ -114,6 +120,9 @@ def segment_folders(type_, path_testing_images_folder, path_model,
                                       segmentations_filenames=[segmented_image_name], verbosity_level=verbosity_level,
                                       resampled_resolutions=resolution_model, prediction_proba_activate=False,
                                       write_mode=True)
+
+                    if verbosity_level >= 1:
+                        print "Image {0} segmented.".format(os.path.join(path_image_folder, file_))
         # The segmentation has been done for this image folder, we go to the next one.
 
     return None
@@ -213,12 +222,14 @@ def main():
             # Performing the segmentation over the image
             segment_image(type_, current_path_target, path_model, overlap_value, config,
                           resolution_model, segmented_image_prefix, verbosity_level=verbosity_level)
+
         else:
 
             # Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
             segment_folders(type_, current_path_target, path_model, overlap_value, config,
                         resolution_model, segmented_image_prefix, verbosity_level=verbosity_level)
 
+    print "Segmentation finished."
 
 # Calling the script
 if __name__ == '__main__':
