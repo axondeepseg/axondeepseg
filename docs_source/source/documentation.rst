@@ -65,6 +65,11 @@ To install AxonDeepSeg, you just need to install it with ``pip`` using the follo
 
     pip install axondeepseg
 
+.. note:: If you have an old Mac OS version (<= 10.11), you need to manually install TensorFlow
+          dependency by following the instructions from
+          `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
+
+
 Models
 -------------------------------------------------------------------------------
 
