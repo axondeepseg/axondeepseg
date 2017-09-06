@@ -2,7 +2,7 @@ import os
 import shutil
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
-from AxonDeepSeg.data.input_data import labellize_mask_2d
+from AxonDeepSeg.data_management.input_data import labellize_mask_2d
 import random
 import numpy as np
 from patch_extraction import extract_patch

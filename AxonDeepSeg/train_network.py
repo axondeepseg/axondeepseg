@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 import os
 import pickle
-from data.input_data import input_data
+from data_management.input_data import input_data
 from config_tools import generate_config
 from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.train_network_tools import *
