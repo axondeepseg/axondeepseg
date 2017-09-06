@@ -104,7 +104,7 @@ The acquisitions you want to segment must be stored following a particular archi
 to the resolution of the acquisition, that is the size of a pixel, in micrometer.
 
 If you want to test AxonDeepSeg, you can download the test data available
-`here <https://www.dropbox.com/s/uwxqmwx2ymnk2qa/test_segmentation.zip?dl=0>`_.
+`here <https://osf.io/rtbwc/download>`_.
 
 
 Using AxonDeepSeg
