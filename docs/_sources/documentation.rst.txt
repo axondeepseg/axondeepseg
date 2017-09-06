@@ -10,6 +10,9 @@ Getting Started
 The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
 instructions are provided to help you use AxonDeepSeg.
 
+.. note:: AxonDeepSeg isn't compatible with Windows due to third-party dependencies.
+          AxonDeepSeg was tested with Mac OS and Linux.
+
 Installing python
 -------------------------------------------------------------------------------
 
