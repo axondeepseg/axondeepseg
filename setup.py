@@ -29,9 +29,12 @@ setup(
     keywords='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     install_requires=install_reqs,
+    package_dir={'AxonDeepSeg': 'AxonDeepSeg'},
     package_data={
-        "AxonDeepSeg": ['']
-     }
+        "AxonDeepSeg": ['models/default_SEM_model_v1/*',
+                        'models/default_TEM_model_v1/*'],
+    },
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'axondeepseg = AxonDeepSeg.segment:main'

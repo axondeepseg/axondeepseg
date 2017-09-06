@@ -10,11 +10,14 @@
 from AxonDeepSeg.apply_model import axon_segmentation
 import os, json
 from tqdm import tqdm
+import pkg_resources
+import argparse
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model_v1"
 TEM_DEFAULT_MODEL_NAME = "default_TEM_model_v1"
 
+MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 
 # Definition of the functions
 
@@ -124,11 +127,11 @@ def generate_default_parameters(type_acquisition):
 
     # Building the path of the wanted default model
     if type_acquisition == 'SEM':
-        path_model = os.path.join('../models/defaults/', SEM_DEFAULT_MODEL_NAME)
+        #path_model = os.path.join('../models/defaults/', SEM_DEFAULT_MODEL_NAME)
+        path_model = os.path.join(MODELS_PATH, SEM_DEFAULT_MODEL_NAME)
     elif type_acquisition == 'TEM':
-        path_model = os.path.join('../models/defaults/', TEM_DEFAULT_MODEL_NAME)
-    else:
-        path_model = '../models/defaults/default_model'
+        #path_model = os.path.join('../models/defaults/', TEM_DEFAULT_MODEL_NAME)
+        path_model = os.path.join(MODELS_PATH, TEM_DEFAULT_MODEL_NAME)
 
     path_config_file = os.path.join(path_model, 'config_network.json')
     config = generate_config_dict(path_config_file)
@@ -180,7 +183,6 @@ def main():
     Main loop.
     :return: None.
     '''
-    import argparse
     ap = argparse.ArgumentParser()
 
     # Setting the arguments of the segmentation
@@ -219,6 +221,11 @@ def main():
 
 
 # Calling the script
-
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
