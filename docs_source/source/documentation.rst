@@ -87,18 +87,24 @@ Acquisitions
 
 The acquisitions you want to segment must be stored following a particular architecture::
 
-    acquisition_folder/
-    -- acquisition.png
-    -- pixel_size_in_micrometer.txt
+    acquisitions_to_segment/
+    --acquisition1_folder/
+    ---- acquisition.png
+    ---- pixel_size_in_micrometer.txt
+    --acquisition2_folder/
+    ---- acquisition.png
+    ---- pixel_size_in_micrometer.txt
+    ...
 
 .. NOTE ::
    The acquisitions must be saved in **png format**.
 
 * The file *acquisition.png* is the image to segment.
-* The file *pixel_size_in_micrometer.txt* contains a single float number corresponding to the resolution of the acquisition, that is the size of a pixel, in micrometer.
+* The file *pixel_size_in_micrometer.txt* contains a single float number corresponding
+to the resolution of the acquisition, that is the size of a pixel, in micrometer.
 
-
-If you want to test AxonDeepSeg, you can download the test data available `here <https://www.dropbox.com/sh/xftifr8dr4je0o7/AADgF5l-2M4Z9WOdh9xvcVDva?dl=0>`_.
+If you want to test AxonDeepSeg, you can download the test data available
+`here <https://www.dropbox.com/s/uwxqmwx2ymnk2qa/test_segmentation.zip?dl=0>`_.
 
 
 Using AxonDeepSeg
@@ -107,9 +113,9 @@ Using AxonDeepSeg
 To learn to use AxonDeepSeg, you will need some acquisitions image to segment. If you don't have some,
 you can download the test data using the instructions in the `Acquisitions` part of this tutorial.
 
-Once you have downloaded test data, go to the parent folder of the extracted test data folder. In our case::
+Once you have downloaded the test data, go to the extracted test data folder. In our case::
 
-    cd data_folder
+    cd test_segmentation
 
 The script to launch is called **axondeepseg**. It takes several arguments:
 
@@ -124,7 +130,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 To segment the tem acquisition we just downloaded with a detail of the steps of the segmentation, run the following command::
 
-    axondeepseg -t SEM -p test_segmentation/test_sem_image/image1_sem/77.png -v 2
+    axondeepseg -t SEM -p test_sem_image/image1_sem/77.png -v 2
 
 The script will automatically read the acquisition resolution.
 The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
@@ -138,7 +144,7 @@ All these acquisitions folders must then be located in the same global folder.
 
 When using the segmentation script, you then just have to indicate the path to the global folder, like this::
 
-    axondeepseg -t SEM -p test_segmentation/test_sem_image/
+    axondeepseg -t SEM -p test_sem_image/
 
 This line will segment all acquisitions in acquisition folders contained in the directory test_sem_image.
 Each segmentation will be saved in the same folder as its corresponding acquisition.
@@ -150,7 +156,7 @@ Each segmentation will be saved in the same folder as its corresponding acquisit
 
 Finally, you can segment multiple images and folders at the same time, using the following command::
 
-    axondeepseg -t SEM -p test_segmentation/test_sem_image/ test_segmentation/test_sem_image_2/image2_sem/95.png -o 40
+    axondeepseg -t SEM -p test_sem_image/ test_sem_image_2/image1_sem/95.png -o 40
 
 The previous command will segment all the acquisitions in the folders located in the test_sem_image directory,
 as well as the acquisition 95.png, with an overlap value of 40 pixels.
@@ -162,4 +168,3 @@ MIT.
 
 Acknowledgements
 ===============================================================================
-todo
