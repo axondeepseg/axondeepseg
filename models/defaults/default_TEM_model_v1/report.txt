@@ -1,0 +1,21 @@
+
+
+---Savings---
+ Model saved in : ../models/cv_3c_d4_c2_k3__0-7678
+
+---PARAMETERS---
+learning_rate : 0.001; 
+ batch_size :  8;
+ depth :  4;
+ epoch_size: 448;
+ dropout :  0.75;
+ (if model restored) restored_model :None
+tot_param = 1552387
+
+
+---Intermediary results---
+
+----
+ Last epoch: 200
+ Accuracy: 0.938695214011;
+ Loss: 0.156272588806;

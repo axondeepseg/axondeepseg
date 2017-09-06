@@ -1,0 +1,4 @@
+model_checkpoint_path: "model.ckpt"
+all_model_checkpoint_paths: "best_loss_model.ckpt"
+all_model_checkpoint_paths: "best_acc_model.ckpt"
+all_model_checkpoint_paths: "model.ckpt"

@@ -1,0 +1,105 @@
+{
+  "learning_rate_decay_period": 5, 
+  "batch_norm_decay_decay_period": 50, 
+  "batch_norm_decay_decay_activate": true, 
+  "learning_rate_decay_activate": true, 
+  "learning_rate_decay_rate": 0.99, 
+  "batch_norm_decay_ending_decay": 0.9, 
+  "depth": 4, 
+  "weighted_cost_activate": true, 
+  "weighted_cost-balanced_activate": true, 
+  "weighted_cost-balanced_weights": [
+    1.1, 
+    1, 
+    1.3
+  ], 
+  "weighted_cost-boundaries_sigma": 2, 
+  "weighted_cost-boundaries_activate": false,
+  "batch_norm_activate": true, 
+  "network_thresholds": [
+    0, 
+    0.2, 
+    0.8
+  ], 
+  "trainingset_patchsize": 512, 
+  "learning_rate": 0.001, 
+  "downsampling": "convolution", 
+  "batch_size": 8, 
+  "da-type": "all", 
+  "da-random_rotation-activate": false, 
+  "da-noise_addition-activate": false, 
+  "da-elastic-activate": true, 
+  "da-shifting-activate": true, 
+  "da-flipping-activate": true, 
+  "da-rescaling-activate": true,
+  "n_classes": 3, 
+  "batch_norm_decay_starting_decay": 0.7, 
+  "trainingset": "TEM_3c_512", 
+  "size_of_convolutions_per_layer": [
+    [
+      5, 
+      5
+    ], 
+    [
+      3, 
+      3
+    ], 
+    [
+      3, 
+      3
+    ], 
+    [
+      3, 
+      3
+    ]
+  ], 
+  "dropout": 0.75, 
+  "convolution_per_layer": [
+    2, 
+    2, 
+    2, 
+    2
+  ], 
+  "features_per_convolution": [
+    [
+      [
+        1, 
+        16
+      ], 
+      [
+        16, 
+        16
+      ]
+    ], 
+    [
+      [
+        16, 
+        32
+      ], 
+      [
+        32, 
+        32
+      ]
+    ], 
+    [
+      [
+        32, 
+        64
+      ], 
+      [
+        64, 
+        64
+      ]
+    ], 
+    [
+      [
+        64, 
+        128
+      ], 
+      [
+        128, 
+        128
+      ]
+    ]
+  ]
+}
