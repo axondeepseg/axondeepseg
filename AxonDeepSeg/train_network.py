@@ -150,7 +150,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # We also display the total number of variables
     output_params = count_number_parameters(tf.trainable_variables())
     print "Total number of parameters to train: " + str(output_params)
-    Report += '\n'+output_params+'\n'
+    Report += '\n'+str(output_params)+'\n'
     
     ### ----------------------------------------------------------------------------------------------------------- ###
     #### 3 - Adapting the dimensions of the different tensors, then defining the optimization of the graph (loss + opt.)
