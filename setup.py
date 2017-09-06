@@ -29,4 +29,12 @@ setup(
     keywords='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     install_requires=install_reqs,
+    package_data={
+        "AxonDeepSeg": ['']
+     }
+    entry_points={
+        'console_scripts': [
+            'axondeepseg = AxonDeepSeg.segment:main'
+        ],
+    },
 )
