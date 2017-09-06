@@ -1,151 +1,95 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-import time
-import math
 import numpy as np
 import os
 import pickle
-import collections
 from data.input_data import input_data
 from config_tools import generate_config
+from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.train_network_tools import *
 from datetime import datetime
 import time
 
-# import matplotlib.pyplot as plt
-
-########## HEADER ##########
-# Config file description :
-
-# network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
-
-# network_n_classes : int : number of labels in the output. Default : 2.
-
-# network_dropout : float : between 0 and 1 : percentage of neurons we want to keep. Default : 0.75.
-
-# network_depth : int : number of layers. Default : 6.
-
-# network_convolution_per_layer : list of int, length = network_depth : number of convolution per layer. Default : [1 for i in range(network_depth)].
-
-# network_size_of_convolutions_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer]] : Describe the size of each convolution filter.
-# Default : [[3 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)].
-
-# network_features_per_layer : list of lists of int [number of layers[number_of_convolutions_per_layer[2]] : Numer of different filters that are going to be used.
-# Default : [[64 for k in range(network_convolution_per_layer[i])] for i in range(network_depth)]. WARNING ! network_features_per_layer[k][1] = network_features_per_layer[k+1][0].
-
-# network_trainingset : string : describe the trainingset for the network.
-
-# network_downsampling : string 'maxpooling' or 'convolution' : the downsampling method.
-
-# network_thresholds : list of float in [0,1] : the thresholds for the ground truthes labels.
-
-# network_weighted_cost : boolean : whether we use weighted cost for training or not.
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
                 save_trainable=True, gpu=None, debug_mode=False, gpu_per = 1.0):
     """
-    Principal function of this script. Trains the model using TensorFlow.
-    
-    :param path_model: path to save the trained model
-    :param config: dict: network's parameters described in the header.
-    :param path_model_init: (option) path of the model to initialize  the training
-    :param save_trainable: if True, only weights are saved. If false the variables from the optimisers are saved too
-    :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
-    :return:
-    """
+    Main function. Trains a model using the configuration parameters.
+    :param path_trainingset: Path to access the trainingset.
+    :param path_model: Path indicating where to save the model.
+    :param config: Dict, containing the configuration parameters of the network.
+    :param path_model_init: Path to where the model to use for initialization is stored.
+    :param save_trainable: Boolean. If True, only saves in the model variables that are trainable (evolve from gradient)
+    :param gpu: String, name of the gpu to use. Prefer use of CUDA_VISIBLE_DEVICES environment variable.
+    :param debug_mode: Boolean. If activated, saves more information about the distributions of
+    most trainable variables, and also outputs more information.
+    :param gpu_per: Float, between 0 and 1. Percentage of GPU to use.
+    :return: Nothing.
+    """ 
   
-    ########################################################################################################################
-    ############################################## VARIABLES INITIALIZATION ################################################
-    ########################################################################################################################
+    ###################################################################################################################
+    ############################################## VARIABLES INITIALIZATION ###########################################
+    ###################################################################################################################
  
-    # Diverses variables
-    Loss = []
-    Epoch = []
-    Accuracy = []
-    Report = ''
-    output_2 = ''
-    verbose = 1
-    
     # Results and Models
-    folder_model = path_model
-    
-    if not os.path.exists(folder_model):
-        os.makedirs(folder_model)
- 
-    display_step = 100
-    save_step = 600
-    
-    save_last_epoch_freq = 50
-    save_best_moving_avg_epoch_freq = 5
-    save_best_moving_avg_window = 10
-    
-    batch_size_validation = 8
+    if not os.path.exists(path_model):
+        os.makedirs(path_model)
 
-
-    # ------- Network Parameters
-
+    # Translating useful variables from the config file.
     learning_rate = config["learning_rate"]
     n_classes = config["n_classes"]
     dropout = config["dropout"]
-    depth = config["depth"]
-    number_of_convolutions_per_layer = config["convolution_per_layer"]
-    size_of_convolutions_per_layer = config["size_of_convolutions_per_layer"]
-    features_per_convolution = config["features_per_convolution"]
-    downsampling = config["downsampling"]
     weighted_cost = config["weighted_cost_activate"]
     thresh_indices = config["thresholds"]
-    batch_size = config["batch_size"]
-    batch_norm = config["batch_norm_activate"]
+    batch_size_training = config["batch_size"]
+    batch_size_validation = 8
     batch_norm_decay = config["batch_norm_decay_starting_decay"]
     image_size = config["trainingset_patchsize"]
     
     data_augmentation = generate_dict_da(config)
     weights_modifier = generate_dict_weights(config)
    
-    # Decay parameters
-    batch_norm_decay_decay_activate = config["batch_norm_decay_decay_activate"]
-    batch_norm_decay_ending_decay = config["batch_norm_decay_ending_decay"]
-    batch_norm_decay_decay_period = config["batch_norm_decay_decay_period"]
-    learning_rate_decay_activate = config["learning_rate_decay_activate"]
-    learning_rate_decay_period = config["learning_rate_decay_period"]
-    learning_rate_decay_rate = config["learning_rate_decay_rate"]
-    learning_rate_decay_type = config["learning_rate_decay_type"]
-
     # Loading the datasets
-    data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size,
+    data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size_training,
                             thresh_indices=thresh_indices, image_size=image_size)
     data_validation = input_data(trainingset_path=path_trainingset, type_='validation', batch_size=batch_size_validation,
                                  thresh_indices=thresh_indices, image_size=image_size)
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
-    n_input = image_size * image_size
-    
+
     # Main loop parameters
     max_epoch = 2500
     epoch_size = data_train.epoch_size
+
+    # Model saving frequency variable.
+    save_last_epoch_freq = 50
+    save_best_moving_avg_epoch_freq = 5
+    save_best_moving_avg_window = 10
     
-    # Initilizating the text to write in report.txt
+    # Initializing the text to write in report.txt
+    Report = ''
+    output_2 = ''
+    verbose = 1
     Report += '\n\n---Savings---'
-    Report += '\n Model saved in : ' + folder_model
+    Report += '\n Model saved in : ' + path_model
     Report += '\n\n---PARAMETERS---\n'
-    Report += 'learning_rate : ' + str(learning_rate) + '; \n batch_size :  ' + str(batch_size) + ';\n depth :  ' + str(
-        depth) \
+    Report += 'learning_rate : ' + str(learning_rate) + '; \n batch_size :  ' + str(batch_size_training) + ';\n depth :  ' + str(
+        config["depth"]) \
               + ';\n epoch_size: ' + str(epoch_size) + ';\n dropout :  ' + str(dropout) \
               + ';\n (if model restored) restored_model :' + str(path_model_init)
 
-            
-    ########################################################################################################################
-    ################################################## GRAPH CONSTRUCTION ##################################################
-    ########################################################################################################################
+    ###################################################################################################################
+    ############################################# GRAPH CONSTRUCTION ##################################################
+    ###################################################################################################################
     
-    ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 1 - Declaring the placeholders and other variables
-    ### ------------------------------------------------------------------------------------------------------------------ ###
+    ### ----------------------------------------------------------------------------------------------------------- ###
+    #### 1 - Declaring the placeholders and other Tensorflow variables
+    ### ----------------------------------------------------------------------------------------------------------- ###
     
     x = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="input") # None relates to batch_size
     y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes), name="ground_truth")
-    phase = tf.placeholder(tf.bool, name="training_phase") # Tells us if we are in training phase of test phase. Used for batch_normalization
+    phase = tf.placeholder(tf.bool, name="training_phase") # True if training phase, False for other phases.
     if weighted_cost == True:
         spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="spatial_weights") 
     keep_prob = tf.placeholder(tf.float32, name="keep_prob")
@@ -153,61 +97,64 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     adapt_bn_decay = tf.placeholder(tf.float32, name="batch_norm_decay") # If the learning rate changes over epochs
     global_step = tf.Variable(0, trainable=False, name='global_step')
 
-    # Implementation note : we could use a spatial_weights tensor with only ones, which would greatly simplify the rest of the code by removing a lot of if conditions. Nevertheless, for computational reasons, we prefer to avoid the multipliciation by the spatial weights if the associated matrix is composed of only ones. This position may be revised in the future.
+    # Placeholders for metrics
+    L_training_loss = tf.placeholder(tf.float32, name="List_training_loss")
+    L_training_acc = tf.placeholder(tf.float32, name="List_training_acc")
+    L_dice_myelin = tf.placeholder(tf.float32, name="List_dice_myelin")
+    L_dice_axon = tf.placeholder(tf.float32, name="List_dice_axon")
+
+    # Implementation note :
+    # we could use a spatial_weights tensor with only ones, which would greatly simplify the rest of the code by
+    # removing a lot of if conditions. Nevertheless, for computational reasons, we prefer to avoid the multiplication
+    # by the spatial weights if the associated matrix is composed of only ones.
+    # This position may be revised in the future.
   
-    ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 2 - Creating the graph associated to the prediction made by the U-net.
-    ### ------------------------------------------------------------------------------------------------------------------ ###
-    
-    # We update the batch_norm_decay if needed
-    
-    if batch_norm_decay_decay_activate:
-        adapt_bn_decay = inverted_exponential_decay(batch_norm_decay, batch_norm_decay_ending_decay, global_step*batch_size,
-                                                    batch_norm_decay_decay_period, staircase=False)
-        tf.summary.scalar('adapt_bnd', adapt_bn_decay)
-    else:
-        adapt_bn_decay = None
-    
-    # We select a GPU before creating the prediction graph. WARNING : THIS IS FOR BIRELI, THERE ARE ONLY 2 GPUs
+    ### ----------------------------------------------------------------------------------------------------------- ###
+    #### 2 - Decaying hyperparameters and processing the computation graph associated to the prediction
+    ####     made by the U-net.
+    ### ----------------------------------------------------------------------------------------------------------- ###
 
-    if gpu in ['gpu:0', 'gpu:1']:
-        with tf.device('/' + gpu):
-            pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
-    else:
-        pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
+    # First, we decay the learning rate.
+    # Note: if we use a polynomial decay, we also update the maximum number of epochs to be equal to the period of
+    # the decay, since the learning rate will be equal to 0 after this period.
 
-    # We also display the total number of variables
-    total_parameters = 0
-    for variable in tf.trainable_variables():
-        shape = variable.get_shape()
-        variable_parametes = 1
-        for dim in shape:
-            variable_parametes *= dim.value
-        total_parameters += variable_parametes
-
-    output_params = 'tot_param = ' + str(total_parameters)
-    print(output_params)
-    
-    Report += '\n'+output_params+'\n'
-    
-    ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 3 - Adapting the dimensions of the differents tensors, then defining the optimization of the graph (loss + opt.)
-    ### ------------------------------------------------------------------------------------------------------------------ ###
-    
-    # First, we prepare the terrain for the decaying learning rate and we update (decay) the batch norm decay (which should be called batch norm momentum).
-    if learning_rate_decay_activate:
+    if config["learning_rate_decay_activate"]:
         # Each decay period is expressed in number of images seen
-        if learning_rate_decay_type == 'polynomial':
-            adapt_learning_rate = poly_decay(global_step*batch_size, learning_rate, learning_rate_decay_period)
-            max_epoch = learning_rate_decay_period/epoch_size
+        if config["learning_rate_decay_type"] == 'polynomial':
+            adapt_learning_rate = poly_decay(global_step * batch_size_training, learning_rate,
+                                             config["learning_rate_decay_period"])
+            max_epoch = config["learning_rate_decay_period"] / epoch_size
         else:
-            adapt_learning_rate = tf.train.exponential_decay(learning_rate, global_step*batch_size, 
-                                                     int(learning_rate_decay_period), learning_rate_decay_rate, staircase=False)
+            adapt_learning_rate = tf.train.exponential_decay(learning_rate, global_step * batch_size_training,
+                                                             int(config["learning_rate_decay_period"]),
+                                                             config["learning_rate_decay_rate"], staircase=False)
         tf.summary.scalar('adapt_lr', adapt_learning_rate)
 
     else:
         adapt_learning_rate = learning_rate
+
+    # We also update the batch_norm_decay if needed
+    if config["batch_norm_decay_decay_activate"]:
+        adapt_bn_decay = inverted_exponential_decay(batch_norm_decay,
+                                                    config["batch_norm_decay_ending_decay"],
+                                                    global_step * batch_size_training,
+                                                    config["batch_norm_decay_decay_period"], staircase=False)
+        tf.summary.scalar('adapt_bnd', adapt_bn_decay)
+
+    else:
+        adapt_bn_decay = None
     
+    # Next, we construct the computational graph linking the input and the prediction.
+    pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
+
+    # We also display the total number of variables
+    output_params = count_number_parameters(tf.trainable_variables())
+    print "Total number of parameters to train: " + str(output_params)
+    Report += '\n'+output_params+'\n'
+    
+    ### ----------------------------------------------------------------------------------------------------------- ###
+    #### 3 - Adapting the dimensions of the different tensors, then defining the optimization of the graph (loss + opt.)
+    ### ----------------------------------------------------------------------------------------------------------- ###
 
     # Reshaping pred and y so that they are understandable by softmax_cross_entropy 
     with tf.name_scope('preds_reshaped'):
@@ -219,13 +166,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     with tf.name_scope('cost'):
         if weighted_cost == True:    
             spatial_weights_ = tf.reshape(spatial_weights,[-1])
-            cost = tf.reduce_mean(tf.multiply(spatial_weights_,tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
+            cost = tf.reduce_mean(tf.multiply(spatial_weights_,
+                                              tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
         else:
             cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_))
 
-    #temp = set(tf.global_variables())  # trick to get variables generated by the optimizer
-    
-    # We then define the Adam optimization operation. We do it in two times to obtain the gradients, so we can use them in TensorBoard.
+    # We then define the Adam optimization operation.
+    # We do it in two times to retrieve the gradients, so we can use them in TensorBoard.
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
         # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
@@ -240,12 +187,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     weight_grads_summary = tf.summary.histogram('_'.join(weight.name.split(':')) + '_grad', grad)
 
         # Then we continue the optimization as usual
-        optimizer = tf.train.AdamOptimizer(learning_rate=adapt_learning_rate).apply_gradients(grads_list, global_step=global_step)   
-    
+        optimizer = tf.train.AdamOptimizer(learning_rate=adapt_learning_rate).apply_gradients(grads_list,
+                                                                                              global_step=global_step)
 
-    ### ------------------------------------------------------------------------------------------------------------------ ###
+    ### ----------------------------------------------------------------------------------------------------------- ###
     #### 4 - Constructing the metrics and storing the results to visualise them in TensorBoard
-    ### ------------------------------------------------------------------------------------------------------------------ ###
+    ### ----------------------------------------------------------------------------------------------------------- ###
      
     # We evaluate the accuracy pixel-by-pixel
     correct_pred = tf.equal(tf.argmax(pred_, 1), tf.argmax(y_, 1))
@@ -254,31 +201,29 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
         
     # Now we create the pixel-wise dice
-    
     pred_absolute = tf.cast(tf.equal(pred, tf.expand_dims(tf.reduce_max(pred, axis=-1),axis=-1)), tf.float32)
     
     dice = pw_dices(pred_absolute, tf.reshape(y,[-1, tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]))
     dice = tf.reduce_mean(dice, axis=0)
     _, pw_dice_myelin, pw_dice_axon = tf.split(dice, n_classes, axis=0)
     
-    # Defining list variables to keep track of the train error over one whole epoch instead of just one batch (these are the ones we are going to summarize)
-    
-    L_training_loss = tf.placeholder(tf.float32, name="List_training_loss")
-    L_training_acc = tf.placeholder(tf.float32, name="List_training_acc")
-    L_dice_myelin = tf.placeholder(tf.float32, name="List_dice_myelin")
-    L_dice_axon = tf.placeholder(tf.float32, name="List_dice_axon")
-
+    # Defining list variables to keep track of the train error over one whole epoch
+    # instead of just one batch (these are the ones we are going to summarize)
     training_loss = tf.reduce_mean(L_training_loss)
     training_acc = tf.reduce_mean(tf.cast(L_training_acc, tf.float32))
     dice_myelin = tf.reduce_mean(L_dice_myelin)
     dice_axon = tf.reduce_mean(L_dice_axon)
-    
+
+    ### ----------------------------------------------------------------------------------------------------------- ###
+    #### 5 - Processing summaries (numerical and images) that are used to visualize the training phase metrics on TensorBoard
+    ### ----------------------------------------------------------------------------------------------------------- ###
+
     tf.summary.scalar('loss', training_loss)
     tf.summary.scalar('accuracy', training_acc)
     tf.summary.scalar('dice_myelin', dice_myelin)
     tf.summary.scalar('dice_axon', dice_axon)
 
-    # Summaries   
+    # Debugging metric summaries
     if debug_mode == True:
         
         # Creation of a collection containing only the information we want to summarize
@@ -286,30 +231,28 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             if ('Adam' not in e.name) and (('weights' in e.name) or ('moving' in e.name) or ('bias' in e.name)):
                 tf.add_to_collection('vals_to_summarize', e)
             
-
         summary_activations = tf.contrib.layers.summarize_collection("activations",
                                                                      summarizer=tf.contrib.layers.summarize_activation)
-        summary_variables = tf.contrib.layers.summarize_collection('vals_to_summarize', name_filter=None)    
+        summary_variables = tf.contrib.layers.summarize_collection('vals_to_summarize', name_filter=None)
 
-    
-    ### ------------------------------------------------------------------------------------------------------------------ ###
-    #### 5 - Processing summaries (numerical and images) that are used to visualize the training phase metrics on TensorBoard
-    ### ------------------------------------------------------------------------------------------------------------------ ###
- 
-    # We create a merged summary. It relates to all numeric data (histograms, kernels ... etc)
+    # We create a merged summary. It gathers all numeric data (histograms, kernels ... etc)
     merged_summaries = tf.summary.merge_all()
-    
-    if debug_mode: # We only save the images if we are in debug mode.
 
-        # We also create a summary specific to images. We add images of the input and the probability maps predicted by the u-net
+    # We only save the images if we are in debug mode.
+    if debug_mode:
+
+        # We also create a summary specific to images.
+        # We add images of the input and the probability maps predicted by the u-net
         L_im_summ = []
         L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
-    
         L_im_summ.append(tf.summary.image('mask', y))
     
         # Creating the operation giving the probabilities
         with tf.name_scope('prob_maps'):
-            softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_), (-1, image_size * image_size, n_classes)), (-1, image_size, image_size, n_classes)) # We compute the softmax predictions and reshape them to (b_s, imsz, imsz, n_classes)
+            # We compute the softmax predictions and reshape them to (b_s, imsz, imsz, n_classes)
+            softmax_pred = tf.reshape(tf.reshape(tf.nn.softmax(pred_),
+                                                 (-1, image_size * image_size, n_classes)),
+                                      (-1, image_size, image_size, n_classes))
             probability_maps = tf.split(softmax_pred, n_classes, axis=3)
     
         # Adding a probability map for each class to the image summary
@@ -319,9 +262,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         # Merging the image summary
         images_merged_summaries = tf.summary.merge(L_im_summ)
 
-    ### ------------------------------------------------------------------------------------------------------------------ ###
+    ### ----------------------------------------------------------------------------------------------------------- ###
     #### 6 - Initializing variables and summaries
-    ### ------------------------------------------------------------------------------------------------------------------ ###
+    ### ----------------------------------------------------------------------------------------------------------- ###
  
     # We create the directories where we will store our model
     train_writer = tf.summary.FileWriter(logdir=path_model + '/train')
@@ -331,39 +274,44 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     init = tf.global_variables_initializer()
 
     # Creating a tool to preserve the state of the variables (useful for transfer learning for instance)
-    
     if save_trainable:
         #saver = tf.train.Saver(tf.trainable_variables(), tf.model_variables())
         saver = tf.train.Saver(tf.model_variables())
     else:
         saver = tf.train.Saver(tf.all_variables())
 
-    ########################################################################################################################
-    #################################################### TRAINING PHASE ####################################################
-    ########################################################################################################################
+    ###################################################################################################################
+    ################################################ TRAINING PHASE ###################################################
+    ###################################################################################################################
 
     Report += '\n\n---Intermediary results---\n'
     
     # Limiting the memory used by the training
     config_gpu = tf.ConfigProto(log_device_placement=True)
     config_gpu.gpu_options.per_process_gpu_memory_fraction = gpu_per
-    #config_gpu.gpu_options.allow_growth = True
+    #config_gpu.gpu_options.allow_growth = True # Activate if you only want to be dynamically attributed GPU memory.
 
     with tf.Session(config=config_gpu) as session:
         
         # Session initialized !
         
-        ### --------------------------------------------------------------------------------------------------------------- ###
+        ### ------------------------------------------------------------------------------------------------------- ###
         #### 1 - Preparing the main loop
-        ### --------------------------------------------------------------------------------------------------------------- ###
+        ### ------------------------------------------------------------------------------------------------------- ###
 
         # Initialization of useful variables
         last_epoch = 0
+        Loss = []
+        Epoch = []
+        Accuracy = []
         epoch_training_loss = []
         epoch_training_acc = []
         epoch_validation_loss = []
         epoch_validation_acc = []
-        epoch_training_dice_myelin, epoch_training_dice_axon, epoch_validation_dice_myelin, epoch_validation_dice_axon = [], [], [], []
+        epoch_training_dice_myelin = []
+        epoch_training_dice_axon = []
+        epoch_validation_dice_myelin = []
+        epoch_validation_dice_axon = []
         acc_current_best = 0
         loss_current_best = 10000
 
@@ -375,8 +323,10 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         if path_model_init: 
             folder_restored_model = path_model_init
             saver.restore(session, folder_restored_model + "/model.ckpt")
+
             if save_trainable:
-                session.run(tf.global_variables_initializer(set(tf.global_variables()) - temp))
+                session.run(tf.global_variables_initializer(set(tf.global_variables()))) # TODO correct here. Does it work ?
+
             file = open(folder_restored_model + '/evolution.pkl', 'r')
             evolution_restored = pickle.load(file)
             last_epoch = evolution_restored["steps"][-1]
@@ -395,160 +345,164 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         step = 1
         epoch = 1 + last_epoch
 
-        ### --------------------------------------------------------------------------------------------------------------- ###
+        ### ------------------------------------------------------------------------------------------------------- ###
         #### 2 - Main loop: training the neural network
-        ### --------------------------------------------------------------------------------------------------------------- ###
-        
-        t0 = 0
+        ### ------------------------------------------------------------------------------------------------------- ###
+
+        if debug_mode:
+            t0 = 0
+
         while epoch < max_epoch:
             
-            ### ----------------------------------------------------------------------------------------------------------- ###
-            #### a) Optimizing the network with the training set. Keep track of the metric on TensorBoard
-            ### ----------------------------------------------------------------------------------------------------------- ###
-            
-            # Compute the optimizer at each training iteration
+            ### --------------------------------------------------------------------------------------------------- ###
+            #### a) Optimizing the network with the training set. Keep track of the metric on TensorBoard.
+            ### --------------------------------------------------------------------------------------------------- ###
+
+            # We define the feed_dict parameter depending on whether we use weighted cost or not.
             if weighted_cost == True:
                 # Extracting the batches
-                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data_=data_augmentation,                                                                              weights_modifier=weights_modifier,
+                batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data_=data_augmentation,
+                                                                             weights_modifier=weights_modifier,
                                                                              each_sample_once=False)
-                
-                # Running the optimizer and computing the cost and accuracy.
-                stepcost, stepacc, _, step_dice_myelin, step_dice_axon = session.run([cost, accuracy, optimizer, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: dropout, phase:True})
-                                
-                epoch_training_loss.append(stepcost)
-                epoch_training_acc.append(stepacc)
-                epoch_training_dice_myelin.append(step_dice_myelin)
-                epoch_training_dice_axon.append(step_dice_axon)
-                
-                # Printing some info
-                #print 'epoch_size:'+str(epoch_size)+'-global_step:'+str(global_step)
-                
-                # If we just finished an epoch, we summarize the performance of the
-                # net on the training set to see it in TensorBoard.
-                if step*batch_size % epoch_size == 0:      
-                    
-                    # Writing the summary
-                    if debug_mode:
-                        summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin: epoch_training_dice_myelin, L_dice_axon:epoch_training_dice_axon, spatial_weights: weight, phase:True})
-                        train_writer.add_summary(summary, epoch)
-                        train_writer.add_summary(im_summary, epoch)
-                    else:
-                        summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin: epoch_training_dice_myelin, L_dice_axon:epoch_training_dice_axon, spatial_weights: weight, phase:True})
-                        train_writer.add_summary(summary, epoch)
-                    
-                    epoch_training_loss = []
-                    epoch_training_acc = []
-                    epoch_training_dice_myelin = []
-                    epoch_training_dice_axon = []
-  
-            else: # No weighted cost
-                # Extracting batches
+                # Generating the arguments of the session.run call.
+                feed_dict_train = {x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: dropout, phase: True}
+
+            else:
+                # Extracting the batches
                 batch_x, batch_y = data_train.next_batch(augmented_data_=data_augmentation, each_sample_once=False)
+
+                # Generating the arguments of the session.run call.
+                feed_dict_train = {x: batch_x, y: batch_y, keep_prob: dropout, phase: True}
+
+
+            # Compute the gradients by running the optimizer for each batch, and retrieve the metrics.
+            stepcost, stepacc, _, step_dice_myelin, step_dice_axon = session.run(
+                [cost, accuracy, optimizer, pw_dice_myelin, pw_dice_axon], feed_dict=feed_dict_train)
+
+            # Saving this step metrics
+            epoch_training_loss.append(stepcost)
+            epoch_training_acc.append(stepacc)
+            epoch_training_dice_myelin.append(step_dice_myelin)
+            epoch_training_dice_axon.append(step_dice_axon)
                 
-                # Computing loss, accuracy and optimizing the weights
-                stepcost, stepacc, _ , step_dice_myelin, step_dice_axon= session.run([cost, accuracy, optimizer, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, phase:True})
-                # Evaluating the loss and the accuracy for the dataset
-                epoch_training_loss.append(stepcost)
-                epoch_training_acc.append(stepacc)
-
-                # If were just finished an epoch, we summarize the performance of the
-                # net on the training set to see it in tensorboard.
-                if step*batch_size % epoch_size == 0:
-                                        
-                    # Writing the summary
-                    if debug_mode:
-                        summary, im_summary = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:True})
+            # Printing some info
+            if verbose>=2:
+                print 'epoch_size:'+str(epoch_size)+'-global_step:'+str(global_step)
+                
+            # If we just finished an epoch, we summarize the performance of the
+            # net on the training set to see it in TensorBoard.
+            if step*batch_size_training % epoch_size == 0:
                     
-                        train_writer.add_summary(summary, epoch)
-                        train_writer.add_summary(im_summary, epoch)
-                    else:
-                        summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss, L_training_acc: epoch_training_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:True})
-                    
-                        train_writer.add_summary(summary, epoch)
+                # Writing the summary (metrics, + images if in debug mode).
+                # We do two separates cases in order to only have one session.run call, what should be better for
+                # computation times purposes.
 
-                    epoch_training_loss = []
-                    epoch_training_acc = []
-                    epoch_training_dice_myelin = []
-                    epoch_training_dice_axon = []
+                feed_dict_summary_train = {
+                            x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_training_loss,
+                            L_training_acc: epoch_training_acc, L_dice_myelin: epoch_training_dice_myelin,
+                            L_dice_axon:epoch_training_dice_axon, spatial_weights: weight, phase:True
+                        }
+                if debug_mode:
+                    summary, im_summary = session.run(
+                        [merged_summaries, images_merged_summaries], feed_dict=feed_dict_summary_train)
 
-            ### ----------------------------------------------------------------------------------------------------------- ###
-            #### c) Evaluating the performance on the validation set. Keep track of it on TensorBoard and in a pickle file.
-            ### ----------------------------------------------------------------------------------------------------------- ###
+                    train_writer.add_summary(summary, epoch)
+                    train_writer.add_summary(im_summary, epoch)
+                else:
+                    summary = session.run(
+                        merged_summaries, feed_dict=feed_dict_summary_train)
+
+                    train_writer.add_summary(summary, epoch)
+
+                # We reset the accumulating variables.
+                epoch_training_loss = []
+                epoch_training_acc = []
+                epoch_training_dice_myelin = []
+                epoch_training_dice_axon = []
+  
+            ### --------------------------------------------------------------------------------------------------- ###
+            #### b) Evaluating the performance on the validation set. Keep track of it on TensorBoard.
+            ### --------------------------------------------------------------------------------------------------- ###
             
             # At the end of every epoch we compute the performance of our network on the validation set and we
             # save the summaries to see them on TensorBoard
-            if step*batch_size % epoch_size == 0:
-                if verbose >= 2:
+            if step*batch_size_training % epoch_size == 0:
+
+                # Initialisation of the lists that will store the metrics.
+                epoch_validation_loss = []
+                epoch_validation_acc = []
+                epoch_validation_dice_myelin = []
+                epoch_validation_dice_axon = []
+
+                if debug_mode:
                     t1 = time.time()
                     dt01 = t1 - t0 # time taken for the training phase
                 
                 if weighted_cost == True:
-                    epoch_validation_loss = []
-                    epoch_validation_acc = []
-                    epoch_validation_dice_myelin = []
-                    epoch_validation_dice_axon = []
+
+                    # We compute the metrics for each batch of the validation set
                     for i in range(n_iter_val):
+                        if weighted_cost:
+                            # Extracting the batch
+                            batch_x, batch_y, weight = data_validation.next_batch_WithWeights(
+                                augmented_data_={'type':'none'},
+                                weights_modifier=weights_modifier,
+                                each_sample_once=True
+                            )
+                            # Generating the feed_dict parameter
+                            feed_dict_val = {
+                                x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase: False}
 
-                        batch_x, batch_y, weight = data_validation.next_batch_WithWeights(augmented_data_={'type':'none'},                                                                              weights_modifier=weights_modifier,
-                                                                                          each_sample_once=True)
+                        else:
+                            # Extracting the batches
+                            batch_x, batch_y = data_validation.next_batch(
+                                augmented_data_={'type': 'none'},
+                                each_sample_once=True
+                            )
+                            # Generating the feed_dict parameter
+                            feed_dict_val = {x: batch_x, y: batch_y, keep_prob: 1., phase:False}
 
-                        step_loss, step_acc, step_dice_myelin, step_dice_axon = session.run([cost, accuracy, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: 1., phase:False})
+                        # We compute the metrics but do not run the optimizer this time.
+                        step_loss, step_acc, step_dice_myelin, step_dice_axon = session.run(
+                            [cost, accuracy, pw_dice_myelin, pw_dice_axon], feed_dict=feed_dict_val)
+
+                        # We have computed each validation batch but they must not be taken with the same weight
+                        # when calculating the batch_size, which is why we added a factor
+                        # in front of each step loss / step acc.
                         factor = float(batch_x.shape[0])/data_validation.set_size
                         epoch_validation_loss.append(factor*step_loss)
                         epoch_validation_acc.append(factor*step_acc)
                         epoch_validation_dice_myelin.append(factor*step_dice_myelin)
                         epoch_validation_dice_axon.append(factor*step_dice_axon)
-                        
-                    # We have computed each validation batch but they must not be taken with the same weight when calculating the batch_size, which is why we added a factor in front of each step loss / step acc.
+
+                    # Once we have gone over each batch, we aggregate the metrics and we fed them to the summary writers
                     epoch_validation_loss = [np.sum(epoch_validation_loss)]
                     epoch_validation_acc = [np.sum(epoch_validation_acc)]
                     epoch_validation_dice_myelin = [np.sum(epoch_validation_dice_myelin)]
                     epoch_validation_dice_axon = [np.sum(epoch_validation_dice_axon)]
                     
-                    # Writing the summary for this step of the training, to use in Tensorflow
+                    # Writing the summary for this validation epoch. Metrics (+ images if in debug mode)
+                    feed_dict_summary_val = {
+                                x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss,
+                                L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin,
+                                L_dice_axon:epoch_validation_dice_axon, spatial_weights: weight, phase:False
+                            }
+
                     if debug_mode:
-                        summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, spatial_weights: weight, phase:False})
+                        summary, im_summary_val = session.run(
+                            [merged_summaries, images_merged_summaries], feed_dict=feed_dict_summary_val)
+                        validation_writer.add_summary(summary, epoch)
+                        validation_writer.add_summary(im_summary_val, epoch)
                     else:
-                        summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, spatial_weights: weight, phase:False})
+                        summary = session.run(
+                            merged_summaries, feed_dict=feed_dict_summary_val)
+                        validation_writer.add_summary(summary, epoch)
 
+                ### ----------------------------------------------------------------------------------------------- ###
+                #### c) Displaying the metrics.
+                ### ----------------------------------------------------------------------------------------------- ###
 
-
-                else:
-                    epoch_validation_loss = []
-                    epoch_validation_acc = []
-                    epoch_validation_dice_myelin = []
-                    epoch_validation_dice_axon = []
-                    
-                    for i in range(n_iter_val):    
-                        batch_x, batch_y = data_validation.next_batch(augmented_data={'type':'none'}, each_sample_once=True)
-                        step_loss, step_acc, step_dice_myelin, step_dice_axon = session.run([cost, accuracy, pw_dice_myelin, pw_dice_axon], feed_dict={x: batch_x, y: batch_y, keep_prob: 1., phase:False})
-                        
-                        factor = float(batch_x.shape[0])/data_validation.set_size
-                        epoch_validation_loss.append(factor*step_loss)
-                        epoch_validation_acc.append(factor*step_acc)
-                        epoch_validation_dice_myelin = [np.sum(epoch_validation_dice_myelin)]
-                        epoch_validation_dice_axon = [np.sum(epoch_validation_dice_axon)]
-                       
-
-                    # We have computed each validation batch but they must not be taken with the same weight when calculating the batch_size, which is why we added a factor in front of each step loss / step acc.
-                    epoch_validation_loss = [np.sum(epoch_validation_loss)]
-                    epoch_validation_acc = [np.sum(epoch_validation_acc)]     
-                    epoch_validation_dice_myelin = [epoch_validation_dice_myelin]
-                    epoch_validation_dice_axon = [epoch_validation_dice_axon]
-                                        
-                    # Writing the summary for this step of the training, to use in Tensorflow
-                    if debug_mode:
-                        summary, im_summary_val = session.run([merged_summaries, images_merged_summaries], feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:False})
-                    else:
-                        summary = session.run(merged_summaries, feed_dict={x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss, L_training_acc: epoch_validation_acc, L_dice_myelin:epoch_validation_dice_myelin, L_dice_axon:epoch_validation_dice_axon, phase:False})
-
-                validation_writer.add_summary(summary, epoch)
-                if debug_mode:
-                    validation_writer.add_summary(im_summary_val, epoch)
-
-                # We also keep the metrics in lists so that we can save them in a pickle file later.
                 # We display the metrics (evaluated on the validation set).
-                
                 acc = np.mean(epoch_validation_acc)
                 loss = np.mean(epoch_validation_loss)
                 
@@ -562,11 +516,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 output_training = str(datetime.now()) + '-epoch:'+str(epoch)+'-loss:'+str(loss) + '-acc:'+str(acc)
                 print output_training
                 
-                if verbose >= 2:
+                if debug_mode:
                     t2 = time.time()
                     dt12 = t2 - t1 # Time needed for the validation phase
                     t0 = time.time() # Début d'une boucle
                     print 'time analysis-training:+'+str(dt01)+'-validating:'+str(dt12)
+
+
+                ### ----------------------------------------------------------------------------------------------- ###
+                #### d) Saving the model as a checkpoint, the metrics in a pickle file and update the file report.txt
+                ### ----------------------------------------------------------------------------------------------- ###
 
                 # Saving the model if it's the best one. We only do this check at the end of an epoch
                 if epoch == 1: # First epoch is 1, not 0
@@ -579,7 +538,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     loss_moving_avg = np.mean(Loss[-save_best_moving_avg_window:])
                     if acc_moving_avg > acc_current_best:
                         
-                        save_path = saver.save(session, folder_model + "/best_acc_model.ckpt")
+                        save_path = saver.save(session, path_model + "/best_acc_model.ckpt")
                         acc_current_best = acc_moving_avg
                         print("Best accuracy model saved in file: %s" % save_path)
                         
@@ -588,12 +547,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                      'steps': epoch, 
                                      'accuracy': np.mean(Accuracy[-10:])}
                         
-                        with open(folder_model + '/best_acc_stats.pkl', 'w') as handle:
+                        with open(path_model + '/best_acc_stats.pkl', 'w') as handle:
                             pickle.dump(evolution, handle)
                         
                     if loss_moving_avg < loss_current_best:
                         
-                        save_path = saver.save(session, folder_model + "/best_loss_model.ckpt")
+                        save_path = saver.save(session, path_model + "/best_loss_model.ckpt")
                         loss_current_best = loss_moving_avg
                         print("Best loss model saved in file: %s" % save_path)
                         
@@ -602,20 +561,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                      'steps': epoch, 
                                      'accuracy': np.mean(Accuracy[-10:])}
                         
-                        with open(folder_model + '/best_loss_stats.pkl', 'w') as handle:
+                        with open(path_model + '/best_loss_stats.pkl', 'w') as handle:
                             pickle.dump(evolution, handle)
-                        
-
-                ### ------------------------------------------------------------------------------------------------------- ###
-                #### d) Saving the model as a checkpoint, the metrics in a pickle file and update the file report.txt
-                ### ------------------------------------------------------------------------------------------------------- ###
 
                 # Moreover at a frequency we save the model regardless of the performance
                 if epoch % save_last_epoch_freq == 0:
+
                     evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
-                    with open(folder_model + '/evolution.pkl', 'wb') as handle:
+                    with open(path_model + '/evolution.pkl', 'wb') as handle:
                         pickle.dump(evolution, handle)
-                    save_path = saver.save(session, folder_model + "/model.ckpt")
+                    save_path = saver.save(session, path_model + "/model.ckpt")
 
                     print("Model saved in file: %s" % save_path)
 
@@ -623,94 +578,43 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                  'steps': epoch, 
                                  'accuracy': np.mean(Accuracy[-10:])}
 
-                    with open(folder_model + '/evolution_stats.pkl', 'w') as handle:
+                    with open(path_model + '/evolution_stats.pkl', 'w') as handle:
                         pickle.dump(evolution, handle)
                     
-                    file = open(folder_model + "/report.txt", 'w')
+                    file = open(path_model + "/report.txt", 'w')
                     file.write(Report + output_2)
                     file.close()
                 
                 # Increase the epoch #
                 epoch += 1
                 
-            
             # Increase the step #
             step += 1
 
-            
-    
         # At the end of the training we save the model in a checkpoint file
-        save_path = saver.save(session, folder_model + "/model.ckpt")
+        save_path = saver.save(session, path_model + "/model.ckpt")
 
         # Initialize best model with model after epoch 1
         evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
-        with open(folder_model + '/evolution.pkl', 'wb') as handle:
+        with open(path_model + '/evolution.pkl', 'wb') as handle:
             pickle.dump(evolution, handle)
 
         print("Model saved in file: %s" % save_path)
         print "Optimization Finished!"
-        
 
-def inverted_exponential_decay(a, b, global_step, decay_period_images_seen, staircase=False):
-    if staircase:
-        q, r = divmod(tf.cast(global_step, tf.int32),decay_period_images_seen)
-        return a + (b - a)*(1 - tf.exp(-q))
-    else:
-        return a + (b - a)*(1 - tf.exp(-tf.cast(global_step, tf.float32)/decay_period_images_seen))
-
-def poly_decay(step, initial_lrate, decay_period_images_seen):
-    '''
-    decay_period_images_seen: the decay period in terms of images seen by the network (1 epoch of 10 batches of 6 images each means that 1 epoch = 60 images seen). Thus this value must be a multiple of the number of batches
-    step: number of images seen by the network since the beginning of the training.
-    '''
-    # The magical poly decay scheduler
-    # Works for every problem haha.
-    factor = 1.0 - (tf.cast(step,tf.float32) / float(decay_period_images_seen))
-    lrate = initial_lrate * np.power(factor, 0.9)
-    return lrate
 
 
 def pw_dices(prediction, gt):
+    """
+    Computes the pixel-wise dice from the prediction tensor outputted by the network.
+    :param prediction: Tensor, the prediction outputted by the network. Shape (N,H,W,C).
+    :param gt: Tensor, the gold standard we work with. Shape (N,H,W,C).
+    :return: Vector, dice per class for the current batch.
+    """
+
     sum_ = tf.reduce_sum(prediction, axis=1) + tf.reduce_sum(gt, axis=1)
     intersection = tf.logical_and(tf.cast(prediction, tf.bool), tf.cast(gt, tf.bool))
-    return tf.multiply(2., tf.div(tf.reduce_sum(tf.cast(intersection, tf.float32),axis=1), sum_))
-    
-def generate_dict_weights(config):
-    
-    weights_modifier = {}
-    for key, val in config.iteritems():
-        if key == 'weighted_cost_activate':
-            update_recur_dict(weights_modifier, {key:val})
-        elif key[:13] == 'weighted_cost':
-            key1, key2 = key[13:].split('-')
-            update_recur_dict(weights_modifier, {key2:val})
-    return weights_modifier
-    
-def generate_dict_da(config):
-    '''
-    We extract the parameters related to data augmentation and we change the structure so that it's understandable by the input_data file.
-    '''
-    transformations = {}
-    for key, val in config.iteritems():
-        if key == 'da-type':
-            key1, key2 = key.split('-')
-            update_recur_dict(transformations,{key2:val})
-        elif key[:3] == 'da-':
-            key1, key2 = key[3:].split('-')
-            update_dict = {key1:{key2:val}}
-            update_recur_dict(transformations, update_dict)
-            
-    return transformations
-
-
-def update_recur_dict(d, u):
-    for k, v in u.iteritems():
-        if isinstance(v, collections.Mapping):
-            r = update_recur_dict(d.get(k, {}), v)
-            d[k] = r
-        else:
-            d[k] = u[k]
-    return d
+    return tf.multiply(2., tf.div(tf.reduce_sum(tf.cast(intersection, tf.float32), axis=1), sum_))
     
         
 # To Call the training in the terminal
