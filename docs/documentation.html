@@ -125,9 +125,14 @@ The two models are described below:</p>
 <div class="section" id="acquisitions">
 <h2>Acquisitions<a class="headerlink" href="#acquisitions" title="Permalink to this headline">¶</a></h2>
 <p>The acquisitions you want to segment must be stored following a particular architecture:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acquisition_folder</span><span class="o">/</span>
-<span class="o">--</span> <span class="n">acquisition</span><span class="o">.</span><span class="n">png</span>
-<span class="o">--</span> <span class="n">pixel_size_in_micrometer</span><span class="o">.</span><span class="n">txt</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acquisitions_to_segment</span><span class="o">/</span>
+<span class="o">--</span><span class="n">acquisition1_folder</span><span class="o">/</span>
+<span class="o">----</span> <span class="n">acquisition</span><span class="o">.</span><span class="n">png</span>
+<span class="o">----</span> <span class="n">pixel_size_in_micrometer</span><span class="o">.</span><span class="n">txt</span>
+<span class="o">--</span><span class="n">acquisition2_folder</span><span class="o">/</span>
+<span class="o">----</span> <span class="n">acquisition</span><span class="o">.</span><span class="n">png</span>
+<span class="o">----</span> <span class="n">pixel_size_in_micrometer</span><span class="o">.</span><span class="n">txt</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -136,16 +141,18 @@ The two models are described below:</p>
 </div>
 <ul class="simple">
 <li>The file <em>acquisition.png</em> is the image to segment.</li>
-<li>The file <em>pixel_size_in_micrometer.txt</em> contains a single float number corresponding to the resolution of the acquisition, that is the size of a pixel, in micrometer.</li>
+<li>The file <em>pixel_size_in_micrometer.txt</em> contains a single float number corresponding</li>
 </ul>
-<p>If you want to test AxonDeepSeg, you can download the test data available <a class="reference external" href="https://www.dropbox.com/sh/xftifr8dr4je0o7/AADgF5l-2M4Z9WOdh9xvcVDva?dl=0">here</a>.</p>
+<p>to the resolution of the acquisition, that is the size of a pixel, in micrometer.</p>
+<p>If you want to test AxonDeepSeg, you can download the test data available
+<a class="reference external" href="https://www.dropbox.com/s/uwxqmwx2ymnk2qa/test_segmentation.zip?dl=0">here</a>.</p>
 </div>
 <div class="section" id="using-axondeepseg">
 <h2>Using AxonDeepSeg<a class="headerlink" href="#using-axondeepseg" title="Permalink to this headline">¶</a></h2>
 <p>To learn to use AxonDeepSeg, you will need some acquisitions image to segment. If you don’t have some,
 you can download the test data using the instructions in the <cite>Acquisitions</cite> part of this tutorial.</p>
-<p>Once you have downloaded test data, go to the parent folder of the extracted test data folder. In our case:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">data_folder</span>
+<p>Once you have downloaded the test data, go to the extracted test data folder. In our case:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">test_segmentation</span>
 </pre></div>
 </div>
 <p>The script to launch is called <strong>axondeepseg</strong>. It takes several arguments:</p>
@@ -166,7 +173,7 @@ you can download the test data using the instructions in the <cite>Acquisitions<
 </li>
 </ul>
 <p>To segment the tem acquisition we just downloaded with a detail of the steps of the segmentation, run the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span><span class="o">/</span><span class="mf">77.</span><span class="n">png</span> <span class="o">-</span><span class="n">v</span> <span class="mi">2</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span><span class="o">/</span><span class="mf">77.</span><span class="n">png</span> <span class="o">-</span><span class="n">v</span> <span class="mi">2</span>
 </pre></div>
 </div>
 <p>The script will automatically read the acquisition resolution.
@@ -178,7 +185,7 @@ Each folder must hence contain at minimum a .png acquisition image to segment, a
 where the resolution of the acquisition is stored, in micrometer per pixel.
 All these acquisitions folders must then be located in the same global folder.</p>
 <p>When using the segmentation script, you then just have to indicate the path to the global folder, like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_sem_image</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>This line will segment all acquisitions in acquisition folders contained in the directory test_sem_image.
@@ -190,7 +197,7 @@ Each segmentation will be saved in the same folder as its corresponding acquisit
 ‘<a href="#id3"><span class="problematic" id="id4">segmentation_</span></a>’.</p>
 </div>
 <p>Finally, you can segment multiple images and folders at the same time, using the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image_2</span><span class="o">/</span><span class="n">image2_sem</span><span class="o">/</span><span class="mf">95.</span><span class="n">png</span> <span class="o">-</span><span class="n">o</span> <span class="mi">40</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_sem_image</span><span class="o">/</span> <span class="n">test_sem_image_2</span><span class="o">/</span><span class="n">image1_sem</span><span class="o">/</span><span class="mf">95.</span><span class="n">png</span> <span class="o">-</span><span class="n">o</span> <span class="mi">40</span>
 </pre></div>
 </div>
 <p>The previous command will segment all the acquisitions in the folders located in the test_sem_image directory,
@@ -203,7 +210,6 @@ as well as the acquisition 95.png, with an overlap value of 40 pixels.</p>
 </div>
 <div class="section" id="acknowledgements">
 <h1>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h1>
-<p>todo</p>
 </div>
 
 
