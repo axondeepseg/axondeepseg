@@ -4,7 +4,6 @@
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 from AxonDeepSeg.network_construction import *
-from tqdm import tqdm
 from config_tools import update_config, default_configuration
 import os
 from patch_management_tools import im2patches_overlap, patches2im_overlap
@@ -170,7 +169,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
 def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_model_folder, config_dict, ckpt_name='model',
                       segmentations_filenames=['AxonDeepSeg.png'], inference_batch_size=1,
-                      overlap_value=25, resampled_resolutions=0.1,
+                      overlap_value=25, resampled_resolutions=0.1, acquired_resolution=0.0,
                       prediction_proba_activate=False, write_mode=True, gpu_per=1.0, verbosity_level=0):
 
     '''
@@ -202,9 +201,15 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     # Generating the patch to acquisitions and loading the acquisitions resolutions.
     path_acquisitions = [os.path.join(path_acquisitions_folders[i], e) for i, e in enumerate(acquisitions_filenames)]
 
-    resolutions_files = [open(os.path.join(path_acquisition_folder, 'pixel_size_in_micrometer.txt'), 'r')
-                         for path_acquisition_folder in path_acquisitions_folders]
-    acquisitions_resolutions = [float(file_.read()) for file_ in resolutions_files]
+    # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
+    if acquired_resolution == 0.0:
+        resolutions_files = [open(os.path.join(path_acquisition_folder, 'pixel_size_in_micrometer.txt'), 'r')
+                             for path_acquisition_folder in path_acquisitions_folders]
+        acquisitions_resolutions = [float(file_.read()) for file_ in resolutions_files]
+
+    # If we received a resolution to use we use this one.
+    else:
+        acquisitions_resolutions = [acquired_resolution]*len(path_acquisitions_folders)
 
     # Ensuring that the config file is valid
     config_dict = update_config(default_configuration(), config_dict)
@@ -293,7 +298,7 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
     resampling_coeffs = [current_acquisition_resolution / resampled_resolutions[i]
                          for i, current_acquisition_resolution in enumerate(acquisitions_resolutions)]
 
-    for i, current_original_acquisition in tqdm(enumerate(original_acquisitions)):
+    for i, current_original_acquisition in enumerate(original_acquisitions):
         resampled_acquisitions.append(rescale(current_original_acquisition, resampling_coeffs[i],
                                               preserve_range=True).astype(int))
 
@@ -430,34 +435,3 @@ def perform_batch_inference(tf_session, tf_prediction_op, tf_input, batch_x, siz
 
     else:
         return batch_predictions_list
-
-
-# To Call the training in the terminal
-
-def main():
-    import argparse
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-m", "--path_model", required=True, help="")
-    ap.add_argument("-p", "--path_data", required=True, help="")
-    ap.add_argument("-n", "--imagename", required=False, help="", default="AxonDeepSeg.png")
-    ap.add_argument("-c", "--config_file", required=False, help="", default=None)
-
-    args = vars(ap.parse_args())
-
-    path_model = args["path_model"]
-    path_data = args["path_data"]
-    config_file = args["config_file"]
-
-    # We can't use the default argument from argparse.add_argument as it relies on another argument being entered (path_model).
-    # Instead, we set it ourselves below if path_config has not been given.
-    if config_file == None:
-        config_file = path_model + '/config_network.json'
-    imagename = args["imagename"]
-
-    config = generate_config(config_file)
-
-    axon_segmentation(path_data, path_model, config, segmentations_filenames=imagename)
-
-
-if __name__ == '__main__':
-    main()
