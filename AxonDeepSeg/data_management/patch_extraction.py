@@ -2,13 +2,17 @@ import random
 import numpy as np
 
 
-def extract_patch(img, mask, size):
+def extract_patch(patch, size):
     """
     :param img: image represented by a numpy-array
     :param mask: groundtruth of the segmentation
     :param size: size of the patches to extract
     :return: a list of pairs [patch, ground_truth] with a very low overlapping.
     """
+    img = patch[0]
+    mask = patch[1]
+    if len(patch) == 3:
+        weights = patch[2]
 
     h, w = img.shape
 
@@ -26,9 +30,13 @@ def extract_patch(img, mask, size):
     while pos+size<=h:
         pos2 = 0
         while pos2+size<=w:
-            patch = img[pos:pos+size, pos2:pos2+size]
+            patch_im = img[pos:pos+size, pos2:pos2+size]
             patch_gt = mask[pos:pos+size, pos2:pos2+size]
-            dataset.append([patch,patch_gt])
+            if len(patch) == 3:
+                patch_weights = weights[pos:pos+size, pos2:pos2+size]
+                dataset.append([patch_im, patch_gt, patch_weights])
+            else:
+                dataset.append([patch_im, patch_gt])
             pos2 = size + pos2 - q3_w
             if pos2 + size > w :
                 pos2 = pos2 - r3_w

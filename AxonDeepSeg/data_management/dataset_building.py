@@ -49,7 +49,8 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
                     # Set the mask values to the classes' values
                     mask = labellize_mask_2d(mask, thresh_indices)  # shape (size, size), values float 0.0-1.0
 
-            patches = extract_patch(img, mask, patch_size)
+            to_extract = [img, mask]
+            patches = extract_patch(to_extract, patch_size)
             # The patch extraction is done, now we put the new patches in the corresponding folders
             
             # We create it if it does not exist

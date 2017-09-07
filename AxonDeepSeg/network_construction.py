@@ -102,7 +102,7 @@ def maxpool(x, k_size, k_stride, scope, padding='VALID'):
 # ------------------------ NETWORK STRUCTURE
 
 
-def uconv_net(x, config, phase, bn_updated_decay = None, verbose = True):
+def uconv_net(x, training_config, dataset_config, phase, bn_updated_decay = None, verbose = True):
     """
     Create the U-net.
     Input :
@@ -115,17 +115,17 @@ def uconv_net(x, config, phase, bn_updated_decay = None, verbose = True):
     """
     
     # Load the variables
-    image_size = config["trainingset_patchsize"]
-    n_classes = config["n_classes"]
-    depth = config["depth"]
-    dropout = config["dropout"]
-    number_of_convolutions_per_layer = config["convolution_per_layer"]
-    size_of_convolutions_per_layer = config["size_of_convolutions_per_layer"]
-    features_per_convolution = config["features_per_convolution"]
-    downsampling = config["downsampling"]
-    activate_bn = config["batch_norm_activate"]
+    image_size = dataset_config["trainingset_patchsize"]
+    n_classes = dataset_config["n_classes"]
+    depth = training_config["depth"]
+    dropout = training_config["dropout"]
+    number_of_convolutions_per_layer = training_config["convolution_per_layer"]
+    size_of_convolutions_per_layer = training_config["size_of_convolutions_per_layer"]
+    features_per_convolution = training_config["features_per_convolution"]
+    downsampling = training_config["downsampling"]
+    activate_bn = training_config["batch_norm_activate"]
     if bn_updated_decay is None:
-        bn_decay = config["batch_norm_decay_starting_decay"]
+        bn_decay = training_config["batch_norm_decay_starting_decay"]
     else:
         bn_decay = bn_updated_decay
 

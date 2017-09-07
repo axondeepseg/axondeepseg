@@ -12,13 +12,13 @@ from datetime import datetime
 import time
 
 
-def train_model(path_trainingset, path_model, config, path_model_init=None,
+def train_model(path_trainingset, path_model, training_config, dataset_config, path_model_init=None,
                 save_trainable=True, gpu=None, debug_mode=False, gpu_per = 1.0):
     """
     Main function. Trains a model using the configuration parameters.
     :param path_trainingset: Path to access the trainingset.
     :param path_model: Path indicating where to save the model.
-    :param config: Dict, containing the configuration parameters of the network.
+    :param training_config: Dict, containing the configuration parameters of the network.
     :param path_model_init: Path to where the model to use for initialization is stored.
     :param save_trainable: Boolean. If True, only saves in the model variables that are trainable (evolve from gradient)
     :param gpu: String, name of the gpu to use. Prefer use of CUDA_VISIBLE_DEVICES environment variable.
@@ -37,18 +37,19 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         os.makedirs(path_model)
 
     # Translating useful variables from the config file.
-    learning_rate = config["learning_rate"]
-    n_classes = config["n_classes"]
-    dropout = config["dropout"]
-    weighted_cost = config["weighted_cost_activate"]
-    thresh_indices = config["thresholds"]
-    batch_size_training = config["batch_size"]
+    learning_rate = training_config["learning_rate"]
+    dropout = training_config["dropout"]
+    weighted_cost = training_config["weighted_cost_activate"]
+    batch_size_training = training_config["batch_size"]
     batch_size_validation = 8
-    batch_norm_decay = config["batch_norm_decay_starting_decay"]
-    image_size = config["trainingset_patchsize"]
-    
-    data_augmentation = generate_dict_da(config)
-    weights_modifier = generate_dict_weights(config)
+    batch_norm_decay = training_config["batch_norm_decay_starting_decay"]
+
+    image_size = dataset_config["trainingset_patchsize"]
+    thresh_indices = dataset_config["thresholds"]
+    n_classes = dataset_config["n_classes"]
+
+    data_augmentation = generate_dict_da(training_config)
+    weights_modifier = generate_dict_weights(training_config)
    
     # Loading the datasets
     data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size_training,
@@ -75,7 +76,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     Report += '\n Model saved in : ' + path_model
     Report += '\n\n---PARAMETERS---\n'
     Report += 'learning_rate : ' + str(learning_rate) + '; \n batch_size :  ' + str(batch_size_training) + ';\n depth :  ' + str(
-        config["depth"]) \
+        training_config["depth"]) \
               + ';\n epoch_size: ' + str(epoch_size) + ';\n dropout :  ' + str(dropout) \
               + ';\n (if model restored) restored_model :' + str(path_model_init)
 
@@ -118,34 +119,34 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # Note: if we use a polynomial decay, we also update the maximum number of epochs to be equal to the period of
     # the decay, since the learning rate will be equal to 0 after this period.
 
-    if config["learning_rate_decay_activate"]:
+    if training_config["learning_rate_decay_activate"]:
         # Each decay period is expressed in number of images seen
-        if config["learning_rate_decay_type"] == 'polynomial':
+        if training_config["learning_rate_decay_type"] == 'polynomial':
             adapt_learning_rate = poly_decay(global_step * batch_size_training, learning_rate,
-                                             config["learning_rate_decay_period"])
-            max_epoch = config["learning_rate_decay_period"] / epoch_size
+                                             training_config["learning_rate_decay_period"])
+            max_epoch = training_config["learning_rate_decay_period"] / epoch_size
         else:
             adapt_learning_rate = tf.train.exponential_decay(learning_rate, global_step * batch_size_training,
-                                                             int(config["learning_rate_decay_period"]),
-                                                             config["learning_rate_decay_rate"], staircase=False)
+                                                             int(training_config["learning_rate_decay_period"]),
+                                                             training_config["learning_rate_decay_rate"], staircase=False)
         tf.summary.scalar('adapt_lr', adapt_learning_rate)
 
     else:
         adapt_learning_rate = learning_rate
 
     # We also update the batch_norm_decay if needed
-    if config["batch_norm_decay_decay_activate"]:
+    if training_config["batch_norm_decay_decay_activate"]:
         adapt_bn_decay = inverted_exponential_decay(batch_norm_decay,
-                                                    config["batch_norm_decay_ending_decay"],
+                                                    training_config["batch_norm_decay_ending_decay"],
                                                     global_step * batch_size_training,
-                                                    config["batch_norm_decay_decay_period"], staircase=False)
+                                                    training_config["batch_norm_decay_decay_period"], staircase=False)
         tf.summary.scalar('adapt_bnd', adapt_bn_decay)
 
     else:
         adapt_bn_decay = None
     
     # Next, we construct the computational graph linking the input and the prediction.
-    pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
+    pred = uconv_net(x, training_config, dataset_config, phase, bn_updated_decay = adapt_bn_decay)
 
     # We also display the total number of variables
     output_params = count_number_parameters(tf.trainable_variables())
