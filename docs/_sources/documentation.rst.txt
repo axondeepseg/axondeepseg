@@ -85,32 +85,35 @@ The two models are described below:
 Acquisitions
 -------------------------------------------------------------------------------
 
-The acquisitions you want to segment must be stored following a particular architecture::
+If you want to test AxonDeepSeg, you can download the test data available
+`here <https://osf.io/rtbwc/download>`_.
 
-    acquisitions_to_segment/
-    --acquisition1_folder/
-    ---- acquisition.png
-    ---- pixel_size_in_micrometer.txt
-    --acquisition2_folder/
-    ---- acquisition.png
-    ---- pixel_size_in_micrometer.txt
+The images you want to segment must be stored following a particular architecture::
+
+    images_to_segment/
+    --folder_1/
+    ---- your_image_1.png
+    ---- another_image.png
+    ---- ...
+    ---- pixel_size_in_micrometer.txt (*)
     ...
 
 .. NOTE ::
-   The acquisitions must be saved in **png format**.
+   The images must be saved in **png format**. You don't have to specifically name them.
 
-* The file *acquisition.png* is the image to segment.
+* The image file *image.png* is the image to segment.
 * The file *pixel_size_in_micrometer.txt* contains a single float number corresponding
-to the resolution of the acquisition, that is the size of a pixel, in micrometer.
+to the resolution of the image, that is the **size of a pixel in micrometer**.
 
-If you want to test AxonDeepSeg, you can download the test data available
-`here <https://osf.io/rtbwc/download>`_.
+.. NOTE ::
+   You can also specify the size of a pixel as an argument to our software.
+
 
 
 Using AxonDeepSeg
 -------------------------------------------------------------------------------
 
-To learn to use AxonDeepSeg, you will need some acquisitions image to segment. If you don't have some,
+To learn to use AxonDeepSeg, you will need some images to segment. If you don't have some,
 you can download the test data using the instructions in the `Acquisitions` part of this tutorial.
 
 Once you have downloaded the test data, go to the extracted test data folder. In our case::
@@ -119,48 +122,44 @@ Once you have downloaded the test data, go to the extracted test data folder. In
 
 The script to launch is called **axondeepseg**. It takes several arguments:
 
-* **t**: type of the acquisition. SEM or TEM.
-* **p**: path to the acquisition.
+* **t**: type of the image. SEM or TEM.
+* **p**: path to the image.
+* **s**: (optional) resolution (size in micrometer of a pixel) of the image.
 * **v**: (optional) verbosity level. Default 0.
 
     * 0 displays only a progress bar indicating the advancement of the segmentations.
     * 1 displays additionally the path of the image that was just segmented.
-    * 2 displays additionally information about the current step of the segmentation of the current acquisition.
+    * 2 displays additionally information about the current step of the segmentation of the current image.
 
-* **o**: (optional) overlap value. Number of pixel to use when overlapping predictions. The higher, the more time the segmentation will take. Default 25.
+To segment one of the image that we downloaded (here, a SEM image), run the following command::
 
-To segment the tem acquisition we just downloaded with a detail of the steps of the segmentation, run the following command::
+    axondeepseg -t SEM -p test_sem_image/image1_sem/77.png -v 2 -s 0.07
 
-    axondeepseg -t SEM -p test_sem_image/image1_sem/77.png -v 2
-
-The script will automatically read the acquisition resolution.
+The script will use the size argument (here, 0.07) for the segmentation. If no size is provided in the arguments,
+it will automatically read the image resolution encoded in the file: *pixel_size_in_micrometer.txt*
 The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
-The segmented acquisition itself will be saved in the same folder as the acquisition image, with the prefix 'segmentation_', in png format.
+The segmented acquisition itself will be saved in the same folder as the acquisition image,
+with the prefix 'segmentation_', in png format.
 
-You can also decide to segment multiple acquisitions at the same time.
-In that case, each acquisition must be located in its own folder.
-Each folder must hence contain at minimum a .png acquisition image to segment, and a pixel_size_in_micrometer.txt file
-where the resolution of the acquisition is stored, in micrometer per pixel.
-All these acquisitions folders must then be located in the same global folder.
 
-When using the segmentation script, you then just have to indicate the path to the global folder, like this::
+* To segment multiple images acquired with the same resolution, put them all in the same folder and
+launch the segmentation of this folder, like below::
 
-    axondeepseg -t SEM -p test_sem_image/
+    axondeepseg -t SEM -p test_sem_image/image 1_sem/
 
-This line will segment all acquisitions in acquisition folders contained in the directory test_sem_image.
-Each segmentation will be saved in the same folder as its corresponding acquisition.
 
-.. NOTE ::
-   When looking in an acquisition folder for an acquisition to segment, the script will first look for an image named
-   'image.png'. If found, it will segment it. Else, it will segment the first .png file which name does not begin with
-   'segmentation_'.
+* To segment multiple images acquired with different resolutions,
+please use the folder structure explained above in the `Acquisitions` part,
+i.e., put all image with the same resolution in the same folder.
+* Then, segment each folder one after the other using the argument **-s** or segment all folders in one command
+by specifying multiple paths to segment and using a different pixel_size_in_micrometer.txt for each folder, like this::
 
-Finally, you can segment multiple images and folders at the same time, using the following command::
+    axondeepseg -t SEM -p test_sem_image/image1_sem test_sem_image/image2_sem/
 
-    axondeepseg -t SEM -p test_sem_image/ test_sem_image_2/image1_sem/95.png -o 40
 
-The previous command will segment all the acquisitions in the folders located in the test_sem_image directory,
-as well as the acquisition 95.png, with an overlap value of 40 pixels.
+Here, we segment all images located in image1_sem and image2_sem that don't have the "segmented" suffix.
+
+Each output segmentation will be saved in the corresponding sub-folder.
 
 Licensing
 ===============================================================================
