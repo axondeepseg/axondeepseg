@@ -128,7 +128,7 @@ class input_data:
     Data to feed the learning/validating of the CNN
     """
 
-    def __init__(self, trainingset_path, dataset_config, type_ = 'train', batch_size = 8, preload_all=True):
+    def __init__(self, trainingset_path, config, type_ ='train', batch_size = 8, preload_all=True):
         """
         Input: 
             trainingset_path : string : path to the trainingset folder containing 2 folders Validation and Train
@@ -150,17 +150,17 @@ class input_data:
             self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
             self.each_sample_once = True
 
-        self.size_image = dataset_config["trainingset_patchsize"]
+        self.size_image = config["trainingset_patchsize"]
         self.n_labels = 2
         self.samples_seen = 0
-        self.thresh_indices = dataset_config["thresholds"]
+        self.thresh_indices = config["thresholds"]
         self.batch_size = batch_size
         self.samples_list = self.reset_set(type_=type_)
         self.epoch_size = len(self.samples_list)
         self.preload_all = preload_all
         self.loaded_data = None
-        self.mean = dataset_config['dataset_mean']
-        self.variance = dataset_config['dataset_variance']
+        self.mean = config['dataset_mean']
+        self.variance = config['dataset_variance']
 
         # Loading all images if asked so
         

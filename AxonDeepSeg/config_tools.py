@@ -86,27 +86,14 @@ def default_training_configuration():
      'weighted_cost-balanced_activate': True,
      'weighted_cost-balanced_weights': [1.1, 1, 1.3],
      'weighted_cost-boundaries_activate': False,
-     'weighted_cost-boundaries_sigma': 2
+     'weighted_cost-boundaries_sigma': 2,
+   'thresholds': [0, 0.2, 0.8],
+   'trainingset': 'SEM_3c_512',
+   'trainingset_patchsize': 512,
+   'balanced_weights': [1.1, 1, 1.3],
+   'dataset_mean': 120.95, # Not used right now for preprocessing, we do it on a per image basis.
+   'dataset_variance': 60.23 # Not used right now for preprocessing, we do it on a per image basis.
            }
-
-    return tmp
-
-
-def default_dataset_configuration():
-    """
-    Generate the default configuration for a dataset.
-    :return: Dictionary, the default configuration parameters.
-    """
-
-    tmp = {
-        'n_classes': 3,
-        'thresholds': [0, 0.2, 0.8],
-        'trainingset': 'SEM_3c_512',
-        'trainingset_patchsize': 512,
-        'balanced_weights':[1.1, 1, 1.3],
-        'dataset_mean': 120.95,
-        'dataset_variance': 60.23
-    }
 
     return tmp
 

@@ -10,8 +10,8 @@ import os
 from patch_management_tools import im2patches_overlap, patches2im_overlap
 
 
-def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, training_config_dict,
-                  dataset_config_dict, acquisitions_names = None,
+def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict,
+                  acquisitions_names = None,
                   ckpt_name='model', inference_batch_size=1,
                   overlap_value=25, resampled_resolutions=[0.1], prediction_proba_activate=False,
                   gpu_per=1.0, verbosity_level=0):
@@ -21,7 +21,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     :param path_acquisitions: List of path to the acquisitions.
     :param acquisitions_resolutions: List of the acquisitions resolutions (floats).
     :param path_model_folder: Path to the model folder.
-    :param training_config_dict: Dictionary containing the model's parameters.
+    :param config_dict: Dictionary containing the model's parameters.
     :param acquisitions_names: List of names of the acquisitions.
     :param ckpt_name: String, checkpoint to use.
     :param inference_batch_size: Int, batch size to use when doing inference.
@@ -41,8 +41,8 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     warnings.filterwarnings('ignore')
 
     # Network Parameters
-    patch_size = dataset_config_dict["trainingset_patchsize"]
-    n_classes = dataset_config_dict["n_classes"]
+    patch_size = config_dict["trainingset_patchsize"]
+    n_classes = config_dict["n_classes"]
 
     ########### STEP 1: we load and rescale the acquisitions, and transform them into patches.
 
@@ -62,7 +62,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     if verbosity_level>=2:
         print "Graph construction ..."
     x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size))
-    pred = uconv_net(x, training_config_dict, dataset_config_dict, phase=False, verbose=False)  # Inference
+    pred = uconv_net(x, config_dict, config_dict, phase=False, verbose=False)  # Inference
     saver = tf.train.Saver() # Loading the previous model
 
     # We limit the amount of GPU we are going to use for inference.
@@ -171,8 +171,8 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
         #######################################################################################################################
 
 
-def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_model_folder, training_config_dict,
-                      dataset_config_dict, ckpt_name='model',
+def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_model_folder, config_dict,
+                      ckpt_name='model',
                       segmentations_filenames=['AxonDeepSeg.png'], inference_batch_size=1,
                       overlap_value=25, resampled_resolutions=0.1,
                       prediction_proba_activate=False, write_mode=True, gpu_per=1.0, verbosity_level=0):
@@ -183,8 +183,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     :param path_acquisitions_folders: List of folders where the acquisitions to segment are located.
     :param acquisitions_filenames: List of names of acquisitions to segment.
     :param path_model_folder: Path to the folder where the model is located.
-    :param training_config_dict: Dictionary containing the configuration of the training parameters of the model.
-    :param dataset_config_dict: Dictionary containing the configuration of the dataset that was used for training.
+    :param config_dict: Dictionary containing the configuration of the training parameters of the model.
     :param ckpt_name: String, name of the checkpoint to use.
     :param segmentations_filenames: List of the names of the segmentations files, to be used when creating the files.
     :param inference_batch_size: Size of the batches fed to the network.
@@ -212,13 +211,13 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     acquisitions_resolutions = [float(file_.read()) for file_ in resolutions_files]
 
     # Ensuring that the config file is valid
-    training_config_dict = update_config(default_training_configuration(), training_config_dict)
-    dataset_config_dict = update_config(default_dataset_configuration(), dataset_config_dict)
+    config_dict = update_config(default_training_configuration(), config_dict)
+    config_dict = update_config(default_dataset_configuration(), config_dict)
 
     # Perform the segmentation of all the requested images.
     if prediction_proba_activate:
         prediction, prediction_proba = apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder,
-                                                     training_config_dict, dataset_config_dict, ckpt_name=ckpt_name,
+                                                     config_dict, config_dict, ckpt_name=ckpt_name,
                                                      inference_batch_size=inference_batch_size, overlap_value=overlap_value,
                                                      resampled_resolutions=resampled_resolutions,
                                                      prediction_proba_activate=prediction_proba_activate,
@@ -226,7 +225,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
         # Predictions are shape of image, value = class of pixel
     else:
         prediction = apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder,
-                                   training_config_dict, dataset_config_dict, ckpt_name=ckpt_name,
+                                   config_dict, config_dict, ckpt_name=ckpt_name,
                                    inference_batch_size=inference_batch_size, overlap_value=overlap_value,
                                    resampled_resolutions=resampled_resolutions,
                                    prediction_proba_activate=prediction_proba_activate,
@@ -237,7 +236,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     if write_mode:
         for i, pred in enumerate(prediction):
             # We now transform the prediction to an image
-            n_classes = dataset_config_dict['n_classes']
+            n_classes = config_dict['n_classes']
             paint_vals = [int(255 * float(j) / (n_classes - 1)) for j in range(n_classes)]
 
             # Now we create the mask with values in range 0-255

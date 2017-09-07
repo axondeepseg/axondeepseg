@@ -49,7 +49,7 @@ def segment_image(type_, path_testing_image, path_model,
         # Performing the segmentation
         segmented_image_name = segmented_image_prefix + acquisition_name
         axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
-                          path_model_folder=path_model, training_config_dict=config, ckpt_name='model',
+                          path_model_folder=path_model, config_dict=config, ckpt_name='model',
                           inference_batch_size=1, overlap_value=overlap_value,
                           segmentations_filenames=segmented_image_name,
                           resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
@@ -99,7 +99,7 @@ def segment_folders(type_, path_testing_images_folder, path_model,
                     # Performing the segmentation
                     segmented_image_name = segmented_image_prefix + file_
                     axon_segmentation(path_acquisitions_folders=path_image_folder, acquisitions_filenames=[file_],
-                                      path_model_folder=path_model, training_config_dict=config, ckpt_name='model',
+                                      path_model_folder=path_model, config_dict=config, ckpt_name='model',
                                       inference_batch_size=1, overlap_value=overlap_value,
                                       segmentations_filenames=segmented_image_name,
                                       resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
@@ -115,7 +115,7 @@ def segment_folders(type_, path_testing_images_folder, path_model,
                     # Performing the segmentation
                     segmented_image_name = segmented_image_prefix + file_
                     axon_segmentation(path_acquisitions_folders=path_image_folder, acquisitions_filenames=[file_],
-                                      path_model_folder=path_model, training_config_dict=config, ckpt_name='model',
+                                      path_model_folder=path_model, config_dict=config, ckpt_name='model',
                                       inference_batch_size=1, overlap_value=overlap_value,
                                       segmentations_filenames=[segmented_image_name], verbosity_level=verbosity_level,
                                       resampled_resolutions=resolution_model, prediction_proba_activate=False,
