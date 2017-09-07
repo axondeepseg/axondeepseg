@@ -25,13 +25,13 @@ def validate_config(config):
     """
 
     keys = config.keys()
-    for key in default_training_configuration().keys():
+    for key in default_configuration().keys():
         if not key in keys:
             return False
     return True
 
 
-def default_training_configuration():
+def default_configuration():
     """
     Generate the default configuration for the training parameters.
     :return: Dictionary, the default configuration parameters.
@@ -116,7 +116,7 @@ def generate_config(config_path=None):
     Output :
         config : dict : the network config file.
     """
-    config = default_training_configuration()
+    config = default_configuration()
     if config_path != None:
         with open(config_path) as conf_file:
             user_conf = json.load(conf_file)
@@ -145,12 +145,12 @@ def flatten(container):
             yield i
             
             
-def grid_config(L_struct, dict_params, base_config = default_training_configuration()):
+def grid_config(L_struct, dict_params, base_config = default_configuration()):
     '''
     L_struct is a list of structures parameters in dictionnaries for the configuration file. It must contain at least the number of convolution per layer, the size of each kernel, and the nested list of number of features per layer.
     '''
     # First we create the different structures from the list
-    base_config = update_config(default_training_configuration(), base_config) # We complete the base configuration if needed.
+    base_config = update_config(default_configuration(), base_config) # We complete the base configuration if needed.
     
     L_configs = []
 

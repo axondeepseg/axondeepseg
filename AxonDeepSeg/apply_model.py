@@ -5,7 +5,7 @@ from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 from AxonDeepSeg.network_construction import *
 from tqdm import tqdm
-from config_tools import update_config, default_training_configuration, default_dataset_configuration
+from config_tools import update_config, default_configuration, default_dataset_configuration
 import os
 from patch_management_tools import im2patches_overlap, patches2im_overlap
 
@@ -211,7 +211,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     acquisitions_resolutions = [float(file_.read()) for file_ in resolutions_files]
 
     # Ensuring that the config file is valid
-    config_dict = update_config(default_training_configuration(), config_dict)
+    config_dict = update_config(default_configuration(), config_dict)
     config_dict = update_config(default_dataset_configuration(), config_dict)
 
     # Perform the segmentation of all the requested images.
