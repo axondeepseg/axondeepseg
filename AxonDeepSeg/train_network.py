@@ -50,12 +50,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     data_augmentation = generate_dict_da(config)
     weights_modifier = generate_dict_weights(config)
+    data_aug_verbose = 0
    
     # Loading the datasets
-    data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size_training,
-                            thresh_indices=thresh_indices, image_size=image_size)
-    data_validation = input_data(trainingset_path=path_trainingset, type_='validation', batch_size=batch_size_validation,
-                                 thresh_indices=thresh_indices, image_size=image_size)
+    data_train = input_data(trainingset_path=path_trainingset, config=config, type_='train', batch_size=batch_size_training)
+    data_validation = input_data(trainingset_path=path_trainingset, config=config, type_='validation', batch_size=batch_size_validation)
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
 
@@ -146,7 +145,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         adapt_bn_decay = None
     
     # Next, we construct the computational graph linking the input and the prediction.
-    pred = uconv_net(x, config, config, phase, bn_updated_decay = adapt_bn_decay)
+    pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
 
     # We also display the total number of variables
     output_params = count_number_parameters(tf.trainable_variables())
@@ -364,17 +363,18 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 # Extracting the batches
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data_=data_augmentation,
                                                                              weights_modifier=weights_modifier,
-                                                                             each_sample_once=False)
+                                                                             each_sample_once=False,
+                                                                             data_aug_verbose=data_aug_verbose)
                 # Generating the arguments of the session.run call.
                 feed_dict_train = {x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: dropout, phase: True}
 
             else:
                 # Extracting the batches
-                batch_x, batch_y = data_train.next_batch(augmented_data_=data_augmentation, each_sample_once=False)
+                batch_x, batch_y = data_train.next_batch(augmented_data_=data_augmentation, each_sample_once=False,
+                                                                             data_aug_verbose=data_aug_verbose)
 
                 # Generating the arguments of the session.run call.
                 feed_dict_train = {x: batch_x, y: batch_y, keep_prob: dropout, phase: True}
-
 
             # Compute the gradients by running the optimizer for each batch, and retrieve the metrics.
             stepcost, stepacc, _, step_dice_myelin, step_dice_axon = session.run(

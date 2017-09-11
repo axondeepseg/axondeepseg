@@ -263,8 +263,10 @@ class input_data:
 
             # Application of data augmentation
             augmented_data = copy.deepcopy(augmented_data_)
+
             image, real_mask, real_weights = self.apply_data_augmentation([image, real_mask, real_weights],
                                                                           augmented_data, data_aug_verbose)
+            
             # Normalisation of the image
             image = apply_legacy_preprocess(image)
 
@@ -281,7 +283,7 @@ class input_data:
                     break
                 else:
                     self.samples_list = self.reset_set(type_ = 'train')
-
+                    
 
         # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them        
         return transform_batches([batch_x, batch_y, batch_w])

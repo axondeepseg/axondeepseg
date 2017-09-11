@@ -31,7 +31,7 @@ def extract_patch(patch, size):
         pos2 = 0
         while pos2+size<=w:
             patch_im = img[pos:pos+size, pos2:pos2+size]
-            patch_gt = mask[pos:pos+size, pos2:pos2+size]
+            patch_gt = mask[pos:pos+size, pos2:pos2+size,:]
             if len(patch) == 3:
                 patch_weights = weights[pos:pos+size, pos2:pos2+size]
                 dataset.append([patch_im, patch_gt, patch_weights])
