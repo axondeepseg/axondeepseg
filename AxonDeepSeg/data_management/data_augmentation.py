@@ -24,9 +24,10 @@ def shifting(patch, percentage_max = 0.1, verbose=0):
     """
 
     patch_size = patch[0].shape[0]
+    n_classes = patch[1].shape[-1]
     size_shift = int(percentage_max*patch_size) # Maximum shift in pixels.
     img = np.pad(patch[0],size_shift, mode = "reflect")
-    mask = np.pad(patch[1],size_shift, mode = "reflect")
+    mask = np.stack([np.pad(np.squeeze(e),size_shift, mode = "reflect") for e in np.split(patch[1], n_classes, axis=-1)], axis=-1)
     if len(patch) == 3:
         weights = np.pad(patch[2],size_shift, mode = "reflect")
 
@@ -38,12 +39,10 @@ def shifting(patch, percentage_max = 0.1, verbose=0):
         print 'height shift: ',begin_h, ', width shift: ', begin_w     
     
     shifted_image = img[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size]
-    shifted_mask = mask[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size]
+    shifted_mask = np.stack([np.squeeze(e)[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size] for e in np.split(mask, n_classes, axis=-1)], axis=-1)
 
     if len(patch) == 3:
         shifted_weights = weights[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size]
-
-    if len(patch) == 3:
         return [shifted_image,shifted_mask, shifted_weights]
     else:
         return [shifted_image, shifted_mask]
@@ -61,6 +60,7 @@ def rescaling(patch, factor_max=1.2, verbose=0):
 
     low_bound = 1.0/factor_max
     high_bound = 1.0*factor_max
+    n_classes = patch[1].shape[-1]
 
     # Randomly choosing the resampling factor.
     scale = np.random.uniform(low_bound, high_bound, 1)[0]
@@ -85,7 +85,8 @@ def rescaling(patch, factor_max=1.2, verbose=0):
         # If we undersample, we pad the rest of the image.
         if q_h > 0:
             image_rescale = np.pad(image_rescale,(q_h, q_h+r_h), mode = "reflect")
-            mask_rescale = np.pad(mask_rescale,(q_h, q_h+r_h), mode = "reflect")
+            mask_rescale = [np.pad(np.squeeze(e),(q_h, q_h+r_h), mode = "reflect") for e in np.split(mask_rescale, n_classes, axis=-1)]
+            mask_rescale = np.stack(mask_rescale, axis=-1)
             weights_rescale = np.pad(weights_rescale,(q_h, q_h+r_h), mode = "reflect")
 
         # if we oversample
@@ -135,10 +136,9 @@ def random_rotation(patch, low_bound=5, high_bound=89, verbose=0):
 
     image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True)
     gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
+    
     if len(patch) == 3:
         weights_rotated = transform.rotate(weights, angle, resize=False, mode='symmetric', preserve_range=True)
-
-    if len(patch) == 3:
         return [image_rotated.astype(np.uint8), gt_rotated.astype(np.uint8), weights_rotated.astype(np.float32)]
     else:
         return [image_rotated.astype(np.uint8), gt_rotated.astype(np.uint8)]

@@ -5,7 +5,7 @@ from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 from AxonDeepSeg.network_construction import *
 from tqdm import tqdm
-from config_tools import update_config, default_configuration, default_dataset_configuration
+from config_tools import update_config, default_configuration
 import os
 from patch_management_tools import im2patches_overlap, patches2im_overlap
 
@@ -62,7 +62,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     if verbosity_level>=2:
         print "Graph construction ..."
     x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size))
-    pred = uconv_net(x, config_dict, config_dict, phase=False, verbose=False)  # Inference
+    pred = uconv_net(x, config_dict, phase=False, verbose=False)  # Inference
     saver = tf.train.Saver() # Loading the previous model
 
     # We limit the amount of GPU we are going to use for inference.
@@ -151,7 +151,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
         predictions, predictions_proba = process_segmented_patches(predictions_list, L_n_patches, L_positions,
                                                                    original_acquisitions_shapes,
                                                                    overlap_value, n_classes,
-                                                                   predictions_proba_list=None,
+                                                                   predictions_proba_list=predictions_proba_list,
                                                                    prediction_proba_activate=prediction_proba_activate,
                                                                    verbose_mode=0)
 
@@ -212,12 +212,11 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 
     # Ensuring that the config file is valid
     config_dict = update_config(default_configuration(), config_dict)
-    config_dict = update_config(default_dataset_configuration(), config_dict)
 
     # Perform the segmentation of all the requested images.
     if prediction_proba_activate:
         prediction, prediction_proba = apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder,
-                                                     config_dict, config_dict, ckpt_name=ckpt_name,
+                                                     config_dict, ckpt_name=ckpt_name,
                                                      inference_batch_size=inference_batch_size, overlap_value=overlap_value,
                                                      resampled_resolutions=resampled_resolutions,
                                                      prediction_proba_activate=prediction_proba_activate,
@@ -225,7 +224,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
         # Predictions are shape of image, value = class of pixel
     else:
         prediction = apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder,
-                                   config_dict, config_dict, ckpt_name=ckpt_name,
+                                   config_dict, ckpt_name=ckpt_name,
                                    inference_batch_size=inference_batch_size, overlap_value=overlap_value,
                                    resampled_resolutions=resampled_resolutions,
                                    prediction_proba_activate=prediction_proba_activate,

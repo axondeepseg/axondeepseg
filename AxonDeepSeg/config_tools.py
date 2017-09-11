@@ -43,8 +43,8 @@ def default_configuration():
      'batch_norm_decay_ending_decay': 0.9,
      'learning_rate_decay_activate': True,
      'learning_rate_decay_period': 16000,
-     'learning_rate_decay_rate': 0.99,
-     'learning_rate_decay_type': 'exponential',
+     'learning_rate_decay_rate': 0.99, # Only used for exponential decay
+     'learning_rate_decay_type': 'polynomial',
      'batch_norm_activate': True,
      'batch_size': 8,
      'convolution_per_layer': [3, 3, 3, 3],
@@ -55,7 +55,7 @@ def default_configuration():
      'da-flipping-order': 4,
      'da-gaussian_blur-activate': True,
      'da-gaussian_blur-order': 6,
-     'da-gaussian_blur-sigma_max': 3,
+     'da-gaussian_blur-sigma_max': 1.5,
      'da-noise_addition-activate': False,
      'da-noise_addition-order': 5,
      'da-random_rotation-activate': False,
@@ -92,7 +92,7 @@ def default_configuration():
    'trainingset_patchsize': 512,
    'balanced_weights': [1.1, 1, 1.3],
    'dataset_mean': 120.95, # Not used right now for preprocessing, we do it on a per image basis.
-   'dataset_variance': 60.23 # Not used right now for preprocessing, we do it on a per image basis.
+   'dataset_variance': 60.23 # Not used right now for preprocessing, we do it on a per image basis. THIS SHOULD BE STD
            }
 
     return tmp
