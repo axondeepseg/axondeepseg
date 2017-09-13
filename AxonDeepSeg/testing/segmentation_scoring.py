@@ -1,6 +1,5 @@
 from skimage import measure
 from skimage.measure import regionprops
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 

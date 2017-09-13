@@ -18,7 +18,12 @@ config.read(os.path.dirname(__file__) + '/data_management/config.cfg')
 #### Network config file management. ####
 
 def validate_config(config):
-    """ Check the config file keys """
+
+    """ Check the config file keys
+    :param config: Dictionary containing the parameters of the network.
+    :return: Boolean. True if the configuration is valid compared to the default configuration, else False.
+    """
+
     keys = config.keys()
     for key in default_configuration().keys():
         if not key in keys:
@@ -27,60 +32,69 @@ def validate_config(config):
 
 
 def default_configuration():
-    """ Generate the default configuration."""
+    """
+    Generate the default configuration for the training parameters.
+    :return: Dictionary, the default configuration parameters.
+    """
+
     tmp = {'batch_norm_decay_decay_activate': True,
- 'batch_norm_decay_decay_period': 24000,
- 'batch_norm_decay_starting_decay': 0.7,
- 'batch_norm_decay_ending_decay': 0.9,
- 'learning_rate_decay_activate': True,
- 'learning_rate_decay_period': 16000,
- 'learning_rate_decay_rate': 0.99,
- 'learning_rate_decay_type': 'exponential',
- 'batch_norm_activate': True,
- 'batch_size': 8,
- 'convolution_per_layer': [3, 3, 3, 3],
- 'da-elastic-activate': True,
- 'da-elastic-alpha_max': 9,
- 'da-elastic-order': 3,
- 'da-flipping-activate': True,
- 'da-flipping-order': 4,
- 'da-gaussian_blur-activate': True,
- 'da-gaussian_blur-order': 6,
- 'da-gaussian_blur-sigma_max': 3,
- 'da-noise_addition-activate': False,
- 'da-noise_addition-order': 5,
- 'da-random_rotation-activate': False,
- 'da-random_rotation-high_bound': 89,
- 'da-random_rotation-low_bound': 5,
- 'da-random_rotation-order': 2,
- 'da-rescaling-activate': False,
- 'da-rescaling-factor_max': 1.2,
- 'da-rescaling-order': 1,
- 'da-shifting-activate': True,
- 'da-shifting-order': 0,
- 'da-shifting-percentage_max': 0.1,
- 'da-type': 'all',
- 'depth': 4,
- 'downsampling': 'convolution',
- 'dropout': 0.75,
- 'features_per_convolution': [[[1, 16], [16, 16], [16, 16]],
-  [[16, 32], [32, 32], [32, 32]],
-  [[32, 64], [64, 64], [64, 64]],
-  [[64, 128], [128, 128], [128, 128]]],
- 'learning_rate': 0.001,
- 'n_classes': 3,
- 'size_of_convolutions_per_layer': [[5, 5, 5],
-  [3, 3, 3],
-  [3, 3, 3],
-  [3, 3, 3]],
- 'thresholds': [0, 0.2, 0.8],
- 'trainingset': 'SEM_3c_512',
- 'trainingset_patchsize': 512,
- 'weighted_cost_activate': True,
- 'weighted_cost-balanced_activate': True,
- 'weighted_cost-balanced_weights': [1.1, 1, 1.3],
- 'weighted_cost-boundaries_activate': False,
- 'weighted_cost-boundaries_sigma': 2}
+     'batch_norm_decay_decay_period': 24000,
+     'batch_norm_decay_starting_decay': 0.7,
+     'batch_norm_decay_ending_decay': 0.9,
+     'learning_rate_decay_activate': True,
+     'learning_rate_decay_period': 16000,
+     'learning_rate_decay_rate': 0.99, # Only used for exponential decay
+     'learning_rate_decay_type': 'polynomial',
+     'batch_norm_activate': True,
+     'batch_size': 8,
+     'convolution_per_layer': [3, 3, 3, 3],
+     'da-elastic-activate': True,
+     'da-elastic-alpha_max': 9,
+     'da-elastic-order': 3,
+     'da-flipping-activate': True,
+     'da-flipping-order': 4,
+     'da-gaussian_blur-activate': True,
+     'da-gaussian_blur-order': 6,
+     'da-gaussian_blur-sigma_max': 1.5,
+     'da-noise_addition-activate': False,
+     'da-noise_addition-order': 5,
+     'da-random_rotation-activate': False,
+     'da-random_rotation-high_bound': 89,
+     'da-random_rotation-low_bound': 5,
+     'da-random_rotation-order': 2,
+     'da-rescaling-activate': False,
+     'da-rescaling-factor_max': 1.2,
+     'da-rescaling-order': 1,
+     'da-shifting-activate': True,
+     'da-shifting-order': 0,
+     'da-shifting-percentage_max': 0.1,
+     'da-type': 'all',
+     'depth': 4,
+     'downsampling': 'convolution',
+     'dropout': 0.75,
+     'features_per_convolution': [[[1, 16], [16, 16], [16, 16]],
+      [[16, 32], [32, 32], [32, 32]],
+      [[32, 64], [64, 64], [64, 64]],
+      [[64, 128], [128, 128], [128, 128]]],
+     'learning_rate': 0.001,
+     'n_classes': 3,
+     'size_of_convolutions_per_layer': [[5, 5, 5],
+      [3, 3, 3],
+      [3, 3, 3],
+      [3, 3, 3]],
+     'weighted_cost_activate': True,
+     'weighted_cost-balanced_activate': True,
+     'weighted_cost-balanced_weights': [1.1, 1, 1.3],
+     'weighted_cost-boundaries_activate': False,
+     'weighted_cost-boundaries_sigma': 2,
+   'thresholds': [0, 0.2, 0.8],
+   'trainingset': 'SEM_3c_512',
+   'trainingset_patchsize': 512,
+   'balanced_weights': [1.1, 1, 1.3],
+   'dataset_mean': 120.95, # Not used right now for preprocessing, we do it on a per image basis.
+   'dataset_variance': 60.23 # Not used right now for preprocessing, we do it on a per image basis. THIS SHOULD BE STD
+           }
+
     return tmp
 
 

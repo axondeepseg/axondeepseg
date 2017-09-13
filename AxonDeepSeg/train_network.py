@@ -38,23 +38,23 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     # Translating useful variables from the config file.
     learning_rate = config["learning_rate"]
-    n_classes = config["n_classes"]
     dropout = config["dropout"]
     weighted_cost = config["weighted_cost_activate"]
-    thresh_indices = config["thresholds"]
     batch_size_training = config["batch_size"]
     batch_size_validation = 8
     batch_norm_decay = config["batch_norm_decay_starting_decay"]
+
     image_size = config["trainingset_patchsize"]
-    
+    thresh_indices = config["thresholds"]
+    n_classes = config["n_classes"]
+
     data_augmentation = generate_dict_da(config)
     weights_modifier = generate_dict_weights(config)
+    data_aug_verbose = 0
    
     # Loading the datasets
-    data_train = input_data(trainingset_path=path_trainingset, type_='train', batch_size=batch_size_training,
-                            thresh_indices=thresh_indices, image_size=image_size)
-    data_validation = input_data(trainingset_path=path_trainingset, type_='validation', batch_size=batch_size_validation,
-                                 thresh_indices=thresh_indices, image_size=image_size)
+    data_train = input_data(trainingset_path=path_trainingset, config=config, type_='train', batch_size=batch_size_training)
+    data_validation = input_data(trainingset_path=path_trainingset, config=config, type_='validation', batch_size=batch_size_validation)
     
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
 
@@ -363,17 +363,18 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 # Extracting the batches
                 batch_x, batch_y, weight = data_train.next_batch_WithWeights(augmented_data_=data_augmentation,
                                                                              weights_modifier=weights_modifier,
-                                                                             each_sample_once=False)
+                                                                             each_sample_once=False,
+                                                                             data_aug_verbose=data_aug_verbose)
                 # Generating the arguments of the session.run call.
                 feed_dict_train = {x: batch_x, y: batch_y, spatial_weights: weight, keep_prob: dropout, phase: True}
 
             else:
                 # Extracting the batches
-                batch_x, batch_y = data_train.next_batch(augmented_data_=data_augmentation, each_sample_once=False)
+                batch_x, batch_y = data_train.next_batch(augmented_data_=data_augmentation, each_sample_once=False,
+                                                                             data_aug_verbose=data_aug_verbose)
 
                 # Generating the arguments of the session.run call.
                 feed_dict_train = {x: batch_x, y: batch_y, keep_prob: dropout, phase: True}
-
 
             # Compute the gradients by running the optimizer for each batch, and retrieve the metrics.
             stepcost, stepacc, _, step_dice_myelin, step_dice_axon = session.run(

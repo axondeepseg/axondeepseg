@@ -9,7 +9,8 @@ import os
 from patch_management_tools import im2patches_overlap, patches2im_overlap
 
 
-def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict, acquisitions_names = None,
+def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict,
+                  acquisitions_names = None,
                   ckpt_name='model', inference_batch_size=1,
                   overlap_value=25, resampled_resolutions=[0.1], prediction_proba_activate=False,
                   gpu_per=1.0, verbosity_level=0):
@@ -149,8 +150,9 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
         predictions, predictions_proba = process_segmented_patches(predictions_list, L_n_patches, L_positions,
                                                                    original_acquisitions_shapes,
                                                                    overlap_value, n_classes,
-                                                                   predictions_proba_list=None,
-                                                                   prediction_proba_activate=prediction_proba_activate, verbose_mode=0)
+                                                                   predictions_proba_list=predictions_proba_list,
+                                                                   prediction_proba_activate=prediction_proba_activate,
+                                                                   verbose_mode=0)
 
         return predictions, predictions_proba
 
@@ -159,7 +161,8 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
                                                 original_acquisitions_shapes,
                                                 overlap_value, n_classes,
                                                 predictions_proba_list=None,
-                                                prediction_proba_activate=prediction_proba_activate, verbose_mode=0)
+                                                prediction_proba_activate=prediction_proba_activate,
+                                                verbose_mode=0)
 
         return predictions
 
@@ -167,7 +170,8 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
         #######################################################################################################################
 
 
-def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_model_folder, config_dict, ckpt_name='model',
+def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_model_folder, config_dict,
+                      ckpt_name='model',
                       segmentations_filenames=['AxonDeepSeg.png'], inference_batch_size=1,
                       overlap_value=25, resampled_resolutions=0.1, acquired_resolution=0.0,
                       prediction_proba_activate=False, write_mode=True, gpu_per=1.0, verbosity_level=0):
@@ -178,7 +182,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     :param path_acquisitions_folders: List of folders where the acquisitions to segment are located.
     :param acquisitions_filenames: List of names of acquisitions to segment.
     :param path_model_folder: Path to the folder where the model is located.
-    :param config_dict: Dictionary containing the configuration of the model.
+    :param config_dict: Dictionary containing the configuration of the training parameters of the model.
     :param ckpt_name: String, name of the checkpoint to use.
     :param segmentations_filenames: List of the names of the segmentations files, to be used when creating the files.
     :param inference_batch_size: Size of the batches fed to the network.
@@ -192,11 +196,18 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     '''
 
     # Processing input so they are lists in every situation
-    path_acquisitions_folders, resampled_resolutions, segmentations_filenames = map(
-        ensure_list_type, [path_acquisitions_folders, resampled_resolutions, segmentations_filenames])
+    path_acquisitions_folders, acquisitions_filenames, resampled_resolutions, segmentations_filenames = map(
+        ensure_list_type, [path_acquisitions_folders, acquisitions_filenames,
+                           resampled_resolutions, segmentations_filenames])
 
     if len(segmentations_filenames) != len(path_acquisitions_folders):
         segmentations_filenames = ['AxonDeepSeg.png'] * len(path_acquisitions_folders)
+
+    if len(acquisitions_filenames) != len(path_acquisitions_folders):
+        acquisitions_filenames = ['image.png'] * len(path_acquisitions_folders)
+
+    if len(resampled_resolutions) != len(path_acquisitions_folders):
+        resampled_resolutions = [resampled_resolutions[0]] * len(path_acquisitions_folders)
 
     # Generating the patch to acquisitions and loading the acquisitions resolutions.
     path_acquisitions = [os.path.join(path_acquisitions_folders[i], e) for i, e in enumerate(acquisitions_filenames)]
@@ -397,7 +408,7 @@ def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_orig
             prediction_proba = np.stack([resize(e, L_original_acquisitions_shapes[i]) for e in prediction_proba_stitched], axis=-1)
             predictions_proba.append(prediction_proba)
 
-            return predictions, predictions_proba
+        return predictions, predictions_proba
     else:
 
         return predictions
@@ -435,3 +446,4 @@ def perform_batch_inference(tf_session, tf_prediction_op, tf_input, batch_x, siz
 
     else:
         return batch_predictions_list
+
