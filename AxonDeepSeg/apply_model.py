@@ -197,11 +197,18 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     '''
 
     # Processing input so they are lists in every situation
-    path_acquisitions_folders, resampled_resolutions, segmentations_filenames = map(
-        ensure_list_type, [path_acquisitions_folders, resampled_resolutions, segmentations_filenames])
+    path_acquisitions_folders, acquisitions_filenames, resampled_resolutions, segmentations_filenames = map(
+        ensure_list_type, [path_acquisitions_folders, acquisitions_filenames,
+                           resampled_resolutions, segmentations_filenames])
 
     if len(segmentations_filenames) != len(path_acquisitions_folders):
         segmentations_filenames = ['AxonDeepSeg.png'] * len(path_acquisitions_folders)
+
+    if len(acquisitions_filenames) != len(path_acquisitions_folders):
+        acquisitions_filenames = ['image.png'] * len(path_acquisitions_folders)
+
+    if len(resampled_resolutions) != len(path_acquisitions_folders):
+        resampled_resolutions = [resampled_resolutions[0]] * len(path_acquisitions_folders)
 
     # Generating the patch to acquisitions and loading the acquisitions resolutions.
     path_acquisitions = [os.path.join(path_acquisitions_folders[i], e) for i, e in enumerate(acquisitions_filenames)]
@@ -396,7 +403,7 @@ def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_orig
             prediction_proba = np.stack([resize(e, L_original_acquisitions_shapes[i]) for e in prediction_proba_stitched], axis=-1)
             predictions_proba.append(prediction_proba)
 
-            return predictions, predictions_proba
+        return predictions, predictions_proba
     else:
 
         return predictions
