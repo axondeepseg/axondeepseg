@@ -6,11 +6,6 @@
 Welcome to AxonDeepSeg !
 =======================================
 
-.. image:: _static/logo.png
-   :scale: 100 %
-   :alt: alternate text
-   :align: center
-
 Welcome to the AxonDeepSeg framework. In this site you'll find the documentation on
 how to install and how to use AxonDeepSeg to create segmentations for your own data.
 
@@ -18,8 +13,8 @@ how to install and how to use AxonDeepSeg to create segmentations for your own d
 
 * AxonDeepSeg pipeline:
 
-.. image:: _static/fig1_git.JPG
-   :scale: 8 %
+.. image:: _static/fig1.png
+   :scale: 35 %
    :alt: alternate text
    :align: center
 
@@ -27,8 +22,8 @@ how to install and how to use AxonDeepSeg to create segmentations for your own d
 
 * Segmentation of axon/myelin from various species/contrasts:
 
-.. image:: _static/fig2_git.JPG
-   :scale: 8 %
+.. image:: _static/fig2.png
+   :scale: 35 %
    :alt: alternate text
    :align: center
 
@@ -36,8 +31,8 @@ how to install and how to use AxonDeepSeg to create segmentations for your own d
 
 * Segmentation of full slice histology and morphometrics extraction:
 
-.. image:: _static/fig3_git.JPG
-   :scale: 8 %
+.. image:: _static/fig3.png
+   :scale: 35 %
    :alt: alternate text
    :align: center
 
