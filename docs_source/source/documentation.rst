@@ -161,6 +161,13 @@ Here, we segment all images located in image1_sem and image2_sem that don't have
 
 Each output segmentation will be saved in the corresponding sub-folder.
 
+Citation
+===============================================================================
+
+If you use this work in your research, please cite:
+
+TODO add arxiv link
+
 Licensing
 ===============================================================================
 

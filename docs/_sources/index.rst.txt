@@ -7,7 +7,7 @@ Welcome to AxonDeepSeg !
 =======================================
 
 Welcome to the AxonDeepSeg framework. In this site you'll find the documentation on
-how to install and how to use AxonDeepSeg to create segmentations for your own data.
+how to install and how to use AxonDeepSeg to obtain segmentations for your own data.
 
 |
 
