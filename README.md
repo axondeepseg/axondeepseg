@@ -1,4 +1,4 @@
-# AxonDeepSeg : Axon Deep Segmentation Toolbox
+# AxonDeepSeg: Axon Deep Segmentation Toolbox
 
 [![Binder](https://beta.mybinder.org/badge.svg)](https://beta.mybinder.org/v2/gh/neuropoly/axondeepseg/master)
 
