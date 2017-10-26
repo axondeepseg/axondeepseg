@@ -94,7 +94,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-virtual-environment">Creating a virtual environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installing-axondeepseg">Installing AxonDeepSeg</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#models">Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acquisitions">Acquisitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data">Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-axondeepseg">Using AxonDeepSeg</a></li>
 </ul>
 </li>
@@ -247,8 +247,8 @@ The two models are described below:</p>
 <li>A TEM model, that works at a resolution of 0.01 micrometer per pixel.</li>
 </ul>
 </div>
-<div class="section" id="acquisitions">
-<h2>Acquisitions<a class="headerlink" href="#acquisitions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="data">
+<h2>Data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h2>
 <p>If you want to test AxonDeepSeg, you can download the test data available
 <a class="reference external" href="https://osf.io/rtbwc/download">here</a>.</p>
 <p>The images you want to segment must be stored following a particular architecture:</p>
@@ -277,8 +277,9 @@ The two models are described below:</p>
 </div>
 <div class="section" id="using-axondeepseg">
 <h2>Using AxonDeepSeg<a class="headerlink" href="#using-axondeepseg" title="Permalink to this headline">¶</a></h2>
+<p>We provide a simple <a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/segmentation_image.ipynb">Jupyter notebook</a> which explains how to use AxonDeepSeg for segmenting axons and myelin. You can directly launch it by using the <a class="reference external" href="https://beta.mybinder.org/v2/gh/neuropoly/axondeepseg/master">Binder link</a>.</p>
 <p>To learn to use AxonDeepSeg, you will need some images to segment. If you don’t have some,
-you can download the test data using the instructions in the <cite>Acquisitions</cite> part of this tutorial.</p>
+you can download the test data using the instructions in the <a class="reference external" href="https://neuropoly.github.io/axondeepseg/documentation.html#data">Data</a> section of this tutorial.</p>
 <p>Once you have downloaded the test data, go to the extracted test data folder. In our case:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">test_segmentation</span>
 </pre></div>
@@ -309,7 +310,7 @@ you can download the test data using the instructions in the <cite>Acquisitions<
 it will automatically read the image resolution encoded in the file: <em>pixel_size_in_micrometer.txt</em>
 The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
 The segmented acquisition itself will be saved in the same folder as the acquisition image,
-with the prefix ‘<a href="#id1"><span class="problematic" id="id2">segmentation_</span></a>’, in png format.</p>
+with the prefix ‘<a href="#id2"><span class="problematic" id="id3">segmentation_</span></a>’, in png format.</p>
 <ul class="simple">
 <li>To segment multiple images acquired with the same resolution, put them all in the same folder and</li>
 </ul>
@@ -320,7 +321,7 @@ with the prefix ‘<a href="#id1"><span class="problematic" id="id2">segmentatio
 <ul class="simple">
 <li>To segment multiple images acquired with different resolutions,</li>
 </ul>
-<p>please use the folder structure explained above in the <cite>Acquisitions</cite> part,
+<p>please use the folder structure explained in <a class="reference external" href="https://neuropoly.github.io/axondeepseg/documentation.html#data">https://neuropoly.github.io/axondeepseg/documentation.html#data</a>,
 i.e., put all image with the same resolution in the same folder.
 * Then, segment each folder one after the other using the argument <strong>-s</strong> or segment all folders in one command
 by specifying multiple paths to segment and using a different pixel_size_in_micrometer.txt for each folder, like this:</p>

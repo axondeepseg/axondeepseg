@@ -82,7 +82,7 @@ The two models are described below:
 * A SEM model, that works at a resolution of 0.1 micrometer per pixel.
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
 
-Acquisitions
+Data
 -------------------------------------------------------------------------------
 
 If you want to test AxonDeepSeg, you can download the test data available
@@ -113,8 +113,12 @@ to the resolution of the image, that is the **size of a pixel in micrometer**.
 Using AxonDeepSeg
 -------------------------------------------------------------------------------
 
+We provide a simple `Jupyter notebook <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/segmentation_image.ipynb>`_ which explains how to use AxonDeepSeg for segmenting axons and myelin. You can directly launch it by using the `Binder link <https://beta.mybinder.org/v2/gh/neuropoly/axondeepseg/master>`_.
+
 To learn to use AxonDeepSeg, you will need some images to segment. If you don't have some,
-you can download the test data using the instructions in the `Acquisitions` part of this tutorial.
+you can download the test data using the instructions in the `Data <https://neuropoly.github.io/axondeepseg/documentation.html#data>`_ section of this tutorial.
+
+
 
 Once you have downloaded the test data, go to the extracted test data folder. In our case::
 
@@ -149,7 +153,7 @@ launch the segmentation of this folder, like below::
 
 
 * To segment multiple images acquired with different resolutions,
-please use the folder structure explained above in the `Acquisitions` part,
+please use the folder structure explained in https://neuropoly.github.io/axondeepseg/documentation.html#data,
 i.e., put all image with the same resolution in the same folder.
 * Then, segment each folder one after the other using the argument **-s** or segment all folders in one command
 by specifying multiple paths to segment and using a different pixel_size_in_micrometer.txt for each folder, like this::
