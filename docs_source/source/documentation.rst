@@ -153,7 +153,7 @@ launch the segmentation of this folder, like below::
 
 
 * To segment multiple images acquired with different resolutions,
-please use the folder structure explained in https://neuropoly.github.io/axondeepseg/documentation.html#data,
+please use the folder structure explained in `Data <https://neuropoly.github.io/axondeepseg/documentation.html#data>`_,
 i.e., put all image with the same resolution in the same folder.
 * Then, segment each folder one after the other using the argument **-s** or segment all folders in one command
 by specifying multiple paths to segment and using a different pixel_size_in_micrometer.txt for each folder, like this::
