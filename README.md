@@ -1,4 +1,4 @@
-# AxonDeepSeg: Axon Deep Segmentation Toolbox
+# AxonDeepSeg
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb)
 
