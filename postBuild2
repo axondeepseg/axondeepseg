@@ -1,2 +1,2 @@
-python setup.py bdist_wheel
+python setup.py bdist_wheel —universal
 pip install dist/AxonDeepSeg-0.1-py2-none-any.whl
