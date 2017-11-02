@@ -1,6 +1,6 @@
 # AxonDeepSeg: Axon Deep Segmentation Toolbox
 
-[![Binder](https://beta.mybinder.org/badge.svg)](https://beta.mybinder.org/v2/gh/neuropoly/axondeepseg/master)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb)
 
 Segment axon and myelin from microscopy data using Deep Learning techniques. Written in Python.
 Methods based on deep convolutional neural networks.
