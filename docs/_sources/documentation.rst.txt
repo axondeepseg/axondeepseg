@@ -113,7 +113,7 @@ to the resolution of the image, that is the **size of a pixel in micrometer**.
 Using AxonDeepSeg
 -------------------------------------------------------------------------------
 
-We provide a simple `Jupyter notebook <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/segmentation_image.ipynb>`_ which explains how to use AxonDeepSeg for segmenting axons and myelin. You can directly launch it by using the `Binder link <https://beta.mybinder.org/v2/gh/neuropoly/axondeepseg/master>`_.
+We provide a simple `Jupyter notebook <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_ which explains how to use AxonDeepSeg for segmenting axons and myelin. You can directly launch it by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb>`_.
 
 To learn to use AxonDeepSeg, you will need some images to segment. If you don't have some,
 you can download the test data using the instructions in the `Data <https://neuropoly.github.io/axondeepseg/documentation.html#data>`_ section of this tutorial.
