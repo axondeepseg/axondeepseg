@@ -11,7 +11,7 @@ For more information, see the [documentation website](https://neuropoly.github.i
 
 If you use this work in your research, please cite it as follows:
 
-TODO ad arxiv ref
+Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. arXiv Preprint arXiv:1711.01004. Retrieved from https://arxiv.org/abs/1711.01004.
 
 Copyright (c) 2017 NeuroPoly (Polytechnique Montreal)
 
