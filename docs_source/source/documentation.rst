@@ -68,10 +68,24 @@ To install AxonDeepSeg, you just need to install it with ``pip`` using the follo
 
     pip install axondeepseg
 
-.. note:: If you have an old Mac OS version (<= 10.11), you need to manually install TensorFlow
-          dependency by following the instructions from
-          `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
+.. WARNING ::    
+  If you experience the following error:
+  "Could not find a version that satisfies the requirement tensorflow>=XXX (from axondeepseg) (from versions: )... ",
+  you will need to manually install the TensorFlow dependency.
 
+  For OS X users, run the following command to install TensorFlow 1.3.0:
+  :: 
+    pip install https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.3.0-py2-none-any.whl
+
+  For Linux users, run the following command to install TensorFlow 1.3.0:
+  ::
+    pip install https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.3.0-cp34-cp34m-linux_x86_64.whl
+
+  You can get more information by following the instructions from the `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
+
+  **Once TensorFlow is installed, re-run the ``pip`` command:**
+  :: 
+    pip install axondeepseg
 
 Models
 -------------------------------------------------------------------------------
@@ -164,6 +178,27 @@ by specifying multiple paths to segment and using a different pixel_size_in_micr
 Here, we segment all images located in image1_sem and image2_sem that don't have the "segmented" suffix.
 
 Each output segmentation will be saved in the corresponding sub-folder.
+
+
+Post-processing tools
+-------------------------------------------------------------------------------
+
+If the segmentation with AxonDeepSeg fails or does not give optimal results, you can do the following steps:
+
+* Get the 3-label output of the segmentation.
+* Separate in 2 different masks: axon mask and myelin mask
+::
+  code to get the masks from the 3 label image
+* Correct the axon or myelin mask with an external tool/software (link to GIMP and MIPAV and SOP).
+* Regenerate the corrected 3-label segmentation by merging the axon and myelin masks again
+::
+  code to regenerate the 3-label segmentation
+
+Help
+===============================================================================
+
+If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the `AxonDeepSeg GitHub issues webpage <https://github.com/neuropoly/axondeepseg/issues>`_. We will reply to you as soon as possible.
+
 
 Citation
 ===============================================================================
