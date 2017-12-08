@@ -55,6 +55,17 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
     L_data, L_n_patches, L_positions = prepare_patches(rs_acquisitions, patch_size, overlap_value)
 
+
+
+
+
+
+
+
+
+
+
+
     ########### STEP 2: Construction of Tensorflow's computing graph and restoration of the session
 
     # Construction of the graph
@@ -322,8 +333,25 @@ def prepare_patches(resampled_acquisitions, patch_size, overlap_value=25):
     :param resampled_acquisitions: List of acquisitions images that have been resampled
     :param patch_size: Input size of the network.
     :param overlap_value: How much overlap to include when doing the inference.
-    :return: List of 256x256 patches ready to be fed to the network.
+    :return: List of 512x512 patches ready to be fed to the network.
     '''
+
+
+    # Handle case when image is too small after resampling to target resolution of the model
+    # test_patch=resampled_acquisitions[0]
+
+    # dims = test_patch
+    # height = dims[0]
+    # width = dims[1]
+
+    # print "height = ",height,"***"
+
+    # if (height<=512) or (width<=512)
+    # print " *** Image size error. The software requires an image input with size of at least 512x512 pixels in the target resolution of the model. *** "
+
+
+
+
 
     L_data, L_positions, L_n_patches = [], [], []
 

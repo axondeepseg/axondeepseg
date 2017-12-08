@@ -189,14 +189,14 @@ def main():
 
     # Setting the arguments of the segmentation
     ap.add_argument("-t", "--type", required=True, help="Choose the type of acquisition you want to segment.") # type
-    ap.add_argument("-p", "--path", required=True, nargs='+', help="Folder where the acquisition folder are located")
+    ap.add_argument("-i", "--imgpath", required=True, nargs='+', help="Folder where the images folders are located.")
     ap.add_argument("-m", "--model", required=False,
-                    help="Folder where the model is located", default=None)
-    ap.add_argument("-s", "--sizepixel", required=False, help="Pixel size in micrometer to use for the segmentation.",
+                    help="Folder where the model is located.", default=None)
+    ap.add_argument("-s", "--sizepixel", required=False, help="Pixel size in micrometers to use for the segmentation.",
                     default=0.0)
-    ap.add_argument("-v", "--verbose", required=False, help="Verbosity level", default=0)
+    ap.add_argument("-v", "--verbose", required=False, help="Verbosity level.", default=0)
     ap.add_argument("-o", "--overlap", required=False, help="Overlap value when doing the segmentation. The higher the"
-                                                            "value, the longer it will take to segment the whole image",
+                                                            "value, the longer it will take to segment the whole image.",
                     default=25)
 
     # Processing the arguments
@@ -205,13 +205,14 @@ def main():
     verbosity_level = int(args["verbose"])
     overlap_value = int(args["overlap"])
     psm = float(args["sizepixel"])
-    path_target_list = args["path"]
+    path_target_list = args["imgpath"]
     new_path = args["model"]
 
     # Preparing the arguments to axon_segmentation function
     path_model, config = generate_default_parameters(type_, new_path)
     resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
     segmented_image_suffix = "_segmented"
+
 
     # Going through all paths passed into arguments
     for current_path_target in path_target_list:

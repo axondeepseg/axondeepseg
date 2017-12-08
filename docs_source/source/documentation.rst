@@ -10,7 +10,7 @@ Getting Started
 The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
 instructions are provided to help you use AxonDeepSeg.
 
-.. note:: AxonDeepSeg isn't compatible with Windows due to third-party dependencies.
+.. note:: AxonDeepSeg is not compatible with Windows due to third-party dependencies.
           AxonDeepSeg was tested with Mac OS and Linux.
 
 Installing python
@@ -83,7 +83,7 @@ To install AxonDeepSeg, you just need to install it with ``pip`` using the follo
 
   You can get more information by following the instructions from the `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
 
-  **Once TensorFlow is installed, re-run the ``pip`` command:**
+  **Once TensorFlow is installed, re-run the pip command:**
   :: 
     pip install axondeepseg
 
@@ -120,7 +120,7 @@ The images you want to segment must be stored following a particular architectur
 to the resolution of the image, that is the **size of a pixel in micrometer**.
 
 .. NOTE ::
-   You can also specify the size of a pixel as an argument to our software.
+   You can also specify the pixel size as an argument to our software (see next section).
 
 
 
@@ -132,6 +132,12 @@ We provide a simple `Jupyter notebook <https://github.com/neuropoly/axondeepseg/
 To learn to use AxonDeepSeg, you will need some images to segment. If you don't have some,
 you can download the test data using the instructions in the `Data <https://neuropoly.github.io/axondeepseg/documentation.html#data>`_ section of this tutorial.
 
+.. WARNING ::
+   The current models available for segmentation are trained for patches of 512x512 pixels. This means that your input image(s) should be at least 512x512 pixels in size **after the resampling to the target pixel size of the model you are using to segment**. 
+
+   For instance, the TEM model currently available has a target resolution of 0.01 micrometers per pixel, which means that the minimum size of the input image (in micrometers) is 5.12x5.12.
+
+   **Option:** If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).
 
 
 Once you have downloaded the test data, go to the extracted test data folder. In our case::
@@ -141,7 +147,7 @@ Once you have downloaded the test data, go to the extracted test data folder. In
 The script to launch is called **axondeepseg**. It takes several arguments:
 
 * **t**: type of the image. SEM or TEM.
-* **p**: path to the image.
+* **i**: path to the image.
 * **s**: (optional) resolution (size in micrometer of a pixel) of the image.
 * **v**: (optional) verbosity level. Default 0.
 
@@ -151,19 +157,19 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 To segment one of the image that we downloaded (here, a SEM image), run the following command::
 
-    axondeepseg -t SEM -p test_sem_image/image1_sem/77.png -v 2 -s 0.07
+    axondeepseg -t SEM -i test_sem_image/image1_sem/77.png -v 2 -s 0.07
 
 The script will use the size argument (here, 0.07) for the segmentation. If no size is provided in the arguments,
 it will automatically read the image resolution encoded in the file: *pixel_size_in_micrometer.txt*
 The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
 The segmented acquisition itself will be saved in the same folder as the acquisition image,
-with the prefix 'segmentation_', in png format.
+with the suffix 'segmented_', in png format.
 
 
 * To segment multiple images acquired with the same resolution, put them all in the same folder and
 launch the segmentation of this folder, like below::
 
-    axondeepseg -t SEM -p test_sem_image/image 1_sem/
+    axondeepseg -t SEM -i test_sem_image/image 1_sem/
 
 
 * To segment multiple images acquired with different resolutions,
@@ -172,7 +178,7 @@ i.e., put all image with the same resolution in the same folder.
 * Then, segment each folder one after the other using the argument **-s** or segment all folders in one command
 by specifying multiple paths to segment and using a different pixel_size_in_micrometer.txt for each folder, like this::
 
-    axondeepseg -t SEM -p test_sem_image/image1_sem test_sem_image/image2_sem/
+    axondeepseg -t SEM -i test_sem_image/image1_sem test_sem_image/image2_sem/
 
 
 Here, we segment all images located in image1_sem and image2_sem that don't have the "segmented" suffix.
@@ -186,13 +192,9 @@ Post-processing tools
 If the segmentation with AxonDeepSeg fails or does not give optimal results, you can do the following steps:
 
 * Get the 3-label output of the segmentation.
-* Separate in 2 different masks: axon mask and myelin mask
-::
-  code to get the masks from the 3 label image
-* Correct the axon or myelin mask with an external tool/software (link to GIMP and MIPAV and SOP).
-* Regenerate the corrected 3-label segmentation by merging the axon and myelin masks again
-::
-  code to regenerate the 3-label segmentation
+* Separate in 2 different masks: axon mask and myelin mask.
+* Correct the axon or myelin mask with an external tool/software (such as GIMP).
+* Regenerate the corrected 3-label segmentation by merging the axon and myelin masks again.
 
 Help
 ===============================================================================

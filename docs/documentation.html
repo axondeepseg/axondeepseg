@@ -96,8 +96,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#models">Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data">Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-axondeepseg">Using AxonDeepSeg</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#post-processing-tools">Post-processing tools</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="#help">Help</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#citation">Citation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#licensing">Licensing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#contributors">Contributors</a></li>
@@ -176,7 +178,7 @@ sheaths from microscopy images.</p>
 instructions are provided to help you use AxonDeepSeg.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">AxonDeepSeg isn’t compatible with Windows due to third-party dependencies.
+<p class="last">AxonDeepSeg is not compatible with Windows due to third-party dependencies.
 AxonDeepSeg was tested with Mac OS and Linux.</p>
 </div>
 <div class="section" id="installing-python">
@@ -231,11 +233,24 @@ virtual environment between parenthesis, like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">axondeepseg</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">If you have an old Mac OS version (&lt;= 10.11), you need to manually install TensorFlow
-dependency by following the instructions from
-<a class="reference external" href="https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package">TensorFlow website</a>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>If you experience the following error:
+“Could not find a version that satisfies the requirement tensorflow&gt;=XXX (from axondeepseg) (from versions: )… “,
+you will need to manually install the TensorFlow dependency.</p>
+<p>For OS X users, run the following command to install TensorFlow 1.3.0:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">storage</span><span class="o">.</span><span class="n">googleapis</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">/</span><span class="n">mac</span><span class="o">/</span><span class="n">cpu</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">-</span><span class="mf">1.3</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">py2</span><span class="o">-</span><span class="n">none</span><span class="o">-</span><span class="nb">any</span><span class="o">.</span><span class="n">whl</span>
+</pre></div>
+</div>
+<p>For Linux users, run the following command to install TensorFlow 1.3.0:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">storage</span><span class="o">.</span><span class="n">googleapis</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">cpu</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">-</span><span class="mf">1.3</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">cp34</span><span class="o">-</span><span class="n">cp34m</span><span class="o">-</span><span class="n">linux_x86_64</span><span class="o">.</span><span class="n">whl</span>
+</pre></div>
+</div>
+<p>You can get more information by following the instructions from the <a class="reference external" href="https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package">TensorFlow website</a>.</p>
+<p><strong>Once TensorFlow is installed, re-run the pip command:</strong></p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">axondeepseg</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="models">
@@ -272,7 +287,7 @@ The two models are described below:</p>
 <p>to the resolution of the image, that is the <strong>size of a pixel in micrometer</strong>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">You can also specify the size of a pixel as an argument to our software.</p>
+<p class="last">You can also specify the pixel size as an argument to our software (see next section).</p>
 </div>
 </div>
 <div class="section" id="using-axondeepseg">
@@ -280,6 +295,12 @@ The two models are described below:</p>
 <p>We provide a simple <a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb">Jupyter notebook</a> which explains how to use AxonDeepSeg for segmenting axons and myelin. You can directly launch it by using the <a class="reference external" href="https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb">Binder link</a>.</p>
 <p>To learn to use AxonDeepSeg, you will need some images to segment. If you don’t have some,
 you can download the test data using the instructions in the <a class="reference external" href="https://neuropoly.github.io/axondeepseg/documentation.html#data">Data</a> section of this tutorial.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The current models available for segmentation are trained for patches of 512x512 pixels. This means that your input image(s) should be at least 512x512 pixels in size <strong>after the resampling to the target pixel size of the model you are using to segment</strong>.</p>
+<p>For instance, the TEM model currently available has a target resolution of 0.01 micrometers per pixel, which means that the minimum size of the input image (in micrometers) is 5.12x5.12.</p>
+<p class="last"><strong>Option:</strong> If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).</p>
+</div>
 <p>Once you have downloaded the test data, go to the extracted test data folder. In our case:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">test_segmentation</span>
 </pre></div>
@@ -288,7 +309,7 @@ you can download the test data using the instructions in the <a class="reference
 <ul>
 <li><p class="first"><strong>t</strong>: type of the image. SEM or TEM.</p>
 </li>
-<li><p class="first"><strong>p</strong>: path to the image.</p>
+<li><p class="first"><strong>i</strong>: path to the image.</p>
 </li>
 <li><p class="first"><strong>s</strong>: (optional) resolution (size in micrometer of a pixel) of the image.</p>
 </li>
@@ -303,19 +324,19 @@ you can download the test data using the instructions in the <a class="reference
 </li>
 </ul>
 <p>To segment one of the image that we downloaded (here, a SEM image), run the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span><span class="o">/</span><span class="mf">77.</span><span class="n">png</span> <span class="o">-</span><span class="n">v</span> <span class="mi">2</span> <span class="o">-</span><span class="n">s</span> <span class="mf">0.07</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span><span class="o">/</span><span class="mf">77.</span><span class="n">png</span> <span class="o">-</span><span class="n">v</span> <span class="mi">2</span> <span class="o">-</span><span class="n">s</span> <span class="mf">0.07</span>
 </pre></div>
 </div>
 <p>The script will use the size argument (here, 0.07) for the segmentation. If no size is provided in the arguments,
 it will automatically read the image resolution encoded in the file: <em>pixel_size_in_micrometer.txt</em>
 The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
 The segmented acquisition itself will be saved in the same folder as the acquisition image,
-with the prefix ‘<a href="#id3"><span class="problematic" id="id4">segmentation_</span></a>’, in png format.</p>
+with the suffix ‘<a href="#id3"><span class="problematic" id="id4">segmented_</span></a>’, in png format.</p>
 <ul class="simple">
 <li>To segment multiple images acquired with the same resolution, put them all in the same folder and</li>
 </ul>
 <p>launch the segmentation of this folder, like below:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image</span> <span class="mi">1</span><span class="n">_sem</span><span class="o">/</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image</span> <span class="mi">1</span><span class="n">_sem</span><span class="o">/</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -325,12 +346,26 @@ with the prefix ‘<a href="#id3"><span class="problematic" id="id4">segmentatio
 i.e., put all image with the same resolution in the same folder.
 * Then, segment each folder one after the other using the argument <strong>-s</strong> or segment all folders in one command
 by specifying multiple paths to segment and using a different pixel_size_in_micrometer.txt for each folder, like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">p</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image2_sem</span><span class="o">/</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image2_sem</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>Here, we segment all images located in image1_sem and image2_sem that don’t have the “segmented” suffix.</p>
 <p>Each output segmentation will be saved in the corresponding sub-folder.</p>
 </div>
+<div class="section" id="post-processing-tools">
+<h2>Post-processing tools<a class="headerlink" href="#post-processing-tools" title="Permalink to this headline">¶</a></h2>
+<p>If the segmentation with AxonDeepSeg fails or does not give optimal results, you can do the following steps:</p>
+<ul class="simple">
+<li>Get the 3-label output of the segmentation.</li>
+<li>Separate in 2 different masks: axon mask and myelin mask.</li>
+<li>Correct the axon or myelin mask with an external tool/software (such as GIMP).</li>
+<li>Regenerate the corrected 3-label segmentation by merging the axon and myelin masks again.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="help">
+<h1>Help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h1>
+<p>If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the <a class="reference external" href="https://github.com/neuropoly/axondeepseg/issues">AxonDeepSeg GitHub issues webpage</a>. We will reply to you as soon as possible.</p>
 </div>
 <div class="section" id="citation">
 <h1>Citation<a class="headerlink" href="#citation" title="Permalink to this headline">¶</a></h1>
