@@ -191,13 +191,13 @@ Post-processing tools
 
 If the segmentation with AxonDeepSeg fails or does not give optimal results, you can try one of the following options:
 
-** Option 1: manual correction of the segmentation masks
+**Option 1: manual correction of the segmentation masks**
 
 * Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (separately), named 'axon_mask.png' and 'myelin_mask.png'. If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct these masks.
 * For example, if you want to correct the axon mask, you can open the microscopy image and the axon mask with an external tool/software (such as GIMP: https://www.gimp.org/). For a more detailed procedure, you can visit https://www.gimp.org/tutorials/Layer_Masks/.
 * Regenerate the corrected 3-label segmentation by merging the axon and myelin masks again. To do this, you can use the following notebook: https://github.com/neuropoly/axondeepseg/blob/master/notebooks/merge_masks.ipynb.
 
-** Option 2: manual correction combined with AxonSeg software
+**Option 2: manual correction combined with AxonSeg software**
 
 * Manually correct the axon mask (as explained in Option 1).
 * Use the `AxonSeg <https://github.com/neuropoly/axonseg>`_ software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the `as_tutorial guideline <https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m>`_.
