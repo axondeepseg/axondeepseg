@@ -6,7 +6,9 @@ from skimage.transform import rescale, resize
 from AxonDeepSeg.network_construction import *
 from config_tools import update_config, default_configuration
 import os
+import imageio
 from patch_management_tools import im2patches_overlap, patches2im_overlap
+from visualization.get_masks import get_masks
 
 
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict,
@@ -267,6 +269,10 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
                 mask[pred == j] = paint_vals[j]
             # Then we save the image
             imsave(os.path.join(path_acquisitions_folders[i], segmentations_filenames[i]), mask, 'png')
+
+
+            axon_prediction, myelin_prediction = get_masks(os.path.join(path_acquisitions_folders[i], segmentations_filenames[i]))
+
 
     if prediction_proba_activate:
         return prediction, prediction_proba
