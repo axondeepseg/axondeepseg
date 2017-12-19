@@ -11,7 +11,7 @@ For more information, see the [documentation website](https://neuropoly.github.i
 
 ## Help
 
-If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues).. We will reply to you as soon as possible.
+If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues). We will reply to you as soon as possible.
 
 
 
