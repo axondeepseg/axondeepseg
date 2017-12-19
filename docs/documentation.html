@@ -354,12 +354,17 @@ by specifying multiple paths to segment and using a different pixel_size_in_micr
 </div>
 <div class="section" id="post-processing-tools">
 <h2>Post-processing tools<a class="headerlink" href="#post-processing-tools" title="Permalink to this headline">¶</a></h2>
-<p>If the segmentation with AxonDeepSeg fails or does not give optimal results, you can do the following steps:</p>
+<p>If the segmentation with AxonDeepSeg fails or does not give optimal results, you can try one of the following options:</p>
+<p><strong>Option 1: manual correction of the segmentation masks</strong></p>
 <ul class="simple">
-<li>Get the 3-label output of the segmentation.</li>
-<li>Separate in 2 different masks: axon mask and myelin mask.</li>
-<li>Correct the axon or myelin mask with an external tool/software (such as GIMP).</li>
-<li>Regenerate the corrected 3-label segmentation by merging the axon and myelin masks again.</li>
+<li>Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (separately), named ‘axon_mask.png’ and ‘myelin_mask.png’. If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct these masks.</li>
+<li>For example, if you want to correct the axon mask, you can open the microscopy image and the axon mask with an external tool/software (such as GIMP: <a class="reference external" href="https://www.gimp.org/">https://www.gimp.org/</a>). For a more detailed procedure, you can visit <a class="reference external" href="https://www.gimp.org/tutorials/Layer_Masks/">https://www.gimp.org/tutorials/Layer_Masks/</a>.</li>
+<li>Regenerate the corrected 3-label segmentation by merging the axon and myelin masks again. To do this, you can use the following notebook: <a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/merge_masks.ipynb">https://github.com/neuropoly/axondeepseg/blob/master/notebooks/merge_masks.ipynb</a>.</li>
+</ul>
+<p><strong>Option 2: manual correction combined with AxonSeg software</strong></p>
+<ul class="simple">
+<li>Manually correct the axon mask (as explained in Option 1).</li>
+<li>Use the <a class="reference external" href="https://github.com/neuropoly/axonseg">AxonSeg</a> software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the <a class="reference external" href="https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m">as_tutorial guideline</a>.</li>
 </ul>
 </div>
 </div>
