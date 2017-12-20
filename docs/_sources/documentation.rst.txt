@@ -87,6 +87,21 @@ To install AxonDeepSeg, you just need to install it with ``pip`` using the follo
   :: 
     pip install axondeepseg
 
+
+.. NOTE ::
+   In order to test the installation, you can launch the integrity_test.py script from the terminal. First, go to your virtual environment folder, and then go to the installation folder of AxonDeepSeg (replace NAME_VIRTUALENV by the name of your virtual environment):
+   ::
+    
+    cd ~/NAME_VIRTUALENV/lib/python2.7/site-packages/AxonDeepSeg
+    python integrity_test.py
+
+   If the test succeeds, the following message will appear in the terminal, meaning that the  software was correctly installed:
+   ::
+    * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
+
+
+
+
 Models
 -------------------------------------------------------------------------------
 

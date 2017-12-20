@@ -32,7 +32,8 @@ setup(
     package_dir={'AxonDeepSeg': 'AxonDeepSeg'},
     package_data={
         "AxonDeepSeg": ['models/default_SEM_model_v1/*',
-                        'models/default_TEM_model_v1/*'],
+                        'models/default_TEM_model_v1/*',
+                        'data_test/*'],
     },
     include_package_data=True,
     entry_points={
