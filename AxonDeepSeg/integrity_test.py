@@ -15,6 +15,11 @@ def integrity_test():
         from AxonDeepSeg.apply_model import axon_segmentation
         from scipy.misc import imread, imsave
 
+
+        import AxonDeepseg.data_test as datatest
+
+        print(datatest.__file__)  # returns the absolute path
+
         # input parameters
 
         path_testing = "../AxonDeepSeg/data_test/"
