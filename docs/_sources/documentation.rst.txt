@@ -89,7 +89,7 @@ To install AxonDeepSeg, you just need to install it with ``pip`` using the follo
 
 
 .. NOTE ::
-   In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the previous section):
+   In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section) :
    ::
     axondeepseg_test
 
