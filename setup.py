@@ -2,6 +2,9 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
+import AxonDeepSeg
+
+
 here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
@@ -14,7 +17,7 @@ with open(req_path, "r") as f:
 
 setup(
     name='AxonDeepSeg',
-    version='0.1',
+    version=AxonDeepSeg.__version__,
     description='Python tool for automatic axon and myelin segmentation',
     long_description=long_description,
     url='https://github.com/neuropoly/axondeepseg',
@@ -34,6 +37,10 @@ setup(
         "AxonDeepSeg": ['models/default_SEM_model_v1/*',
                         'models/default_TEM_model_v1/*',
                         'data_test/*'],
+    },
+    extras_require={
+        'docs': ['sphinx>=1.6',
+                 'sphinx_rtd_theme>=0.2.4'],
     },
     include_package_data=True,
     entry_points={
