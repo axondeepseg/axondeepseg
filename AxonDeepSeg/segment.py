@@ -7,6 +7,7 @@
 
 # Imports
 
+import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
 import os, json
 from tqdm import tqdm
@@ -185,6 +186,7 @@ def main():
     Main loop.
     :return: None.
     '''
+    print 'AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)
     ap = argparse.ArgumentParser()
 
     # Setting the arguments of the segmentation
