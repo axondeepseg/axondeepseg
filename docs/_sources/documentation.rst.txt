@@ -234,7 +234,6 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
         cd notebooks
         jupyter notebook name_of_the_notebook.ipynb 
 
-
 Help
 ===============================================================================
 
