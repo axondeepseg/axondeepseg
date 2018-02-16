@@ -213,6 +213,27 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 * Manually correct the axon mask (as explained in Option 1).
 * Use the `AxonSeg <https://github.com/neuropoly/axonseg>`_ software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the `as_tutorial guideline <https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m>`_.
 
+Available Jupyter notebooks
+-------------------------------------------------------------------------------
+
+Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
+
+* `performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/performance_metrics.ipynb>`_: Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.
+
+* `noise_simulation.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/noise_simulation.ipynb>`_: Notebook that simulates various noise/brightness/contrast effects on a given microscopy image in order to assess the robustness of AxonDeepSeg.
+
+* `morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/morphometrics_extraction.ipynb>`_: Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, ...), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, ...), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.
+
+.. NOTE ::
+    If it is the first time, install the Jupyter notebook package in the terminal::
+
+        pip install jupyter
+
+    Then, go to the notebooks/ subfolder of AxonDeepSeg and launch a particular notebook as follows::
+
+        cd notebooks
+        jupyter notebook name_of_the_notebook.ipynb 
+
 
 Help
 ===============================================================================
