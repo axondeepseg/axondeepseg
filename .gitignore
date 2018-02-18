@@ -1,4 +1,5 @@
-
+# Can ignore specific files
+.DS_Store
 AxonDeepSeg\.egg-info/
 
 build/

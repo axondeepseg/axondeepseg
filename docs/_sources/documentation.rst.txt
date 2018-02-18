@@ -222,6 +222,8 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 
 * `noise_simulation.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/noise_simulation.ipynb>`_: Notebook that simulates various noise/brightness/contrast effects on a given microscopy image in order to assess the robustness of AxonDeepSeg.
 
+* `morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/morphometrics_extraction.ipynb>`_: Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, ...), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, ...), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.
+
 .. NOTE ::
     If it is the first time, install the Jupyter notebook package in the terminal::
 
