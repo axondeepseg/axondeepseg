@@ -9,7 +9,7 @@
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
-import os, json
+import os, json, imageio
 from tqdm import tqdm
 import pkg_resources
 import argparse
@@ -47,6 +47,36 @@ def segment_image(path_testing_image, path_model,
         acquisition_name = tmp_path[-1]
         path_acquisition = '/'.join(tmp_path[:-1])
 
+        # Get type of model we are using
+        tmp_path, selected_model = os.path.split(path_model)
+
+        # If the input image is not png
+        if ((acquisition_name.endswith(".jpeg")) or (acquisition_name.endswith(".jpg")) or (acquisition_name.endswith(".tif"))):  
+
+            # Read image for conversion
+            img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
+
+            # Generate new name with '.png' extension and save
+            img_name, file_extension = os.path.splitext(acquisition_name)  
+            img_name = img_name + '.png'
+            new_filename = os.path.join(path_acquisition,img_name)
+
+            if (selected_model == "default_TEM_model_v1"):
+                imageio.imwrite(new_filename,255-img)
+            else:
+                imageio.imwrite(new_filename,img)
+
+            acquisition_name = new_filename
+
+        # If model used to segment is TEM v1
+        if ((acquisition_name.endswith(".png")) and (selected_model == "default_TEM_model_v1")):
+
+            # Read image for contrast change
+            img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
+            new_filename = os.path.join(path_acquisition,acquisition_name)
+            imageio.imwrite(new_filename,255-img)
+
+
         # Performing the segmentation
         segmented_image_name = segmented_image_prefix + acquisition_name
         axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
@@ -61,10 +91,7 @@ def segment_image(path_testing_image, path_model,
             print "Image {0} segmented.".format(path_testing_image)
 
     else:
-
         print "The path {0} does not exist.".format(path_testing_image)
-
-
 
     return None
 
@@ -89,10 +116,39 @@ def segment_folders(path_testing_images_folder, path_model,
 
     # We loop over all image folders in the specified folded and we segment them one by one.
 
+    # Pre-processing ->  convert to png if not already done and adapt to model contrast
+    for file_ in tqdm(os.listdir(path_testing_images_folder), desc="Segmentation..."):
+
+        # Check if TEM v1 model, needs to change contrast of input image
+        tmp_path, selected_model = os.path.split(path_model)
+
+        # We segment the image only if it's not already a segmentation.
+        if (file_.endswith(".jpeg") or file_.endswith(".jpg") or file_.endswith(".tif")):
+
+            # Read image for conversion
+            img = imageio.imread(os.path.join(path_testing_images_folder,file_))
+
+            # Generate new name with '.png' extension and save
+            img_name, file_extension = os.path.splitext(file_)  
+            img_name = img_name + '.png'
+            new_filename = os.path.join(path_testing_images_folder,img_name)
+
+            if selected_model == "default_TEM_model_v1":
+                imageio.imwrite(new_filename,255-img)
+            else:
+                imageio.imwrite(new_filename,img)
+
+        if (file_.endswith(".png")) and (selected_model == "default_TEM_model_v1"):
+
+            # Read image for contrast change
+            img = imageio.imread(os.path.join(path_testing_images_folder,file_))
+            new_filename = os.path.join(path_testing_images_folder,file_)
+            imageio.imwrite(new_filename,255-img)
+
+
     # We loop through every file in the folder as we look for an image to segment
     for file_ in tqdm(os.listdir(path_testing_images_folder), desc="Segmentation..."):
 
-        # We segment the image only if it's not already a segmentation.
         len_suffix = len(segmented_image_suffix)+4 # +4 for ".png"
         if (file_[-4:] == ".png") and (not (file_[-len_suffix:] == (segmented_image_suffix+'.png'))):
 
@@ -101,6 +157,7 @@ def segment_folders(path_testing_images_folder, path_model,
             basename.pop() # We remove the extension.
             basename = ".".join(basename)
             segmented_image_name = basename + segmented_image_suffix + '.png'
+
             axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[file_],
                               path_model_folder=path_model, config_dict=config, ckpt_name='model',
                               inference_batch_size=1, overlap_value=overlap_value,
@@ -215,11 +272,10 @@ def main():
     resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
     segmented_image_suffix = "_segmented"
 
-
     # Going through all paths passed into arguments
     for current_path_target in path_target_list:
 
-        if (current_path_target[-4:] == '.png') and (not os.path.isdir(current_path_target)):
+        if ((not os.path.isdir(current_path_target)):
 
             # Performing the segmentation over the image
             segment_image(current_path_target, path_model, overlap_value, config,
