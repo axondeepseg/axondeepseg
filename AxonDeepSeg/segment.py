@@ -151,6 +151,10 @@ def segment_folders(path_testing_images_folder, path_model,
 
 
 	# We loop through every file in the folder as we look for an image to segment
+
+	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png'))
+				 and (not file.endswith(('segmented.png','mask.png'))))]
+
 	for file_ in tqdm(img_files, desc="Segmentation..."):
 
 		len_suffix = len(segmented_image_suffix)+4 # +4 for ".png"
