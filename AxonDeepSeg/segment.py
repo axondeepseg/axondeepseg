@@ -300,11 +300,18 @@ def main():
 
 		if not os.path.isdir(current_path_target):
 
+			if ((current_path_target.endswith(".jpeg")) or (current_path_target.endswith(".jpg")) or (current_path_target.endswith(".tif")) or (current_path_target.endswith(".png"))):
+
 			# Performing the segmentation over the image
 			segment_image(current_path_target, path_model, overlap_value, config,
 						  resolution_model, segmented_image_suffix,
 						  acquired_resolution=psm,
 						  verbosity_level=verbosity_level)
+
+			else:
+				print "The path(s) specified is/are not image(s). Please update the input path(s) and try again."
+				break
+
 
 		else:
 
@@ -313,6 +320,8 @@ def main():
 						resolution_model, segmented_image_suffix,
 							acquired_resolution=psm,
 							verbosity_level=verbosity_level)
+
+
 
 	print "Segmentation finished."
 
