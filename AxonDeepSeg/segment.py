@@ -52,7 +52,7 @@ def segment_image(path_testing_image, path_model,
 		tmp_path, selected_model = os.path.split(path_model)
 
 		# If the input image is not png
-		if ((acquisition_name.endswith(".jpeg")) or (acquisition_name.endswith(".jpg")) or (acquisition_name.endswith(".tif"))):  
+		if not acquisition_name.endswith(".png"):  
 
 			# Read image for conversion
 			img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
@@ -70,16 +70,17 @@ def segment_image(path_testing_image, path_model,
 			acquisition_name = new_filename
 
 		# If model used to segment is TEM v1
-		if ((acquisition_name.endswith(".png")) and (selected_model == "default_TEM_model_v1")):
+		if (selected_model == "default_TEM_model_v1"):
 
 			# Read image for contrast change
 			img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
 			new_filename = os.path.join(path_acquisition,acquisition_name)
 			imageio.imwrite(new_filename,255-img)
 
-
 		# Performing the segmentation
-		segmented_image_name = segmented_image_prefix + acquisition_name
+		prefix_seg_name, file_extension = os.path.splitext(acquisition_name)  
+		segmented_image_name = prefix_seg_name + '_segmented' + '.png'
+
 		axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
 						  path_model_folder=path_model, config_dict=config, ckpt_name='model',
 						  inference_batch_size=1, overlap_value=overlap_value,
@@ -115,10 +116,12 @@ def segment_folders(path_testing_images_folder, path_model,
 	:return: Nothing.
 	'''
 
-	# We loop over all image folders in the specified folded and we segment them one by one.
+	# Update list of images to segment by selecting only image files (not already segmented or not masks)
+	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png','.jpg','.jpeg','.tif'))
+				 and (not file.endswith(('segmented.png','mask.png'))))]
 
-	# Pre-processing ->  convert to png if not already done and adapt to model contrast
-	for file_ in tqdm(os.listdir(path_testing_images_folder), desc="Segmentation..."):
+	# Pre-processing: convert to png if not already done and adapt to model contrast
+	for file_ in img_files:
 
 		# Check if TEM v1 model, needs to change contrast of input image
 		tmp_path, selected_model = os.path.split(path_model)
@@ -148,7 +151,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
 
 	# We loop through every file in the folder as we look for an image to segment
-	for file_ in tqdm(os.listdir(path_testing_images_folder), desc="Segmentation..."):
+	for file_ in tqdm(img_files, desc="Segmentation..."):
 
 		len_suffix = len(segmented_image_suffix)+4 # +4 for ".png"
 		if (file_[-4:] == ".png") and (not (file_[-len_suffix:] == (segmented_image_suffix+'.png'))):
@@ -303,15 +306,16 @@ def main():
 			if ((current_path_target.endswith(".jpeg")) or (current_path_target.endswith(".jpg")) or (current_path_target.endswith(".tif")) or (current_path_target.endswith(".png"))):
 
 			# Performing the segmentation over the image
-			segment_image(current_path_target, path_model, overlap_value, config,
-						  resolution_model, segmented_image_suffix,
-						  acquired_resolution=psm,
-						  verbosity_level=verbosity_level)
+				segment_image(current_path_target, path_model, overlap_value, config,
+						  	resolution_model, segmented_image_suffix,
+						  	acquired_resolution=psm,
+						  	verbosity_level=verbosity_level)
+
+				print "Segmentation finished."
 
 			else:
 				print "The path(s) specified is/are not image(s). Please update the input path(s) and try again."
 				break
-
 
 		else:
 
@@ -321,9 +325,7 @@ def main():
 							acquired_resolution=psm,
 							verbosity_level=verbosity_level)
 
-
-
-	print "Segmentation finished."
+			print "Segmentation finished."
 
 # Calling the script
 if __name__ == '__main__':
