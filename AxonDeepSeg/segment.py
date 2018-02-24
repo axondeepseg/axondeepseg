@@ -267,15 +267,13 @@ def main():
 														  "The default TEM model is 'default_TEM_model_v1'. ",
 														default=None)
 	ap.add_argument("-s", "--sizepixel", required=False, help="Pixel size of the image(s) to segment, in micrometers. \n"
-															  "If no pixel size is specified and a 'pixel_size_in_micrometer.txt' \n"
-															  "file exists in the image folder path, the pixel size in that file \n"
-															  "will be used for the segmentation.",
+															  "If no pixel size is specified and a 'pixel_size_in_micrometer.txt' file \n"
+															  "exists in the image folder path, the pixel size in that file will be used. ",
 														default=0.0)
-	ap.add_argument("-v", "--verbose", required=False, type=int, choices=range(0,4), help="Verbosity level. \n"
+	ap.add_argument("-v", "--verbose", required=False, type=int, choices=range(0,4), help="Verbosity level. "
 															"0: Displays the progress bar for the segmentation. \n"
 															"1: Also displays the path of the image(s) being segmented. \n"
-															"2: Also displays the information about the prediction step \n" 
-															"   for the segmentation of current sample. \n"
+															"2: Also displays the information about the prediction step for the segmentation of current sample. \n "
 															"3: Also displays the patch number being processed in the current sample. ",
 					 										default=0)
 	ap.add_argument("-o", "--overlap", required=False, type=int, help="Overlap value (in pixels) of the patches when doing the segmentation. \n"
