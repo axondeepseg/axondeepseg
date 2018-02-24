@@ -187,19 +187,40 @@ def main():
     :return: None.
     '''
     print 'AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+
+    requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    ap.add_argument("-t", "--type", required=True, help="Choose the type of acquisition you want to segment.") # type
-    ap.add_argument("-i", "--imgpath", required=True, nargs='+', help="Folder where the images folders are located.")
-    ap.add_argument("-m", "--model", required=False,
-                    help="Folder where the model is located.", default=None)
-    ap.add_argument("-s", "--sizepixel", required=False, help="Pixel size in micrometers to use for the segmentation.",
-                    default=0.0)
-    ap.add_argument("-v", "--verbose", required=False, help="Verbosity level.", default=0)
-    ap.add_argument("-o", "--overlap", required=False, help="Overlap value when doing the segmentation. The higher the"
-                                                            "value, the longer it will take to segment the whole image.",
-                    default=25)
+    requiredName.add_argument("-t", "--type", required=True, choices=['SEM','TEM'], help="Type of acquisition to segment. \n"
+                                                                                        "SEM: scanning electron microscopy samples. \n"
+                                                                                        "TEM: transmission electron microscopy samples. ")
+    requiredName.add_argument("-i", "--imgpath", required=True, nargs='+', help="Path to the image to segment or path to the folder \n"
+                                                                                "where the image(s) to segment are located.")
+    ap.add_argument("-m", "--model", required=False, help="Folder where the model is located. \n"
+                                                          "The default SEM model is 'default_SEM_model_v1'. \n"
+                                                          "The default TEM model is 'default_TEM_model_v1'. ",
+                                                        default=None)
+    ap.add_argument("-s", "--sizepixel", required=False, help="Pixel size of the image(s) to segment, in micrometers. \n"
+                                                              "If no pixel size is specified and a 'pixel_size_in_micrometer.txt' \n"
+                                                              "file exists in the image folder path, the pixel size in that file \n"
+                                                              "will be used for the segmentation.",
+                                                        default=0.0)
+    ap.add_argument("-v", "--verbose", required=False, type=int, choices=range(0,4), help="Verbosity level. \n"
+                                                            "0: Displays the progress bar for the segmentation. \n"
+                                                            "1: Also displays the path of the image(s) being segmented. \n"
+                                                            "2: Also displays the information about the prediction step \n" 
+                                                            "   for the segmentation of current sample. \n"
+                                                            "3: Also displays the patch number being processed in the current sample. ",
+                                                            default=0)
+    ap.add_argument("-o", "--overlap", required=False, type=int, help="Overlap value (in pixels) of the patches when doing the segmentation. \n"
+                                                            "Higher values of overlap can improve the segmentation at patch borders, \n"
+                                                            "but also increase the segmentation time. \n"
+                                                            "Default value: 25. \n"
+                                                            "Recommended range of values: [10-100]. \n",
+                                                            default=25)
+    ap._action_groups.reverse()
+
 
     # Processing the arguments
     args = vars(ap.parse_args())
