@@ -13,6 +13,7 @@ import os, json
 from tqdm import tqdm
 import pkg_resources
 import argparse
+from argparse import RawTextHelpFormatter
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model_v1"
