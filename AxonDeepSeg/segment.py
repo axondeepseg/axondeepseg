@@ -21,6 +21,9 @@ TEM_DEFAULT_MODEL_NAME = "default_TEM_model_v1"
 
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 
+default_SEM_path = os.path.join(MODELS_PATH,SEM_DEFAULT_MODEL_NAME)
+default_TEM_path = os.path.join(MODELS_PATH,TEM_DEFAULT_MODEL_NAME)
+
 # Definition of the functions
 
 def segment_image(path_testing_image, path_model,
@@ -193,32 +196,33 @@ def main():
     requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    requiredName.add_argument("-t", "--type", required=True, choices=['SEM','TEM'], help="Type of acquisition to segment. \n"
-                                                                                        "SEM: scanning electron microscopy samples. \n"
-                                                                                        "TEM: transmission electron microscopy samples. ")
-    requiredName.add_argument("-i", "--imgpath", required=True, nargs='+', help="Path to the image to segment or path to the folder \n"
-                                                                                "where the image(s) to segment are located.")
-    ap.add_argument("-m", "--model", required=False, help="Folder where the model is located. \n"
-                                                          "The default SEM model is 'default_SEM_model_v1'. \n"
-                                                          "The default TEM model is 'default_TEM_model_v1'. ",
-                                                        default=None)
-    ap.add_argument("-s", "--sizepixel", required=False, help="Pixel size of the image(s) to segment, in micrometers. \n"
-                                                              "If no pixel size is specified and a 'pixel_size_in_micrometer.txt' \n"
-                                                              "file exists in the image folder path, the pixel size in that file \n"
-                                                              "will be used for the segmentation.",
-                                                        default=0.0)
-    ap.add_argument("-v", "--verbose", required=False, type=int, choices=range(0,4), help="Verbosity level. \n"
-                                                            "0: Displays the progress bar for the segmentation. \n"
-                                                            "1: Also displays the path of the image(s) being segmented. \n"
-                                                            "2: Also displays the information about the prediction step \n" 
-                                                            "   for the segmentation of current sample. \n"
-                                                            "3: Also displays the patch number being processed in the current sample. ",
+    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
+                                                                                        'SEM: scanning electron microscopy samples. \n'+
+                                                                                        'TEM: transmission electron microscopy samples. ')
+    requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
+                                                                                'where the image(s) to segment is/are located.')
+
+    ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
+                                                          'The default SEM model path is: \n'+default_SEM_path+'\n'+
+                                                          'The default TEM model path is: \n'+default_TEM_path+'\n')
+    ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
+                                                              'If no pixel size is specified and a pixel_size_in_micrometer.txt \n'+
+                                                              'file exists in the image folder path, the pixel size in that file \n'+
+                                                              'will be used for the segmentation. Otherwise, a generic pixel size \n'+
+                                                              'will be used: 0.1 for SEM, 0.01 for TEM.',
+                                                              default=0.0)
+    ap.add_argument('-v', '--verbose', required=False, type=int, choices=range(0,4), help='Verbosity level. \n'+
+                                                            '0: Displays the progress bar for the segmentation. \n'+
+                                                            '1: Also displays the path of the image(s) being segmented. \n'+
+                                                            '2: Also displays the information about the prediction step \n'+ 
+                                                            '   for the segmentation of current sample. \n'+
+                                                            '3: Also displays the patch number being processed in the current sample.',
                                                             default=0)
-    ap.add_argument("-o", "--overlap", required=False, type=int, help="Overlap value (in pixels) of the patches when doing the segmentation. \n"
-                                                            "Higher values of overlap can improve the segmentation at patch borders, \n"
-                                                            "but also increase the segmentation time. \n"
-                                                            "Default value: 25. \n"
-                                                            "Recommended range of values: [10-100]. \n",
+    ap.add_argument('-o', '--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
+                                                            'Higher values of overlap can improve the segmentation at patch borders, \n'+
+                                                            'but also increase the segmentation time. \n'+
+                                                            'Default value: 25. \n'+
+                                                            'Recommended range of values: [10-100]. \n',
                                                             default=25)
     ap._action_groups.reverse()
 

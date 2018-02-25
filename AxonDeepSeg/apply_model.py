@@ -100,7 +100,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     for i in range(it):
 
         if verbosity_level>=3:
-            print 'processing patch %s on %s' % (i+1, it)
+            print 'processing patch %s of %s' % (i+1, it)
 
         batch_x = np.asarray(L_data[i * inference_batch_size:(i + 1) * inference_batch_size])
         if prediction_proba_activate:
@@ -227,9 +227,26 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 
     # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
     if acquired_resolution == 0.0:
-        resolutions_files = [open(os.path.join(path_acquisition_folder, 'pixel_size_in_micrometer.txt'), 'r')
-                             for path_acquisition_folder in path_acquisitions_folders]
-        acquisitions_resolutions = [float(file_.read()) for file_ in resolutions_files]
+
+        if os.path.exists(os.path.join(path_acquisitions_folders[0], 'pixel_size_in_micrometer.txt')):
+
+            resolutions_files = [open(os.path.join(path_acquisition_folder, 'pixel_size_in_micrometer.txt'), 'r')
+                                for path_acquisition_folder in path_acquisitions_folders]
+
+            acquisitions_resolutions = [float(file_.read()) for file_ in resolutions_files]
+
+
+        else:
+
+            tmp_path, selected_model = os.path.split(path_model_folder)
+
+            if selected_model == "default_TEM_model_v1":
+                acquisitions_resolutions = 0.01
+                print 'Warning: using default TEM resolution of 0.01 for prediction.'
+
+            if selected_model == "default_SEM_model_v1":
+                acquisitions_resolutions = 0.1
+                print 'Warning: using default SEM resolution of 0.1 for prediction.'
 
     # If we received a resolution to use we use this one.
     else:
