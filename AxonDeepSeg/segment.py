@@ -252,59 +252,59 @@ def generate_resolution(type_acquisition, model_input_size):
 
 def main():
 
-    '''
-    Main loop.
-    :return: None.
-    '''
-    print 'AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)
-    ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+	'''
+	Main loop.
+	:return: None.
+	'''
+	print 'AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)
+	ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
-    requiredName = ap.add_argument_group('required arguments')
+	requiredName = ap.add_argument_group('required arguments')
 
-    # Setting the arguments of the segmentation
-    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
-                                                                                        'SEM: scanning electron microscopy samples. \n'+
-                                                                                        'TEM: transmission electron microscopy samples. ')
-    requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
-                                                                                'where the image(s) to segment is/are located.')
+	# Setting the arguments of the segmentation
+	requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
+																						'SEM: scanning electron microscopy samples. \n'+
+																						'TEM: transmission electron microscopy samples. ')
+	requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
+																				'where the image(s) to segment is/are located.')
 
-    ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
-                                                          'The default SEM model path is: \n'+default_SEM_path+'\n'+
-                                                          'The default TEM model path is: \n'+default_TEM_path+'\n')
-    ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
-                                                              'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
-                                                              'file needs to be added to the image folder path. The pixel size \n'+
-                                                              'in that file will be used for the segmentation.',
-                                                              default=0.0)
-    ap.add_argument('-v', '--verbose', required=False, type=int, choices=range(0,4), help='Verbosity level. \n'+
-                                                            '0 (default) : Displays the progress bar for the segmentation. \n'+
-                                                            '1: Also displays the path of the image(s) being segmented. \n'+
-                                                            '2: Also displays the information about the prediction step \n'+ 
-                                                            '   for the segmentation of current sample. \n'+
-                                                            '3: Also displays the patch number being processed in the current sample.',
-                                                            default=0)
-    ap.add_argument('-o', '--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
-                                                            'Higher values of overlap can improve the segmentation at patch borders, \n'+
-                                                            'but also increase the segmentation time. \n'+
-                                                            'Default value: '+str(default_overlap)+'\n'+
-                                                            'Recommended range of values: [10-100]. \n',
-                                                            default=25)
-    ap._action_groups.reverse()
+	ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
+														  'The default SEM model path is: \n'+default_SEM_path+'\n'+
+														  'The default TEM model path is: \n'+default_TEM_path+'\n')
+	ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
+															  'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
+															  'file needs to be added to the image folder path. The pixel size \n'+
+															  'in that file will be used for the segmentation.',
+															  default=0.0)
+	ap.add_argument('-v', '--verbose', required=False, type=int, choices=range(0,4), help='Verbosity level. \n'+
+															'0 (default) : Displays the progress bar for the segmentation. \n'+
+															'1: Also displays the path of the image(s) being segmented. \n'+
+															'2: Also displays the information about the prediction step \n'+ 
+															'   for the segmentation of current sample. \n'+
+															'3: Also displays the patch number being processed in the current sample.',
+															default=0)
+	ap.add_argument('-o', '--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
+															'Higher values of overlap can improve the segmentation at patch borders, \n'+
+															'but also increase the segmentation time. \n'+
+															'Default value: '+str(default_overlap)+'\n'+
+															'Recommended range of values: [10-100]. \n',
+															default=25)
+	ap._action_groups.reverse()
 
 
-    # Processing the arguments
-    args = vars(ap.parse_args())
-    type_ = str(args["type"])
-    verbosity_level = int(args["verbose"])
-    overlap_value = int(args["overlap"])
-    psm = float(args["sizepixel"])
-    path_target_list = args["imgpath"]
-    new_path = args["model"]
+	# Processing the arguments
+	args = vars(ap.parse_args())
+	type_ = str(args["type"])
+	verbosity_level = int(args["verbose"])
+	overlap_value = int(args["overlap"])
+	psm = float(args["sizepixel"])
+	path_target_list = args["imgpath"]
+	new_path = args["model"]
 
-    # Preparing the arguments to axon_segmentation function
-    path_model, config = generate_default_parameters(type_, new_path)
-    resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
-    segmented_image_suffix = "_segmented"
+	# Preparing the arguments to axon_segmentation function
+	path_model, config = generate_default_parameters(type_, new_path)
+	resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
+	segmented_image_suffix = "_segmented"
 
 
 	# Going through all paths passed into arguments
@@ -316,9 +316,9 @@ def main():
 
 			# Performing the segmentation over the image
 				segment_image(current_path_target, path_model, overlap_value, config,
-						  	resolution_model, segmented_image_suffix,
-						  	acquired_resolution=psm,
-						  	verbosity_level=verbosity_level)
+							resolution_model, segmented_image_suffix,
+							acquired_resolution=psm,
+							verbosity_level=verbosity_level)
 
 				print "Segmentation finished."
 
