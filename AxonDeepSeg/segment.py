@@ -55,35 +55,24 @@ def segment_image(path_testing_image, path_model,
 		# Get type of model we are using
 		tmp_path, selected_model = os.path.split(path_model)
 
-		# If the input image is not png
-		if not acquisition_name.endswith(".png"):  
+		# Read image
+		img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
 
-			# Read image for conversion
-			img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
+		# Generate new tmp file with '.png' extension and save
+		img_name_original, file_extension = os.path.splitext(acquisition_name) 
+		img_name = 'tmp.png'
+		new_filename = os.path.join(path_acquisition,img_name)
 
-			# Generate new name with '.png' extension and save
-			img_name, file_extension = os.path.splitext(acquisition_name)  
-			img_name = img_name + '.png'
-			new_filename = os.path.join(path_acquisition,img_name)
-
-			if (selected_model == "default_TEM_model_v1"):
-				imageio.imwrite(new_filename,255-img)
-			else:
-				imageio.imwrite(new_filename,img)
-
-			acquisition_name = new_filename
-
-		# If model used to segment is TEM v1
 		if (selected_model == "default_TEM_model_v1"):
-
-			# Read image for contrast change
-			img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
-			new_filename = os.path.join(path_acquisition,acquisition_name)
 			imageio.imwrite(new_filename,255-img)
+		else:
+			imageio.imwrite(new_filename,img)
+
+		acquisition_name = new_filename
 
 		# Performing the segmentation
-		prefix_seg_name, file_extension = os.path.splitext(acquisition_name)  
-		segmented_image_name = prefix_seg_name + '_segmented' + '.png'
+		#prefix_seg_name, file_extension = os.path.splitext(acquisition_name)  
+		segmented_image_name = img_name_original + '_segmented' + '.png'
 
 		axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
 						  path_model_folder=path_model, config_dict=config, ckpt_name='model',
@@ -98,6 +87,9 @@ def segment_image(path_testing_image, path_model,
 
 	else:
 		print "The path {0} does not exist.".format(path_testing_image)
+
+	# Remove temporary file used for the segmentation
+	os.remove(os.path.join(path_acquisition,img_name))
 
 	return None
 
