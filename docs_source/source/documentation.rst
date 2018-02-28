@@ -56,10 +56,6 @@ virtual environment between parenthesis, like this::
 
     (ads_venv) username@hostname /home/...
 
-
-
-
-
 Option 1: Installing AxonDeepSeg in application mode (stable release)
 -------------------------------------------------------------------------------
 .. WARNING ::
@@ -70,6 +66,11 @@ We are now going to install the software AxonDeepSeg.
 To install the latest stable release of AxonDeepSeg, you just need to install it with ``pip`` using the following command::
 
     pip install axondeepseg
+
+.. NOTE ::
+   Note that you can install a specific version of the software as follows (replace X.X with the version number, for example 0.2):
+   ::
+    pip install axondeepseg==X.X
 
 .. WARNING ::    
   If you experience the following error:
@@ -89,7 +90,6 @@ To install the latest stable release of AxonDeepSeg, you just need to install it
   **Once TensorFlow is installed, re-run the pip command:**
   :: 
     pip install axondeepseg
-
 
 .. NOTE ::
    In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section) :
