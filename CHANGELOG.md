@@ -2,32 +2,9 @@
 
 All notable changes to the AxonDeepSeg project will be documented in this file.
 
-## [Unreleased]
+## Release 0.3 (22 Feb 18)
 
-## [0.3] - 2018-02-28
+- Added ...
+- Fixed ...
+- Removed ...
 
-### Added
-- bla bla bla
-- bla bla bla
-
-### Changed
-- bla bla bla
-- bla bla bla
-
-### Removed
-- bla bla bla
-- bla bla bla
-
-## [0.2] - 2018-02-28
-
-### Added
-- bla bla bla
-- bla bla bla
-
-### Changed
-- bla bla bla
-- bla bla bla
-
-### Removed
-- bla bla bla
-- bla bla bla

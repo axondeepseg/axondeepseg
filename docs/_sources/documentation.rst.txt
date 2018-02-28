@@ -165,8 +165,6 @@ to the resolution of the image, that is the **size of a pixel in micrometer**.
 .. NOTE ::
    You can also specify the pixel size as an argument to our software (see next section).
 
-
-
 Using AxonDeepSeg
 -------------------------------------------------------------------------------
 
