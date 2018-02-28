@@ -63,7 +63,7 @@ def segment_image(path_testing_image, path_model,
 		img_name = 'tmp.png'
 		new_filename = os.path.join(path_acquisition,img_name)
 
-		if (selected_model == "default_TEM_model_v1"):
+		if selected_model == "default_TEM_model_v1":
 			imageio.imwrite(new_filename,255-img)
 		else:
 			imageio.imwrite(new_filename,img)
@@ -130,7 +130,7 @@ def segment_folders(path_testing_images_folder, path_model,
 		img_name = 'tmp.png'
 		new_filename = os.path.join(path_testing_images_folder,img_name)
 
-		if (selected_model == "default_TEM_model_v1"):
+		if selected_model == "default_TEM_model_v1":
 			imageio.imwrite(new_filename,255-img)
 		else:
 			imageio.imwrite(new_filename,img)
@@ -148,7 +148,7 @@ def segment_folders(path_testing_images_folder, path_model,
 							  write_mode=True)
 
 		if verbosity_level >= 1:
-			print "Image {0} segmented.".format(os.path.join(path_testing_images_folder, file_))
+			tqdm.write("Image {0} segmented.".format(os.path.join(path_testing_images_folder, file_)))
 
 		# Remove temporary file used for the segmentation
 		os.remove(os.path.join(path_testing_images_folder,img_name))
