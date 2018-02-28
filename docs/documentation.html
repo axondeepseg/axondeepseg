@@ -92,7 +92,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#installing-python">Installing python</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installing-virtualenv">Installing virtualenv</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-virtual-environment">Creating a virtual environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installing-axondeepseg">Installing AxonDeepSeg</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#option-1-installing-axondeepseg-in-application-mode-stable-release">Option 1: Installing AxonDeepSeg in application mode (stable release)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#option-2-installing-axondeepseg-in-development-mode-from-github">Option 2: Installing AxonDeepSeg in development mode (from GitHub)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#models">Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data">Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-axondeepseg">Using AxonDeepSeg</a></li>
@@ -223,16 +224,23 @@ virtual environment between parenthesis, like this:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="installing-axondeepseg">
-<h2>Installing AxonDeepSeg<a class="headerlink" href="#installing-axondeepseg" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="option-1-installing-axondeepseg-in-application-mode-stable-release">
+<h2>Option 1: Installing AxonDeepSeg in application mode (stable release)<a class="headerlink" href="#option-1-installing-axondeepseg-in-application-mode-stable-release" title="Permalink to this headline">¶</a></h2>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">Make sure that the virtual environment is activated before you run the following command.</p>
 </div>
 <p>We are now going to install the software AxonDeepSeg.</p>
-<p>To install AxonDeepSeg, you just need to install it with <code class="docutils literal notranslate"><span class="pre">pip</span></code> using the following command:</p>
+<p>To install the latest stable release of AxonDeepSeg, you just need to install it with <code class="docutils literal notranslate"><span class="pre">pip</span></code> using the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">axondeepseg</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Note that you can install a specific version of the software as follows (replace X.X with the version number, for example 0.2):</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">axondeepseg</span><span class="o">==</span><span class="n">X</span><span class="o">.</span><span class="n">X</span>
+</pre></div>
+</div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -261,6 +269,42 @@ you will need to manually install the TensorFlow dependency.</p>
 </div>
 <p>This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal, meaning that the  software was correctly installed:</p>
 <div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="n">Integrity</span> <span class="n">test</span> <span class="n">passed</span><span class="o">.</span> <span class="n">AxonDeepSeg</span> <span class="ow">is</span> <span class="n">correctly</span> <span class="n">installed</span><span class="o">.</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="option-2-installing-axondeepseg-in-development-mode-from-github">
+<h2>Option 2: Installing AxonDeepSeg in development mode (from GitHub)<a class="headerlink" href="#option-2-installing-axondeepseg-in-development-mode-from-github" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Make sure that the virtual environment is activated before you run the following command.</p>
+</div>
+<p>To install AxonDeepSeg in development mode, you first need to clone the AxonDeepSeg repository using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">neuropoly</span><span class="o">/</span><span class="n">axondeepseg</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>Then, go to the newly created git repository and install the AxonDeepSeg package using the following commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">axondeepseg</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the <a class="reference external" href="https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment">Creation a virtual environment</a> section) :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg_test</span>
+</pre></div>
+</div>
+<p>This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal, meaning that the  software was correctly installed:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="n">Integrity</span> <span class="n">test</span> <span class="n">passed</span><span class="o">.</span> <span class="n">AxonDeepSeg</span> <span class="ow">is</span> <span class="n">correctly</span> <span class="n">installed</span><span class="o">.</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">axondeepseg</span>
+<span class="n">git</span> <span class="n">pull</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
 </pre></div>
 </div>
 </div>
@@ -343,7 +387,7 @@ you can download the test data using the instructions in the <a class="reference
 it will automatically read the image resolution encoded in the file: <em>pixel_size_in_micrometer.txt</em>
 The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
 The segmented acquisition itself will be saved in the same folder as the acquisition image,
-with the suffix ‘<a href="#id3"><span class="problematic" id="id4">segmented_</span></a>’, in png format.</p>
+with the suffix ‘<a href="#id4"><span class="problematic" id="id5">segmented_</span></a>’, in png format.</p>
 <ul class="simple">
 <li>To segment multiple images acquired with the same resolution, put them all in the same folder and</li>
 </ul>

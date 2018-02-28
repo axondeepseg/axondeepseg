@@ -56,17 +56,21 @@ virtual environment between parenthesis, like this::
 
     (ads_venv) username@hostname /home/...
 
-
-Installing AxonDeepSeg
+Option 1: Installing AxonDeepSeg in application mode (stable release)
 -------------------------------------------------------------------------------
 .. WARNING ::
    Make sure that the virtual environment is activated before you run the following command.
 
 We are now going to install the software AxonDeepSeg.
 
-To install AxonDeepSeg, you just need to install it with ``pip`` using the following command::
+To install the latest stable release of AxonDeepSeg, you just need to install it with ``pip`` using the following command::
 
     pip install axondeepseg
+
+.. NOTE ::
+   Note that you can install a specific version of the software as follows (replace X.X with the version number, for example 0.2):
+   ::
+    pip install axondeepseg==X.X
 
 .. WARNING ::    
   If you experience the following error:
@@ -87,6 +91,28 @@ To install AxonDeepSeg, you just need to install it with ``pip`` using the follo
   :: 
     pip install axondeepseg
 
+.. NOTE ::
+   In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section) :
+   ::
+    axondeepseg_test
+
+   This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal, meaning that the  software was correctly installed:
+   ::
+    * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
+
+Option 2: Installing AxonDeepSeg in development mode (from GitHub)
+-------------------------------------------------------------------------------
+.. WARNING ::
+   Make sure that the virtual environment is activated before you run the following command.
+
+To install AxonDeepSeg in development mode, you first need to clone the AxonDeepSeg repository using the following command::
+
+    git clone https://github.com/neuropoly/axondeepseg.git
+
+Then, go to the newly created git repository and install the AxonDeepSeg package using the following commands::
+
+    cd axondeepseg
+    pip install -e .
 
 .. NOTE ::
    In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section) :
@@ -97,6 +123,12 @@ To install AxonDeepSeg, you just need to install it with ``pip`` using the follo
    ::
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
 
+.. NOTE ::
+   To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
+   ::
+    cd axondeepseg
+    git pull
+    pip install -e .
 
 Models
 -------------------------------------------------------------------------------
