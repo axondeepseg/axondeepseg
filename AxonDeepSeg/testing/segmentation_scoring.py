@@ -274,3 +274,28 @@ class Metrics_calculator:
         
         # Compute global hausdorff distance metric
         return directed_hausdorff(pred_contour, gt_contour)[0]
+
+def classification_accuracy(prediction, groundtruth):
+    """
+    :param prediction: segmentation output from AxonDeepSeg
+    :param groundtruth: 3-label mask (ground truth) of the sample
+    :return: classification_accuracy (between 0 and 1)
+    """
+
+    # Get ground truth axon and myelin masks
+    gt_axon = groundtruth > 200
+    gt_myelin = np.logical_and(groundtruth >= 50, groundtruth <= 200)
+
+    # Get prediction axon and myelin masks
+    pred_axon = prediction > 200
+    pred_myelin = np.logical_and(prediction >= 50, prediction <= 200)
+
+    # Compute number of correctly classified pixels
+    correctly_classified_myelins = np.logical_and(pred_myelin == 1, gt_myelin == 1).sum()
+    correctly_classified_axons = np.logical_and(pred_axon == 1, gt_axon == 1).sum()
+    correctly_classified_background = np.logical_and(prediction == 0, groundtruth == 0).sum()
+
+    correctly_classified = np.sum(correctly_classified_myelins+correctly_classified_axons+correctly_classified_background)
+    nbr_pixels = prediction.size
+
+    return np.true_divide(correctly_classified, nbr_pixels)   
