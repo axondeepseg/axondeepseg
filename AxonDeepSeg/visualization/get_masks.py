@@ -18,10 +18,11 @@ def get_masks(path_prediction):
     
     # get main path
     path_folder, file_name = os.path.split(path_prediction)
+    tmp_path = path_prediction.split('_segmented')
 
     # save the masks
-    imageio.imwrite(os.path.join(path_folder,'axon_mask.png'),axon_prediction.astype(int))
-    imageio.imwrite(os.path.join(path_folder,'myelin_mask.png'),myelin_prediction.astype(int))
+    imageio.imwrite(tmp_path[0] + '_axon.png', axon_prediction.astype(int))
+    imageio.imwrite(tmp_path[0] + '_myelin.png', myelin_prediction.astype(int))
 
     return axon_prediction, myelin_prediction
 

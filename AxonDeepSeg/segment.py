@@ -115,7 +115,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
 	# Update list of images to segment by selecting only image files (not already segmented or not masks)
 	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png','.jpg','.jpeg','.tif'))
-				 and (not file.endswith(('segmented.png','mask.png'))))]
+				 and (not file.endswith(('_segmented.png','_axon.png','_myelin.png','mask.png'))))]
 
 	# Pre-processing: convert to png if not already done and adapt to model contrast
 	for file_ in tqdm(img_files, desc="Segmentation..."):
