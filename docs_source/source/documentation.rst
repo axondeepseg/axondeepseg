@@ -91,15 +91,6 @@ To install the latest stable release of AxonDeepSeg, you just need to install it
   :: 
     pip install axondeepseg
 
-.. NOTE ::
-   In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section) :
-   ::
-    axondeepseg_test
-
-   This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal, meaning that the  software was correctly installed:
-   ::
-    * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
-
 Option 2: Installing AxonDeepSeg in development mode (from GitHub)
 -------------------------------------------------------------------------------
 .. WARNING ::
@@ -115,20 +106,23 @@ Then, go to the newly created git repository and install the AxonDeepSeg package
     pip install -e .
 
 .. NOTE ::
-   In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section) :
-   ::
-    axondeepseg_test
-
-   This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal, meaning that the  software was correctly installed:
-   ::
-    * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
-
-.. NOTE ::
    To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
    ::
     cd axondeepseg
     git pull
     pip install -e .
+
+Testing the installation
+-------------------------------------------------------------------------------
+
+In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section)::
+
+    axondeepseg_test
+
+
+This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal, meaning that the software was correctly installed::
+
+    * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
 
 Models
 -------------------------------------------------------------------------------
