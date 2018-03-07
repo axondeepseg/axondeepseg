@@ -114,7 +114,7 @@ def segment_folders(path_testing_images_folder, path_model,
 	'''
 
 	# Update list of images to segment by selecting only image files (not already segmented or not masks)
-	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png','.jpg','.jpeg','.tif'))
+	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png','.jpg','.jpeg','.tif','.tiff'))
 				 and (not file.endswith(('segmented.png','mask.png'))))]
 
 	# Pre-processing: convert to png if not already done and adapt to model contrast
@@ -283,7 +283,7 @@ def main():
 
 		if not os.path.isdir(current_path_target):
 
-			if ((current_path_target.endswith(".jpeg")) or (current_path_target.endswith(".jpg")) or (current_path_target.endswith(".tif")) or (current_path_target.endswith(".png"))):
+			if ((current_path_target.endswith(".jpeg")) or (current_path_target.endswith(".jpg")) or (current_path_target.endswith(".tif")) or (current_path_target.endswith(".tiff")) or (current_path_target.endswith(".png"))):
 
 			# Performing the segmentation over the image
 				segment_image(current_path_target, path_model, overlap_value, config,
