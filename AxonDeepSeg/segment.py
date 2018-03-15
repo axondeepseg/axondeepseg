@@ -115,7 +115,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
 	# Update list of images to segment by selecting only image files (not already segmented or not masks)
 	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png','.jpg','.jpeg','.tif','.tiff'))
-				 and (not file.endswith(('segmented.png','mask.png'))))]
+				 and (not file.endswith(('_seg-axonmyelin.png','_seg-axon.png','_seg-myelin.png','mask.png'))))]
 
 	# Pre-processing: convert to png if not already done and adapt to model contrast
 	for file_ in tqdm(img_files, desc="Segmentation..."):
@@ -137,7 +137,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
 		tmp_path, tmp_name = os.path.split(fp.name)
 		acquisition_name = tmp_name
-		segmented_image_name = img_name_original + '_segmented' + '.png'
+		segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
 		axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
 							  path_model_folder=path_model, config_dict=config, ckpt_name='model',
@@ -275,7 +275,7 @@ def main():
 	# Preparing the arguments to axon_segmentation function
 	path_model, config = generate_default_parameters(type_, new_path)
 	resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
-	segmented_image_suffix = "_segmented"
+	segmented_image_suffix = "_seg-axonmyelin"
 
 
 	# Going through all paths passed into arguments
