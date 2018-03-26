@@ -124,17 +124,21 @@ This integrity test automatically performs the axon and myelin segmentation of a
 
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
 
-Models
-===============================================================================
-
 Existing models
--------------------------------------------------------------------------------
+===============================================================================
 
 Two models are available and shipped together with the installation package, so you don't need to install them separately.
 The two models are described below:
 
 * A SEM model, that works at a resolution of 0.1 micrometer per pixel.
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
+
+.. WARNING ::
+   The current models available for segmentation are trained for patches of 512x512 pixels. This means that your input image(s) should be at least 512x512 pixels in size **after the resampling to the target pixel size of the model you are using to segment**. 
+
+   For instance, the TEM model currently available has a target resolution of 0.01 micrometers per pixel, which means that the minimum size of the input image (in micrometers) is 5.12x5.12.
+
+   **Option:** If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).
 
 Getting started
 ===============================================================================
@@ -144,8 +148,7 @@ We provide a simple `Jupyter notebook <https://github.com/neuropoly/axondeepseg/
 Example dataset
 -------------------------------------------------------------------------------
 
-You can test AxonDeepSeg by downloading the test data available
-`here <https://osf.io/rtbwc/download>`_.
+You can test AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
 
 Syntax
 -------------------------------------------------------------------------------
@@ -158,7 +161,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 * Optional arguments:
   **-m** MODEL OR **--model** MODEL: Folder where the model is located. The default SEM model path is **default_SEM_model_v1**. The default TEM model path is **default_TEM_model_v1**.
-  **-s** SIZEPIXEL OR **--sizepixel** SIZEPIXEL: Pixel size of the image(s) to segment, in micrometers. If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path. The pixel size in that file will be used for the segmentation.
+  **-s** SIZEPIXEL OR **--sizepixel** SIZEPIXEL: Pixel size of the image(s) to segment, in micrometers. If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
   **-v** {0,1,2,3} OR **--verbose** {0,1,2,3}: Verbosity level. 
                         0 (default) : Displays the progress bar for the segmentation. 
                         1: Also displays the path of the image(s) being segmented. 
@@ -171,131 +174,45 @@ The script to launch is called **axondeepseg**. It takes several arguments:
    ::
     axondeepseg -h
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.. WARNING ::
-   The current models available for segmentation are trained for patches of 512x512 pixels. This means that your input image(s) should be at least 512x512 pixels in size **after the resampling to the target pixel size of the model you are using to segment**. 
-
-   For instance, the TEM model currently available has a target resolution of 0.01 micrometers per pixel, which means that the minimum size of the input image (in micrometers) is 5.12x5.12.
-
-   **Option:** If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).
-
-
 Segment a single image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* The image file *image.png* is the image to segment.
-* The file *pixel_size_in_micrometer.txt* contains a single float number corresponding
-to the resolution of the image, that is the **size of a pixel in micrometer**.
-
-Once you have downloaded the test data, go to the extracted test data folder. In our case::
-
-    cd test_segmentation
-
-
-
-
-
-
-To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image '77.png' of the test dataset, that has a pixel size of 0.07 micrometers, use the following command::
+To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image '77.png' of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
 
     axondeepseg -t SEM -i test_sem_image/image1_sem/77.png -v 2 -s 0.07
 
 The script will use the explicitely specified size argument (here, 0.07) for the segmentation. If no pixel size is provided in the arguments, it will automatically read the image resolution encoded in the file: *pixel_size_in_micrometer.txt* if that file exists in the folder containing the image to segment.
 The segmented acquisition itself will be saved in the same folder as the acquisition image, with the suffix '_seg-axonmyelin.png', in png format, along with the binary axon and myelin segmentation masks (with the suffixes '_seg-axon.png' and '_seg-myelin.png'). In our example, the three output files will be generated: '77_seg-axonmyelin.png', '77_seg-axon.png' and '77_seg-myelin.png'.
 
+To segment the same image by using the *pixel_size_in_micrometer.txt* file in the folder (i.e. not specifying the pixel size as argument in the command), use the following command::
 
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -v 2
 
-Segment multiple images
+Segment multiple images of the same resolution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To segment a multiple microscopy images of same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder 'test_sem_image/image 1_sem/' of the test dataset, that has a pixel size of 0.07 micrometers, use the following command::
+To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder 'test_sem_image/image 1_sem/' of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
 
-    axondeepseg -t SEM -i test_sem_image/image 1_sem/ -v 2 -s 0.07
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image 1_sem/ -v 2 -s 0.07
 
+To segment multiple images of the same folder and of the same resolution by using the *pixel_size_in_micrometer.txt* file in the folder (i.e. not specifying the pixel size as argument in the command), use the following folder structure::
 
-
-
-
-* To segment multiple images acquired with the same resolution, put them all in the same folder and
-launch the segmentation of this folder, like below::
-
-    axondeepseg -t SEM -i test_sem_image/image 1_sem/
-
-
-
-
-
-
-
-The images you want to segment must be stored following a particular architecture::
-
-    images_to_segment/
-    --folder_1/
-    ---- your_image_1.png
-    ---- another_image.png
+    --folder_with_samples/
+    ---- image_1.png
+    ---- image_2.png
+    ---- image_3.png    
     ---- ...
-    ---- pixel_size_in_micrometer.txt (*)
+    ---- pixel_size_in_micrometer.txt
     ...
 
+Then, use the following command::
 
-* The image file *image.png* is the image to segment.
-* The file *pixel_size_in_micrometer.txt* contains a single float number corresponding
-to the resolution of the image, that is the **size of a pixel in micrometer**.
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image 1_sem/ -v 2
 
-.. NOTE ::
-   You can also specify the pixel size as an argument to our software.
+Segment multiple images of different resolutions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once you have downloaded the test data, go to the extracted test data folder. In our case::
-
-    cd test_segmentation
-
-The script to launch is called **axondeepseg**. It takes several arguments:
-
-* **t**: type of the image. SEM or TEM.
-* **i**: path to the image.
-* **s**: (optional) resolution (size in micrometer of a pixel) of the image.
-* **v**: (optional) verbosity level. Default 0.
-
-    * 0 displays only a progress bar indicating the advancement of the segmentations.
-    * 1 displays additionally the path of the image that was just segmented.
-    * 2 displays additionally information about the current step of the segmentation of the current image.
-
-To segment one of the image that we downloaded (here, a SEM image), run the following command::
-
-    axondeepseg -t SEM -i test_sem_image/image1_sem/77.png -v 2 -s 0.07
-
-The script will use the size argument (here, 0.07) for the segmentation. If no size is provided in the arguments,
-it will automatically read the image resolution encoded in the file: *pixel_size_in_micrometer.txt*
-The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
-The segmented acquisition itself will be saved in the same folder as the acquisition image,
-with the suffix 'segmented_', in png format.
-
-
-* To segment multiple images acquired with the same resolution, put them all in the same folder and
-launch the segmentation of this folder, like below::
-
-    axondeepseg -t SEM -i test_sem_image/image 1_sem/
-
-
-* To segment multiple images acquired with different resolutions,
-please use the folder structure explained in `Data <https://neuropoly.github.io/axondeepseg/documentation.html#data>`_,
+To segment multiple images acquired with different resolutions, use the following folder structure,
 i.e., put all image with the same resolution in the same folder.
 * Then, segment each folder one after the other using the argument **-s** or segment all folders in one command
 by specifying multiple paths to segment and using a different pixel_size_in_micrometer.txt for each folder, like this::
