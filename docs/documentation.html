@@ -99,13 +99,15 @@
 <li class="toctree-l2"><a class="reference internal" href="#testing-the-installation">Testing the installation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#models">Models</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#existing-models">Existing models</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="#existing-models">Existing models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#getting-started">Getting started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#example-dataset">Example dataset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#segment-a-single-image">Segment a single image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#segment-multiple-images-of-the-same-resolution">Segment multiple images of the same resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#segment-images-from-multiple-folders">Segment images from multiple folders</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#jupyter-notebooks">Jupyter notebooks</a></li>
 </ul>
 </li>
@@ -310,10 +312,8 @@ you will need to manually install the TensorFlow dependency.</p>
 </div>
 </div>
 </div>
-<div class="section" id="models">
-<h1>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="existing-models">
-<h2>Existing models<a class="headerlink" href="#existing-models" title="Permalink to this headline">¶</a></h2>
+<h1>Existing models<a class="headerlink" href="#existing-models" title="Permalink to this headline">¶</a></h1>
 <p>Two models are available and shipped together with the installation package, so you don’t need to install them separately.
 The two models are described below:</p>
 <ul class="simple">
@@ -321,101 +321,126 @@ The two models are described below:</p>
 <li>A TEM model, that works at a resolution of 0.01 micrometer per pixel.</li>
 </ul>
 </div>
-</div>
 <div class="section" id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <p>We provide a simple <a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb">Jupyter notebook</a> which explains how to use AxonDeepSeg for segmenting axons and myelin. You can directly launch it by using the <a class="reference external" href="https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb">Binder link</a>.</p>
 <div class="section" id="example-dataset">
 <h2>Example dataset<a class="headerlink" href="#example-dataset" title="Permalink to this headline">¶</a></h2>
-<p>If you want to test AxonDeepSeg, you can download the test data available
-<a class="reference external" href="https://osf.io/rtbwc/download">here</a>.</p>
+<p>You can test AxonDeepSeg by downloading the test data available <a class="reference external" href="https://osf.io/rtbwc/download">here</a>. It contains two SEM test samples and one TEM test sample.</p>
 </div>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<p>You can download the test data using the instructions in the <a class="reference external" href="https://neuropoly.github.io/axondeepseg/documentation.html#example-dataset">Example dataset</a> section of this tutorial.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>The current models available for segmentation are trained for patches of 512x512 pixels. This means that your input image(s) should be at least 512x512 pixels in size <strong>after the resampling to the target pixel size of the model you are using to segment</strong>.</p>
-<p>For instance, the TEM model currently available has a target resolution of 0.01 micrometers per pixel, which means that the minimum size of the input image (in micrometers) is 5.12x5.12.</p>
-<p class="last"><strong>Option:</strong> If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).</p>
+<p>The script to launch is called <strong>axondeepseg</strong>. It takes several arguments:</p>
+<p><strong>Required arguments:</strong></p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-t <var>MODALITY</var></span></kbd></td>
+<td>Type of acquisition to segment.
+SEM: scanning electron microscopy samples.
+TEM: transmission electron microscopy samples.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-i <var>IMGPATH</var></span></kbd></td>
+<td>Path to the image to segment or path to the folder where the image(s) to segment is/are located.</td></tr>
+</tbody>
+</table>
+<p><strong>Optional arguments:</strong></p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-m <var>MODEL</var></span></kbd></td>
+<td>Folder where the model is located.
+The default SEM model path is <strong>default_SEM_model_v1</strong>.
+The default TEM model path is <strong>default_TEM_model_v1</strong>.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-s <var>SIZEPIXEL</var></span></kbd></td>
+<td>Pixel size of the image(s) to segment, in micrometers.
+If no pixel size is specified, a <strong>pixel_size_in_micrometer.txt</strong> file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-v <var>VERBOSITY</var></span></kbd></td>
+<td>Verbosity level.
+<strong>0</strong> (default) : Displays the progress bar for the segmentation.
+<strong>1</strong>: Also displays the path of the image(s) being segmented.
+<strong>2</strong>: Also displays the information about the prediction step for the segmentation of current sample.
+<strong>3</strong>: Also displays the patch number being processed in the current sample.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-o <var>OVERLAP</var></span></kbd></td>
+<td>Overlap value (in pixels) of the patches when doing the segmentation.
+Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 25. Recommended range of values: [10-100].</td></tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>You can get the detailed description of all the arguments of the <strong>axondeepseg</strong> command at any time by using the <strong>-h</strong> argument:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
 </div>
-<p>The images you want to segment must be stored following a particular architecture:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">images_to_segment</span><span class="o">/</span>
-<span class="o">--</span><span class="n">folder_1</span><span class="o">/</span>
-<span class="o">----</span> <span class="n">your_image_1</span><span class="o">.</span><span class="n">png</span>
-<span class="o">----</span> <span class="n">another_image</span><span class="o">.</span><span class="n">png</span>
+</div>
+<div class="section" id="segment-a-single-image">
+<h3>Segment a single image<a class="headerlink" href="#segment-a-single-image" title="Permalink to this headline">¶</a></h3>
+<p>To segment a single microscopy image, specify the path to the image to segment in the <strong>-i</strong> argument. For instance, to segment the SEM image <strong>‘77.png’</strong> of the test dataset that has a pixel size of 0.07 micrometers, use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span><span class="o">/</span><span class="mf">77.</span><span class="n">png</span> <span class="o">-</span><span class="n">s</span> <span class="mf">0.07</span>
+</pre></div>
+</div>
+<p>The script will use the explicitely specified size argument (here, 0.07) for the segmentation. If no pixel size is provided in the arguments, it will automatically read the image resolution encoded in the file <strong>‘pixel_size_in_micrometer.txt’</strong> if that file exists in the folder containing the image to segment.
+The segmented acquisition will be saved in the same folder as the acquisition image, with the suffix <strong>‘_seg-axonmyelin.png’</strong>, in <em>png</em> format, along with the binary axon and myelin segmentation masks (with the suffixes <strong>‘_seg-axon.png’</strong> and <strong>‘_seg-myelin.png’</strong>). In our example, the following output files will be generated: <strong>‘77_seg-axonmyelin.png’</strong>, <strong>‘77_seg-axon.png’</strong> and <strong>‘77_seg-myelin.png’</strong>.</p>
+<p>To segment the same image by using the <strong>‘pixel_size_in_micrometer.txt’</strong> file in the folder (i.e. not specifying the pixel size as argument in the command), use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span><span class="o">/</span><span class="mf">77.</span><span class="n">png</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="segment-multiple-images-of-the-same-resolution">
+<h3>Segment multiple images of the same resolution<a class="headerlink" href="#segment-multiple-images-of-the-same-resolution" title="Permalink to this headline">¶</a></h3>
+<p>To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the <strong>-i</strong> argument. For instance, to segment the images in folder <strong>‘test_sem_image/image 1_sem/’</strong> of the test dataset that have a pixel size of 0.07 micrometers, use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span><span class="n">image</span> <span class="mi">1</span><span class="n">_sem</span><span class="o">/</span> <span class="o">-</span><span class="n">s</span> <span class="mf">0.07</span>
+</pre></div>
+</div>
+<p>To segment multiple images of the same folder and of the same resolution by using the <strong>‘pixel_size_in_micrometer.txt’</strong> file in the folder (i.e. not specifying the pixel size as argument in the command), use the following folder structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">folder_with_samples</span><span class="o">/</span>
+<span class="o">----</span> <span class="n">image_1</span><span class="o">.</span><span class="n">png</span>
+<span class="o">----</span> <span class="n">image_2</span><span class="o">.</span><span class="n">png</span>
+<span class="o">----</span> <span class="n">image_3</span><span class="o">.</span><span class="n">png</span>
 <span class="o">----</span> <span class="o">...</span>
-<span class="o">----</span> <span class="n">pixel_size_in_micrometer</span><span class="o">.</span><span class="n">txt</span> <span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="o">----</span> <span class="n">pixel_size_in_micrometer</span><span class="o">.</span><span class="n">txt</span>
 <span class="o">...</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li>The image file <em>image.png</em> is the image to segment.</li>
-<li>The file <em>pixel_size_in_micrometer.txt</em> contains a single float number corresponding</li>
-</ul>
-<p>to the resolution of the image, that is the <strong>size of a pixel in micrometer</strong>.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">You can also specify the pixel size as an argument to our software.</p>
-</div>
-<p>Once you have downloaded the test data, go to the extracted test data folder. In our case:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">test_segmentation</span>
+<p>Then, use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span><span class="n">image</span> <span class="mi">1</span><span class="n">_sem</span><span class="o">/</span>
 </pre></div>
 </div>
-<p>The script to launch is called <strong>axondeepseg</strong>. It takes several arguments:</p>
-<ul>
-<li><p class="first"><strong>t</strong>: type of the image. SEM or TEM.</p>
-</li>
-<li><p class="first"><strong>i</strong>: path to the image.</p>
-</li>
-<li><p class="first"><strong>s</strong>: (optional) resolution (size in micrometer of a pixel) of the image.</p>
-</li>
-<li><p class="first"><strong>v</strong>: (optional) verbosity level. Default 0.</p>
-<blockquote>
-<div><ul class="simple">
-<li>0 displays only a progress bar indicating the advancement of the segmentations.</li>
-<li>1 displays additionally the path of the image that was just segmented.</li>
-<li>2 displays additionally information about the current step of the segmentation of the current image.</li>
-</ul>
-</div></blockquote>
-</li>
-</ul>
-<p>To segment one of the image that we downloaded (here, a SEM image), run the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span><span class="o">/</span><span class="mf">77.</span><span class="n">png</span> <span class="o">-</span><span class="n">v</span> <span class="mi">2</span> <span class="o">-</span><span class="n">s</span> <span class="mf">0.07</span>
+</div>
+<div class="section" id="segment-images-from-multiple-folders">
+<h3>Segment images from multiple folders<a class="headerlink" href="#segment-images-from-multiple-folders" title="Permalink to this headline">¶</a></h3>
+<p>To segment images that are located in different folders, specify the path to the folders in the <strong>-i</strong> argument, one after the other. For instance, to segment all the images of folders <strong>‘test_sem_image/image 1_sem/’</strong> and <strong>‘test_sem_image/image 2_sem/’</strong> of the test dataset, use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span><span class="n">image</span> <span class="mi">1</span><span class="n">_sem</span><span class="o">/</span> <span class="n">test_segmentation</span><span class="o">/</span><span class="n">test_sem_image</span><span class="o">/</span><span class="n">image</span> <span class="mi">2</span><span class="n">_sem</span><span class="o">/</span>
 </pre></div>
 </div>
-<p>The script will use the size argument (here, 0.07) for the segmentation. If no size is provided in the arguments,
-it will automatically read the image resolution encoded in the file: <em>pixel_size_in_micrometer.txt</em>
-The different steps will be displayed in the terminal thanks to the verbosity level set to 2.
-The segmented acquisition itself will be saved in the same folder as the acquisition image,
-with the suffix ‘<a href="#id2"><span class="problematic" id="id3">segmented_</span></a>’, in png format.</p>
-<ul class="simple">
-<li>To segment multiple images acquired with the same resolution, put them all in the same folder and</li>
-</ul>
-<p>launch the segmentation of this folder, like below:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image</span> <span class="mi">1</span><span class="n">_sem</span><span class="o">/</span>
-</pre></div>
 </div>
-<ul class="simple">
-<li>To segment multiple images acquired with different resolutions,</li>
-</ul>
-<p>please use the folder structure explained in <a class="reference external" href="https://neuropoly.github.io/axondeepseg/documentation.html#data">Data</a>,
-i.e., put all image with the same resolution in the same folder.
-* Then, segment each folder one after the other using the argument <strong>-s</strong> or segment all folders in one command
-by specifying multiple paths to segment and using a different pixel_size_in_micrometer.txt for each folder, like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">axondeepseg</span> <span class="o">-</span><span class="n">t</span> <span class="n">SEM</span> <span class="o">-</span><span class="n">i</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image1_sem</span> <span class="n">test_sem_image</span><span class="o">/</span><span class="n">image2_sem</span><span class="o">/</span>
-</pre></div>
-</div>
-<p>Here, we segment all images located in image1_sem and image2_sem that don’t have the “segmented” suffix.</p>
-<p>Each output segmentation will be saved in the corresponding sub-folder.</p>
 </div>
 <div class="section" id="jupyter-notebooks">
 <h2>Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permalink to this headline">¶</a></h2>
 <p>Here is a list of useful Jupyter notebooks available with AxonDeepSeg:</p>
 <ul class="simple">
-<li><a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/performance_metrics.ipynb">performance_metrics.ipynb</a>: Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.</li>
-<li><a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/noise_simulation.ipynb">noise_simulation.ipynb</a>: Notebook that simulates various noise/brightness/contrast effects on a given microscopy image in order to assess the robustness of AxonDeepSeg.</li>
-<li><a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/morphometrics_extraction.ipynb">morphometrics_extraction.ipynb</a>: Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, …), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, …), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/performance_metrics.ipynb">performance_metrics.ipynb</a>:</dt>
+<dd>Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/noise_simulation.ipynb">noise_simulation.ipynb</a>:</dt>
+<dd>Notebook that simulates various noise/brightness/contrast effects on a given microscopy image in order to assess the robustness of AxonDeepSeg.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/morphometrics_extraction.ipynb">morphometrics_extraction.ipynb</a>:</dt>
+<dd>Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, …), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, …), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.</dd>
+</dl>
+</li>
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -428,6 +453,12 @@ by specifying multiple paths to segment and using a different pixel_size_in_micr
 <span class="n">jupyter</span> <span class="n">notebook</span> <span class="n">name_of_the_notebook</span><span class="o">.</span><span class="n">ipynb</span>
 </pre></div>
 </div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The current models available for segmentation are trained for patches of 512x512 pixels. This means that your input image(s) should be at least 512x512 pixels in size <strong>after the resampling to the target pixel size of the model you are using to segment</strong>.</p>
+<p>For instance, the TEM model currently available has a target resolution of 0.01 micrometers per pixel, which means that the minimum size of the input image (in micrometers) is 5.12x5.12.</p>
+<p class="last"><strong>Option:</strong> If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).</p>
 </div>
 </div>
 </div>
