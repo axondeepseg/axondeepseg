@@ -470,11 +470,11 @@ The segmented acquisition will be saved in the same folder as the acquisition im
 <p>If the segmentation with AxonDeepSeg fails or does not give optimal results, you can try one of the following options:</p>
 <p><strong>Option 1: manual correction of the segmentation masks</strong></p>
 <ul class="simple">
-<li>Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (separately), named ‘axon_mask.png’ and ‘myelin_mask.png’. If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask.</li>
-<li>For example, you can open the microscopy image and the myelin mask with an external tool/software (such as GIMP: <a class="reference external" href="https://www.gimp.org/">https://www.gimp.org/</a>). For a more detailed procedure, you can visit <a class="reference external" href="https://www.gimp.org/tutorials/Layer_Masks/">https://www.gimp.org/tutorials/Layer_Masks/</a>.</li>
-<li>After correcting the myelin mask, you can regenerate the image (axon+myelin). To do this, you can use the following notebook: <a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/generate_axons_from_myelin.ipynb">https://github.com/neuropoly/axondeepseg/blob/master/notebooks/generate_axons_from_myelin.ipynb</a>.</li>
+<li>Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes <strong>‘_seg-axon.png’</strong> and <strong>‘_seg-myelin.png’</strong>). If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask.</li>
+<li>For the manual correction, we suggest using the GIMP software (<a class="reference external" href="https://www.gimp.org/">https://www.gimp.org/</a>). For a more detailed procedure on how to do the manual correction with GIMP, please consult the following guide: <a class="reference external" href="neuropoly.pub/sop_labelling_with_GIMP">neuropoly.pub/sop_labelling_with_GIMP</a></li>
+<li>After correcting the myelin mask, you can regenerate the segmentation masks (axon+myelin). To do this, you can use the following notebook: <a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/generate_axons_from_myelin.ipynb">https://github.com/neuropoly/axondeepseg/blob/master/notebooks/generate_axons_from_myelin.ipynb</a>.</li>
 </ul>
-<p><strong>Option 2: manual correction combined with AxonSeg software</strong></p>
+<p><strong>Option 2: manual correction combined with *AxonSeg* software</strong></p>
 <ul class="simple">
 <li>Manually correct the axon mask (as explained in Option 1).</li>
 <li>Use the <a class="reference external" href="https://github.com/neuropoly/axonseg">AxonSeg</a> software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the <a class="reference external" href="https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m">as_tutorial guideline</a>.</li>
@@ -484,12 +484,12 @@ The segmented acquisition will be saved in the same folder as the acquisition im
 <div class="section" id="citation">
 <h1>Citation<a class="headerlink" href="#citation" title="Permalink to this headline">¶</a></h1>
 <p>If you use this work in your research, please cite:</p>
-<p>Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., &amp; Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. arXiv Preprint arXiv:1711.01004. <a class="reference external" href="https://arxiv.org/abs/1711.01004">Link to the paper</a>.</p>
+<p>Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., &amp; Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. <a class="reference external" href="https://doi.org/10.1038/s41598-018-22181-4">Link to the paper</a>.</p>
 </div>
 <div class="section" id="licensing">
 <h1>Licensing<a class="headerlink" href="#licensing" title="Permalink to this headline">¶</a></h1>
 <p>The MIT License (MIT)</p>
-<p>Copyright (c) 2017 NeuroPoly, École Polytechnique, Université de Montréal</p>
+<p>Copyright (c) 2018 NeuroPoly, École Polytechnique, Université de Montréal</p>
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the “Software”), to deal
 in the Software without restriction, including without limitation the rights

@@ -268,11 +268,12 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 
 **Option 1: manual correction of the segmentation masks**
 
-* Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (separately), named 'axon_mask.png' and 'myelin_mask.png'. If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask.
-* For example, you can open the microscopy image and the myelin mask with an external tool/software (such as GIMP: https://www.gimp.org/). For a more detailed procedure, you can visit https://www.gimp.org/tutorials/Layer_Masks/.
-* After correcting the myelin mask, you can regenerate the image (axon+myelin). To do this, you can use the following notebook: https://github.com/neuropoly/axondeepseg/blob/master/notebooks/generate_axons_from_myelin.ipynb.
+* Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask.
+* For the manual correction, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure on how to do the manual correction with GIMP, please consult the following guide: `<neuropoly.pub/sop_labelling_with_GIMP>`_
 
-**Option 2: manual correction combined with AxonSeg software**
+* After correcting the myelin mask, you can regenerate the segmentation masks (axon+myelin). To do this, you can use the following notebook: https://github.com/neuropoly/axondeepseg/blob/master/notebooks/generate_axons_from_myelin.ipynb.
+
+**Option 2: manual correction combined with *AxonSeg* software**
 
 * Manually correct the axon mask (as explained in Option 1).
 * Use the `AxonSeg <https://github.com/neuropoly/axonseg>`_ software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the `as_tutorial guideline <https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m>`_.
@@ -282,14 +283,14 @@ Citation
 
 If you use this work in your research, please cite:
 
-Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. arXiv Preprint arXiv:1711.01004. `Link to the paper <https://arxiv.org/abs/1711.01004>`_.
+Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`_.
 
 Licensing
 ===============================================================================
 
 The MIT License (MIT)
 
-Copyright (c) 2017 NeuroPoly, École Polytechnique, Université de Montréal
+Copyright (c) 2018 NeuroPoly, École Polytechnique, Université de Montréal
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
