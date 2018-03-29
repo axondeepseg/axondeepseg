@@ -6,8 +6,10 @@ python:
 
 # command to install dependencies
 install:
+  - echo "Installation of the repository"
   - pip install .
   
 # command to run tests
 script:
+  - echo "Launch general integrity test"
   - axondeepseg_test
