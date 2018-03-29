@@ -13,15 +13,13 @@ For more information, see the [documentation website](https://neuropoly.github.i
 
 If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues). We will reply to you as soon as possible.
 
-
-
 ## Citation
 
 If you use this work in your research, please cite it as follows:
 
-Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. arXiv Preprint arXiv:1711.01004. Retrieved from https://arxiv.org/abs/1711.01004.
+Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. Link to paper: https://doi.org/10.1038/s41598-018-22181-4.
 
-Copyright (c) 2017 NeuroPoly (Polytechnique Montreal)
+Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)
 
 ## Licence
 
