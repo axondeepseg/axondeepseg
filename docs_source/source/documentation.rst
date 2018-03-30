@@ -269,7 +269,7 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 **Option 1: manual correction of the segmentation masks**
 
 * Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask.
-* For the manual correction, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure on how to do the manual correction with GIMP, please consult the following guide: `<neuropoly.pub/sop_labelling_with_GIMP>`_
+* For the manual correction, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure on how to do the manual correction with GIMP, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
 
 * After correcting the myelin mask, you can regenerate the segmentation masks (axon+myelin). To do this, you can use the following notebook: https://github.com/neuropoly/axondeepseg/blob/master/notebooks/generate_axons_from_myelin.ipynb.
 
@@ -283,7 +283,7 @@ Citation
 
 If you use this work in your research, please cite:
 
-Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`_.
+Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`_.
 
 Licensing
 ===============================================================================
