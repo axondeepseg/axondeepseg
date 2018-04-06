@@ -23,7 +23,7 @@ def get_masks(path_prediction):
 
     # save the masks
     if tmp_path[0].endswith('.png'):
-    	tmp_path[0] = tmp_path[0][:-4]
+    	tmp_path[0]= os.path.splitext(tmp_path[0])[0]
 
     imageio.imwrite(tmp_path[0] + '_seg-axon.png', axon_prediction.astype(int))
     imageio.imwrite(tmp_path[0] + '_seg-myelin.png', myelin_prediction.astype(int))
