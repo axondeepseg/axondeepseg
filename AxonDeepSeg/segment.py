@@ -13,6 +13,7 @@ import os, json, imageio
 from tqdm import tqdm
 import pkg_resources
 import argparse
+import tempfile
 from argparse import RawTextHelpFormatter
 
 # Global variables
@@ -55,35 +56,24 @@ def segment_image(path_testing_image, path_model,
 		# Get type of model we are using
 		tmp_path, selected_model = os.path.split(path_model)
 
-		# If the input image is not png
-		if not acquisition_name.endswith(".png"):  
+		# Read image
+		img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
 
-			# Read image for conversion
-			img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
+		# Generate tmp file
+		fp = tempfile.NamedTemporaryFile(dir=path_acquisition,suffix='.png',mode='wb')
 
-			# Generate new name with '.png' extension and save
-			img_name, file_extension = os.path.splitext(acquisition_name)  
-			img_name = img_name + '.png'
-			new_filename = os.path.join(path_acquisition,img_name)
+		img_name_original, file_extension = os.path.splitext(acquisition_name) 
 
-			if (selected_model == "default_TEM_model_v1"):
-				imageio.imwrite(new_filename,255-img)
-			else:
-				imageio.imwrite(new_filename,img)
+		if selected_model == "default_TEM_model_v1":
+			imageio.imwrite(fp,255-img, format='png')
+		else:
+			imageio.imwrite(fp,img, format='png')
 
-			acquisition_name = new_filename
-
-		# If model used to segment is TEM v1
-		if (selected_model == "default_TEM_model_v1"):
-
-			# Read image for contrast change
-			img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
-			new_filename = os.path.join(path_acquisition,acquisition_name)
-			imageio.imwrite(new_filename,255-img)
+		tmp_path, tmp_name = os.path.split(fp.name)
+		acquisition_name = tmp_name
+		segmented_image_name = img_name_original + '_segmented' + '.png'
 
 		# Performing the segmentation
-		prefix_seg_name, file_extension = os.path.splitext(acquisition_name)  
-		segmented_image_name = prefix_seg_name + '_segmented' + '.png'
 
 		axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
 						  path_model_folder=path_model, config_dict=config, ckpt_name='model',
@@ -98,6 +88,9 @@ def segment_image(path_testing_image, path_model,
 
 	else:
 		print "The path {0} does not exist.".format(path_testing_image)
+
+	# Remove temporary file used for the segmentation
+	fp.close()
 
 	return None
 
@@ -121,56 +114,32 @@ def segment_folders(path_testing_images_folder, path_model,
 	'''
 
 	# Update list of images to segment by selecting only image files (not already segmented or not masks)
-	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png','.jpg','.jpeg','.tif'))
-				 and (not file.endswith(('segmented.png','mask.png'))))]
+	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png','.jpg','.jpeg','.tif','.tiff'))
+				 and (not file.endswith(('_seg-axonmyelin.png','_seg-axon.png','_seg-myelin.png','mask.png'))))]
 
 	# Pre-processing: convert to png if not already done and adapt to model contrast
-	for file_ in img_files:
-
-		# Check if TEM v1 model, needs to change contrast of input image
-		tmp_path, selected_model = os.path.split(path_model)
-
-		# We segment the image only if it's not already a segmentation.
-		if (file_.endswith(".jpeg") or file_.endswith(".jpg") or file_.endswith(".tif")):
-
-			# Read image for conversion
-			img = imageio.imread(os.path.join(path_testing_images_folder,file_))
-
-			# Generate new name with '.png' extension and save
-			img_name, file_extension = os.path.splitext(file_)  
-			img_name = img_name + '.png'
-			new_filename = os.path.join(path_testing_images_folder,img_name)
-
-			if selected_model == "default_TEM_model_v1":
-				imageio.imwrite(new_filename,255-img)
-			else:
-				imageio.imwrite(new_filename,img)
-
-		if (file_.endswith(".png")) and (selected_model == "default_TEM_model_v1"):
-
-			# Read image for contrast change
-			img = imageio.imread(os.path.join(path_testing_images_folder,file_))
-			new_filename = os.path.join(path_testing_images_folder,file_)
-			imageio.imwrite(new_filename,255-img)
-
-
-	# We loop through every file in the folder as we look for an image to segment
-
-	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png'))
-				 and (not file.endswith(('segmented.png','mask.png'))))]
-
 	for file_ in tqdm(img_files, desc="Segmentation..."):
 
-		len_suffix = len(segmented_image_suffix)+4 # +4 for ".png"
-		if (file_[-4:] == ".png") and (not (file_[-len_suffix:] == (segmented_image_suffix+'.png'))):
+		tmp_path, selected_model = os.path.split(path_model)
 
-			# Performing the segmentation
-			basename = file_.split('.')
-			basename.pop() # We remove the extension.
-			basename = ".".join(basename)
-			segmented_image_name = basename + segmented_image_suffix + '.png'
+		# Read image for conversion
+		img = imageio.imread(os.path.join(path_testing_images_folder,file_))
 
-			axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[file_],
+		# Generate tmpfile for segmentation pipeline
+		fp = tempfile.NamedTemporaryFile(dir=path_testing_images_folder,suffix='.png',mode='wb')
+
+		img_name_original, file_extension = os.path.splitext(file_)  
+
+		if selected_model == "default_TEM_model_v1":
+			imageio.imwrite(fp,255-img, format='png')
+		else:
+			imageio.imwrite(fp,img, format='png')
+
+		tmp_path, tmp_name = os.path.split(fp.name)
+		acquisition_name = tmp_name
+		segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
+
+		axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
 							  path_model_folder=path_model, config_dict=config, ckpt_name='model',
 							  inference_batch_size=1, overlap_value=overlap_value,
 							  segmentations_filenames=[segmented_image_name],
@@ -179,9 +148,11 @@ def segment_folders(path_testing_images_folder, path_model,
 							  resampled_resolutions=resolution_model, prediction_proba_activate=False,
 							  write_mode=True)
 
-			if verbosity_level >= 1:
-				print "Image {0} segmented.".format(os.path.join(path_testing_images_folder, file_))
-	# The segmentation has been done for this image folder, we go to the next one.
+		if verbosity_level >= 1:
+			tqdm.write("Image {0} segmented.".format(os.path.join(path_testing_images_folder, file_)))
+
+		# Remove temporary file used for the segmentation
+		fp.close()
 
 	return None
 
@@ -304,7 +275,7 @@ def main():
 	# Preparing the arguments to axon_segmentation function
 	path_model, config = generate_default_parameters(type_, new_path)
 	resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
-	segmented_image_suffix = "_segmented"
+	segmented_image_suffix = "_seg-axonmyelin"
 
 
 	# Going through all paths passed into arguments
@@ -312,7 +283,7 @@ def main():
 
 		if not os.path.isdir(current_path_target):
 
-			if ((current_path_target.endswith(".jpeg")) or (current_path_target.endswith(".jpg")) or (current_path_target.endswith(".tif")) or (current_path_target.endswith(".png"))):
+			if ((current_path_target.endswith(".jpeg")) or (current_path_target.endswith(".jpg")) or (current_path_target.endswith(".tif")) or (current_path_target.endswith(".tiff")) or (current_path_target.endswith(".png"))):
 
 			# Performing the segmentation over the image
 				segment_image(current_path_target, path_model, overlap_value, config,

@@ -55,14 +55,14 @@ def integrity_test():
         dice_myelin = pw_dice(pred_myelin, gt_myelin)
 
         # If all the commands above are executed without bugs, the installation is done correctly
-        print_message = "* * * Integrity test passed. AxonDeepSeg is correctly installed. * * * "
+        print("* * * Integrity test passed. AxonDeepSeg is correctly installed. * * * ")
+        return 0
 
     except IOError:
 
         # Else, there is a problem in the installation
-        print_message = "Integrity test failed... "
-
-    return print_message
+        print("Integrity test failed... ")
+        return -1
 
 
 

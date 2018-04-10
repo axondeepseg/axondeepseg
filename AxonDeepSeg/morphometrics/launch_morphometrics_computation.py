@@ -37,7 +37,7 @@ def launch_morphometrics_computation(path_img,path_prediction):
 	save_axon_morphometrics(path_folder,stats_array)
 
 	# Generate and save displays of axon morphometrics
-	display_axon_diameter(img,path_folder,pred_axon,pred_myelin)
+	display_axon_diameter(img,path_prediction,pred_axon,pred_myelin)
 
 	# Compute and save aggregate morphometrics
 	aggregate_metrics = get_aggregate_morphometrics(pred_axon,pred_myelin,path_folder)
