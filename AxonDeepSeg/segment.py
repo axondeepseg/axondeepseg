@@ -71,7 +71,7 @@ def segment_image(path_testing_image, path_model,
 
 		tmp_path, tmp_name = os.path.split(fp.name)
 		acquisition_name = tmp_name
-		segmented_image_name = img_name_original + '_segmented' + '.png'
+		segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
 		# Performing the segmentation
 
