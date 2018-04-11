@@ -298,6 +298,7 @@ you will need to manually install the TensorFlow dependency.</p>
 </pre></div>
 </div>
 </div>
+<p>The advantage of this installation method over the option 1 (application mode) is that you will always get the last stable version of the package.</p>
 </div>
 </div>
 <div class="section" id="testing-the-installation">
@@ -323,7 +324,6 @@ The two models are described below:</p>
 </div>
 <div class="section" id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<p>We provide a simple <a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb">Jupyter notebook</a> which explains how to use AxonDeepSeg for segmenting axons and myelin. You can directly launch it by using the <a class="reference external" href="https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb">Binder link</a>.</p>
 <div class="section" id="example-dataset">
 <h2>Example dataset<a class="headerlink" href="#example-dataset" title="Permalink to this headline">¶</a></h2>
 <p>You can test AxonDeepSeg by downloading the test data available <a class="reference external" href="https://osf.io/rtbwc/download">here</a>. It contains two SEM test samples and one TEM test sample.</p>
@@ -426,6 +426,11 @@ The segmented acquisition will be saved in the same folder as the acquisition im
 <h2>Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permalink to this headline">¶</a></h2>
 <p>Here is a list of useful Jupyter notebooks available with AxonDeepSeg:</p>
 <ul class="simple">
+<li><dl class="first docutils">
+<dt><a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb">getting_started.ipynb.ipynb</a>:</dt>
+<dd>Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the <a class="reference external" href="https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb">Binder link</a>.</dd>
+</dl>
+</li>
 <li><dl class="first docutils">
 <dt><a class="reference external" href="https://github.com/neuropoly/axondeepseg/blob/master/notebooks/performance_metrics.ipynb">performance_metrics.ipynb</a>:</dt>
 <dd>Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.</dd>

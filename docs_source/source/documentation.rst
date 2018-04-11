@@ -112,6 +112,8 @@ Then, go to the newly created git repository and install the AxonDeepSeg package
     git pull
     pip install -e .
 
+The advantage of this installation method over the option 1 (application mode) is that you will always get the last stable version of the package.
+
 Testing the installation
 -------------------------------------------------------------------------------
 
@@ -135,8 +137,6 @@ The two models are described below:
 
 Getting started
 ===============================================================================
-
-We provide a simple `Jupyter notebook <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_ which explains how to use AxonDeepSeg for segmenting axons and myelin. You can directly launch it by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb>`_.
 
 Example dataset
 -------------------------------------------------------------------------------
@@ -228,6 +228,9 @@ Jupyter notebooks
 -------------------------------------------------------------------------------
 
 Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
+
+* `getting_started.ipynb.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_: 
+    Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb>`_.
 
 * `performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/performance_metrics.ipynb>`_: 
     Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.

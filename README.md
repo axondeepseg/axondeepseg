@@ -17,7 +17,7 @@ If you experience issues during installation and/or use of AxonDeepSeg, you can 
 
 If you use this work in your research, please cite it as follows:
 
-Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2017). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. Link to paper: https://doi.org/10.1038/s41598-018-22181-4.
+Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. Link to paper: https://doi.org/10.1038/s41598-018-22181-4.
 
 Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)
 
@@ -25,7 +25,7 @@ Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)
 
 The MIT License (MIT)
 
-Copyright (c) 2017 NeuroPoly, École Polytechnique, Université de Montréal
+Copyright (c) 2018 NeuroPoly, École Polytechnique, Université de Montréal
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
