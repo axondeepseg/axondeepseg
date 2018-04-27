@@ -22,12 +22,20 @@ def get_pixelsize(path_pixelsize_file):
 	:param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
 	:return: the pixel size value.
 	'''
-
-	text_file = open(path_pixelsize_file, "r")
-	pixelsize = float(text_file.read())
-	text_file.close()
-	return pixelsize
-
+	try:
+		with open(path_pixelsize_file, "r") as text_file:
+			pixelsize = float(text_file.read())
+	except IOError as e:
+		print "\nError: Could not open file \"{0}\" from \
+			  directory \"{1}\".\n".format(path_pixelsize_file, os.getcwd())
+		raise
+	except ValueError as e:
+		print ("\nError: Pixel size data in file \"{0}\" is not valid – must "
+			   "be a plain text file with a single a numerical value (float) "
+			   " on the fist line.".format(path_pixelsize_file))
+		raise
+	else:
+		return pixelsize
 
 
 def get_axon_morphometrics(pred_axon,path_folder):

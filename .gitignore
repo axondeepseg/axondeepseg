@@ -30,3 +30,7 @@ notebooks/test_weights\.ipynb
 
 # Generated image files
 AxonDeepSeg/data_test/AxonDeepSeg*
+
+# Python-related temp files
+.coverage
+.pytest_cache/

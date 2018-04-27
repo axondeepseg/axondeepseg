@@ -10,3 +10,5 @@ mpld3>=0.3
 tqdm>=4.14.0
 pillow>=3.4.2
 imageio>=2.2.0
+pytest==3.5.0
+pytest-cov==2.5.1
