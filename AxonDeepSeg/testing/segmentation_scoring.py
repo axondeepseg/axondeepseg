@@ -238,7 +238,7 @@ class Metrics_calculator:
         FP_count = np.logical_and(self.prediction_mask == 1, self.groundtruth_mask == 0).sum()
     
         # Compute false negatives count
-        FN_count = np.logical_and(self.prediction_mask == 1, self.groundtruth_mask == 0).sum()
+        FN_count = np.logical_and(self.prediction_mask == 0, self.groundtruth_mask == 1).sum()
     
         # Compute Jaccard = TP/(TP+FP+FN)
         return np.true_divide(TP_count,TP_count+FP_count+FN_count)
