@@ -189,7 +189,14 @@ def uconv_net(x, training_config, phase, bn_updated_decay = None, verbose = True
     
     for i in range(depth):        
         # Upsampling
-        net = tf.image.resize_images(data_temp, [data_temp_size[-1] * 2, data_temp_size[-1] * 2])
+        a=data_temp
+        b=data_temp_size[-1] * 2
+        c=data_temp_size[-1] * 2
+        d=[data_temp_size[-1] * 2, data_temp_size[-1] * 2]
+        print(a)
+        print(b)
+        print(c)
+        net = tf.image.resize_images(data_temp, [int(data_temp_size[-1] * 2), int(data_temp_size[-1] * 2)])
         
         # Convolution
         net = conv_relu(net, features_per_convolution[depth - i - 1][-1][1], 
@@ -200,8 +207,8 @@ def uconv_net(x, training_config, phase, bn_updated_decay = None, verbose = True
         data_temp_size.append(data_temp_size[-1] * 2)
 
         # concatenation (see U-net article)
-        net = tf.concat(values=[tf.slice(relu_results[depth-i-1], [0, 0, 0, 0], [-1, data_temp_size[depth-i-1],
-                                                             data_temp_size[depth-i-1], -1]), net], axis=3)
+        net = tf.concat(values=[tf.slice(relu_results[depth-i-1], [0, 0, 0, 0], [-1, int(data_temp_size[depth-i-1]),
+                                                             int(data_temp_size[depth-i-1]), -1]), net], axis=3)
         
         # Classic convolutions
         for conv_number in range(number_of_convolutions_per_layer[depth - i - 1]):
@@ -231,6 +238,6 @@ def uconv_net(x, training_config, phase, bn_updated_decay = None, verbose = True
     
     # Finally we compute the activations of the last layer
     final_result = tf.reshape(finalconv,
-        [tf.shape(finalconv)[0], data_temp_size[-1] * data_temp_size[-1], n_classes])
+        [tf.shape(finalconv)[0], int(data_temp_size[-1]) * int(data_temp_size[-1]), n_classes])
 
     return final_result
