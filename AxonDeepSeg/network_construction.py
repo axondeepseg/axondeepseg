@@ -189,13 +189,6 @@ def uconv_net(x, training_config, phase, bn_updated_decay = None, verbose = True
     
     for i in range(depth):        
         # Upsampling
-        a=data_temp
-        b=data_temp_size[-1] * 2
-        c=data_temp_size[-1] * 2
-        d=[data_temp_size[-1] * 2, data_temp_size[-1] * 2]
-        print(a)
-        print(b)
-        print(c)
         net = tf.image.resize_images(data_temp, [int(data_temp_size[-1] * 2), int(data_temp_size[-1] * 2)])
         
         # Convolution
