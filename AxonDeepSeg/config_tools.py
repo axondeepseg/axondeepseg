@@ -2,7 +2,7 @@
 Set the config variable.
 '''
 
-import ConfigParser as cp
+import configparser as cp
 import os
 import json
 import collections
@@ -24,8 +24,8 @@ def validate_config(config):
     :return: Boolean. True if the configuration is valid compared to the default configuration, else False.
     """
 
-    keys = config.keys()
-    for key in default_configuration().keys():
+    keys = list(config.keys())
+    for key in list(default_configuration().keys()):
         if not key in keys:
             return False
     return True
@@ -99,7 +99,7 @@ def default_configuration():
 
 
 def update_config(d, u):
-    for k, v in u.iteritems():
+    for k, v in u.items():
         if isinstance(v, collections.Mapping):
             r = update_config(d.get(k, {}), v)
             d[k] = r
@@ -161,7 +161,7 @@ def grid_config(L_struct, dict_params, base_config = default_configuration()):
                 
                 
     # Then we create the grid thanks to the params.
-    for param, L_values in dict_params.iteritems():
+    for param, L_values in dict_params.items():
         temp_config = L_configs
         L_configs = []
         if isinstance(L_values, collections.Iterable):            

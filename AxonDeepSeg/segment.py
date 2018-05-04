@@ -84,10 +84,10 @@ def segment_image(path_testing_image, path_model,
 						  prediction_proba_activate=False, write_mode=True)
 
 		if verbosity_level >= 1:
-			print "Image {0} segmented.".format(path_testing_image)
+			print("Image {0} segmented.".format(path_testing_image))
 
 	else:
-		print "The path {0} does not exist.".format(path_testing_image)
+		print("The path {0} does not exist.".format(path_testing_image))
 
 	# Remove temporary file used for the segmentation
 	fp.close()
@@ -194,7 +194,7 @@ def generate_config_dict(path_to_config_file):
 			config_network = json.loads(fd.read())
 
 	except ValueError:
-		print "No configuration file available at this path."
+		print("No configuration file available at this path.")
 		config_network = None
 
 	return config_network
@@ -227,7 +227,7 @@ def main():
 	Main loop.
 	:return: None.
 	'''
-	print 'AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)
+	print('AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__))
 	ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
 	requiredName = ap.add_argument_group('required arguments')
@@ -247,7 +247,7 @@ def main():
 															  'file needs to be added to the image folder path. The pixel size \n'+
 															  'in that file will be used for the segmentation.',
 															  default=0.0)
-	ap.add_argument('-v', '--verbose', required=False, type=int, choices=range(0,4), help='Verbosity level. \n'+
+	ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
 															'0 (default) : Displays the progress bar for the segmentation. \n'+
 															'1: Also displays the path of the image(s) being segmented. \n'+
 															'2: Also displays the information about the prediction step \n'+ 
@@ -291,10 +291,10 @@ def main():
 							acquired_resolution=psm,
 							verbosity_level=verbosity_level)
 
-				print "Segmentation finished."
+				print("Segmentation finished.")
 
 			else:
-				print "The path(s) specified is/are not image(s). Please update the input path(s) and try again."
+				print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
 				break
 
 		else:
@@ -305,7 +305,7 @@ def main():
 							acquired_resolution=psm,
 							verbosity_level=verbosity_level)
 
-			print "Segmentation finished."
+			print("Segmentation finished.")
 
 # Calling the script
 if __name__ == '__main__':

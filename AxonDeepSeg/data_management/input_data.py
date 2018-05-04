@@ -4,7 +4,7 @@ from scipy import ndimage
 import numpy as np
 import random
 import os
-from data_augmentation import *
+from .data_augmentation import *
 from AxonDeepSeg.patch_management_tools import apply_legacy_preprocess, apply_preprocess
 import functools
 import copy
@@ -23,10 +23,10 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
                            }
     
     if transformations == {}:
-        L_transformations = [functools.partial(v, verbose=verbose) for k,v in dict_transformations.iteritems()]
+        L_transformations = [functools.partial(v, verbose=verbose) for k,v in dict_transformations.items()]
     else:
         L_c = []
-        for k,v in transformations.iteritems():
+        for k,v in transformations.items():
             if (k != 'type') and (v['activate']==True):
                 number = v['order']
                 c = (number,k,v)
@@ -38,7 +38,7 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
         for tup in L_c_sorted:
             k = tup[1]
             v = tup[2]
-            map(v.pop, ['order','activate'])
+            list(map(v.pop, ['order','activate']))
             L_transformations.append(functools.partial(dict_transformations[k], verbose=verbose, **v))
             
     return L_transformations
@@ -186,7 +186,7 @@ class input_data:
         
         if type_ == 'train':
             # Generation of a shuffled list of images      
-            samples_list = range(self.set_size)
+            samples_list = list(range(self.set_size))
             if shuffle:
                 np.random.shuffle(samples_list)
 
@@ -195,7 +195,7 @@ class input_data:
             if rem != 0:
                 samples_list += np.random.choice(samples_list, self.batch_size - rem, replace=False).tolist()
         else:
-            samples_list = range(self.set_size)
+            samples_list = list(range(self.set_size))
             
         return samples_list
 

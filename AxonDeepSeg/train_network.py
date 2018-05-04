@@ -4,8 +4,8 @@ import tensorflow as tf
 import numpy as np
 import os
 import pickle
-from data_management.input_data import input_data
-from config_tools import generate_config
+from .data_management.input_data import input_data
+from .config_tools import generate_config
 from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.train_network_tools import *
 from datetime import datetime
@@ -149,7 +149,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     # We also display the total number of variables
     output_params = count_number_parameters(tf.trainable_variables())
-    print "Total number of parameters to train: " + str(output_params)
+    print("Total number of parameters to train: " + str(output_params))
     Report += '\n'+str(output_params)+'\n'
     
     ### ----------------------------------------------------------------------------------------------------------- ###
@@ -333,7 +333,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         # Else, initializing the variables
         else:
             session.run(init)
-        print 'training start'
+        print('training start')
 
         # Display some information about weight selection
         if weighted_cost == True:
@@ -388,7 +388,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 
             # Printing some info
             if verbose>=2:
-                print 'epoch_size:'+str(epoch_size)+'-global_step:'+str(global_step)
+                print('epoch_size:'+str(epoch_size)+'-global_step:'+str(global_step))
                 
             # If we just finished an epoch, we summarize the performance of the
             # net on the training set to see it in TensorBoard.
@@ -515,13 +515,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 output_2 += '\n Loss: ' + str(loss) + ';'
                 
                 output_training = str(datetime.now()) + '-epoch:'+str(epoch)+'-loss:'+str(loss) + '-acc:'+str(acc)
-                print output_training
+                print(output_training)
                 
                 if debug_mode:
                     t2 = time.time()
                     dt12 = t2 - t1 # Time needed for the validation phase
                     t0 = time.time() # Début d'une boucle
-                    print 'time analysis-training:+'+str(dt01)+'-validating:'+str(dt12)
+                    print('time analysis-training:+'+str(dt01)+'-validating:'+str(dt12))
 
 
                 ### ----------------------------------------------------------------------------------------------- ###
@@ -541,7 +541,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                         
                         save_path = saver.save(session, path_model + "/best_acc_model.ckpt")
                         acc_current_best = acc_moving_avg
-                        print("Best accuracy model saved in file: %s" % save_path)
+                        print(("Best accuracy model saved in file: %s" % save_path))
                         
                         # Saving the evolution in a pickle file
                         evolution = {'loss': np.mean(Loss[-10:]), 
@@ -555,7 +555,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                         
                         save_path = saver.save(session, path_model + "/best_loss_model.ckpt")
                         loss_current_best = loss_moving_avg
-                        print("Best loss model saved in file: %s" % save_path)
+                        print(("Best loss model saved in file: %s" % save_path))
                         
                         # Saving the evolution in a pickle file
                         evolution = {'loss': np.mean(Loss[-10:]), 
@@ -573,7 +573,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                         pickle.dump(evolution, handle)
                     save_path = saver.save(session, path_model + "/model.ckpt")
 
-                    print("Model saved in file: %s" % save_path)
+                    print(("Model saved in file: %s" % save_path))
 
                     evolution = {'loss': np.mean(Loss[-10:]), 
                                  'steps': epoch, 
@@ -600,8 +600,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         with open(path_model + '/evolution.pkl', 'wb') as handle:
             pickle.dump(evolution, handle)
 
-        print("Model saved in file: %s" % save_path)
-        print "Optimization Finished!"
+        print(("Model saved in file: %s" % save_path))
+        print("Optimization Finished!")
 
 
 

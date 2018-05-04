@@ -47,7 +47,7 @@ def describe(write_model):
     t = PrettyTable(models.columns.tolist())
     for index, rows in models.iterrows():
         t.add_row(rows)
-    print t
+    print(t)
     
 def compare(compare_models):
     models = pd.DataFrame()
@@ -70,7 +70,7 @@ def compare(compare_models):
     for col in models.columns:
         if (models.loc[0,col] != models.loc[1,col]) and (str(col) != '0_name'):
             t.add_row([str(col), str(models.loc[0,col]), str(models.loc[1,col])])
-    print t
+    print(t)
     
 def describe_model(model_name):
     models = pd.DataFrame()
@@ -85,7 +85,7 @@ def describe_model(model_name):
     for col in models.columns:
         if (str(col) != '0_name'):
             t.add_row([str(col), str(models.loc[0,col])])
-    print t
+    print(t)
 # -------------------------------------------------------------------------------------------------------------                 
 # -------------------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------------------
