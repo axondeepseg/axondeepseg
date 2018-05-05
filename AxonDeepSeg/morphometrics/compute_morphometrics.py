@@ -34,6 +34,9 @@ def get_pixelsize(path_pixelsize_file):
 			   "be a plain text file with a single a numerical value (float) "
 			   " on the fist line.".format(path_pixelsize_file))
 		raise
+	except:
+		print "Unexpected error."
+		raise
 	else:
 		return pixelsize
 
@@ -41,6 +44,7 @@ def get_pixelsize(path_pixelsize_file):
 def get_axon_morphometrics(pred_axon,path_folder):
 	'''
 	:param pred_axon: axon binary mask, output of axondeepseg
+	:param path_folder: absolute path of folder containing pixel size file
 	:return: list of dictionaries containing for each axon, various morphometrics
 	'''
 
@@ -94,8 +98,7 @@ def load_axon_morphometrics(path_folder):
 def display_axon_diameter(img,path_prediction,pred_axon,pred_myelin):
 	'''
 	:param img: sample grayscale image (png)
-	:param path_folder: absolute path of folder containing sample + segmentation
-	:param aggregate_metrics: dictionary containing values of aggregate metrics
+	:param path_prediction: full path to the segmented file (*_seg-axonmyelin.png) from axondeepseg segmentation output
 	:param pred_axon: axon mask from axondeepseg segmentation output
 	:param pred_myelin: myelin mask from axondeepseg segmentation output
 	:return: nothing
@@ -115,21 +118,6 @@ def display_axon_diameter(img,path_prediction,pred_axon,pred_myelin):
 		   for pix_y in np.arange(np.shape(labels)[1]):
 				if labels[pix_x,pix_y] != 0:
 					axon_diam_display[pix_x,pix_y] = axon_diam_array[labels[pix_x,pix_y]-1]
-		
-	# # Axon display
-	# plt.figure(figsize=(12,9))
-	# im = plt.imshow(axon_diam_display,cmap='hot')
-	# plt.colorbar(im, fraction=0.03, pad=0.02)
-	# plt.title('Axon display colorcoded with axon diameter in um',fontsize=12)           
-	# plt.savefig(os.path.join(path_folder,'display_axon_diameter.png'))   
-	
-	# # Axon overlay on original image
-	# plt.figure(figsize=(12,9))
-	# plt.imshow(img, cmap='gray', alpha=0.8)
-	# im = plt.imshow(axon_diam_display, cmap='hot', alpha=0.5)
-	# plt.colorbar(im, fraction=0.03, pad=0.02)
-	# plt.title('Axon overlay colorcoded with axon diameter in um',fontsize=12)
-	# plt.savefig(os.path.join(path_folder,'overlay_axon_diameter.png')) 
 	
 	# Axon overlay on original image + myelin display (same color for every myelin sheath)
 	plt.figure(figsize=(12,9))
@@ -144,6 +132,7 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
 	'''
 	:param pred_axon: axon mask from axondeepseg segmentation output
 	:param pred_myelin: myelin mask from axondeepseg segmentation output
+	:param path_folder: absolute path of folder containing pixel size file
 	:return: aggregate_metrics: dictionary containing values of aggregate metrics
 	'''
 	
@@ -188,6 +177,3 @@ def write_aggregate_morphometrics(path_folder,aggregate_metrics):
 	f = open(os.path.join(path_folder,'aggregate_morphometrics.txt'), 'w')
 	f.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
 	f.close()
-
-
-
