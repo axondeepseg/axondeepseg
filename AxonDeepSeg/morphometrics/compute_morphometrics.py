@@ -26,8 +26,8 @@ def get_pixelsize(path_pixelsize_file):
 		with open(path_pixelsize_file, "r") as text_file:
 			pixelsize = float(text_file.read())
 	except IOError as e:
-		print "\nError: Could not open file \"{0}\" from \
-			  directory \"{1}\".\n".format(path_pixelsize_file, os.getcwd())
+		print ("\nError: Could not open file \"{0}\" from "
+			  "directory \"{1}\".\n".format(path_pixelsize_file, os.getcwd()))
 		raise
 	except ValueError as e:
 		print ("\nError: Pixel size data in file \"{0}\" is not valid – must "

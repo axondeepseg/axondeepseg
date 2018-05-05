@@ -6,8 +6,9 @@ import inspect
 import random
 import string
 import tempfile
+import numpy as np
 
-from AxonDeepSeg.morphometrics.compute_morphometrics import get_pixelsize
+from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
 
 class TestCore(object):
@@ -25,6 +26,7 @@ class TestCore(object):
     def teardown(self):
         pass
 
+    #--------------get_pixelsize.py tests--------------#
     def test_get_pixelsize_returns_expected_value(self):
         expectedValue = self.pixelsizeValue
         actualValue = get_pixelsize(self.pixelsizeFileName)
@@ -46,3 +48,29 @@ class TestCore(object):
 
             with pytest.raises(ValueError):
                 get_pixelsize(tmp.name)
+
+    #--------------get_axon_morphometrics tests--------------#
+    def test_get_axon_morphometrics_returns_expected_type(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+
+        stats_array = get_axon_morphometrics(pred_axon,path_folder)
+
+        assert isinstance(stats_array, np.ndarray)
+
+    def test_get_axon_morphometrics_returns_expected_keys(self):
+        expectedKeys = {'y0',
+                        'x0',
+                        'axon_diam',
+                        'solidity',
+                        'eccentricity',
+                        'orientation'
+                        }
+
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+
+        stats_array = get_axon_morphometrics(pred_axon,path_folder)
+
+        for key in expectedKeys:
+            assert key in stats_array[0]
