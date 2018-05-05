@@ -7,6 +7,7 @@ import random
 import string
 import tempfile
 import numpy as np
+import shutil
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
@@ -23,8 +24,12 @@ class TestCore(object):
             'AxonDeepSeg/data_test/pixel_size_in_micrometer.txt')
         self.pixelsizeValue = 0.07 # For current demo data.
 
+        self.tmpDir = os.path.join(self.fullPath, '__tmp__/')
+        if not os.path.exists(self.tmpDir):
+            os.makedirs(self.tmpDir)
+
     def teardown(self):
-        pass
+        shutil.rmtree(self.tmpDir)
 
     #--------------get_pixelsize.py tests--------------#
     def test_get_pixelsize_returns_expected_value(self):
@@ -74,3 +79,49 @@ class TestCore(object):
 
         for key in expectedKeys:
             assert key in stats_array[0]
+
+    #--------------save and load _axon_morphometrics tests--------------#
+    def test_save_axon_morphometrics_creates_file_in_expected_location(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+
+        stats_array = get_axon_morphometrics(pred_axon,path_folder)
+
+        save_axon_morphometrics(self.tmpDir,stats_array)
+
+        # Filename 'axonlist.npy' is hardcoded in function.
+        expectedFilePath = os.path.join(self.tmpDir,'axonlist.npy')
+
+        assert os.path.isfile(expectedFilePath)
+
+    def test_save_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+
+        stats_array = get_axon_morphometrics(pred_axon,path_folder)
+
+        nonExistingFolder = ''.join(random.choice(string.lowercase) for i in range(16))
+
+        with pytest.raises(IOError):
+            save_axon_morphometrics(nonExistingFolder,stats_array)
+
+    def test_load_axon_morphometrics_returns_identical_var_as_was_saved(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+
+        original_stats_array = get_axon_morphometrics(pred_axon,path_folder)
+
+        save_axon_morphometrics(self.tmpDir,original_stats_array)
+
+        # Load method only takes in a directory as an argument, expects that
+        # 'axonlist.npy' will be in directory.
+        loaded_stats_array = load_axon_morphometrics(self.tmpDir)
+
+        assert np.array_equal(loaded_stats_array,original_stats_array)
+
+    def test_load_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
+
+        nonExistingFolder = ''.join(random.choice(string.lowercase) for i in range(16))
+
+        with pytest.raises(IOError):
+            load_axon_morphometrics(nonExistingFolder)

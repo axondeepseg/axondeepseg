@@ -83,7 +83,12 @@ def save_axon_morphometrics(path_folder,stats_array):
 	:param stats_array: list of dictionaries containing axon morphometrics
 	:return: nothing
 	'''
-	np.save(os.path.join(path_folder,'axonlist.npy'),stats_array)
+	try:
+		np.save(os.path.join(path_folder,'axonlist.npy'),stats_array)
+	except IOError as e:
+		print ("\nError: Could not save file \"{0}\" in "
+			  "directory \"{1}\".\n".format('axonlist.npy', path_folder))
+		raise
 
 
 def load_axon_morphometrics(path_folder):
@@ -91,8 +96,17 @@ def load_axon_morphometrics(path_folder):
 	:param path_folder: absolute path of folder containing the sample + the segmentation output
 	:return: stats_array: list of dictionaries containing axon morphometrics
 	'''
-	stats_array = np.load(os.path.join(path_folder,'axonlist.npy'))
-	return stats_array
+	try:
+		stats_array = np.load(os.path.join(path_folder,'axonlist.npy'))
+	except IOError as e:
+		print ("\nError: Could not load file \"{0}\" in "
+			  "directory \"{1}\".\n".format('axonlist.npy', path_folder))
+		raise
+	except:
+		print "Unexpected error."
+		raise
+	else:
+		return stats_array
 
 
 def display_axon_diameter(img,path_prediction,pred_axon,pred_myelin):
