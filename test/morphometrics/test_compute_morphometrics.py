@@ -125,3 +125,16 @@ class TestCore(object):
 
         with pytest.raises(IOError):
             load_axon_morphometrics(nonExistingFolder)
+
+    #--------------display_axon_diameter tests--------------#
+    def test_display_axon_diameter_creates_file_in_expected_location(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        img = imread(os.path.join(path_folder,'image.png'))
+        path_prediction = os.path.join(path_folder,'AxonDeepSeg_seg-axonmyelin.png')
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+        pred_myelin = imread(os.path.join(path_folder,'AxonDeepSeg_seg-myelin.png'),flatten=True)
+        
+        display_axon_diameter(img,path_prediction,pred_axon,pred_myelin)
+        
+        assert os.path.isfile(os.path.join(path_folder,'AxonDeepSeg_map-axondiameter.png'))
+        os.remove(os.path.join(path_folder,'AxonDeepSeg_map-axondiameter.png'))
