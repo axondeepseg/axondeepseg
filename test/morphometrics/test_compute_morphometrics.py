@@ -16,12 +16,12 @@ class TestCore(object):
     def setup(self):
         self.fullPath = os.path.dirname(os.path.abspath(__file__))
 
-        # Move up to the package's root directory, "axondeepseg/"
-        self.packagePath = os.path.split(os.path.split(self.fullPath)[0])[0]
+        # Move up to the test directory, "test/"
+        self.testPath = os.path.split(self.fullPath)[0]
 
         self.pixelsizeFileName = os.path.join(
-            self.packagePath,
-            'AxonDeepSeg/data_test/pixel_size_in_micrometer.txt')
+            self.testPath,
+            '__test_files__/pixel_size_in_micrometer.txt')
         self.pixelsizeValue = 0.07 # For current demo data.
 
         self.tmpDir = os.path.join(self.fullPath, '__tmp__/')
