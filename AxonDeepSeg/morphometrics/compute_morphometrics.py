@@ -34,9 +34,6 @@ def get_pixelsize(path_pixelsize_file):
 			   "be a plain text file with a single a numerical value (float) "
 			   " on the fist line.".format(path_pixelsize_file))
 		raise
-	except:
-		print "Unexpected error."
-		raise
 	else:
 		return pixelsize
 
@@ -101,9 +98,6 @@ def load_axon_morphometrics(path_folder):
 	except IOError as e:
 		print ("\nError: Could not load file \"{0}\" in "
 			  "directory \"{1}\".\n".format('axonlist.npy', path_folder))
-		raise
-	except:
-		print "Unexpected error."
 		raise
 	else:
 		return stats_array
@@ -188,6 +182,11 @@ def write_aggregate_morphometrics(path_folder,aggregate_metrics):
 	:param aggregate_metrics: dictionary containing values of aggregate metrics
 	:return: nothing
 	'''   
-	f = open(os.path.join(path_folder,'aggregate_morphometrics.txt'), 'w')
-	f.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
-	f.close()
+
+	try:
+		with open(os.path.join(path_folder,'aggregate_morphometrics.txt'), 'w') as text_file:
+			text_file.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
+	except IOError as e:
+		print ("\nError: Could not save file \"{0}\" in "
+			  "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder))
+		raise

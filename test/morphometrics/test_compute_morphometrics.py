@@ -168,3 +168,27 @@ class TestCore(object):
         for key in expectedKeys:
             assert key in aggregate_metrics
 
+    #--------------get_aggregate_morphometrics tests--------------#
+    def test_write_aggregate_morphometrics_creates_file_in_expected_location(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+        pred_myelin = imread(os.path.join(path_folder,'AxonDeepSeg_seg-myelin.png'),flatten=True)
+
+        aggregate_metrics = get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder)
+
+        expectedFilePath = os.path.join(self.tmpDir,'aggregate_morphometrics.txt')
+        write_aggregate_morphometrics(self.tmpDir,aggregate_metrics)
+
+        assert os.path.isfile(expectedFilePath)
+
+    def test_write_aggregate_morphometrics_throws_error_if_folder_doesnt_exist(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+        pred_myelin = imread(os.path.join(path_folder,'AxonDeepSeg_seg-myelin.png'),flatten=True)
+
+        aggregate_metrics = get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder)
+
+        nonExistingFolder = ''.join(random.choice(string.lowercase) for i in range(16))
+
+        with pytest.raises(IOError):
+            write_aggregate_morphometrics(nonExistingFolder,aggregate_metrics)
