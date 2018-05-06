@@ -138,3 +138,33 @@ class TestCore(object):
         
         assert os.path.isfile(os.path.join(path_folder,'AxonDeepSeg_map-axondiameter.png'))
         os.remove(os.path.join(path_folder,'AxonDeepSeg_map-axondiameter.png'))
+
+    #--------------get_aggregate_morphometrics tests--------------#
+    def test_get_aggregate_morphometrics_returns_expected_type(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+        pred_myelin = imread(os.path.join(path_folder,'AxonDeepSeg_seg-myelin.png'),flatten=True)
+
+        aggregate_metrics = get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder)
+
+        assert isinstance(aggregate_metrics, dict)
+
+    def test_get_aggregate_morphometrics_returns_returns_expected_keys(self):
+        expectedKeys = {'avf',
+                        'mvf',
+                        'gratio',
+                        'mean_axon_diam',
+                        'mean_myelin_diam',
+                        'mean_myelin_thickness',
+                        'axon_density_mm2'
+                        }
+
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
+        pred_myelin = imread(os.path.join(path_folder,'AxonDeepSeg_seg-myelin.png'),flatten=True)
+
+        aggregate_metrics = get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder)
+
+        for key in expectedKeys:
+            assert key in aggregate_metrics
+
