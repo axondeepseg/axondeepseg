@@ -8,8 +8,11 @@ python:
 install:
   - echo "Installation of the repository"
   - pip install .
-  
+  - pip install python-coveralls  # Add me to install python-coveralls
 # command to run tests
 script:
   - echo "Launch general integrity test"
   - axondeepseg_test
+  - py.test . -v --cov . --cov-report term-missing
+after_success:
+  - coveralls
