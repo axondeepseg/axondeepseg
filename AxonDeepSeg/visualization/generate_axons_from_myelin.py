@@ -11,17 +11,17 @@ import imageio
 
 
 def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
-	"""
+    """
     :param path_prediction: path of the prediction i.e. image of axon+myelin segmentation (output of AxonDeepSeg)
     :param path_myelin_corrected: path of corrected myelin by the user i.e. myelin mask (uint8 type with myelin=255, background=0)
     :param start_visu: first iterations can reach extreme values, start_visu set another start than epoch 0
     :return: merged and corrected axon+myelin image
     """
-
+    
     # read output from axondeepseg and myelin mask corrected by user
     prediction = imageio.imread(path_prediction)
     myelin_corrected = imageio.imread(path_myelin_corrected)
-
+    
     # compute the axon mask from axondeepseg (axon=255, myelin=127, background=0)
     axon_ads = prediction > 200
     
@@ -39,10 +39,8 @@ def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
     
     # get main path to save images
     path_folder, file_name = os.path.split(path_prediction)
-
+    
     # save the corrected axon+myelin image
     imageio.imwrite(os.path.join(path_folder,'axon_myelin_mask_corrected.png'),both)
-
+    
     return both
-
-
