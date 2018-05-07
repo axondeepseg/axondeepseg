@@ -3,17 +3,16 @@
 
 # Basic integrity test to check is AxonDeepSeg is correctly installed.
 # Launches a segmentation in the data_test folder.
+import json
+import os
+from AxonDeepSeg.testing.segmentation_scoring import *
+from time import time
+from AxonDeepSeg.apply_model import axon_segmentation
+from scipy.misc import imread, imsave
 
 def integrity_test():
 
     try:
-
-        import json
-        import os
-        from AxonDeepSeg.testing.segmentation_scoring import *
-        from time import time
-        from AxonDeepSeg.apply_model import axon_segmentation
-        from scipy.misc import imread, imsave
 
         # get path of directory where AxonDeepSeg was installed
         dir_path = os.path.dirname(os.path.abspath(__file__))
