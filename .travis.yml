@@ -9,6 +9,10 @@ install:
   - echo "Installation of the repository"
   - pip install .
   - pip install python-coveralls  # Add me to install python-coveralls
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
 # command to run tests
 script:
   - echo "Launch general integrity test"
