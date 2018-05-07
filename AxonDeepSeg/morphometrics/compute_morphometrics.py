@@ -8,6 +8,10 @@ import imageio
 import json
 from skimage import transform
 from skimage.filters import gaussian
+import matplotlib as mpl
+if os.environ.get('DISPLAY','') == '':
+    print('no display found. Using non-interactive Agg backend')
+    mpl.use('Agg')
 import matplotlib.pyplot as plt
 from shutil import copy
 import math
