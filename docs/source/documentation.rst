@@ -5,6 +5,23 @@ sheaths from microscopy images. It performs 3-class semantic segmentation using 
 
 AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechnique Montréal.
 
+Changelog
+===============================================================================
+
+## [0.4] - 2018-05-10
+
+### Added
+
+- GIMP procedure for ground truth labelling or segmentation correction added in the documentation.
+- Compatibility with tiff images.
+- Continuous integration with Travis is now supported.
+
+### Changed
+
+- The documentation website is now hosted on ReadTheDocs.
+- Updated documentation on the usage of AxonDeepSeg.
+- Change of axon and myelin masks filenames for better clarity.
+
 Installation
 ===============================================================================
 The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
