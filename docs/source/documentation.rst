@@ -8,7 +8,7 @@ AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechn
 Changelog
 ===============================================================================
 
-**Version [0.4] - 2018-05-16**
+**Version [0.4.1] - 2018-05-16**
 
 **Added:**
 
