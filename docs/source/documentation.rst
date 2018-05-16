@@ -8,15 +8,15 @@ AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechn
 Changelog
 ===============================================================================
 
-Version [0.4] - 2018-05-16
+**Version [0.4] - 2018-05-16**
 
-Added:
+**Added:**
 
 - GIMP procedure for ground truth labelling or segmentation correction added in the documentation.
 - Compatibility with tiff images.
 - Continuous integration with Travis is now supported.
 
-Changed:
+**Changed:**
 
 - The documentation website is now hosted on ReadTheDocs.
 - Updated documentation on the usage of AxonDeepSeg.
