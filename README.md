@@ -9,7 +9,9 @@ Based on a convolutional neural network architecture. Pixels are classified as e
 
 For more information, see the [documentation website](http://axondeepseg.readthedocs.io/).
 
-![alt tag](https://github.com/neuropoly/axondeepseg/blob/master/docs/_images/fig0.png)
+![alt tag](https://github.com/neuropoly/axondeepseg/blob/master/docs/source/_static/fig0.png)
+
+
 
 ## Help
 
