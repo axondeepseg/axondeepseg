@@ -19,6 +19,7 @@ class TestCore(object):
         pass
 
     #--------------launch_morphometrics_computation.py tests--------------#
+    @pytest.mark.unittest
     def test_launch_morphometrics_computation_saves_files_in_expected_location(self):
         expectedFiles = {'aggregate_morphometrics.txt',
                          'AxonDeepSeg_map-axondiameter.png',
@@ -36,6 +37,7 @@ class TestCore(object):
             assert os.path.isfile(fullFilePath)
             os.remove(fullFilePath)
 
+    @pytest.mark.unittest
     def test_launch_morphometrics_computation_throws_error_for_missing_file(self):
         nonExistingFile = ''.join(random.choice(string.lowercase) for i in range(16))
         pathPrediction = os.path.join(self.dataPath,
