@@ -25,6 +25,7 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
     if transformations == {}:
         L_transformations = [functools.partial(v, verbose=verbose) for k,v in dict_transformations.iteritems()]
     else:
+        #print(transformations)
         L_c = []
         for k,v in transformations.iteritems():
             if (k != 'type') and (v['activate']==True):
