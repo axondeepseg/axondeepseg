@@ -1,0 +1,89 @@
+{
+  "trainingset_patchsize": 512, 
+  "thresholds": [
+    0, 
+    0.2, 
+    0.8
+  ], 
+  "learning_rate_decay_type": "polynomial", 
+  "da-type": "all", 
+  "convolution_per_layer": [
+    2, 
+    2, 
+    2
+  ], 
+  "weighted_cost_activate": true, 
+  "dataset_variance": 30, 
+  "batch_norm_decay_decay_activate": true, 
+  "da-elastic-activate": true, 
+  "da-flipping-activate": true, 
+  "batch_norm_decay_starting_decay": 0.7, 
+  "n_classes": 3, 
+  "learning_rate_decay_activate": true, 
+  "trainingset": "SEM_3c_512", 
+  "dropout": 0.75, 
+  "batch_norm_decay_decay_period": 16000, 
+  "da-rescaling-activate": false, 
+  "learning_rate_decay_period": 24000, 
+  "downsampling": "convolution", 
+  "learning_rate": 0.001, 
+  "batch_size": 8, 
+  "features_per_convolution": [
+    [
+      [
+        10, 
+        15
+      ], 
+      [
+        15, 
+        20
+      ]
+    ], 
+    [
+      [
+        20, 
+        25
+      ], 
+      [
+        25, 
+        30
+      ]
+    ], 
+    [
+      [
+        30, 
+        35
+      ], 
+      [
+        35, 
+        40
+      ]
+    ]
+  ], 
+  "batch_norm_activate": true, 
+  "learning_rate_decay_rate": 0.99, 
+  "batch_norm_decay_ending_decay": 0.9, 
+  "da-shifting-activate": true, 
+  "size_of_convolutions_per_layer": [
+    [
+      3, 
+      3
+    ], 
+    [
+      3, 
+      3
+    ], 
+    [
+      3, 
+      3
+    ], 
+    [
+      3, 
+      3
+    ]
+  ], 
+  "da-noise_addition-activate": false, 
+  "da-random_rotation-activate": false, 
+  "dataset_mean": 128, 
+  "depth": 4
+}

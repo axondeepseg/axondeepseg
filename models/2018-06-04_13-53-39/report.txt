@@ -1,0 +1,21 @@
+
+
+---Savings---
+ Model saved in : ../models/2018-06-04_13-53-39
+
+---PARAMETERS---
+learning_rate : 0.001; 
+ batch_size :  8;
+ depth :  3;
+ epoch_size: 240;
+ dropout :  0.75;
+ (if model restored) restored_model :None
+16463
+
+
+---Intermediary results---
+
+----
+ Last epoch: 5
+ Accuracy: 0.5098395391341743;
+ Loss: 0.9424211443017384;
