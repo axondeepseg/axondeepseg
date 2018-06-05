@@ -9,7 +9,7 @@ class TestCore(object):
     def teardown(self):
         pass
 
-    #--------------launch_morphometrics_computation.py tests--------------#
+    #--------------integrity_test.py tests--------------#
     @pytest.mark.integritytest
     def test_integrity_test_script_runs_succesfully(self):
         assert integrity_test()==0
