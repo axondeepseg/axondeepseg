@@ -82,8 +82,6 @@ def generate_dict_da(config):
             update_dict = {key2: {key3: val, 'order': key1}}
             update_recur_dict(transformations, update_dict)
 
-    # transformations = {'random_rotation': {'activate': False, 'order': 2}, 'elastic': {'activate': True, 'order': 3}, 'flipping': {'activate': True, 'order': 4}, 'shifting': {'activate': True, 'order': 0}, 'noise_addition': {'activate': False, 'order': 5}, 'rescaling': {'activate': False, 'order': 1},'type': 'all'}
-
     return transformations
 
 
