@@ -39,7 +39,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # Translating useful variables from the config file.
     learning_rate = config["learning_rate"]
     dropout = config["dropout"]
-    weighted_cost = config["weighted_cost_activate"]
+    weighted_cost = config["weighted_cost-activate"]
     batch_size_training = config["batch_size"]
     batch_size_validation = 8
     batch_norm_decay = config["batch_norm_decay_starting_decay"]
@@ -63,7 +63,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     epoch_size = data_train.epoch_size
 
     # Model saving frequency variable.
-    save_last_epoch_freq = 50
+    save_last_epoch_freq = 5
     save_best_moving_avg_epoch_freq = 5
     save_best_moving_avg_window = 10
     
