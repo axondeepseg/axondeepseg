@@ -325,7 +325,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             saver.restore(session, folder_restored_model + "/model.ckpt")
 
             if save_trainable:
-                session.run(tf.global_variables_initializer())  
+                session.run(tf.global_variables_initializer())
 
             file = open(folder_restored_model + '/evolution.pkl', 'r')
             evolution_restored = pickle.load(file)
