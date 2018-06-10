@@ -28,7 +28,7 @@ def get_masks(path_prediction):
     imageio.imwrite(tmp_path[0] + '_seg-axon.png', axon_prediction.astype(int))
     imageio.imwrite(tmp_path[0] + '_seg-myelin.png', myelin_prediction.astype(int))
 
-    return axon_prediction,
+    return axon_prediction, myelin_prediction
 
 
 def rgb_rendering_of_mask(pred_img, save_mask=False, writing_path=None):
