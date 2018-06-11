@@ -25,7 +25,6 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
     if transformations == {}:
         L_transformations = [functools.partial(v, verbose=verbose) for k,v in dict_transformations.iteritems()]
     else:
-        #print(transformations)
         L_c = []
         for k,v in transformations.iteritems():
             if (k != 'type') and (v['activate']==True):
@@ -160,8 +159,8 @@ class input_data:
         self.epoch_size = len(self.samples_list)
         self.preload_all = preload_all
         self.loaded_data = None
-        #self.mean = config['dataset_mean']
-        #self.variance = config['dataset_variance']
+        self.mean = config['dataset_mean']
+        self.variance = config['dataset_variance']
 
         # Loading all images if asked so
         
