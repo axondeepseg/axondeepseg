@@ -31,7 +31,7 @@ def get_masks(path_prediction):
     return axon_prediction, myelin_prediction
 
 
-def rgb_rendering_of_mask(pred_img, save_mask=False, writing_path=None):
+def rgb_rendering_of_mask(pred_img, writing_path=None):
     """
     Returns a segmentation mask in red and blue display
     :param pred_img: segmented image - 3-class mask
@@ -47,7 +47,7 @@ def rgb_rendering_of_mask(pred_img, save_mask=False, writing_path=None):
     rgb_mask[pred_axon] = [0, 0, 255]
     rgb_mask[pred_myelin] = [255, 0, 0]
 
-    if save_mask and writing_path is not None:
+    if writing_path is not None:
         imageio.imwrite(writing_path, rgb_mask)
 
     return rgb_mask
