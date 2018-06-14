@@ -78,8 +78,8 @@ def generate_dict_da(config):
             key1, key2 = key.split('-')
             update_recur_dict(transformations, {key2: val})
         elif key[:3] == 'da-':
-            key1, key2 = key[3:].split('-')
-            update_dict = {key1: {key2: val}}
+            key1, key2, key3 = key[3:].split('-')
+            update_dict = {key2: {key3: val, 'order': key1}}
             update_recur_dict(transformations, update_dict)
 
     return transformations
