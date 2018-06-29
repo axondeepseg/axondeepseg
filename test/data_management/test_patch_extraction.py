@@ -50,3 +50,11 @@ class TestCore(object):
 
         with pytest.raises(ValueError):
             extract_patch(to_extract, patch_size)
+
+    @pytest.mark.unittest
+    def test_extract_patch_script_throws_error_for_incorrect_first_argument_format(self):
+        to_extract = self.testImage
+        patch_size = 4
+
+        with pytest.raises(ValueError):
+            extract_patch(to_extract, patch_size)
