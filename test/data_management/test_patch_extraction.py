@@ -22,7 +22,7 @@ class TestCore(object):
     def test_extract_patch_script_returns_expected_patches(self):
         to_extract = [self.testImage, self.mask]
         patch_size = 4
-        print self.testImage
+
         output = extract_patch(to_extract, patch_size)
 
         expectedTopLeftPatch = self.testImage[0:4,0:4]
@@ -34,3 +34,11 @@ class TestCore(object):
         # Current implementation of patch extration in ADS contains some overlap 
         # which is not specified/controllable, so other cases are difficult to test.
         # When a controllable overlap is implemented, add more tests accordingly.
+
+    @pytest.mark.unittest
+    def test_extract_patch_script_throws_error_for_patch_size_smaller_than_3(self):
+        to_extract = [self.testImage, self.mask]
+        patch_size = 2
+
+        with pytest.raises(ValueError):
+            extract_patch(to_extract, patch_size)
