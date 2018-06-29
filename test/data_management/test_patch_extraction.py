@@ -42,3 +42,11 @@ class TestCore(object):
 
         with pytest.raises(ValueError):
             extract_patch(to_extract, patch_size)
+
+    @pytest.mark.unittest
+    def test_extract_patch_script_throws_error_for_patch_size_equal_to_image_dim(self):
+        to_extract = [self.testImage, self.mask]
+        patch_size = min(self.testImage.shape)
+
+        with pytest.raises(ValueError):
+            extract_patch(to_extract, patch_size)

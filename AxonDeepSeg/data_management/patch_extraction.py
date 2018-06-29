@@ -9,13 +9,16 @@ def extract_patch(patch, size):
     :param size: size of the patches to extract
     :return: a list of pairs [patch, ground_truth] with a very low overlapping.
     """
-    if size < 3:
-        raise ValueError('\nError: patch size must be 3 or greater.')
 
     img = patch[0]
     mask = patch[1]
     if len(patch) == 3:
         weights = patch[2]
+
+    if size < 3:
+        raise ValueError('\nError: patch size must be 3 or greater.')
+    elif size >= min(img.shape):
+        raise ValueError('\nError: patch size must be smaller than dimensions of image.')
 
     h, w = img.shape
 
