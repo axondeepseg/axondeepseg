@@ -4,8 +4,7 @@ import numpy as np
 
 def extract_patch(patch, size):
     """
-    :param img: image represented by a numpy-array
-    :param mask: groundtruth of the segmentation
+    :param patch: List of 2 or 3 ndarrays, [image, mask, (weights)]. image and mask are numpy arrays, and mask is the groundtruth segmentation.
     :param size: size of the patches to extract
     :return: a list of pairs [patch, ground_truth] with a very low overlapping.
     """
