@@ -18,25 +18,19 @@ class TestCore(object):
         pass
 
     #--------------patch_extraction.py tests--------------#
-    @pytest.mark.current
+    @pytest.mark.unittest
     def test_extract_patch_script_returns_expected_patches(self):
         to_extract = [self.testImage, self.mask]
         patch_size = 4
         print self.testImage
         output = extract_patch(to_extract, patch_size)
-        
-        # for debugging only
-        for j, patch in enumerate(output):
-            print j
-            print patch[0]
 
         expectedTopLeftPatch = self.testImage[0:4,0:4]
-        expectedTopRightPatch = self.testImage[0:4,12:16]
+        expectedBottomRightPatch = self.testImage[12:16,12:16]
 
-        expectedSecondRowFirstPatch = self.testImage[4:8,0:4]
-
-        print output[0][0]
-        print expectedTopLeftPatch
         assert np.array_equal(output[0][0], expectedTopLeftPatch)
-        assert np.array_equal(output[4][0], expectedTopRightPatch)
-        assert np.array_equal(output[5][0], expectedSecondRowFirstPatch)
+        assert np.array_equal(output[-1][0], expectedBottomRightPatch)
+
+        # Current implementation of patch extration in ADS contains some overlap 
+        # which is not specified/controllable, so other cases are difficult to test.
+        # When a controllable overlap is implemented, add more tests accordingly.
