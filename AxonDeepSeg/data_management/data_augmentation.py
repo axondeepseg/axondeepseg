@@ -26,7 +26,7 @@ def shifting(patch, percentage_max = 0.1, verbose=0):
     patch_size = patch[0].shape[0]
     n_classes = patch[1].shape[-1]
     size_shift = int(percentage_max*patch_size) # Maximum shift in pixels.
-    img = np.pad(patch[0],size_shift, mode = "reflect")
+    image = np.pad(patch[0],size_shift, mode = "reflect")
     mask = np.stack([np.pad(np.squeeze(e),size_shift, mode = "reflect") for e in np.split(patch[1], n_classes, axis=-1)], axis=-1)
     if len(patch) == 3:
         weights = np.pad(patch[2],size_shift, mode = "reflect")
@@ -38,7 +38,7 @@ def shifting(patch, percentage_max = 0.1, verbose=0):
     if verbose >= 1:
         print 'height shift: ',begin_h, ', width shift: ', begin_w     
     
-    shifted_image = img[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size]
+    shifted_image = image[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size]
     shifted_mask = np.stack([np.squeeze(e)[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size] for e in np.split(mask, n_classes, axis=-1)], axis=-1)
 
     if len(patch) == 3:
@@ -123,7 +123,7 @@ def random_rotation(patch, low_bound=5, high_bound=89, verbose=0):
     :return: List of 2 or 3 randomly rotated inputs [image,mask, (weights)]
     """
 
-    img = patch[0]
+    image = patch[0]
     mask = patch[1]
     if len(patch) == 3:
         weights = patch[2]
@@ -134,27 +134,27 @@ def random_rotation(patch, low_bound=5, high_bound=89, verbose=0):
     if verbose >= 1:
         print 'rotation angle: ', angle
 
-    image_rotated = transform.rotate(img, angle, resize = False, mode = 'symmetric',preserve_range=True)
-    gt_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
+    image_rotated = transform.rotate(image, angle, resize = False, mode = 'symmetric',preserve_range=True)
+    mask_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
     
     if len(patch) == 3:
         weights_rotated = transform.rotate(weights, angle, resize=False, mode='symmetric', preserve_range=True)
-        return [image_rotated.astype(np.uint8), gt_rotated.astype(np.uint8), weights_rotated.astype(np.float32)]
+        return [image_rotated.astype(np.uint8), mask_rotated.astype(np.uint8), weights_rotated.astype(np.float32)]
     else:
-        return [image_rotated.astype(np.uint8), gt_rotated.astype(np.uint8)]
+        return [image_rotated.astype(np.uint8), mask_rotated.astype(np.uint8)]
 
 
 def elastic_transform(patch, alpha, sigma):
     """
 
-    :param patch: List of 2 or 3 inputs (ndarrays) [image, mask, (weights)]
+    :param patch: List of 2 or 3 ndarrays [image,mask,(weights)]
     :param alpha: deformation coefficient (high alpha -> strong deformation)
     :param sigma: std of the gaussian filter. (high sigma -> smooth deformation)
-    :return: List of deformed input [image_deformed, gt_deformed]
+    :return: List of deformed input [image_deformed, mask_deformed]
     """
 
     image = patch[0]
-    gt = patch[1]
+    mask = patch[1]
     if len(patch) == 3:
         weights = patch[2]
 
@@ -177,26 +177,26 @@ def elastic_transform(patch, alpha, sigma):
     indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1))
 
     elastic_image = map_coordinates(image, indices, order=1).reshape(shape)
-    elastic_gt = np.stack([map_coordinates(np.squeeze(e), indices, order=1).reshape(shape)
-                           for e in np.split(gt,gt.shape[-1], axis=2)], axis=-1)
-    elastic_gt = np.array(elastic_gt)
+    elastic_mask = np.stack([map_coordinates(np.squeeze(e), indices, order=1).reshape(shape)
+                           for e in np.split(mask,mask.shape[-1], axis=2)], axis=-1)
+    elastic_mask = np.array(elastic_mask)
 
     if len(patch) == 3:
         elastic_weights = map_coordinates(weights, indices, order=1).reshape(shape)
         elastic_weights = np.array(elastic_weights)
 
-        return [elastic_image.astype(np.uint8), elastic_gt.astype(np.uint8), elastic_weights.astype(np.float32)]
+        return [elastic_image.astype(np.uint8), elastic_mask.astype(np.uint8), elastic_weights.astype(np.float32)]
     else:
-        return [elastic_image.astype(np.uint8), elastic_gt.astype(np.uint8)]
+        return [elastic_image.astype(np.uint8), elastic_mask.astype(np.uint8)]
 
 def elastic(patch, alpha_max=9, verbose=0):
     """
     Elastic transform wrapper for a list of [image, mask]
-    :param patch: List of 2 or 3 inputs (ndarrays) [image, mask, (weights)]
+    :param patch: List of 2 or 3 ndarrays [image,mask,(weights)]
     :param alpha_max: Alpha_max is the maximum value the coefficient of elastic transformation can take. It is randomly
     chosen.
     :param verbose: Int. The higher, the more information is displayed about the transformation.
-    :return: List of 2 or 3 ndarrays [deformed_image, deformed_gt, (deformed_weights)]
+    :return: List of 2 or 3 ndarrays [deformed_image, deformed_mask, (deformed_weights)]
     """
 
     alpha = random.choice(range(1, alpha_max))
@@ -210,20 +210,20 @@ def elastic(patch, alpha_max=9, verbose=0):
 def flipping(patch, verbose=0):
     """
     Flips the image horizontally and/or vertically.
-    :param patch: List of 2 inputs (ndarrays) [image, mask]
+    :param patch: List of 2 or 3 ndarrays [image,mask,(weights)]
     :param verbose: Int. The higher, the more information is displayed about the transformation.
     :return: List of flipped ndarrays [flipped_image, flipped_mask]
     """
 
     image = patch[0]
-    gt = patch[1]
+    mask = patch[1]
     if len(patch) == 3:
         weights = patch[2]
 
     # First we toss a coin and depending on the result we flip the image vertically.
     s = np.random.binomial(1, 0.5, 1)
     if s == 1 :
-        image, gt = [np.fliplr(image), np.fliplr(gt)]
+        image, mask = [np.fliplr(image), np.fliplr(mask)]
         if len(patch) == 3:
             weights = np.fliplr(weights)
         if verbose >= 1:
@@ -232,29 +232,29 @@ def flipping(patch, verbose=0):
 
     s = np.random.binomial(1, 0.5, 1)
     if s == 1:
-        image, gt = [np.flipud(image), np.flipud(gt)]
+        image, mask = [np.flipud(image), np.flipud(mask)]
         if len(patch) == 3:
             weights = np.flipud(weights)
         if verbose >= 1:
             print 'flipping up-down'
     if len(patch) == 3:
-        return [image, gt, weights]
+        return [image, mask, weights]
     else:
-        return [image, gt]
+        return [image, mask]
 
 
 
 def gaussian_blur(patch, sigma_max=3, verbose=0):
     """
     Adding a gaussian blur to the image.
-    :param patch: List of 2 or 3inputs (ndarrays) [image, mas, (weights)]
+    :param patch: List of 2 or 3 ndarrays [image,mask,(weights)]
     :param sigma_max: Float, max possible value of the gaussian blur.
     :param verbose: Int. The higher, the more information is displayed about the transformation.
-    :return: List of 2 or 3 ndarrays [blurred_image, original_gt, (original_weights)]
+    :return: List of 2 or 3 ndarrays [blurred_image, original_mask, (original_weights)]
     """
 
     image = patch[0]
-    gt = patch[1]
+    mask = patch[1]
     if len(patch) == 3:
         weights = patch[2]
     # Choosing the parameter and applying the transformation
@@ -264,23 +264,6 @@ def gaussian_blur(patch, sigma_max=3, verbose=0):
     image = gaussian(image, sigma=sigma, preserve_range=True) 
 
     if len(patch) ==3:
-        return [image, gt, weights]
+        return [image, mask, weights]
     else:
-        return [image, gt]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return [image, mask]
