@@ -58,7 +58,7 @@ class TestCore(object):
 
         # Create temp folder
         self.fullPath = os.path.dirname(os.path.abspath(__file__))
-        self.tmpPath = os.path.join(fullPath, '__temp_files__')
+        self.tmpPath = os.path.join(self.fullPath, '__temp_files__')
         if not os.path.exists(self.tmpPath):
             os.makedirs(self.tmpPath)
     def teardown(self):
