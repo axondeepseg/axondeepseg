@@ -72,7 +72,7 @@ def rescaling(patch, factor_max=1.2, verbose=0):
 
     # If the resampling factor is too close to 1 we do not resample.
     if (new_patch_size <= patch_size+5) and (new_patch_size >= patch_size-5): # To avoid having q_h = 0
-        rescaled_patch = patch
+        return patch
     else :
         image_rescale = rescale(patch[0], scale, preserve_range= True)
         mask_rescale = rescale(patch[1], scale, preserve_range= True)
