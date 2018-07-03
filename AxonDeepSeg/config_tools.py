@@ -24,8 +24,8 @@ def validate_config(config):
     :return: Boolean. True if the configuration is valid compared to the default configuration, else False.
     """
 
-    keys = config.keys()
-    for key in default_configuration().keys():
+    keys = default_configuration().keys()
+    for key in config.keys():
         if not key in keys:
             return False
     return True
@@ -48,24 +48,24 @@ def default_configuration():
      'batch_norm_activate': True,
      'batch_size': 8,
      'convolution_per_layer': [3, 3, 3, 3],
-     'da-elastic-activate': True,
+     'da-3-elastic-activate': True,
      'da-elastic-alpha_max': 9,
      'da-elastic-order': 3,
-     'da-flipping-activate': True,
+     'da-4-flipping-activate': True,
      'da-flipping-order': 4,
      'da-gaussian_blur-activate': True,
      'da-gaussian_blur-order': 6,
      'da-gaussian_blur-sigma_max': 1.5,
-     'da-noise_addition-activate': False,
+     'da-5-noise_addition-activate': False,
      'da-noise_addition-order': 5,
-     'da-random_rotation-activate': False,
+     'da-2-random_rotation-activate': False,
      'da-random_rotation-high_bound': 89,
      'da-random_rotation-low_bound': 5,
      'da-random_rotation-order': 2,
-     'da-rescaling-activate': False,
+     'da-1-rescaling-activate': False,
      'da-rescaling-factor_max': 1.2,
      'da-rescaling-order': 1,
-     'da-shifting-activate': True,
+     'da-0-shifting-activate': True,
      'da-shifting-order': 0,
      'da-shifting-percentage_max': 0.1,
      'da-type': 'all',
@@ -82,7 +82,7 @@ def default_configuration():
       [3, 3, 3],
       [3, 3, 3],
       [3, 3, 3]],
-     'weighted_cost_activate': True,
+     'weighted_cost-activate': True,
      'weighted_cost-balanced_activate': True,
      'weighted_cost-balanced_weights': [1.1, 1, 1.3],
      'weighted_cost-boundaries_activate': False,
@@ -106,7 +106,6 @@ def update_config(d, u):
         else:
             d[k] = u[k]
     return d
-    
 
 
 def generate_config(config_path=None):
@@ -223,7 +222,7 @@ def generate_features(depth,network_first_num_features,features_augmentation,net
             last_layer = current_layer
 
     else:
-        raise 'Invalid input : please for features_augmentation' 
+        raise ValueError('Invalid features_augmentation value. Must begin with x or p, and be followed by an integer.' )
                                                  
 
     return network_features_per_convolution
