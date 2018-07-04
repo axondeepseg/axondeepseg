@@ -12,3 +12,4 @@ pillow>=3.4.2
 imageio>=2.2.0
 pytest==3.5.0
 pytest-cov==2.5.1
+prettytable>=0.7.2

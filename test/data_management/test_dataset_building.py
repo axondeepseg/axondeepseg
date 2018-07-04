@@ -29,7 +29,7 @@ class TestCore(object):
             shutil.rmtree(datasetPath)
 
     #--------------dataset_building.py tests--------------#
-    @pytest.mark.current
+    @pytest.mark.unittest
     def test_raw_img_to_patches_creates_expected_folders_and_files(self):
         if os.path.exists(self.patchPath) and os.path.isdir(self.patchPath):
             shutil.rmtree(self.patchPath)
@@ -44,7 +44,7 @@ class TestCore(object):
         assert os.path.exists(self.patchPath+"/data2") and os.path.isdir(self.patchPath+"/data2")
         assert len(os.listdir(self.patchPath+"/data2")) == 24 # These demo image and mask are split into 12 patches each
 
-    @pytest.mark.current
+    @pytest.mark.unittest
     def test_patched_to_dataset_creates_expected_folders_and_files(self):
         if os.path.exists(self.datasetPath) and os.path.isdir(self.datasetPath):
             shutil.rmtree(self.datasetPath)
