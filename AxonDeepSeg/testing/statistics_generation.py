@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score, log_loss
 from AxonDeepSeg.testing.segmentation_scoring import pw_dice
 import time
 from AxonDeepSeg.config_tools import rec_update
-
+import pandas as pd
 
 def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_resolution, overlap_value=25,
                             statistics_filename='model_statistics_validation.json',
@@ -39,7 +39,7 @@ def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_res
     if os.path.isdir(path_model_folder):
 
         # Generation of statistics
-        stats_dict = generate_statistics(path_model_folder, path_images_folder, resampled_resolution, overlap_value)
+        stats_dict = generate_statistics(path_model_folder, path_images_folder, resampled_resolution, overlap_value, verbosity_level=verbosity_level)
 
         # We now save the data in a corresponding json file.
         save_metrics(stats_dict, path_model_folder, statistics_filename)
@@ -75,7 +75,7 @@ def metrics_single_wrapper(path_model_folder, path_images_folder, resampled_reso
         for current_path_images_folder in path_images_folder:
 
             stats_dict = generate_statistics(path_model_folder, [current_path_images_folder],
-                                             resampled_resolution, overlap_value)
+                                             resampled_resolution, overlap_value, verbosity_level=verbosity_level)
 
             # We now save the data in a corresponding json file.
             save_metrics(stats_dict, path_model_folder, statistics_filename)
@@ -335,7 +335,8 @@ class metrics():
     """
     We use this class to manage metrics and create easily aggregation. We then are able to save them in csv format.
     """
-    def __init__(self):
+    def __init__(self, statistics_filename='model_statistics_validation.json'):
+        self.statistics_filename = statistics_filename
         self.path_models = set()
         self.stats = pd.DataFrame()
         self.filtered_stats = pd.DataFrame()
@@ -351,10 +352,10 @@ class metrics():
     def load_models(self):
         for path in self.path_models:
             try:
-                with open(os.path.join(path, 'model_statistics_validation.json')) as f:
+                with open(os.path.join(path, self.statistics_filename)) as f:
                     stats_dict = json.loads(f.read())['data']
             except:
-                print 'No config file found'
+                raise ValueError('No config file found: statistics json file missing in the model folder.')
 
             # Now we add a line to the stats dataframe for each model
             for ckpt_name, ckpt in stats_dict.iteritems():
