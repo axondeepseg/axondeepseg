@@ -52,24 +52,41 @@ class TestCore(object):
 
     #--------------segment_folders tests--------------#
     @pytest.mark.integritytest
-    def test_foo1(self):
+    def test_segment_folders_creates_expected_files(self):
 
         path_model, config = generate_default_parameters('SEM', self.modelPath)
 
         overlap_value = 25
         resolution_model = generate_resolution('SEM', 512)
+
+        outputFiles = ['image_seg-axon.png', 'image_seg-myelin.png', 'image_seg-axonmyelin.png']
+        for fileName in outputFiles:
+            assert not os.path.exists(os.path.join(self.imageFolderPath, fileName))
+
         segment_folders(path_testing_images_folder = self.imageFolderPath, path_model =  path_model, 
                         overlap_value = overlap_value, config = config, resolution_model = resolution_model,
                         acquired_resolution = 0.37, verbosity_level=2)
         
+        for fileName in outputFiles:
+            assert os.path.exists(os.path.join(self.imageFolderPath, fileName))
+
     #--------------segment_image tests--------------#
     @pytest.mark.integritytest
-    def test_foo2(self):
+    def test_segment_image_creates_runs_succesfully_(self):
+    # Since segment_folders should have already run, the output files should already exist, which this test tests for
 
         path_model, config = generate_default_parameters('SEM', self.modelPath)
 
         overlap_value = 25
         resolution_model = generate_resolution('SEM', 512)
+
+        outputFiles = ['image_seg-axon.png', 'image_seg-myelin.png', 'image_seg-axonmyelin.png']
+        for fileName in outputFiles:
+            assert os.path.exists(os.path.join(self.imageFolderPath, fileName))
+
         segment_image(path_testing_image = self.imagePath, path_model =  path_model, 
                       overlap_value = overlap_value, config = config, resolution_model = resolution_model,
                        acquired_resolution = 0.37, verbosity_level=2)
+        
+        for fileName in outputFiles:
+            assert os.path.exists(os.path.join(self.imageFolderPath, fileName))
