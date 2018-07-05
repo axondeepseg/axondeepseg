@@ -190,9 +190,8 @@ def generate_config_dict(path_to_config_file):
 		with open(path_to_config_file, 'r') as fd:
 			config_network = json.loads(fd.read())
 
-	except ValueError:
-		print "No configuration file available at this path."
-		config_network = None
+	except:
+		raise ValueError("No configuration file available at this path.")
 
 	return config_network
 
