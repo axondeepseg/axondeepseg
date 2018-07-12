@@ -13,6 +13,8 @@ class TestCore(object):
         self.rawPath = os.path.join(self.testPath, '__test_patch_files__/raw')
         self.patchPath = os.path.join(self.testPath, '__test_patch_files__/patched')
         self.datasetPath = os.path.join(self.testPath, '__test_patch_files__/dataset')
+        self.mixedPatchPath = os.path.join(self.testPath, '__test_patch_files__/mixedPatched')
+        self.mixedDatasetPath = os.path.join(self.testPath, '__test_patch_files__/mixedDataset')
 
     @classmethod
     def teardown_class(cls):
@@ -21,12 +23,21 @@ class TestCore(object):
         testPath = os.path.split(fullPath)[0]
         patchPath = os.path.join(testPath, '__test_patch_files__/patched')
         datasetPath = os.path.join(testPath, '__test_patch_files__/dataset')
+        
+        mixedPatchPath = os.path.join(testPath, '__test_patch_files__/mixedPatched')
+        mixedDatasetPath = os.path.join(testPath, '__test_patch_files__/mixedDataset')
 
         if os.path.exists(patchPath) and os.path.isdir(patchPath):
             shutil.rmtree(patchPath)
 
         if os.path.exists(datasetPath) and os.path.isdir(datasetPath):
             shutil.rmtree(datasetPath)
+
+        if os.path.exists(mixedPatchPath) and os.path.isdir(mixedPatchPath):
+            shutil.rmtree(mixedPatchPath)
+
+        if os.path.exists(mixedDatasetPath) and os.path.isdir(mixedDatasetPath):
+            shutil.rmtree(mixedDatasetPath)
 
     #--------------dataset_building.py tests--------------#
     @pytest.mark.unittest
@@ -53,3 +64,17 @@ class TestCore(object):
 
         assert os.path.exists(self.datasetPath) and os.path.isdir(self.datasetPath)
         assert len(os.listdir(self.datasetPath)) == 12+24 # Dataset folder merges all the patch folders generated in the test above.
+
+    @pytest.mark.current
+    def test_patched_to_fake_mixed_dataset_creates_expected_folders_and_files(self):
+        # TEM images are too large to be included in repo (6+ megs), so simply create fake duplicate dataset with SEM images.
+        if os.path.exists(self.mixedDatasetPath) and os.path.isdir(self.mixedDatasetPath):
+            shutil.rmtree(self.mixedDatasetPath)
+        
+        raw_img_to_patches(self.rawPath, os.path.join(self.mixedPatchPath,'SEM'))
+        raw_img_to_patches(self.rawPath, os.path.join(self.mixedPatchPath,'TEM'))
+
+        patched_to_dataset(self.mixedPatchPath, self.mixedDatasetPath, 'mixed')
+
+        assert os.path.exists(self.mixedDatasetPath) and os.path.isdir(self.mixedDatasetPath)
+        assert len(os.listdir(self.mixedDatasetPath)) == (12+24)*2 # Dataset folder merges all the patch folders generated in the test above.
