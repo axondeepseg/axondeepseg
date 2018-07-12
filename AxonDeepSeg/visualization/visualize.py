@@ -1,4 +1,8 @@
 import pickle
+import sys
+if 'pytest' in sys.modules:
+    import matplotlib as mpl
+    mpl.use('Agg') # Enforces mpl to not open new plot windows
 import matplotlib.pyplot as plt
 from scipy.misc import imread
 from sklearn.metrics import accuracy_score
@@ -9,12 +13,11 @@ from tabulate import tabulate
 import numpy as np
 
 
-def visualize_training(path_model, path_model_init=None, start_visu=0):
+def visualize_training(path_model, start_visu=0):
     """
     :param path_model: path of the folder with the model parameters .ckpt
-    :param path_model_init: if the model is initialized by another, path of its folder
     :param start_visu: first iterations can reach extreme values, start_visu set another start than epoch 0
-    :return: no return
+    :return: evolution
 
     figure(1) represent the evolution of the loss and the accuracy evaluated on the validation set along the learning process.
     If the learning began from an initial model, the figure plots first the accuracy and loss evolution from this initial model and then stacks the evolution of the model.
@@ -40,6 +43,8 @@ def visualize_training(path_model, path_model_init=None, start_visu=0):
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.show()
+
+    return evolution
 
 
 def visualize_segmentation(path):
@@ -183,10 +188,8 @@ if __name__ == "__main__":
 
     ap = argparse.ArgumentParser()
     ap.add_argument("-m", "--path_model", required=True, help="")
-    ap.add_argument("-m_init", "--path_model_init", required=False, help="")
 
     args = vars(ap.parse_args())
     path_model = args["path_model"]
-    path_model_init = args["path_model_init"]
 
-    visualize_training(path_model, path_model_init)
+    visualize_training(path_model)
