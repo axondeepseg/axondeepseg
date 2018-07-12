@@ -18,6 +18,12 @@ class TestCore(object):
         self.path_folder = os.path.join(self.testPath, '__test_files__/__prediction_only__')
 
     def teardown(self):
+        if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png')):
+           os.remove(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png'))
+
+        if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-myelin.png')):
+           os.remove(os.path.join(self.path_folder, 'AxonDeepSeg_seg-myelin.png'))
+
         if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png')):
            os.remove(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png'))
 
