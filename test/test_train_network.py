@@ -96,7 +96,7 @@ class TestCore(object):
     # Note: This test is simply a mock test to ensure that the pipeline runs succesfully, and is not
     # a test of the quality of the model itself.
 
-        train_model(self.trainingPath, self.modelPath, self.config_network)
+        train_model(self.trainingPath, self.modelPath, self.config_network, debug_mode=True)
 
         expectedFiles = ["checkpoint",
                          "config_network.json",
