@@ -33,7 +33,7 @@ class TestCore(object):
         assert not np.array_equal(noisyImage, self.image)
         assert abs(np.std(noisyImage-self.image) - sigma) < 1
 
-    @pytest.mark.current
+    @pytest.mark.unittest
     def test_add_multiplicative_gaussian_noise_returns_different_image(self):
 
         sigma = 10

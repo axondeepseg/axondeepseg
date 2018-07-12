@@ -14,7 +14,6 @@ def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
     """
     :param path_prediction: path of the prediction i.e. image of axon+myelin segmentation (output of AxonDeepSeg)
     :param path_myelin_corrected: path of corrected myelin by the user i.e. myelin mask (uint8 type with myelin=255, background=0)
-    :param start_visu: first iterations can reach extreme values, start_visu set another start than epoch 0
     :return: merged and corrected axon+myelin image
     """
     

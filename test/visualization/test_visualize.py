@@ -20,7 +20,7 @@ class TestCore(object):
         pass
 
     #--------------visualize_training tests--------------#
-    @pytest.mark.current
+    @pytest.mark.unittest
     def test_visualize_training_runs_succesfully(self):
 
         assert visualize_training(self.pathModel)
