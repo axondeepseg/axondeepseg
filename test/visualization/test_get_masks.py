@@ -29,7 +29,7 @@ class TestCore(object):
 
     #--------------get_mask tests--------------#
     @pytest.mark.unittest
-    def test_get_masks_writes_expected_files_and_outputs_equals_saved_images(self):
+    def test_get_masks_writes_expected_files(self):
         pred_img=os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png')
 
         axon_prediction, myelin_prediction = get_masks(pred_img)
@@ -40,8 +40,6 @@ class TestCore(object):
         assert os.path.isfile(axonFile)
         assert os.path.isfile(myelinFile)
 
-        assert np.array_equal(axon_prediction, imageio.imread(axonFile))
-        assert np.array_equal(myelin_prediction, imageio.imread(myelinFile))
 
     #--------------rgb_rendering_of_mask tests--------------#
     @pytest.mark.unittest

@@ -25,12 +25,8 @@ def get_masks(path_prediction):
     if tmp_path[0].endswith('.png'):
         tmp_path[0] = os.path.splitext(tmp_path[0])[0]
 
-    # Recast from bool to uint8 so that output type matches the saved images
-    axon_prediction = axon_prediction.astype(dtype=np.uint8)
-    myelin_prediction = myelin_prediction.astype(dtype=np.uint8)
-
-    imageio.imwrite(tmp_path[0] + '_seg-axon.png', axon_prediction)
-    imageio.imwrite(tmp_path[0] + '_seg-myelin.png', myelin_prediction)
+    imageio.imwrite(tmp_path[0] + '_seg-axon.png', axon_prediction.astype(int))
+    imageio.imwrite(tmp_path[0] + '_seg-myelin.png', myelin_prediction.astype(int))
 
     return axon_prediction, myelin_prediction
 
