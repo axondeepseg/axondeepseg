@@ -35,7 +35,7 @@ def integrity_test():
 
         # Launch the axon and myelin segmentation on test image sample provided in the installation
         print('Computing the segmentation of axon and myelin on test image.')
-        prediction = axon_segmentation([path_testing], ["image.png"], path_model, config_network,verbosity_level=0)
+        prediction = axon_segmentation([path_testing], ["image.png"], path_model, config_network, prediction_proba_activate=True, verbosity_level=4)
 
         # Read the ground truth mask and the obtained segmentation mask
         mask = imread(path_testing + '/mask.png', flatten=True)
