@@ -22,8 +22,6 @@ trainingset/
 
 guidelines/test_weights\.ipynb
 
-*.pkl
-
 notebooks/\.ipynb_checkpoints/
 
 notebooks/test_weights\.ipynb
