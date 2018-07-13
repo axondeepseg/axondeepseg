@@ -16,9 +16,9 @@ class TestCore(object):
 
         self.fullPath = os.path.dirname(os.path.abspath(__file__))
 
-        self.modelPath = os.path.join(self.fullPath, '__test_training_files__/Model')
-        self.configPath = os.path.join(self.fullPath, '__test_training_files__/Model/config_network.json')
-        self.trainingPath = os.path.join(self.fullPath, '__test_training_files__')
+        self.modelPath = os.path.join(self.fullPath, '__test_files__/__test_training_files__/Model')
+        self.configPath = os.path.join(self.fullPath, '__test_files__/__test_training_files__/Model/config_network.json')
+        self.trainingPath = os.path.join(self.fullPath, '__test_files__/__test_training_files__')
 
         if not os.path.exists(self.modelPath):
             os.makedirs(self.modelPath)
@@ -85,7 +85,7 @@ class TestCore(object):
     def teardown_class(cls):
         fullPath = os.path.dirname(os.path.abspath(__file__))
 
-        modelPath = os.path.join(fullPath, '__test_training_files__/Model')
+        modelPath = os.path.join(fullPath, '__test_files__/__test_training_files__/Model')
 
         if os.path.exists(modelPath) and os.path.isdir(modelPath):
             shutil.rmtree(modelPath)

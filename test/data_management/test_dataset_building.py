@@ -10,22 +10,22 @@ class TestCore(object):
         self.fullPath = os.path.dirname(os.path.abspath(__file__))
         # Move up to the test directory, "test/"
         self.testPath = os.path.split(self.fullPath)[0]
-        self.rawPath = os.path.join(self.testPath, '__test_patch_files__/raw')
-        self.patchPath = os.path.join(self.testPath, '__test_patch_files__/patched')
-        self.datasetPath = os.path.join(self.testPath, '__test_patch_files__/dataset')
-        self.mixedPatchPath = os.path.join(self.testPath, '__test_patch_files__/mixedPatched')
-        self.mixedDatasetPath = os.path.join(self.testPath, '__test_patch_files__/mixedDataset')
+        self.rawPath = os.path.join(self.testPath, '__test_files__/__test_patch_files__/raw')
+        self.patchPath = os.path.join(self.testPath, '__test_files__/__test_patch_files__/patched')
+        self.datasetPath = os.path.join(self.testPath, '__test_files__/__test_patch_files__/dataset')
+        self.mixedPatchPath = os.path.join(self.testPath, '__test_files__/__test_patch_files__/mixedPatched')
+        self.mixedDatasetPath = os.path.join(self.testPath, '__test_files__/__test_patch_files__/mixedDataset')
 
     @classmethod
     def teardown_class(cls):
         fullPath = os.path.dirname(os.path.abspath(__file__))
         # Move up to the test directory, "test/"
         testPath = os.path.split(fullPath)[0]
-        patchPath = os.path.join(testPath, '__test_patch_files__/patched')
-        datasetPath = os.path.join(testPath, '__test_patch_files__/dataset')
+        patchPath = os.path.join(testPath, '__test_files__/__test_patch_files__/patched')
+        datasetPath = os.path.join(testPath, '__test_files__/__test_patch_files__/dataset')
         
-        mixedPatchPath = os.path.join(testPath, '__test_patch_files__/mixedPatched')
-        mixedDatasetPath = os.path.join(testPath, '__test_patch_files__/mixedDataset')
+        mixedPatchPath = os.path.join(testPath, '__test_files__/__test_patch_files__/mixedPatched')
+        mixedDatasetPath = os.path.join(testPath, '__test_files__/__test_patch_files__/mixedDataset')
 
         if os.path.exists(patchPath) and os.path.isdir(patchPath):
             shutil.rmtree(patchPath)

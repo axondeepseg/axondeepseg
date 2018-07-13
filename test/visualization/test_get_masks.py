@@ -15,7 +15,7 @@ class TestCore(object):
         # Move up to the test directory, "test/"
         self.testPath = os.path.split(self.fullPath)[0]
 
-        self.path_folder = os.path.join(self.testPath, '__test_files__/__prediction_only__')
+        self.path_folder = os.path.join(self.testPath, '__test_files__/__test_demo_files__/__prediction_only__')
 
     def teardown(self):
         if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png')):

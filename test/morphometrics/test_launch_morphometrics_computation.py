@@ -13,7 +13,7 @@ class TestCore(object):
         self.fullPath = os.path.dirname(os.path.abspath(__file__))
         # Move up to the test directory, "test/"
         self.testPath = os.path.split(self.fullPath)[0]
-        self.dataPath = os.path.join(self.testPath, '__test_files__')
+        self.dataPath = os.path.join(self.testPath, '__test_files__/__test_demo_files__')
 
     def teardown(self):
         pass

@@ -12,7 +12,7 @@ class TestCore(object):
         self.projectPath = os.path.split(self.testPath)[0]
 
         self.modelPath = os.path.join(self.projectPath, 'AxonDeepSeg/models/default_SEM_model_v1')
-        self.imageFolderPath = os.path.join(self.testPath, '__test_segment_files__')
+        self.imageFolderPath = os.path.join(self.testPath, '__test_files__/__test_segment_files__')
         self.imagePath = os.path.join(self.imageFolderPath, 'image.png')
         self.statsFilename = 'model_statistics_validation.json'
 
@@ -20,7 +20,7 @@ class TestCore(object):
     def teardown_class(cls):
         testPath = os.path.dirname(os.path.abspath(__file__))
         projectPath = os.path.split(testPath)[0]
-        imageFolderPath = os.path.join(testPath, '__test_segment_files__')
+        imageFolderPath = os.path.join(testPath, '__test_files__/__test_segment_files__')
 
         outputFiles = ['image_seg-axon.png', 'image_seg-myelin.png', 'image_seg-axonmyelin.png']
         for fileName in outputFiles:

@@ -21,7 +21,7 @@ class TestCore(object):
 
         self.pixelsizeFileName = os.path.join(
             self.testPath,
-            '__test_files__/pixel_size_in_micrometer.txt')
+            '__test_files__/__test_demo_files__/pixel_size_in_micrometer.txt')
         self.pixelsizeValue = 0.07 # For current demo data.
 
         self.tmpDir = os.path.join(self.fullPath, '__tmp__/')
@@ -29,7 +29,8 @@ class TestCore(object):
             os.makedirs(self.tmpDir)
 
     def teardown(self):
-        shutil.rmtree(self.tmpDir)
+        if os.path.exists(self.tmpDir):
+            shutil.rmtree(self.tmpDir)
 
     #--------------get_pixelsize.py tests--------------#
     @pytest.mark.unittest

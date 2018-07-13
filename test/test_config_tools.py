@@ -3,6 +3,7 @@
 import pytest
 import json
 import os
+import shutil
 from AxonDeepSeg.config_tools import *
 
 class TestCore(object):
@@ -58,10 +59,16 @@ class TestCore(object):
 
         # Create temp folder
         self.fullPath = os.path.dirname(os.path.abspath(__file__))
-        self.tmpPath = os.path.join(self.fullPath, '__temp_files__')
+        self.tmpPath = os.path.join(self.fullPath, '__tmp__')
         if not os.path.exists(self.tmpPath):
             os.makedirs(self.tmpPath)
-    def teardown(self):
+
+    @classmethod
+    def teardown_class(cls):
+        fullPath = os.path.dirname(os.path.abspath(__file__))
+        tmpPath = os.path.join(fullPath, '__tmp__')
+        if os.path.exists(tmpPath):
+            shutil.rmtree(tmpPath)
         pass
 
     #--------------config_tools.py tests--------------#
@@ -111,9 +118,7 @@ class TestCore(object):
             "1nval1d_k3y": 0
         }
         
-        # Create temp config file
-        fullPath = os.path.dirname(os.path.abspath(__file__))
-        configPath = os.path.join(fullPath, '__temp_files__/config_network.json')
+        configPath = os.path.join(self.tmpPath, 'config_network.json')
 
         if os.path.exists(configPath):
             os.remove(configPath)

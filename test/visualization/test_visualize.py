@@ -14,7 +14,7 @@ class TestCore(object):
         # Move up to the test directory, "test/"
         self.testPath = os.path.split(self.fullPath)[0]
 
-        self.pathModel = os.path.join(self.testPath, '__test_model__/Model')
+        self.pathModel = os.path.join(self.testPath, '__test_files__/__test_model__/Model')
 
     def teardown(self):
         pass

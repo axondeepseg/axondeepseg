@@ -16,7 +16,7 @@ class TestCore(object):
         self.projectPath = os.path.split(self.testPath)[0]
 
         self.modelPath = os.path.join(self.projectPath, 'AxonDeepSeg/models/default_SEM_model_v1')
-        self.imagesPath = os.path.join(self.testPath, '__test_training_files__/Testing')
+        self.imagesPath = os.path.join(self.testPath, '__test_files__/__test_training_files__/Testing')
         self.statsFilename = 'model_statistics_validation.json'
 
     @classmethod

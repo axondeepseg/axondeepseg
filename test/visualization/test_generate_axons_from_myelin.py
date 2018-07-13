@@ -14,7 +14,7 @@ class TestCore(object):
         # Move up to the test directory, "test/"
         self.testPath = os.path.split(self.fullPath)[0]
 
-        self.folderPath = os.path.join(self.testPath, '__test_files__')
+        self.folderPath = os.path.join(self.testPath, '__test_files__/__test_demo_files__')
         self.axonMyelinMask = os.path.join(self.folderPath, 'AxonDeepSeg_seg-axonmyelin.png')
         self.myelinMask = os.path.join(self.folderPath, 'AxonDeepSeg_seg-myelin.png')
 
