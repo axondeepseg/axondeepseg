@@ -12,15 +12,22 @@ class TestCore(object):
         # Move up to the test directory, "test/"
         self.testPath = os.path.split(self.fullPath)[0]
 
-        self.folderPath = os.path.join(self.testPath, '__test_files__/__test_demo_files__')
+        self.folderPath = os.path.join(
+            self.testPath,
+            '__test_files__/__test_demo_files__'
+            )
 
-        self.prediction = os.path.join(self.folderPath,'AxonDeepSeg_seg-axonmyelin.png')
-        self.groundtruth = os.path.join(self.folderPath,'mask.png')
+        self.prediction = os.path.join(
+            self.folderPath,
+            'AxonDeepSeg_seg-axonmyelin.png'
+            )
+
+        self.groundtruth = os.path.join(self.folderPath, 'mask.png')
 
     def teardown(self):
         pass
 
-    #--------------launch_performance_metrics tests--------------#
+    # --------------launch_performance_metrics tests-------------- #
     @pytest.mark.integration
     def test_launch_performance_metrics_runs_succesfully(self):
 

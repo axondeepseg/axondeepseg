@@ -15,36 +15,56 @@ class TestCore(object):
         # Move up to the test directory, "test/"
         self.testPath = os.path.split(self.fullPath)[0]
 
-        self.path_folder = os.path.join(self.testPath, '__test_files__/__test_demo_files__/__prediction_only__')
+        self.path_folder = os.path.join(
+            self.testPath,
+            '__test_files__/__test_demo_files__/__prediction_only__'
+            )
 
     def teardown(self):
         if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png')):
-           os.remove(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png'))
+            os.remove(
+               os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png')
+               )
 
         if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-myelin.png')):
-           os.remove(os.path.join(self.path_folder, 'AxonDeepSeg_seg-myelin.png'))
+            os.remove(
+               os.path.join(self.path_folder, 'AxonDeepSeg_seg-myelin.png')
+               )
 
         if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png')):
-           os.remove(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png'))
+            os.remove(
+               os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png')
+               )
 
-    #--------------get_masks tests--------------#
+    # --------------get_masks tests-------------- #
     @pytest.mark.unit
     def test_get_masks_writes_expected_files(self):
-        pred_img=os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png')
+        pred_img = os.path.join(
+            self.path_folder,
+            'AxonDeepSeg_seg-axonmyelin.png'
+            )
 
         axon_prediction, myelin_prediction = get_masks(pred_img)
 
-        axonFile = os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png')
-        myelinFile = os.path.join(self.path_folder, 'AxonDeepSeg_seg-myelin.png')
+        axonFile = os.path.join(
+            self.path_folder,
+            'AxonDeepSeg_seg-axon.png'
+            )
+
+        myelinFile = os.path.join(
+            self.path_folder,
+            'AxonDeepSeg_seg-myelin.png'
+            )
 
         assert os.path.isfile(axonFile)
         assert os.path.isfile(myelinFile)
 
-
-    #--------------rgb_rendering_of_mask tests--------------#
+    # --------------rgb_rendering_of_mask tests-------------- #
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_returns_array_with_extra_dim_of_len_3(self):
-        pred_img=imageio.imread(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png'))
+        pred_img = imageio.imread(
+            os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png')
+            )
 
         rgb_mask = rgb_rendering_of_mask(pred_img)
 
@@ -57,15 +77,20 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_writes_expected_files(self):
-        pred_img=imageio.imread(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png'))
+        pred_img = imageio.imread(
+            os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png')
+            )
 
-        rgbFile = os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png')
+        rgbFile = os.path.join(
+            self.path_folder,
+            'AxonDeepSeg_seg-axonmyelin-rgb.png'
+            )
 
         if os.path.isfile(rgbFile):
-           os.remove(rgbFile)
+            os.remove(rgbFile)
 
         rgb_mask = rgb_rendering_of_mask(pred_img, rgbFile)
 
         assert os.path.isfile(rgbFile)
-        
+
         assert np.array_equal(rgb_mask, imageio.imread(rgbFile))

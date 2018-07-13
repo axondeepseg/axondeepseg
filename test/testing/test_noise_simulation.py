@@ -15,16 +15,22 @@ class TestCore(object):
         # Move up to the test directory, "test/"
         self.testPath = os.path.split(self.fullPath)[0]
 
-        self.folderPath = os.path.join(self.testPath, '__test_files__/__test_demo_files__')
+        self.folderPath = os.path.join(
+            self.testPath,
+            '__test_files__/__test_demo_files__'
+            )
 
-        self.image = imread(os.path.join(self.folderPath,'image.png'), flatten=True)
+        self.image = imread(
+            os.path.join(self.folderPath, 'image.png'),
+            flatten=True
+            )
 
     def teardown(self):
         pass
 
-    #--------------add_additive_gaussian_noise tests--------------#
+    # --------------add_additive_gaussian_noise tests-------------- #
     @pytest.mark.unit
-    def test_add_additive_gaussian_noise_returns_different_image_with_diff_std_near_sigma(self):
+    def test_add_additive_gaussian_noise_returns_expected_std_diff(self):
 
         sigma = 10
 
@@ -33,24 +39,31 @@ class TestCore(object):
         assert not np.array_equal(noisyImage, self.image)
         assert abs(np.std(noisyImage-self.image) - sigma) < 1
 
-    #--------------add_multiplicative_gaussian_noise tests--------------#
+    # --------------add_multiplicative_gaussian_noise tests-------------- #
     @pytest.mark.unit
     def test_add_multiplicative_gaussian_noise_returns_different_image(self):
 
         sigma = 10
 
-        noisyImage = add_multiplicative_gaussian_noise(self.image, mu=0, sigma=sigma)
+        noisyImage = add_multiplicative_gaussian_noise(
+            self.image,
+            mu=0,
+            sigma=sigma
+            )
 
         assert not np.array_equal(noisyImage, self.image)
 
-    #--------------change_brightness tests--------------#
+    # --------------change_brightness tests-------------- #
     @pytest.mark.unit
     def test_change_brightness(self):
         maxPixelValue = 255
         value_percentage=0.2
-        
-        brighterImage = change_brightness(self.image, value_percentage=value_percentage)
+
+        brighterImage = change_brightness(
+            self.image,
+            value_percentage=value_percentage
+            )
 
         assert not np.array_equal(brighterImage, self.image)
 
-        assert abs(np.mean(brighterImage - self.image) - (value_percentage * maxPixelValue) ) < 0.1
+        assert abs(np.mean(brighterImage - self.image) - (value_percentage * maxPixelValue)) < 0.1
