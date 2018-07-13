@@ -14,27 +14,37 @@ class TestCore(object):
 
         self.rawPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_patch_files__/raw'
+            '__test_files__',
+            '__test_patch_files__',
+            'raw'
             )
 
         self.patchPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_patch_files__/patched'
+            '__test_files__',
+            '__test_patch_files__',
+            'patched'
             )
 
         self.datasetPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_patch_files__/dataset'
+            '__test_files__',
+            '__test_patch_files__',
+            'dataset'
             )
 
         self.mixedPatchPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_patch_files__/mixedPatched'
+            '__test_files__',
+            '__test_patch_files__',
+            'mixedPatched'
             )
 
         self.mixedDatasetPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_patch_files__/mixedDataset'
+            '__test_files__',
+            '__test_patch_files__',
+            'mixedDataset'
             )
 
     @classmethod
@@ -45,22 +55,30 @@ class TestCore(object):
 
         patchPath = os.path.join(
             testPath,
-            '__test_files__/__test_patch_files__/patched'
+            '__test_files__',
+            '__test_patch_files__',
+            'patched'
             )
 
         datasetPath = os.path.join(
             testPath,
-            '__test_files__/__test_patch_files__/dataset'
+            '__test_files__',
+            '__test_patch_files__',
+            'dataset'
             )
 
         mixedPatchPath = os.path.join(
             testPath,
-            '__test_files__/__test_patch_files__/mixedPatched'
+            '__test_files__',
+            '__test_patch_files__',
+            'mixedPatched'
             )
 
         mixedDatasetPath = os.path.join(
             testPath,
-            '__test_files__/__test_patch_files__/mixedDataset'
+            '__test_files__',
+            '__test_patch_files__',
+            'mixedDataset'
             )
 
         if os.path.exists(patchPath) and os.path.isdir(patchPath):
@@ -87,19 +105,19 @@ class TestCore(object):
         assert os.path.exists(self.patchPath) and os.path.isdir(self.patchPath)
 
         assert (
-            os.path.exists(self.patchPath+"/data1") and
-            os.path.isdir(self.patchPath+"/data1")
+            os.path.exists(os.path.join(self.patchPath, 'data1')) and
+            os.path.isdir(os.path.join(self.patchPath, 'data1'))
             )
 
-        assert len(os.listdir(self.patchPath+"/data1")) == 12
+        assert len(os.listdir(os.path.join(self.patchPath, 'data1'))) == 12
         # These demo image and mask are split into 6 patches each
 
         assert (
-            os.path.exists(self.patchPath+"/data2") and
-            os.path.isdir(self.patchPath+"/data2")
+            os.path.exists(os.path.join(self.patchPath, 'data2')) and
+            os.path.isdir(os.path.join(self.patchPath, 'data2'))
             )
 
-        assert len(os.listdir(self.patchPath+"/data2")) == 24
+        assert len(os.listdir(os.path.join(self.patchPath,'data2'))) == 24
         # These demo image and mask are split into 12 patches each
 
     # --------------patched_to_dataset tests-------------- #

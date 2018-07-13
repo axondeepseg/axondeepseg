@@ -21,10 +21,12 @@ class TestCore(object):
 
         self.pixelsizeFileName = os.path.join(
             self.testPath,
-            '__test_files__/__test_demo_files__/pixel_size_in_micrometer.txt')
+            '__test_files__',
+            '__test_demo_files__',
+            'pixel_size_in_micrometer.txt')
         self.pixelsizeValue = 0.07   # For current demo data.
 
-        self.tmpDir = os.path.join(self.fullPath, '__tmp__/')
+        self.tmpDir = os.path.join(self.fullPath, '__tmp__')
         if not os.path.exists(self.tmpDir):
             os.makedirs(self.tmpDir)
 

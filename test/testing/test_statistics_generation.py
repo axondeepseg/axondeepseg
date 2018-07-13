@@ -18,12 +18,16 @@ class TestCore(object):
 
         self.modelPath = os.path.join(
             self.projectPath,
-            'AxonDeepSeg/models/default_SEM_model_v1'
+            'AxonDeepSeg',
+            'models',
+            'default_SEM_model_v1'
             )
 
         self.imagesPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_training_files__/Testing'
+            '__test_files__',
+            '__test_training_files__',
+            'Testing'
             )
 
         self.statsFilename = 'model_statistics_validation.json'
@@ -37,7 +41,9 @@ class TestCore(object):
 
         modelPath = os.path.join(
             projectPath,
-            'AxonDeepSeg/models/default_SEM_model_v1'
+            'AxonDeepSeg',
+            'models',
+            'default_SEM_model_v1'
             )
 
         statsFilename = 'model_statistics_validation.json'

@@ -14,11 +14,14 @@ class TestCore(object):
 
         self.modelPath = os.path.join(
             self.projectPath,
-            'AxonDeepSeg/models/default_SEM_model_v1'
+            'AxonDeepSeg',
+            'models',
+            'default_SEM_model_v1'
             )
         self.imageFolderPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_segment_files__'
+            '__test_files__',
+            '__test_segment_files__'
             )
         self.imagePath = os.path.join(
             self.imageFolderPath,
@@ -32,7 +35,8 @@ class TestCore(object):
         projectPath = os.path.split(testPath)[0]
         imageFolderPath = os.path.join(
             testPath,
-            '__test_files__/__test_segment_files__'
+            '__test_files__',
+            '__test_segment_files__'
             )
 
         outputFiles = [

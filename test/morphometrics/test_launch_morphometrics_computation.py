@@ -15,7 +15,8 @@ class TestCore(object):
         self.testPath = os.path.split(self.fullPath)[0]
         self.dataPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_demo_files__'
+            '__test_files__',
+            '__test_demo_files__'
             )
 
     def teardown(self):

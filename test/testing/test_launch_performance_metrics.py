@@ -14,7 +14,8 @@ class TestCore(object):
 
         self.folderPath = os.path.join(
             self.testPath,
-            '__test_files__/__test_demo_files__'
+            '__test_files__',
+            '__test_demo_files__'
             )
 
         self.prediction = os.path.join(

@@ -17,7 +17,9 @@ class TestCore(object):
 
         self.pathModel = os.path.join(
             self.testPath,
-            '__test_files__/__test_model__/Model'
+            '__test_files__',
+            '__test_model__',
+            'Model'
             )
 
     def teardown(self):
