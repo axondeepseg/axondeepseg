@@ -25,7 +25,7 @@ class TestCore(object):
         pass
 
     #--------------score_analysis tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_score_analysis_returns_nonzero_outputs_for_differing_overlapping_masks(self):
         gtAxon = self.groundtruth > 200 
         predAxon = self.prediction > 200
@@ -37,7 +37,7 @@ class TestCore(object):
         assert precision != 0.0
         assert diffusion != 0.0
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_score_analysis_returns_expected_outputs_for_identical_masks(self):
         gtAxon = self.groundtruth > 200 
 
@@ -47,13 +47,13 @@ class TestCore(object):
         assert precision  == 1.0
         assert diffusion  == 0.0
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_score_analysis_runs_succesfully_with_visualization_on(self):
 
         assert score_analysis(self.img, self.groundtruth, self.prediction, visualization=True)
 
     #--------------dice tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_dice_returns_nonempty_pandas_dataframe(self):
 
         gtAxon = self.groundtruth > 200 
@@ -63,7 +63,7 @@ class TestCore(object):
         assert not diceVals.empty
 
     #--------------pw_dice tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_pwdice_returns_nonzero_value_for_differing_overlapping_masks(self):
 
         gtMyelin = np.logical_and(self.groundtruth >= 50, self.groundtruth <= 200)
@@ -73,7 +73,7 @@ class TestCore(object):
 
         assert pwDiceVal != 0
     
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_pwdice_returns_1_for_identical_masks(self):
 
         gtMyelin = np.logical_and(self.groundtruth >= 50, self.groundtruth <= 200)
@@ -83,7 +83,7 @@ class TestCore(object):
         assert pwDiceVal == 1.0
 
     #--------------Metrics_calculator class tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_Metrics_calculator_class_methods_return_nonzero_values_for_known_overlapping_masks(self):
 
         gtMyelin = np.logical_and(self.groundtruth >= 50, self.groundtruth <= 200)
@@ -107,7 +107,7 @@ class TestCore(object):
 
         assert axonMetrics.pw_hausdorff_distance() != 0
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_Metrics_calculator_class_methods_return_expected_values_for_identical_masks(self):
 
         gtMyelin = np.logical_and(self.groundtruth >= 50, self.groundtruth <= 200)

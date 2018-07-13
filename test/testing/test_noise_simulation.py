@@ -23,7 +23,7 @@ class TestCore(object):
         pass
 
     #--------------add_additive_gaussian_noise tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_add_additive_gaussian_noise_returns_different_image_with_diff_std_near_sigma(self):
 
         sigma = 10
@@ -33,7 +33,8 @@ class TestCore(object):
         assert not np.array_equal(noisyImage, self.image)
         assert abs(np.std(noisyImage-self.image) - sigma) < 1
 
-    @pytest.mark.unittest
+    #--------------add_multiplicative_gaussian_noise tests--------------#
+    @pytest.mark.unit
     def test_add_multiplicative_gaussian_noise_returns_different_image(self):
 
         sigma = 10
@@ -42,7 +43,8 @@ class TestCore(object):
 
         assert not np.array_equal(noisyImage, self.image)
 
-    @pytest.mark.unittest
+    #--------------change_brightness tests--------------#
+    @pytest.mark.unit
     def test_change_brightness(self):
         maxPixelValue = 255
         value_percentage=0.2

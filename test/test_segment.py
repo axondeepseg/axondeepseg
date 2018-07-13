@@ -28,21 +28,21 @@ class TestCore(object):
                 os.remove(os.path.join(imageFolderPath, fileName))
 
     #--------------generate_config_dict tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_generate_config_dict_outputs_dict(self):
 
         config = generate_config_dict(os.path.join(self.modelPath,'config_network.json'))
 
         assert type(config) is dict
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_generate_config_dict_throws_exception_for_nonexisting_file(self):
 
         with pytest.raises(ValueError):
             config = generate_config_dict(os.path.join(self.modelPath,'n0n_3xist1ng_f1l3.json'))
 
     #--------------generate_resolution tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_generate_resolution_returns_expected_known_project_cases(self):
 
         assert generate_resolution('SEM', 512) == 0.1
@@ -51,7 +51,7 @@ class TestCore(object):
 
 
     #--------------segment_folders tests--------------#
-    @pytest.mark.integritytest
+    @pytest.mark.integration
     def test_segment_folders_creates_expected_files(self):
 
         path_model, config = generate_default_parameters('SEM', self.modelPath)
@@ -71,7 +71,7 @@ class TestCore(object):
             assert os.path.exists(os.path.join(self.imageFolderPath, fileName))
 
     #--------------segment_image tests--------------#
-    @pytest.mark.integritytest
+    @pytest.mark.integration
     def test_segment_image_creates_runs_succesfully_(self):
     # Since segment_folders should have already run, the output files should already exist, which this test tests for
 

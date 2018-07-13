@@ -32,15 +32,15 @@ class TestCore(object):
         if os.path.exists(self.tmpDir):
             shutil.rmtree(self.tmpDir)
 
-    #--------------get_pixelsize.py tests--------------#
-    @pytest.mark.unittest
+    #--------------get_pixelsize tests--------------#
+    @pytest.mark.unit
     def test_get_pixelsize_returns_expected_value(self):
         expectedValue = self.pixelsizeValue
         actualValue = get_pixelsize(self.pixelsizeFileName)
 
         assert actualValue == expectedValue
     
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_get_pixelsize_throws_error_for_nonexisisting_file(self):
         nonExistingFile = ''.join(
             random.choice(string.lowercase) for i in range(16))
@@ -48,7 +48,7 @@ class TestCore(object):
         with pytest.raises(IOError):
             get_pixelsize(nonExistingFile)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_get_pixelsize_throws_error_for_invalid_data_file(self):
         with tempfile.NamedTemporaryFile() as tmp:
             # Data written using tempfile module are saved in a binary format by
@@ -59,7 +59,7 @@ class TestCore(object):
                 get_pixelsize(tmp.name)
 
     #--------------get_axon_morphometrics tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_type(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
@@ -68,7 +68,7 @@ class TestCore(object):
 
         assert isinstance(stats_array, np.ndarray)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_keys(self):
         expectedKeys = {'y0',
                         'x0',
@@ -87,8 +87,7 @@ class TestCore(object):
             assert key in expectedKeys
 
     #--------------save and load _axon_morphometrics tests--------------#
-
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_save_axon_morphometrics_creates_file_in_expected_location(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
@@ -102,7 +101,7 @@ class TestCore(object):
 
         assert os.path.isfile(expectedFilePath)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_save_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
@@ -114,7 +113,7 @@ class TestCore(object):
         with pytest.raises(IOError):
             save_axon_morphometrics(nonExistingFolder,stats_array)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_load_axon_morphometrics_returns_identical_var_as_was_saved(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
@@ -129,7 +128,7 @@ class TestCore(object):
 
         assert np.array_equal(loaded_stats_array,original_stats_array)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_load_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
 
         nonExistingFolder = ''.join(random.choice(string.lowercase) for i in range(16))
@@ -138,7 +137,7 @@ class TestCore(object):
             load_axon_morphometrics(nonExistingFolder)
 
     #--------------display_axon_diameter tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_display_axon_diameter_creates_file_in_expected_location(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         img = imread(os.path.join(path_folder,'image.png'))
@@ -152,7 +151,7 @@ class TestCore(object):
         os.remove(os.path.join(path_folder,'AxonDeepSeg_map-axondiameter.png'))
 
     #--------------get_aggregate_morphometrics tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_expected_type(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
@@ -162,7 +161,7 @@ class TestCore(object):
 
         assert isinstance(aggregate_metrics, dict)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_returns_expected_keys(self):
         expectedKeys = {'avf',
                         'mvf',
@@ -182,8 +181,8 @@ class TestCore(object):
         for key in aggregate_metrics.keys():
             assert key in expectedKeys
 
-    #--------------get_aggregate_morphometrics tests--------------#
-    @pytest.mark.unittest
+    #--------------write_aggregate_morphometrics tests--------------#
+    @pytest.mark.unit
     def test_write_aggregate_morphometrics_creates_file_in_expected_location(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)
@@ -196,7 +195,7 @@ class TestCore(object):
 
         assert os.path.isfile(expectedFilePath)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_write_aggregate_morphometrics_throws_error_if_folder_doesnt_exist(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         pred_axon = imread(os.path.join(path_folder,'AxonDeepSeg_seg-axon.png'),flatten=True)

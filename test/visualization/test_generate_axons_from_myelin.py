@@ -23,7 +23,7 @@ class TestCore(object):
             os.remove(os.path.join(self.folderPath,'axon_myelin_mask_corrected.png'))
 
     #--------------generate_axons_from_myelin tests--------------#
-    @pytest.mark.current
+    @pytest.mark.unit
     def test_generate_axons_from_myelin_creates_expected_file(self):
 
         if os.path.isfile(os.path.join(self.folderPath,'axon_myelin_mask_corrected.png')):

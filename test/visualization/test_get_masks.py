@@ -27,8 +27,8 @@ class TestCore(object):
         if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png')):
            os.remove(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png'))
 
-    #--------------get_mask tests--------------#
-    @pytest.mark.unittest
+    #--------------get_masks tests--------------#
+    @pytest.mark.unit
     def test_get_masks_writes_expected_files(self):
         pred_img=os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png')
 
@@ -42,7 +42,7 @@ class TestCore(object):
 
 
     #--------------rgb_rendering_of_mask tests--------------#
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_rgb_rendering_of_mask_returns_array_with_extra_dim_of_len_3(self):
         pred_img=imageio.imread(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png'))
 
@@ -55,7 +55,7 @@ class TestCore(object):
 
         assert rgbShape == expectedRgbShape
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_rgb_rendering_of_mask_writes_expected_files(self):
         pred_img=imageio.imread(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png'))
 

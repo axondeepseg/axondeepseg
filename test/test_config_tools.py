@@ -71,11 +71,12 @@ class TestCore(object):
             shutil.rmtree(tmpPath)
         pass
 
-    #--------------config_tools.py tests--------------#
-    @pytest.mark.unittest
+    #--------------validate_config tests--------------#
+    @pytest.mark.unit
     def test_validate_config_for_demo_config(self):
         assert validate_config(self.config)
 
+    @pytest.mark.unit
     def test_validate_config_for_invalid_config(self):
         
         invalidConfig = {
@@ -84,17 +85,18 @@ class TestCore(object):
 
         assert not validate_config(invalidConfig)
 
-    @pytest.mark.unittest
+    #--------------generate_config tests--------------#
+    @pytest.mark.unit
     def test_generate_config_creates_valid_config(self):
         generatedConfig = generate_config()
 
         assert validate_config(generatedConfig)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_generate_config_with_config_path(self):
         # Create temp config file
         fullPath = os.path.dirname(os.path.abspath(__file__))
-        configPath = os.path.join(fullPath, '__temp_files__/config_network.json')
+        configPath = os.path.join(self.tmpPath, 'config_network.json')
 
         if os.path.exists(configPath):
             os.remove(configPath)
@@ -112,7 +114,7 @@ class TestCore(object):
         if os.path.exists(configPath):
             os.remove(configPath)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_generate_config_with_config_path_and_invalid_onfig(self):
         invalidConfig = {
             "1nval1d_k3y": 0
@@ -134,7 +136,7 @@ class TestCore(object):
         if os.path.exists(configPath):
             os.remove(configPath)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_grid_config_feature_augmentation_x(self):
         # Sample L_struct and dict_params values below taken from guide_bireli.ipynb
         # 'features_augmentation':'x2'
@@ -146,7 +148,7 @@ class TestCore(object):
         for key in config_list.keys():
             assert validate_config(config_list[key])
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_grid_config_feature_augmentation_p(self):
         # Sample L_struct and dict_params values below taken from guide_bireli.ipynb
         # 'features_augmentation':'p2'
@@ -158,7 +160,7 @@ class TestCore(object):
         for key in config_list.keys():
             assert validate_config(config_list[key])
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_grid_config_feature_augmentation_invalid(self):
         # Sample L_struct and dict_params values below taken from guide_bireli.ipynb
         # 'features_augmentation':'d2'-> d is not a valid augmentation flag.
@@ -168,7 +170,8 @@ class TestCore(object):
         with pytest.raises(ValueError):
             config_list = grid_config(L_struct, dict_params, base_config = self.config)
 
-    @pytest.mark.unittest
+    #--------------generate_name_config tests--------------#
+    @pytest.mark.unit
     def test_generate_name_config_convolution_downsampling_first_letters(self):
         tmpConfig = self.config
         tmpConfig['downsampling'] = 'convolution'

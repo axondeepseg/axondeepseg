@@ -17,8 +17,8 @@ class TestCore(object):
     def teardown(self):
         pass
 
-    #--------------patch_extraction.py tests--------------#
-    @pytest.mark.unittest
+    #--------------extract_patch tests--------------#
+    @pytest.mark.unit
     def test_extract_patch_script_returns_expected_patches(self):
         to_extract = [self.testImage, self.mask]
         patch_size = 4
@@ -35,7 +35,7 @@ class TestCore(object):
         # which is not specified/controllable, so other cases are difficult to test.
         # When a controllable overlap is implemented, add more tests accordingly.
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_extract_patch_script_throws_error_for_patch_size_smaller_than_3(self):
         to_extract = [self.testImage, self.mask]
         patch_size = 2
@@ -43,7 +43,7 @@ class TestCore(object):
         with pytest.raises(ValueError):
             extract_patch(to_extract, patch_size)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_extract_patch_script_throws_error_for_patch_size_equal_to_image_dim(self):
         to_extract = [self.testImage, self.mask]
         patch_size = min(self.testImage.shape)
@@ -51,7 +51,7 @@ class TestCore(object):
         with pytest.raises(ValueError):
             extract_patch(to_extract, patch_size)
 
-    @pytest.mark.unittest
+    @pytest.mark.unit
     def test_extract_patch_script_throws_error_for_incorrect_first_argument_format(self):
         to_extract = self.testImage
         patch_size = 4

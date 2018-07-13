@@ -33,7 +33,7 @@ class TestCore(object):
             os.remove(os.path.join(modelPath,statsFilename))
 
     #--------------metrics_single_wrapper tests--------------#
-    @pytest.mark.integritytest
+    @pytest.mark.integration
     def test_metrics_single_wrapper_runs_succesfully_and_stats_file_exists(self):
         # reset the tensorflow graph for new training
         tf.reset_default_graph()
@@ -45,7 +45,7 @@ class TestCore(object):
         assert os.path.exists(os.path.join(self.modelPath,self.statsFilename))
     
     #--------------metrics_classic_wrapper tests--------------#
-    @pytest.mark.integritytest
+    @pytest.mark.integration
     def test_metrics_classic_wrapper_runs_succesfully_and_stats_file_exists(self):
         # reset the tensorflow graph for new training
         tf.reset_default_graph()
@@ -60,7 +60,7 @@ class TestCore(object):
     # Though conceptually these could be classified as unit tests, they
     # depend on the outputs of the previous integrity tests, so we count these
     # as part of the same integrity test workflow
-    @pytest.mark.integritytest
+    @pytest.mark.integration
     def test_metrics_class_loads_stats_table(self):
         met = metrics(statistics_filename = 'model_statistics_validation.json')
         
@@ -72,7 +72,7 @@ class TestCore(object):
         
         assert not met.filtered_stats.empty
 
-    @pytest.mark.integritytest
+    @pytest.mark.integration
     def test_metrics_class_throws_exception_for_missing_stats_file(self):
         met = metrics(statistics_filename = 'n0n-3x1st1ng.json')
 
