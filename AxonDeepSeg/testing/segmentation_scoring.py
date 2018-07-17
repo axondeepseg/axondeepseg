@@ -3,6 +3,7 @@ from skimage.measure import regionprops
 import numpy as np
 import pandas as pd
 from skimage.morphology import binary_erosion, disk, label
+import AxonDeepSeg.ads_utils
 
 def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2):
     """

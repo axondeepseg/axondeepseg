@@ -10,6 +10,7 @@ import json
 from skimage.morphology import binary_erosion, disk, label
 
 from AxonDeepSeg.testing.segmentation_scoring import *
+import AxonDeepSeg.ads_utils
 
 def launch_performance_metrics(path_prediction, path_groundtruth):
     """

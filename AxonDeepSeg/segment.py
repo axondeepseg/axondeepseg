@@ -15,6 +15,7 @@ import pkg_resources
 import argparse
 import tempfile
 from argparse import RawTextHelpFormatter
+import AxonDeepSeg.ads_utils
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model_v1"

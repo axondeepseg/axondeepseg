@@ -12,6 +12,7 @@ from skimage.filters import gaussian
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.testing.segmentation_scoring import *
 from scipy.misc import imread, imsave
+import AxonDeepSeg.ads_utils
 
 
 def add_additive_gaussian_noise(img,mu=0,sigma=10):

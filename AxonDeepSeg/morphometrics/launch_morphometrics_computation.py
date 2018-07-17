@@ -7,6 +7,7 @@ import imageio
 import matplotlib.pyplot as plt
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
+import AxonDeepSeg.ads_utils
 
 
 def launch_morphometrics_computation(path_img,path_prediction):
