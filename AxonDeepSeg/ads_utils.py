@@ -41,7 +41,12 @@ def init_error_client():
 
         try:
 
-            client = raven.Client(sentryDSN)
+            client = raven.Client(
+                        sentryDSN,
+                        processors=(
+                            'raven.processors.RemoveStackLocalsProcessor',
+                            'raven.processors.SanitizePasswordsProcessor')
+                            )
 
             traceback_to_server(client)
 
