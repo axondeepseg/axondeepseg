@@ -65,14 +65,14 @@ def init_error_client():
                 except:
                     pass
                 old_exitfunc()
-                if sent_something:
-                    print ("Note: you can opt out of Sentry reporting by "
-                           "deleting the file (axondeepseg)/bin/ads_sentry")
+
+                print ("Note: you can opt out of Sentry reporting by "
+                        "deleting the file (axondeepseg)/bin/ads_sentry")
 
             sys.exitfunc = exitfunc
 
         except:
-            print "Unexpected error – bug tracking may not be functionning."
+            print "Unexpected error: bug tracking may not be functionning."
 
 
 def traceback_to_server(client):
