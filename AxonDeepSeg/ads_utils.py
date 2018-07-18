@@ -70,9 +70,9 @@ def init_error_client():
                            "deleting the file (axondeepseg)/bin/ads_sentry")
 
             sys.exitfunc = exitfunc
-        except raven.exceptions.InvalidDsn:
-            # This could happen if sct staff change the dsn
-            print 'Sentry DSN not valid anymore, not reporting errors'
+
+        except:
+            print "Unexpected error – bug tracking may not be functionning."
 
 
 def traceback_to_server(client):
