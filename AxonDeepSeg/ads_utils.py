@@ -1,7 +1,7 @@
 import os
 import sys
 import raven
-import configparser
+import ConfigParser
 from distutils.util import strtobool
 
 DEFAULT_CONFIGFILE = ".adsconfig"
@@ -27,10 +27,9 @@ def config_setup():
                "value of bugTracking from 1 to 0 in the "
                "file {}".format(configPath))
 
-    config = configparser.ConfigParser()
-    config['Global'] = {
-        'bugTracking': bugTracking
-    }
+    config = ConfigParser.ConfigParser()
+    config.add_section('Global')
+    config.set('Global', 'bugTracking', bugTracking)
 
     with open(configPath, 'w') as configFile:
         config.write(configFile)
@@ -50,9 +49,9 @@ def read_config():
     if not os.path.exists(configPath):
         raise IOError("Could not find configuration file.")
 
-    config = configparser.ConfigParser()
+    config = ConfigParser.ConfigParser()
     config.read(configPath)
-    return config['Global']
+    return config
 
 
 def init_ads():
@@ -71,7 +70,7 @@ def init_ads():
         pass
 
     config = read_config()
-    init_error_client(config['bugTracking'])
+    init_error_client(config.get('Global','bugTracking'))
 
 
 def init_error_client(bugTracking):
