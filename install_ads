@@ -8,7 +8,7 @@
 # set ASK_REPORT_QUESTION at installation time like this:
 # >>> ASK_REPORT_QUESTION=false ./install_ads
 
-STATS_DSN="https://3e3dc1ea3ef244f08b5f05d48f8c64da@sentry.io/1238620"
+STATS_DSN="https://e04a130541c64bc9a64939672f19ad52@sentry.io/1238683"
 ADS_SOURCE=$PWD
 
 REPORT_STATS=no
@@ -41,7 +41,7 @@ if [ ${REPORT_STATS} ]; then
     rm "$ADS_SOURCE/bin/ads_sentry"
   fi
 
-  echo "$STATS_DSN" > "$ADS_SOURCE/bin/ads_sentry"
+  echo -n "$STATS_DSN" > "$ADS_SOURCE/bin/ads_sentry"
 fi
 
 pip install -e .
