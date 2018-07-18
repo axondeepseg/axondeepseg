@@ -7,42 +7,22 @@ def init_ads():
     """ Initialize ads for typical terminal usage
     :return:
     """
-    init_error_client()
+    bugTracking = True
+
+    init_error_client(bugTracking)
 
 
-def get_dsn_filepath():
-    ''' Get full path directory to Sentry DSN file.
-    :return: dsnFilePath.
-    '''
-
-    # Generate n-th generation path directory name
-    uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
-
-    dsnFilePath = os.path.join(
-        uppath(os.path.realpath(__file__), 2),  # Go to parent of module dir
-        'bin',
-        'ads_sentry'
-        )
-
-    return dsnFilePath
-
-
-def init_error_client():
+def init_error_client(bugTracking):
     """ Send traceback to neuropoly servers
     :return:
     """
 
-    dsnFilePath = get_dsn_filepath()
-
-    if os.path.isfile(dsnFilePath):
-
-        with open(dsnFilePath) as f:
-            sentryDSN = f.readline()
+    if bugTracking:
 
         try:
 
             client = raven.Client(
-                        sentryDSN,
+                        "https://e04a130541c64bc9a64939672f19ad52@sentry.io/1238683",
                         processors=(
                             'raven.processors.RemoveStackLocalsProcessor',
                             'raven.processors.SanitizePasswordsProcessor')
@@ -67,7 +47,8 @@ def init_error_client():
                 old_exitfunc()
 
                 print ("Note: you can opt out of Sentry reporting by "
-                        "deleting the file (axondeepseg)/bin/ads_sentry")
+                       "setting \"bugTracking = False\" in the function "
+                       "init_ads() of ads_utils.py")
 
             sys.exitfunc = exitfunc
 

@@ -2,8 +2,6 @@
 .DS_Store
 AxonDeepSeg\.egg-info/
 
-\bin
-
 build/
 
 dist/
