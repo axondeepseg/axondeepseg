@@ -1,15 +1,77 @@
 import os
 import sys
 import raven
+import configparser
+from distutils.util import strtobool
+
+DEFAULT_CONFIGFILE = ".adsconfig"
+
+
+def config_setup():
+
+    configPath = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        DEFAULT_CONFIGFILE
+        )
+
+    print ("To improve user experience and fix bugs, the ADS development team "
+           "is using a report system to automatically receive crash reports "
+           "and errors from users. These reports are anonymous.")
+
+    bugTracking = strtobool(
+        raw_input("Do you agree to help us improve ADS? [y]es/[n]o:")
+        )
+
+    if bugTracking:
+        print ("Note: you can opt out of Sentry reporting by changing the "
+               "value of bugTracking from 1 to 0 in the "
+               "file {}".format(configPath))
+
+    config = configparser.ConfigParser()
+    config['Global'] = {
+        'bugTracking': bugTracking
+    }
+
+    with open(configPath, 'w') as configFile:
+        config.write(configFile)
+
+    print("Configuration saved successfully !")
+
+
+def read_config():
+    """Read the system configuration file.
+    :return: a dict with the configuration parameters.
+    """
+    configPath = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        DEFAULT_CONFIGFILE
+        )
+
+    if not os.path.exists(configPath):
+        raise IOError("Could not find configuration file.")
+
+    config = configparser.ConfigParser()
+    config.read(configPath)
+    return config['Global']
 
 
 def init_ads():
     """ Initialize ads for typical terminal usage
     :return:
     """
-    bugTracking = True
 
-    init_error_client(bugTracking)
+    configPath = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        DEFAULT_CONFIGFILE
+        )
+
+    if not os.path.isfile(configPath):
+        config_setup()
+    else:
+        pass
+
+    config = read_config()
+    init_error_client(config['bugTracking'])
 
 
 def init_error_client(bugTracking):

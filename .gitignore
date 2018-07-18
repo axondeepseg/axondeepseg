@@ -2,6 +2,8 @@
 .DS_Store
 AxonDeepSeg\.egg-info/
 
+AxonDeepSeg/.adsconfig
+
 build/
 
 dist/
