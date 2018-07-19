@@ -1,11 +1,62 @@
 import os
 import sys
-import raven
 import ConfigParser
 from distutils.util import strtobool
+import raven
 
 DEFAULT_CONFIGFILE = ".adsconfig"
 
+# raven function override - do not modify unless needed if raven version is
+# changed to a version other than 6.8.0.
+# See https://github.com/getsentry/raven-python/blob/master/raven/transport/threaded.py
+# -- Start function override -- #
+def _main_thread_terminated(self):
+    self._lock.acquire()
+    try:
+        if not self.is_alive():
+            # thread not started or already stopped - nothing to do
+            return
+
+        # wake the processing thread up
+        self._queue.put_nowait(self._terminator)
+
+        timeout = self.options['shutdown_timeout']
+
+        # wait briefly, initially
+        initial_timeout = 0.1
+        if timeout < initial_timeout:
+            initial_timeout = timeout
+
+        if not self._timed_queue_join(initial_timeout):
+            # if that didn't work, wait a bit longer
+            # NB that size is an approximation, because other threads may
+            # add or remove items
+            size = self._queue.qsize()
+
+            print("Sentry is attempting to send %i pending error messages"
+                  % size)
+            print("Waiting up to %s seconds" % timeout)
+
+            if os.name == 'nt':
+                print("Press Ctrl-Break to quit")
+            else:
+                print("Press Ctrl-C to quit")
+
+            # -- Function override statement --#
+            print ("Note: you can opt out of Sentry reporting by changing the "
+                   "value of bugTracking to 0 in the "
+                   "file AxonDeepSeg/.adsconfig")
+
+            self._timed_queue_join(timeout - initial_timeout)
+
+        self._thread = None
+
+    finally:
+        self._lock.release()
+
+
+raven.transport.threaded.AsyncWorker.main_thread_terminated = _main_thread_terminated
+# -- End function override -- #
 
 def config_setup():
 
@@ -25,7 +76,7 @@ def config_setup():
     if bugTracking:
         print ("Note: you can opt out of Sentry reporting by changing the "
                "value of bugTracking from 1 to 0 in the "
-               "file {}".format(configPath))
+               "file AxonDeepSeg/.adsconfig")
 
     config = ConfigParser.ConfigParser()
     config.add_section('Global')
@@ -70,6 +121,7 @@ def init_ads():
         pass
 
     config = read_config()
+
     init_error_client(config.get('Global','bugTracking'))
 
 
@@ -78,7 +130,7 @@ def init_error_client(bugTracking):
     :return:
     """
 
-    if bugTracking:
+    if strtobool(bugTracking):
 
         try:
 
@@ -90,28 +142,6 @@ def init_error_client(bugTracking):
                             )
 
             traceback_to_server(client)
-
-            old_exitfunc = sys.exitfunc
-
-            def exitfunc():
-                sent_something = False
-                try:
-                    # implementation-specific
-                    import atexit
-                    for handler, args, kw in atexit._exithandlers:
-
-                        if handler.__module__.startswith("raven."):
-                            sent_something = True
-
-                except:
-                    pass
-                old_exitfunc()
-
-                print ("Note: you can opt out of Sentry reporting by "
-                       "setting \"bugTracking = False\" in the function "
-                       "init_ads() of ads_utils.py")
-
-            sys.exitfunc = exitfunc
 
         except:
             print "Unexpected error: bug tracking may not be functionning."
