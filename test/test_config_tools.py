@@ -118,7 +118,7 @@ class TestCore(object):
             os.remove(configPath)
 
     @pytest.mark.unit
-    def test_generate_config_with_config_path_and_invalid_onfig(self):
+    def test_generate_config_with_config_path_and_invalid_config(self):
         invalidConfig = {
             "1nval1d_k3y": 0
         }
@@ -139,6 +139,7 @@ class TestCore(object):
         if os.path.exists(configPath):
             os.remove(configPath)
 
+    # --------------grid_config tests-------------- #
     @pytest.mark.unit
     def test_grid_config_feature_augmentation_x(self):
         # Sample L_struct and dict_params values below taken from

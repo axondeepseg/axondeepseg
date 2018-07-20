@@ -118,9 +118,9 @@ class TestCore(object):
 
     # --------------train_model tests-------------- #
     @pytest.mark.integration
-    def test_train_model_runs_succesfully_for_simplified_case(self):
+    def test_train_model_runs_successfully_for_simplified_case(self):
         # Note: This test is simply a mock test to ensure that the pipeline
-        # runs succesfully, and is not a test of the quality of the model
+        # runs successfully, and is not a test of the quality of the model
         # itself.
 
         train_model(

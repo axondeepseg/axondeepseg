@@ -13,5 +13,5 @@ class TestCore(object):
 
     # --------------integrity_test.py tests-------------- #
     @pytest.mark.integration
-    def test_integrity_test_script_runs_succesfully(self):
+    def test_integrity_test_script_runs_successfully(self):
         assert integrity_test() == 0

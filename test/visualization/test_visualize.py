@@ -27,6 +27,6 @@ class TestCore(object):
 
     # --------------visualize_training tests-------------- #
     @pytest.mark.unit
-    def test_visualize_training_runs_succesfully(self):
+    def test_visualize_training_runs_successfully(self):
 
         assert visualize_training(self.pathModel)

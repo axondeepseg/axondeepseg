@@ -53,7 +53,7 @@ class TestCore(object):
 
     # --------------metrics_single_wrapper tests-------------- #
     @pytest.mark.integration
-    def test_metrics_single_wrapper_runs_succesfully_and_outfile_exists(self):
+    def test_metrics_single_wrapper_runs_successfully_and_outfile_exists(self):
         # reset the tensorflow graph for new training
         tf.reset_default_graph()
 
@@ -74,7 +74,7 @@ class TestCore(object):
 
     # --------------metrics_classic_wrapper tests-------------- #
     @pytest.mark.integration
-    def test_metrics_classic_wrapper_runs_succesfully_and_outfile_exists(self):
+    def test_metrics_classic_wrapper_runs_successfully_and_outfile_exists(self):
         # reset the tensorflow graph for new training
         tf.reset_default_graph()
 

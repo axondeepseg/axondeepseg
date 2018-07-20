@@ -63,7 +63,7 @@ class TestCore(object):
         assert diffusion == 0.0
 
     @pytest.mark.unit
-    def test_score_analysis_runs_succesfully_with_visualization_on(self):
+    def test_score_analysis_runs_successfully_with_visualization_on(self):
 
         assert score_analysis(
             self.img,

@@ -110,7 +110,7 @@ class TestCore(object):
 
     # --------------segment_image tests-------------- #
     @pytest.mark.integration
-    def test_segment_image_creates_runs_succesfully_(self):
+    def test_segment_image_creates_runs_successfully_(self):
         # Since segment_folders should have already run, the output files
         # should already exist, which this test tests for.
 
