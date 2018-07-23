@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score, log_loss
 from AxonDeepSeg.testing.segmentation_scoring import pw_dice
 import time
 from AxonDeepSeg.config_tools import rec_update
+import AxonDeepSeg.ads_utils
 
 
 def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_resolution, overlap_value=25,

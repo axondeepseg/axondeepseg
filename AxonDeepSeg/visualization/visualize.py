@@ -7,6 +7,7 @@ from sklearn import preprocessing
 import os
 from tabulate import tabulate
 import numpy as np
+import AxonDeepSeg.ads_utils
 
 
 def visualize_training(path_model, path_model_init=None, start_visu=0):

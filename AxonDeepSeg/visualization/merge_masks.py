@@ -3,6 +3,7 @@ from skimage import io
 from scipy.misc import imread, imsave
 import os
 import imageio
+import AxonDeepSeg.ads_utils
 
 def merge_masks(path_axon,path_myelin):
 

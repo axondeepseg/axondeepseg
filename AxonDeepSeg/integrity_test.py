@@ -3,6 +3,7 @@
 
 # Basic integrity test to check is AxonDeepSeg is correctly installed.
 # Launches a segmentation in the data_test folder.
+import AxonDeepSeg.ads_utils
 
 def integrity_test():
 

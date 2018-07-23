@@ -4,6 +4,7 @@ from skimage import io
 from scipy.misc import imread, imsave
 import os
 import imageio
+import AxonDeepSeg.ads_utils
 
 
 def get_masks(path_prediction):
