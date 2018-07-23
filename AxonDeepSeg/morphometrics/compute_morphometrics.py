@@ -15,6 +15,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.testing.segmentation_scoring import *
 from skimage import measure
 from skimage.measure import regionprops
+import AxonDeepSeg.ads_utils
 
 
 def get_pixelsize(path_pixelsize_file):

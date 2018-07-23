@@ -10,6 +10,7 @@ from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.train_network_tools import *
 from datetime import datetime
 import time
+import AxonDeepSeg.ads_utils
 
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,

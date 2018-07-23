@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 from AxonDeepSeg.network_construction import *
@@ -9,7 +8,7 @@ import os
 import imageio
 from patch_management_tools import im2patches_overlap, patches2im_overlap
 from visualization.get_masks import get_masks
-
+import AxonDeepSeg.ads_utils
 
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict,
 				  acquisitions_names = None,

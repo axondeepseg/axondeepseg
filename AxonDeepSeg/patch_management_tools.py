@@ -1,6 +1,7 @@
 # Gathers functions used for patch management, including preprocessing.
 import numpy as np
 from skimage import exposure
+import AxonDeepSeg.ads_utils
 
 def apply_legacy_preprocess(patch):
     """

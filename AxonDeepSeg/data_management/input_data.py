@@ -8,6 +8,7 @@ from data_augmentation import *
 from AxonDeepSeg.patch_management_tools import apply_legacy_preprocess, apply_preprocess
 import functools
 import copy
+import AxonDeepSeg.ads_utils
 
 
 def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5], verbose=0):

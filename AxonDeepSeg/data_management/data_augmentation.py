@@ -6,6 +6,7 @@ from skimage.filters import gaussian
 import numpy as np
 import random
 from patch_extraction import extract_patch
+import AxonDeepSeg.ads_utils
 
 #######################################################################################################################
 #                                                Data Augmentation                                                    #

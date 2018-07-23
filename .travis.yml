@@ -16,6 +16,6 @@ before_script:
 # command to run tests
 script:
   - echo "Launch general integrity test"
-  - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
+  - yes | py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
 after_success:
   - coveralls

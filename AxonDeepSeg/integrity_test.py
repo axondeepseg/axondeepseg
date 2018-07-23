@@ -3,12 +3,14 @@
 
 # Basic integrity test to check is AxonDeepSeg is correctly installed.
 # Launches a segmentation in the data_test folder.
+
 import json
 import os
 from AxonDeepSeg.testing.segmentation_scoring import *
 from time import time
 from AxonDeepSeg.apply_model import axon_segmentation
 from scipy.misc import imread, imsave
+import AxonDeepSeg.ads_utils
 
 def integrity_test():
 

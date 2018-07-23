@@ -8,6 +8,7 @@ from skimage import io
 from scipy.misc import imread, imsave
 import os
 import imageio
+import AxonDeepSeg.ads_utils
 
 
 def generate_axons_from_myelin(path_prediction,path_myelin_corrected):

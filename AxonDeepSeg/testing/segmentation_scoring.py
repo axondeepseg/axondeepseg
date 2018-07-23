@@ -9,6 +9,7 @@ if 'pytest' in sys.modules:
     import matplotlib as mpl
     mpl.use('Agg') # Enforces mpl to not open new plot windows
 import matplotlib.pyplot as plt
+import AxonDeepSeg.ads_utils
 
 def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2):
     """
