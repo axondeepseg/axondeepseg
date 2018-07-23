@@ -15,8 +15,9 @@ before_script:
   - sleep 3 # give xvfb some time to start
 # command to run tests
 script:
-  - echo "Launch general integrity test"
-  - yes | axondeepseg_test
+  - echo "Downloading Sentry DNS file"
+  - curl https://www.neuro.polymtl.ca/_media/downloads/stats_dsn_axondeepseg.txt -o AxonDeepSeg/.adsconfig
+  - echo "Launch testing suite"
   - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
 after_success:
   - coveralls
