@@ -73,10 +73,3 @@ def change_brightness(img,value_percentage=0.2):
 	img_noise[img_noise > 255] = 255
 
 	return img_noise.astype(np.uint8)
-
-
-
-
-
-
-

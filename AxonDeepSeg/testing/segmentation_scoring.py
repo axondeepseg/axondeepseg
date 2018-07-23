@@ -3,6 +3,12 @@ from skimage.measure import regionprops
 import numpy as np
 import pandas as pd
 from skimage.morphology import binary_erosion, disk, label
+from scipy.spatial.distance import directed_hausdorff
+import sys
+if 'pytest' in sys.modules:
+    import matplotlib as mpl
+    mpl.use('Agg') # Enforces mpl to not open new plot windows
+import matplotlib.pyplot as plt
 import AxonDeepSeg.ads_utils
 
 def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2):
@@ -76,6 +82,8 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
         plt.hold(True)
         plt.scatter(centroids_F[:, 1], centroids_F[:, 0], color='r')
         plt.hold(True)
+
+        notDetected = np.array(notDetected) # Bug fix, was a list of an np array, which can't be sliced using integer index
         plt.scatter(notDetected[:, 1], notDetected[:, 0], color='y')
         plt.title('Prediction, Sensitivity : %s , Precision : %s ' % (sensitivity, precision))
 
@@ -96,8 +104,8 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
 def dice(img, groundtruth, prediction, min_area=3):
     """
     :param img: image to segment
-    :param groundtruth : True segmentation
-    :param prediction : Segmentation predicted by the algorithm
+    :param groundtruth : (bool) True segmentation
+    :param prediction : (bool) Segmentation predicted by the algorithm
     :param min_area: minimum area of the predicted object to measure dice
     :return dice_scores: pandas dataframe associating the axon predicted, its size and its dice score
 
@@ -148,7 +156,6 @@ def pw_dice(img1, img2):
     intersection = np.logical_and(img1, img2)
     # Return the global dice coefficient
     return 2. * intersection.sum() / img_sum
-
 
 
 class Metrics_calculator: 

@@ -30,7 +30,7 @@ default_overlap = 25
 # Definition of the functions
 
 def segment_image(path_testing_image, path_model,
-					overlap_value, config, resolution_model, segmented_image_prefix,
+			      overlap_value, config, resolution_model,
 				  acquired_resolution = 0.0, verbosity_level=0):
 
 	'''
@@ -41,7 +41,6 @@ def segment_image(path_testing_image, path_model,
 	border effects but more time to perform the segmentation.
 	:param config: dict containing the configuration of the network
 	:param resolution_model: the resolution the model was trained on.
-	:param segmented_image_prefix: the prefix to add before the segmented image.
 	:param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
 	process.
 	:return: Nothing.
@@ -87,16 +86,15 @@ def segment_image(path_testing_image, path_model,
 		if verbosity_level >= 1:
 			print "Image {0} segmented.".format(path_testing_image)
 
+		# Remove temporary file used for the segmentation
+		fp.close()
 	else:
 		print "The path {0} does not exist.".format(path_testing_image)
-
-	# Remove temporary file used for the segmentation
-	fp.close()
 
 	return None
 
 def segment_folders(path_testing_images_folder, path_model,
-					overlap_value, config, resolution_model, segmented_image_suffix,
+					overlap_value, config, resolution_model,
 					acquired_resolution = 0.0,
 					verbosity_level=0):
 	'''
@@ -108,7 +106,6 @@ def segment_folders(path_testing_images_folder, path_model,
 	border effects but more time to perform the segmentation.
 	:param config: dict containing the configuration of the network
 	:param resolution_model: the resolution the model was trained on.
-	:param segmented_image_suffix: the prefix to add before the segmented image.
 	:param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
 	process.
 	:return: Nothing.
@@ -194,9 +191,8 @@ def generate_config_dict(path_to_config_file):
 		with open(path_to_config_file, 'r') as fd:
 			config_network = json.loads(fd.read())
 
-	except ValueError:
-		print "No configuration file available at this path."
-		config_network = None
+	except:
+		raise ValueError("No configuration file available at this path.")
 
 	return config_network
 
@@ -276,8 +272,6 @@ def main():
 	# Preparing the arguments to axon_segmentation function
 	path_model, config = generate_default_parameters(type_, new_path)
 	resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
-	segmented_image_suffix = "_seg-axonmyelin"
-
 
 	# Going through all paths passed into arguments
 	for current_path_target in path_target_list:
@@ -288,7 +282,7 @@ def main():
 
 			# Performing the segmentation over the image
 				segment_image(current_path_target, path_model, overlap_value, config,
-							resolution_model, segmented_image_suffix,
+							resolution_model,
 							acquired_resolution=psm,
 							verbosity_level=verbosity_level)
 
@@ -302,7 +296,7 @@ def main():
 
 			# Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
 			segment_folders(current_path_target, path_model, overlap_value, config,
-						resolution_model, segmented_image_suffix,
+						resolution_model, 
 							acquired_resolution=psm,
 							verbosity_level=verbosity_level)
 
@@ -311,9 +305,3 @@ def main():
 # Calling the script
 if __name__ == '__main__':
 	main()
-
-
-
-
-
-

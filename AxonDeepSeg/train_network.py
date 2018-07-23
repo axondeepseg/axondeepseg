@@ -64,7 +64,10 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     epoch_size = data_train.epoch_size
 
     # Model saving frequency variable.
-    save_last_epoch_freq = 5
+    if "save_epoch_freq" in config:
+        save_last_epoch_freq = config["save_epoch_freq"]
+    else:
+        save_last_epoch_freq = 5
     save_best_moving_avg_epoch_freq = 5
     save_best_moving_avg_window = 10
     
@@ -354,7 +357,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             t0 = 0
 
         while epoch < max_epoch:
-            
             ### --------------------------------------------------------------------------------------------------- ###
             #### a) Optimizing the network with the training set. Keep track of the metric on TensorBoard.
             ### --------------------------------------------------------------------------------------------------- ###

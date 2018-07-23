@@ -23,17 +23,26 @@ def get_pixelsize(path_pixelsize_file):
 	:param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
 	:return: the pixel size value.
 	'''
-
-	text_file = open(path_pixelsize_file, "r")
-	pixelsize = float(text_file.read())
-	text_file.close()
-	return pixelsize
-
+	try:
+		with open(path_pixelsize_file, "r") as text_file:
+			pixelsize = float(text_file.read())
+	except IOError as e:
+		print ("\nError: Could not open file \"{0}\" from "
+			  "directory \"{1}\".\n".format(path_pixelsize_file, os.getcwd()))
+		raise
+	except ValueError as e:
+		print ("\nError: Pixel size data in file \"{0}\" is not valid – must "
+			   "be a plain text file with a single a numerical value (float) "
+			   " on the fist line.".format(path_pixelsize_file))
+		raise
+	else:
+		return pixelsize
 
 
 def get_axon_morphometrics(pred_axon,path_folder):
 	'''
 	:param pred_axon: axon binary mask, output of axondeepseg
+	:param path_folder: absolute path of folder containing pixel size file
 	:return: list of dictionaries containing for each axon, various morphometrics
 	'''
 
@@ -72,7 +81,12 @@ def save_axon_morphometrics(path_folder,stats_array):
 	:param stats_array: list of dictionaries containing axon morphometrics
 	:return: nothing
 	'''
-	np.save(os.path.join(path_folder,'axonlist.npy'),stats_array)
+	try:
+		np.save(os.path.join(path_folder,'axonlist.npy'),stats_array)
+	except IOError as e:
+		print ("\nError: Could not save file \"{0}\" in "
+			  "directory \"{1}\".\n".format('axonlist.npy', path_folder))
+		raise
 
 
 def load_axon_morphometrics(path_folder):
@@ -80,15 +94,20 @@ def load_axon_morphometrics(path_folder):
 	:param path_folder: absolute path of folder containing the sample + the segmentation output
 	:return: stats_array: list of dictionaries containing axon morphometrics
 	'''
-	stats_array = np.load(os.path.join(path_folder,'axonlist.npy'))
-	return stats_array
+	try:
+		stats_array = np.load(os.path.join(path_folder,'axonlist.npy'))
+	except IOError as e:
+		print ("\nError: Could not load file \"{0}\" in "
+			  "directory \"{1}\".\n".format('axonlist.npy', path_folder))
+		raise
+	else:
+		return stats_array
 
 
 def display_axon_diameter(img,path_prediction,pred_axon,pred_myelin):
 	'''
 	:param img: sample grayscale image (png)
-	:param path_folder: absolute path of folder containing sample + segmentation
-	:param aggregate_metrics: dictionary containing values of aggregate metrics
+	:param path_prediction: full path to the segmented file (*_seg-axonmyelin.png) from axondeepseg segmentation output
 	:param pred_axon: axon mask from axondeepseg segmentation output
 	:param pred_myelin: myelin mask from axondeepseg segmentation output
 	:return: nothing
@@ -108,21 +127,6 @@ def display_axon_diameter(img,path_prediction,pred_axon,pred_myelin):
 		   for pix_y in np.arange(np.shape(labels)[1]):
 				if labels[pix_x,pix_y] != 0:
 					axon_diam_display[pix_x,pix_y] = axon_diam_array[labels[pix_x,pix_y]-1]
-		
-	# # Axon display
-	# plt.figure(figsize=(12,9))
-	# im = plt.imshow(axon_diam_display,cmap='hot')
-	# plt.colorbar(im, fraction=0.03, pad=0.02)
-	# plt.title('Axon display colorcoded with axon diameter in um',fontsize=12)           
-	# plt.savefig(os.path.join(path_folder,'display_axon_diameter.png'))   
-	
-	# # Axon overlay on original image
-	# plt.figure(figsize=(12,9))
-	# plt.imshow(img, cmap='gray', alpha=0.8)
-	# im = plt.imshow(axon_diam_display, cmap='hot', alpha=0.5)
-	# plt.colorbar(im, fraction=0.03, pad=0.02)
-	# plt.title('Axon overlay colorcoded with axon diameter in um',fontsize=12)
-	# plt.savefig(os.path.join(path_folder,'overlay_axon_diameter.png')) 
 	
 	# Axon overlay on original image + myelin display (same color for every myelin sheath)
 	plt.figure(figsize=(12,9))
@@ -137,6 +141,7 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
 	'''
 	:param pred_axon: axon mask from axondeepseg segmentation output
 	:param pred_myelin: myelin mask from axondeepseg segmentation output
+	:param path_folder: absolute path of folder containing pixel size file
 	:return: aggregate_metrics: dictionary containing values of aggregate metrics
 	'''
 	
@@ -178,9 +183,11 @@ def write_aggregate_morphometrics(path_folder,aggregate_metrics):
 	:param aggregate_metrics: dictionary containing values of aggregate metrics
 	:return: nothing
 	'''   
-	f = open(os.path.join(path_folder,'aggregate_morphometrics.txt'), 'w')
-	f.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
-	f.close()
 
-
-
+	try:
+		with open(os.path.join(path_folder,'aggregate_morphometrics.txt'), 'w') as text_file:
+			text_file.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
+	except IOError as e:
+		print ("\nError: Could not save file \"{0}\" in "
+			  "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder))
+		raise

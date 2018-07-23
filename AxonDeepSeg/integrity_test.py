@@ -3,18 +3,18 @@
 
 # Basic integrity test to check is AxonDeepSeg is correctly installed.
 # Launches a segmentation in the data_test folder.
+
+import json
+import os
+from AxonDeepSeg.testing.segmentation_scoring import *
+from time import time
+from AxonDeepSeg.apply_model import axon_segmentation
+from scipy.misc import imread, imsave
 import AxonDeepSeg.ads_utils
 
 def integrity_test():
 
     try:
-
-        import json
-        import os
-        from AxonDeepSeg.testing.segmentation_scoring import *
-        from time import time
-        from AxonDeepSeg.apply_model import axon_segmentation
-        from scipy.misc import imread, imsave
 
         # get path of directory where AxonDeepSeg was installed
         dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -37,7 +37,7 @@ def integrity_test():
 
         # Launch the axon and myelin segmentation on test image sample provided in the installation
         print('Computing the segmentation of axon and myelin on test image.')
-        prediction = axon_segmentation([path_testing], ["image.png"], path_model, config_network,verbosity_level=0)
+        prediction = axon_segmentation([path_testing], ["image.png"], path_model, config_network, prediction_proba_activate=True, verbosity_level=4)
 
         # Read the ground truth mask and the obtained segmentation mask
         mask = imread(path_testing + '/mask.png', flatten=True)
@@ -64,55 +64,3 @@ def integrity_test():
         # Else, there is a problem in the installation
         print("Integrity test failed... ")
         return -1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

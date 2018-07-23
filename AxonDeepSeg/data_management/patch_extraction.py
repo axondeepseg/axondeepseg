@@ -5,15 +5,22 @@ import AxonDeepSeg.ads_utils
 
 def extract_patch(patch, size):
     """
-    :param img: image represented by a numpy-array
-    :param mask: groundtruth of the segmentation
+    :param patch: List of 2 or 3 ndarrays, [image, mask, (weights)]. image and mask are numpy arrays, and mask is the groundtruth segmentation.
     :param size: size of the patches to extract
     :return: a list of pairs [patch, ground_truth] with a very low overlapping.
     """
-    img = patch[0]
-    mask = patch[1]
-    if len(patch) == 3:
-        weights = patch[2]
+    try:
+        img = patch[0]
+        mask = patch[1]
+        if len(patch) == 3:
+            weights = patch[2]
+    except:
+        raise ValueError('\nError: First argument of extract_patch must be a list of 2 or 3 ndarrays: [image, mask, (weights)]')
+
+    if size < 3:
+        raise ValueError('\nError: patch size must be 3 or greater.')
+    elif size >= min(img.shape):
+        raise ValueError('\nError: patch size must be smaller than dimensions of image.')
 
     h, w = img.shape
 

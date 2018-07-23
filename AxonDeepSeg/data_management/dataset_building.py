@@ -233,10 +233,3 @@ def find_minority_type(SEM_patches_folder, TEM_patches_folder):
         len_majority = SEM_len
 
     return minority_patches_folder, len_minority, majority_patches_folder, len_majority
-
-
-
-
-
-
-

@@ -1,0 +1,21 @@
+
+
+---Savings---
+ Model saved in : /Users/mathieuboudreau/neuropoly/github/axondeepseg/test/__test_training_files__/Model
+
+---PARAMETERS---
+learning_rate : 0.001; 
+ batch_size :  2;
+ depth :  2;
+ epoch_size: 2;
+ dropout :  0.75;
+ (if model restored) restored_model :None
+5763
+
+
+---Intermediary results---
+
+----
+ Last epoch: 9
+ Accuracy: 0.4630584716796875;
+ Loss: 1.0446338653564453;

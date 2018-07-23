@@ -1,6 +1,4 @@
 import numpy as np
-from skimage import io
-from scipy.misc import imread, imsave
 import os
 import imageio
 import AxonDeepSeg.ads_utils
@@ -19,4 +17,3 @@ def merge_masks(path_axon,path_myelin):
     imageio.imwrite(os.path.join(path_folder,'axon_myelin_mask.png'),both)
 
     return both
-

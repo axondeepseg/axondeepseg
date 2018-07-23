@@ -16,16 +16,16 @@ def launch_performance_metrics(path_prediction, path_groundtruth):
     """
     :param path_prediction : path of the prediction, output segmentation of AxonDeepSeg
     :param path_groundtruth : path of the ground truth labelling (gold standard)
-    :return: none
+    :return: axon_metrics, myelin_metrics  
     """
 
     # Read segmentation image and get axon/myelin masks
-    pred = imageio.imread(path_prediction)
+    pred = imread(path_prediction, flatten=True)
     pred_axon = pred > 200
     pred_myelin = np.logical_and(pred >= 50, pred <= 200)
     
     # Read groundtruth mask and get axon/myelin masks
-    gt = imageio.imread(path_groundtruth)
+    gt = imread(path_groundtruth, flatten=True)
     gt_axon = gt > 200
     gt_myelin = np.logical_and(gt >= 50, gt <= 200)
 
@@ -44,3 +44,5 @@ def launch_performance_metrics(path_prediction, path_groundtruth):
     myelin_metrics = Metrics_calculator(pred_myelin, gt_myelin)
     myelin_metrics_array = np.array([myelin_metrics.pw_sensitivity(),myelin_metrics.pw_specificity(),myelin_metrics.pw_precision(),
     myelin_metrics.pw_accuracy(), myelin_metrics.pw_F1_score(), myelin_metrics.pw_dice(),myelin_metrics.pw_jaccard()])
+
+    return axon_metrics, myelin_metrics  
