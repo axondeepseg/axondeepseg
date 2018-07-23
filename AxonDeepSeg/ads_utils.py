@@ -64,14 +64,17 @@ def config_setup():
         os.path.dirname(os.path.realpath(__file__)),
         DEFAULT_CONFIGFILE
         )
+    
+    if 'pytest' in sys.modules:
+        bugTracking = bool(0)
+    else:
+        print ("To improve user experience and fix bugs, the ADS development team "
+               "is using a report system to automatically receive crash reports "
+               "and errors from users. These reports are anonymous.")
 
-    print ("To improve user experience and fix bugs, the ADS development team "
-           "is using a report system to automatically receive crash reports "
-           "and errors from users. These reports are anonymous.")
-
-    bugTracking = strtobool(
-        raw_input("Do you agree to help us improve ADS? [y]es/[n]o:")
-        )
+        bugTracking = strtobool(
+            raw_input("Do you agree to help us improve ADS? [y]es/[n]o:")
+            )
 
     if bugTracking:
         print ("Note: you can opt out of Sentry reporting by changing the "
