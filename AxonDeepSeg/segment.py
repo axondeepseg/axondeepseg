@@ -273,12 +273,21 @@ def main():
 	path_model, config = generate_default_parameters(type_, new_path)
 	resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
 
+	# Tuple of valid file extensions
+	validExtensions = (
+						".jpeg",
+						".jpg",
+						".tif",
+						".tiff",
+						".png"
+						)
+
 	# Going through all paths passed into arguments
 	for current_path_target in path_target_list:
 
 		if not os.path.isdir(current_path_target):
 
-			if ((current_path_target.endswith(".jpeg")) or (current_path_target.endswith(".jpg")) or (current_path_target.endswith(".tif")) or (current_path_target.endswith(".tiff")) or (current_path_target.endswith(".png"))):
+			if current_path_target.lower().endswith(validExtensions):
 
 			# Performing the segmentation over the image
 				segment_image(current_path_target, path_model, overlap_value, config,
