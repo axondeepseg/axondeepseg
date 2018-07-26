@@ -43,7 +43,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_launch_morphometrics_computation_errors_for_missing_file(self):
-        nonExistingFile = ''.join(random.choice(string.lowercase) for i in range(16))
+        nonExistingFile = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
         pathPrediction = os.path.join(
             self.dataPath,
             'AxonDeepSeg_seg-axonmyelin.png'
