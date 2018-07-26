@@ -551,7 +551,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                      'steps': epoch, 
                                      'accuracy': np.mean(Accuracy[-10:])}
                         
-                        with open(path_model + '/best_acc_stats.pkl', 'w') as handle:
+                        with open(path_model + '/best_acc_stats.pkl', 'wb') as handle:
                             pickle.dump(evolution, handle)
                         
                     if loss_moving_avg < loss_current_best:
@@ -565,7 +565,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                      'steps': epoch, 
                                      'accuracy': np.mean(Accuracy[-10:])}
                         
-                        with open(path_model + '/best_loss_stats.pkl', 'w') as handle:
+                        with open(path_model + '/best_loss_stats.pkl', 'wb') as handle:
                             pickle.dump(evolution, handle)
 
                 # Moreover at a frequency we save the model regardless of the performance
@@ -582,7 +582,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                  'steps': epoch, 
                                  'accuracy': np.mean(Accuracy[-10:])}
 
-                    with open(path_model + '/evolution_stats.pkl', 'w') as handle:
+                    with open(path_model + '/evolution_stats.pkl', 'wb') as handle:
                         pickle.dump(evolution, handle)
                     
                     file = open(path_model + "/report.txt", 'w')
