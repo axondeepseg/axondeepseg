@@ -43,9 +43,14 @@ def _main_thread_terminated(self):
                 print("Press Ctrl-C to quit")
 
             # -- Function override statement --#
+            configPath = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                DEFAULT_CONFIGFILE
+                )
             print ("Note: you can opt out of Sentry reporting by changing the "
                    "value of bugTracking to 0 in the "
-                   "file AxonDeepSeg/.adsconfig")
+                   "file {}".format(configPath))
+            # -- EO Function override statement --#
 
             self._timed_queue_join(timeout - initial_timeout)
 
@@ -79,7 +84,7 @@ def config_setup():
     if bugTracking:
         print ("Note: you can opt out of Sentry reporting by changing the "
                "value of bugTracking from 1 to 0 in the "
-               "file AxonDeepSeg/.adsconfig")
+               "file {}".format(configPath))
 
     config = ConfigParser.ConfigParser()
     config.add_section('Global')
