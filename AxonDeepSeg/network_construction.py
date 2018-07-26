@@ -163,7 +163,7 @@ def uconv_net(x, training_config, phase, bn_updated_decay = None, verbose = True
         else:
             net = maxpool(net, k_size=2, k_stride=2, scope='downmp-d'+str(i))
 
-        data_temp_size.append(data_temp_size[-1] / 2)
+        data_temp_size.append(data_temp_size[-1] // 2)
         data_temp = net
         
     ####################################################################
