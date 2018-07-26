@@ -82,8 +82,9 @@ def config_setup():
                "file AxonDeepSeg/.adsconfig")
 
     config = configparser.ConfigParser()
-    config.add_section('Global')
-    config.set('Global', 'bugTracking', bugTracking)
+    config['Global'] = {
+        'bugTracking': bugTracking,
+    }
 
     with open(configPath, 'w') as configFile:
         config.write(configFile)
