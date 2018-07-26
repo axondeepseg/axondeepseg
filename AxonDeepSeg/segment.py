@@ -49,7 +49,7 @@ def segment_image(path_testing_image, path_model,
 	if os.path.exists(path_testing_image):
 
 		# Extracting the image name and its folder path from the total path.
-		tmp_path = path_testing_image.split('/')
+		tmp_path = path_testing_image.split(os.sep)
 		acquisition_name = tmp_path[-1]
 		path_acquisition = '/'.join(tmp_path[:-1])
 

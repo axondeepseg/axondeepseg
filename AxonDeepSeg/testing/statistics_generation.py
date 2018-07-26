@@ -143,7 +143,7 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
         config_network = json.loads(fd.read())
 
     n_classes = config_network['n_classes']
-    model_name = path_model_folder.split("/")[-2] # Extraction of the name of the model.
+    model_name = path_model_folder.split(os.sep)[-2] # Extraction of the name of the model.
 
     # We loop over all checkpoint files to compute statistics for each checkpoint.
     for checkpoint in os.listdir(path_model_folder):
@@ -216,7 +216,7 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
                 mask = labellize(mask_raw)
 
                 # We infer the name of the different files
-                name_image = image_folder.split('/')[-1]
+                name_image = image_folder.split(os.sep)[-1]
 
 
                 # Computing metrics and storing them in the json file.
