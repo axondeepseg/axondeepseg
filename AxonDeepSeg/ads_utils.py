@@ -47,7 +47,7 @@ def _main_thread_terminated(self):
             print ("Note: you can opt out of Sentry reporting by changing the "
                    "value of bugTracking to 0 in the "
                    "file {}".format(configPath))
- -          # -- EO Function override statement --#
+            # -- EO Function override statement --#
 
             self._timed_queue_join(timeout - initial_timeout)
 
