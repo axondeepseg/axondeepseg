@@ -52,7 +52,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_get_pixelsize_throws_error_for_invalid_data_file(self):
-        with tempfile.NamedTemporaryFile() as tmp:
+        with tempfile.NamedTemporaryFile(mode='w') as tmp:
             # Data written using tempfile module are saved in a binary format
             # by default, which get_pixelsize doesn't currently support.
             tmp.write(repr(self.pixelsizeValue))
