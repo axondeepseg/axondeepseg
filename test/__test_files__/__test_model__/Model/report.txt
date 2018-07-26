@@ -1,7 +1,7 @@
 
 
 ---Savings---
- Model saved in : /Users/mathieuboudreau/neuropoly/github/axondeepseg/test/__test_training_files__/Model
+ Model saved in : /Users/mathieuboudreau/neuropoly/github/axondeepseg/test/__test_files__/__test_training_files__/Model
 
 ---PARAMETERS---
 learning_rate : 0.001; 
@@ -16,6 +16,6 @@ learning_rate : 0.001;
 ---Intermediary results---
 
 ----
- Last epoch: 9
- Accuracy: 0.4630584716796875;
- Loss: 1.0446338653564453;
+ Last epoch: 1
+ Accuracy: 0.2949371337890625;
+ Loss: 1.1041648387908936;

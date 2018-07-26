@@ -155,11 +155,11 @@ def retrieve_training_data(path_model, path_model_init = None):
     """
 
 
-    file = open(path_model + '/evolution.pkl', 'r')  # training variables : loss, accuracy, epoch
+    file = open(path_model + '/evolution.pkl', 'rb')  # training variables : loss, accuracy, epoch
     evolution = pickle.load(file)
 
     if path_model_init:
-        file_init = open(path_model_init + '/evolution.pkl', 'r')
+        file_init = open(path_model_init + '/evolution.pkl', 'rb')
         evolution_init = pickle.load(file_init)
         last_epoch = evolution_init['steps'][-1]
 
