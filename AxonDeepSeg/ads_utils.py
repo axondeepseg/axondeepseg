@@ -73,7 +73,7 @@ def config_setup():
                "and errors from users. These reports are anonymous.")
 
         bugTracking = strtobool(
-            eval(input("Do you agree to help us improve ADS? [y]es/[n]o:"))
+            input("Do you agree to help us improve ADS? [y]es/[n]o:")
             )
 
     if bugTracking:
