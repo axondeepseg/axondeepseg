@@ -89,7 +89,7 @@ class TestCore(object):
 
         stats_array = get_axon_morphometrics(pred_axon, path_folder)
 
-        for key in stats_array[0].keys():
+        for key in list(stats_array[0].keys()):
             assert key in expectedKeys
 
     # --------------save and load _axon_morphometrics tests-------------- #
@@ -229,7 +229,7 @@ class TestCore(object):
             path_folder
             )
 
-        for key in aggregate_metrics.keys():
+        for key in list(aggregate_metrics.keys()):
             assert key in expectedKeys
 
     # --------------write_aggregate_morphometrics tests-------------- #

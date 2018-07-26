@@ -1,6 +1,6 @@
 import os
 import sys
-import ConfigParser
+import configparser
 from distutils.util import strtobool
 import raven
 
@@ -33,9 +33,9 @@ def _main_thread_terminated(self):
             # add or remove items
             size = self._queue.qsize()
 
-            print("Sentry is attempting to send %i pending error messages"
-                  % size)
-            print("Waiting up to %s seconds" % timeout)
+            print(("Sentry is attempting to send %i pending error messages"
+                  % size))
+            print(("Waiting up to %s seconds" % timeout))
 
             if os.name == 'nt':
                 print("Press Ctrl-Break to quit")
@@ -73,7 +73,7 @@ def config_setup():
                "and errors from users. These reports are anonymous.")
 
         bugTracking = strtobool(
-            raw_input("Do you agree to help us improve ADS? [y]es/[n]o:")
+            eval(input("Do you agree to help us improve ADS? [y]es/[n]o:"))
             )
 
     if bugTracking:
@@ -81,7 +81,7 @@ def config_setup():
                "value of bugTracking from 1 to 0 in the "
                "file AxonDeepSeg/.adsconfig")
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.add_section('Global')
     config.set('Global', 'bugTracking', bugTracking)
 
@@ -103,7 +103,7 @@ def read_config():
     if not os.path.exists(configPath):
         raise IOError("Could not find configuration file.")
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(configPath)
     return config
 
@@ -147,7 +147,7 @@ def init_error_client(bugTracking):
             traceback_to_server(client)
 
         except:
-            print "Unexpected error: bug tracking may not be functionning."
+            print("Unexpected error: bug tracking may not be functionning.")
 
 
 def traceback_to_server(client):

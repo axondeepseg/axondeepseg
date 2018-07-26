@@ -35,7 +35,7 @@ def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_res
     # First we load every information independent of the model
     # We generate the list of testing folders, each one containing one image
     images_folders = [d for d in os.listdir(path_images_folder) if os.path.isdir(os.path.join(path_images_folder, d))]
-    path_images_folder = map(lambda x: os.path.join(path_images_folder, x), images_folders)
+    path_images_folder = [os.path.join(path_images_folder, x) for x in images_folders]
 
     # We check that the model path we were given exists.
     if os.path.isdir(path_model_folder):
@@ -68,7 +68,7 @@ def metrics_single_wrapper(path_model_folder, path_images_folder, resampled_reso
     # First we load every information independent of the model
     # We generate the list of testing folders, each one containing one image
     images_folders = [d for d in os.listdir(path_images_folder) if os.path.isdir(os.path.join(path_images_folder, d))]
-    path_images_folder = map(lambda x: os.path.join(path_images_folder, x), images_folders)
+    path_images_folder = [os.path.join(path_images_folder, x) for x in images_folders]
 
     # We check that the model path we were given exists.
     if os.path.isdir(path_model_folder):
@@ -103,24 +103,24 @@ def print_metrics(metrics_dict, filter_ckpt=None):
 
         # We go through every checkpoint in the list and we only return the checkpoint dictionary which name is the
         # one we want to filter.
-        for ckpt_elem in dict_ckpt.itervalues():
+        for ckpt_elem in list(dict_ckpt.values()):
             if ckpt_elem['ckpt'] == str(filter_ckpt):
                 dict_ckpt = [ckpt_elem]
                 break
 
-    for current_ckpt in dict_ckpt.itervalues():
+    for current_ckpt in list(dict_ckpt.values()):
 
-        print "Model: " + str(current_ckpt["id_model"]) + \
-              ", ckpt: " + str(current_ckpt["ckpt"]) + ", date: " + str(metrics_dict["date"])
+        print(("Model: " + str(current_ckpt["id_model"]) + \
+              ", ckpt: " + str(current_ckpt["ckpt"]) + ", date: " + str(metrics_dict["date"])))
 
-        for name_image, test_image_stats in current_ckpt["testing_stats"].iteritems():
+        for name_image, test_image_stats in list(current_ckpt["testing_stats"].items()):
 
             t = PrettyTable(["Metric", "Value"])
             t.add_row(["name_image", name_image])
 
-            for key, value in test_image_stats.iteritems():
+            for key, value in list(test_image_stats.items()):
                 t.add_row([key, value])
-            print t
+            print(t)
 
 
 
@@ -167,7 +167,7 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
                 epoch_stats = res['steps']
 
             except:
-                print 'No stats file found...'
+                print('No stats file found...')
                 #f = open(path_model_folder + '/evolution.pkl', 'r')
                 #res = pickle.load(f)
                 #epoch_stats = max(res['steps'])
@@ -203,7 +203,7 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
             # These two variables are list, as long as the number of images that are tested.
 
             if verbosity_level>=2:
-                print 'Statistics extraction...'
+                print('Statistics extraction...')
 
             # 3/ Computation of the statistics for each image.
             for i, image_folder in tqdm(enumerate(path_images_folder)):
@@ -360,14 +360,14 @@ class metrics():
                 raise ValueError('No config file found: statistics json file missing in the model folder.')
 
             # Now we add a line to the stats dataframe for each model
-            for ckpt_name, ckpt in stats_dict.iteritems():
+            for ckpt_name, ckpt in list(stats_dict.items()):
 
                 # Getting each part of data
                 model_name = ckpt['id_model']
                 ckpt_name = ckpt['ckpt']
                 config = ckpt['config']
                 testing_stats_list = ckpt['testing_stats']
-                for name_image, testing_stats in testing_stats_list.iteritems():
+                for name_image, testing_stats in list(testing_stats_list.items()):
                     type_image = name_image.split("_")[0]
                     pw_dice_myelin = testing_stats['pw_dice_myelin']
                     pw_dice_axon = testing_stats['pw_dice_axon']
@@ -418,13 +418,13 @@ class metrics():
 
         for metric in list_metrics:
             tmp = self.filtered_stats.groupby(['id_model', 'ckpt']).apply(metric)
-            tmp.columns = map(lambda x: x + '_' + metric.__name__, tmp.columns.tolist())
+            tmp.columns = [x + '_' + metric.__name__ for x in tmp.columns.tolist()]
             aggregated_stats = pd.concat([aggregated_stats, tmp],
                                          axis=1, ignore_index=False)
 
         if write_mode == True:
             if name_file is None:
-                name_file = 'agg_' + '_'.join(map(lambda x: x.__name__, list_metrics)) + '_' + time.strftime(
+                name_file = 'agg_' + '_'.join([x.__name__ for x in list_metrics]) + '_' + time.strftime(
                     "%Y-%m-%d") + '.csv'
             aggregated_stats.T.to_csv(name_file)
 

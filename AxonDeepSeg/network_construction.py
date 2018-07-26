@@ -7,8 +7,8 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2' # Get rid of Tensorflow warnings.
 import tensorflow as tf
 import pickle
-from data_management.input_data import input_data
-from config_tools import generate_config
+from .data_management.input_data import input_data
+from .config_tools import generate_config
 import AxonDeepSeg.ads_utils
 
 
@@ -144,8 +144,8 @@ def uconv_net(x, training_config, phase, bn_updated_decay = None, verbose = True
 
         for conv_number in range(number_of_convolutions_per_layer[i]):
             if verbose:
-                print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
-                print('Size:', size_of_convolutions_per_layer[i][conv_number])
+                print(('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number]))
+                print(('Size:', size_of_convolutions_per_layer[i][conv_number]))
 
             net = conv_relu(net, features_per_convolution[i][conv_number][1], 
                             size_of_convolutions_per_layer[i][conv_number], k_stride=1, 
@@ -207,8 +207,8 @@ def uconv_net(x, training_config, phase, bn_updated_decay = None, verbose = True
         # Classic convolutions
         for conv_number in range(number_of_convolutions_per_layer[depth - i - 1]):
             if verbose:
-                print('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number])
-                print('Size:', size_of_convolutions_per_layer[i][conv_number])
+                print(('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number]))
+                print(('Size:', size_of_convolutions_per_layer[i][conv_number]))
 
             net = conv_relu(net, features_per_convolution[depth - i - 1][conv_number][1], 
                             size_of_convolutions_per_layer[depth - i - 1][conv_number], k_stride=1, 

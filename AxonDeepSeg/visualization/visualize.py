@@ -62,7 +62,7 @@ def visualize_segmentation(path):
     mask = False
 
     if not 'results.pkl' in os.listdir(path):
-        print 'results not present'
+        print('results not present')
 
     file = open(path + '/results.pkl', 'r')
     res = pickle.load(file)
@@ -119,7 +119,7 @@ def visualize_segmentation(path):
         scores_2 = tabulate(table, headers)
 
         text = text + subtitle3 + subtitle3 + scores_2
-        print text
+        print(text)
 
         file = open(path + "/Report_results.txt", 'w')
         file.write(text)

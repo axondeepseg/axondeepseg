@@ -3,11 +3,11 @@
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 from AxonDeepSeg.network_construction import *
-from config_tools import update_config, default_configuration
+from .config_tools import update_config, default_configuration
 import os
 import imageio
-from patch_management_tools import im2patches_overlap, patches2im_overlap
-from visualization.get_masks import get_masks
+from .patch_management_tools import im2patches_overlap, patches2im_overlap
+from .visualization.get_masks import get_masks
 import AxonDeepSeg.ads_utils
 
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict,
@@ -51,7 +51,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
 	# If we are unable to load the model, we return an error message
 	if not os.path.exists(path_model_folder):
-		print 'Error: unable to find the requested model.'
+		print('Error: unable to find the requested model.')
 		return [None] * len(path_acquisitions)
 
 	L_data, L_n_patches, L_positions = prepare_patches(rs_acquisitions, patch_size, overlap_value)
@@ -61,7 +61,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
 	# Construction of the graph
 	if verbosity_level>=2:
-		print "Graph construction ..."
+		print("Graph construction ...")
 	x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size))
 	pred = uconv_net(x, config_dict, phase=False, verbose=False)  # Inference
 	saver = tf.train.Saver() # Loading the previous model
@@ -77,7 +77,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 	########### STEP 3: Inference
 
 	if verbosity_level>=2:
-		print "Beginning inference ..."
+		print("Beginning inference ...")
 
 	n_patches = len(L_data)
 	it, rem = divmod(n_patches, inference_batch_size)
@@ -89,7 +89,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 	for i in range(it):
 
 		if verbosity_level>=3:
-			print 'processing patch %s of %s' % (i+1, it)
+			print(('processing patch %s of %s' % (i+1, it)))
 
 		batch_x = np.asarray(L_data[i * inference_batch_size:(i + 1) * inference_batch_size])
 		if prediction_proba_activate:
@@ -115,7 +115,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 	if rem != 0:
 
 		if verbosity_level>=4:
-			print 'processing last patch'
+			print('processing last patch')
 
 		batch_x = np.asarray(L_data[it * inference_batch_size:])
 		if prediction_proba_activate:
@@ -198,9 +198,9 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 	'''
 
 	# Processing input so they are lists in every situation
-	path_acquisitions_folders, acquisitions_filenames, resampled_resolutions, segmentations_filenames = map(
+	path_acquisitions_folders, acquisitions_filenames, resampled_resolutions, segmentations_filenames = list(map(
 		ensure_list_type, [path_acquisitions_folders, acquisitions_filenames,
-						   resampled_resolutions, segmentations_filenames])
+						   resampled_resolutions, segmentations_filenames]))
 
 	if len(segmentations_filenames) != len(path_acquisitions_folders):
 		segmentations_filenames = ['AxonDeepSeg.png'] * len(path_acquisitions_folders)
@@ -306,11 +306,11 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
 	:return:
 	'''
 
-	path_acquisitions, acquisitions_resolutions, resampled_resolutions = map(
-		ensure_list_type, [path_acquisitions, acquisitions_resolutions, resampled_resolutions])
+	path_acquisitions, acquisitions_resolutions, resampled_resolutions = list(map(
+		ensure_list_type, [path_acquisitions, acquisitions_resolutions, resampled_resolutions]))
 
 	if verbose_mode >= 2:
-		print "Loading acquisitions ..."
+		print("Loading acquisitions ...")
 
 	# Reading acquisitions images and loading them in the RAM, with their respective acquisition resolution.
 	# Then resampling the acquisitions images to the target resolution that the network uses.
@@ -324,7 +324,7 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
 	# Resampling acquisitions to the target resolution
 
 	if verbose_mode >= 2:
-		print "Rescaling acquisitions to the target resolution ..."
+		print("Rescaling acquisitions to the target resolution ...")
 
 	resampling_coeffs = [current_acquisition_resolution / resampled_resolutions[i]
 						 for i, current_acquisition_resolution in enumerate(acquisitions_resolutions)]
@@ -400,7 +400,7 @@ def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_orig
 	L_n_patches_cum = np.cumsum([0] + L_n_patches)
 
 	if verbose_mode>=2:
-		print "Resampling predictions to their original size..."
+		print("Resampling predictions to their original size...")
 
 	# Gathering segmented patches belonging to the same acquisition
 	for i, e in enumerate(L_n_patches_cum[:-1]):
@@ -433,7 +433,7 @@ def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_orig
 
 			# We generate the predict proba matrix
 			tmp = np.split(np.stack(prediction_proba_list, axis=0), n_classes, axis=-1)
-			predictions_proba_list = [map(np.squeeze, np.split(e, L_n_patches[i], axis=0)) for e in
+			predictions_proba_list = [list(map(np.squeeze, np.split(e, L_n_patches[i], axis=0))) for e in
 									  tmp]  # We now have a list (n_classes elements) of list (n_patches elements)
 			# [ class0:[ patch0:[], patch1:[], ...], class1:[ patch0:[], patch1:[],... ] ... ]
 
