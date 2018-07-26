@@ -163,7 +163,7 @@ def elastic_transform(patch, alpha, sigma):
     shape = image.shape
 
     d = 4
-    sub_shape = (shape[0]/d, shape[0]/d)
+    sub_shape = (shape[0] // d, shape[0] // d)
 
     deformations_x = random_state.rand(*sub_shape) * 2 - 1
     deformations_y = random_state.rand(*sub_shape) * 2 - 1
