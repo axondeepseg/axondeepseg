@@ -124,9 +124,9 @@ def display_axon_diameter(img,path_prediction,pred_axon,pred_myelin):
 	axon_diam_display = a = np.zeros((np.shape(labels)[0], np.shape(labels)[1]))
 
 	for pix_x in np.arange(np.shape(labels)[0]):
-		   for pix_y in np.arange(np.shape(labels)[1]):
-				if labels[pix_x,pix_y] != 0:
-					axon_diam_display[pix_x,pix_y] = axon_diam_array[labels[pix_x,pix_y]-1]
+		for pix_y in np.arange(np.shape(labels)[1]):
+			if labels[pix_x,pix_y] != 0:
+				axon_diam_display[pix_x,pix_y] = axon_diam_array[labels[pix_x,pix_y]-1]
 	
 	# Axon overlay on original image + myelin display (same color for every myelin sheath)
 	plt.figure(figsize=(12,9))
