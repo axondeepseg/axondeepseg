@@ -4,7 +4,7 @@ import ConfigParser
 from distutils.util import strtobool
 import raven
 
-DEFAULT_CONFIGFILE = ".adsconfig"
+DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
 # raven function override - do not modify unless needed if raven version is
 # changed to a version other than 6.8.0.
@@ -43,9 +43,11 @@ def _main_thread_terminated(self):
                 print("Press Ctrl-C to quit")
 
             # -- Function override statement --#
+            config_path = get_config_path()
             print ("Note: you can opt out of Sentry reporting by changing the "
                    "value of bugTracking to 0 in the "
-                   "file AxonDeepSeg/.adsconfig")
+                   "file {}".format(config_path))
+            # -- EO Function override statement --#
 
             self._timed_queue_join(timeout - initial_timeout)
 
@@ -60,10 +62,7 @@ raven.transport.threaded.AsyncWorker.main_thread_terminated = _main_thread_termi
 
 def config_setup():
 
-    configPath = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        DEFAULT_CONFIGFILE
-        )
+    config_path = get_config_path()
     
     if 'pytest' in sys.modules:
         bugTracking = bool(0)
@@ -79,32 +78,37 @@ def config_setup():
     if bugTracking:
         print ("Note: you can opt out of Sentry reporting by changing the "
                "value of bugTracking from 1 to 0 in the "
-               "file AxonDeepSeg/.adsconfig")
+               "file {}".format(config_path))
 
     config = ConfigParser.ConfigParser()
     config.add_section('Global')
     config.set('Global', 'bugTracking', bugTracking)
 
-    with open(configPath, 'w') as configFile:
+    with open(config_path, 'w') as configFile:
         config.write(configFile)
 
     print("Configuration saved successfully !")
 
+def get_config_path():
+    """Get the full path of the AxonDeepSeg configuration file.
+    :return: String with the full path to the ADS config file.
+    """
+    return os.path.join(
+                    os.path.expanduser("~"),
+                    DEFAULT_CONFIGFILE
+                    )
 
 def read_config():
     """Read the system configuration file.
     :return: a dict with the configuration parameters.
     """
-    configPath = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        DEFAULT_CONFIGFILE
-        )
+    config_path = get_config_path()
 
-    if not os.path.exists(configPath):
+    if not os.path.exists(config_path):
         raise IOError("Could not find configuration file.")
 
     config = ConfigParser.ConfigParser()
-    config.read(configPath)
+    config.read(config_path)
     return config
 
 
@@ -113,12 +117,9 @@ def init_ads():
     :return:
     """
 
-    configPath = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        DEFAULT_CONFIGFILE
-        )
+    config_path = get_config_path()
 
-    if not os.path.isfile(configPath):
+    if not os.path.isfile(config_path):
         config_setup()
     else:
         pass
