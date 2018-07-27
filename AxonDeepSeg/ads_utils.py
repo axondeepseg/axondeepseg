@@ -43,7 +43,7 @@ def _main_thread_terminated(self):
                 print("Press Ctrl-C to quit")
 
             # -- Function override statement --#
-            configPath = getConfigPath()
+            configPath = get_config_path()
             print ("Note: you can opt out of Sentry reporting by changing the "
                    "value of bugTracking to 0 in the "
                    "file {}".format(configPath))
@@ -62,7 +62,7 @@ raven.transport.threaded.AsyncWorker.main_thread_terminated = _main_thread_termi
 
 def config_setup():
 
-    configPath = getConfigPath()
+    configPath = get_config_path()
     
     if 'pytest' in sys.modules:
         bugTracking = bool(0)
@@ -89,7 +89,7 @@ def config_setup():
 
     print("Configuration saved successfully !")
 
-def getConfigPath():
+def get_config_path():
     """Get the full path of the AxonDeepSeg configuration file.
     :return: String with the full path to the ADS config file.
     """
@@ -102,7 +102,7 @@ def read_config():
     """Read the system configuration file.
     :return: a dict with the configuration parameters.
     """
-    configPath = getConfigPath()
+    configPath = get_config_path()
 
     if not os.path.exists(configPath):
         raise IOError("Could not find configuration file.")
@@ -117,7 +117,7 @@ def init_ads():
     :return:
     """
 
-    configPath = getConfigPath()
+    configPath = get_config_path()
 
     if not os.path.isfile(configPath):
         config_setup()
