@@ -4,7 +4,7 @@ import ConfigParser
 from distutils.util import strtobool
 import raven
 
-DEFAULT_CONFIGFILE = ".adsconfig"
+DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
 # raven function override - do not modify unless needed if raven version is
 # changed to a version other than 6.8.0.
@@ -43,10 +43,7 @@ def _main_thread_terminated(self):
                 print("Press Ctrl-C to quit")
 
             # -- Function override statement --#
-            configPath = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                DEFAULT_CONFIGFILE
-                )
+            configPath = getConfigPath()
             print ("Note: you can opt out of Sentry reporting by changing the "
                    "value of bugTracking to 0 in the "
                    "file {}".format(configPath))
@@ -65,10 +62,7 @@ raven.transport.threaded.AsyncWorker.main_thread_terminated = _main_thread_termi
 
 def config_setup():
 
-    configPath = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        DEFAULT_CONFIGFILE
-        )
+    configPath = getConfigPath()
     
     if 'pytest' in sys.modules:
         bugTracking = bool(0)
@@ -95,15 +89,20 @@ def config_setup():
 
     print("Configuration saved successfully !")
 
+def getConfigPath():
+    """Get the full path of the AxonDeepSeg configuration file.
+    :return: String with the full path to the ADS config file.
+    """
+    return os.path.join(
+                    os.path.expanduser("~"),
+                    DEFAULT_CONFIGFILE
+                    )
 
 def read_config():
     """Read the system configuration file.
     :return: a dict with the configuration parameters.
     """
-    configPath = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        DEFAULT_CONFIGFILE
-        )
+    configPath = getConfigPath()
 
     if not os.path.exists(configPath):
         raise IOError("Could not find configuration file.")
@@ -118,10 +117,7 @@ def init_ads():
     :return:
     """
 
-    configPath = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        DEFAULT_CONFIGFILE
-        )
+    configPath = getConfigPath()
 
     if not os.path.isfile(configPath):
         config_setup()
