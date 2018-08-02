@@ -49,7 +49,6 @@ Versions 1.x will remain Python 2.7-compatible
 
 - Compatibility for image inputs other than png
 - Pre-processing of input images is now done inside AxonDeepSeg
--
 
 ### Changed
 
