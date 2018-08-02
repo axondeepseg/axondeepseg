@@ -5,9 +5,13 @@ import pandas as pd
 from skimage.morphology import binary_erosion, disk, label
 from scipy.spatial.distance import directed_hausdorff
 import sys
+from sys import platform as _platform
 if 'pytest' in sys.modules:
     import matplotlib as mpl
     mpl.use('Agg') # Enforces mpl to not open new plot windows
+elif _platform == "darwin": # Mac OSX
+    import matplotlib as mpl
+    mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import AxonDeepSeg.ads_utils
 

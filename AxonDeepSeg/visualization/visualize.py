@@ -1,8 +1,12 @@
 import pickle
 import sys
+from sys import platform as _platform
 if 'pytest' in sys.modules:
     import matplotlib as mpl
     mpl.use('Agg') # Enforces mpl to not open new plot windows
+elif _platform == "darwin": # Mac OSX
+    import matplotlib as mpl
+    mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 from scipy.misc import imread
 from sklearn.metrics import accuracy_score
