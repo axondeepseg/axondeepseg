@@ -13,7 +13,6 @@ import os, json, imageio
 from tqdm import tqdm
 import pkg_resources
 import argparse
-import tempfile
 from argparse import RawTextHelpFormatter
 import AxonDeepSeg.ads_utils
 
@@ -60,7 +59,7 @@ def segment_image(path_testing_image, path_model,
 		img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
 
 		# Generate tmp file
-		fp = tempfile.NamedTemporaryFile(dir=path_acquisition,suffix='.png',mode='wb')
+		fp = open(os.path.join(path_acquisition, '__tmp_segment__.png'), 'wb+')
 
 		img_name_original, file_extension = os.path.splitext(acquisition_name) 
 
@@ -88,6 +87,8 @@ def segment_image(path_testing_image, path_model,
 
 		# Remove temporary file used for the segmentation
 		fp.close()
+		os.remove(os.path.join(path_acquisition, '__tmp_segment__.png'))
+
 	else:
 		print(("The path {0} does not exist.".format(path_testing_image)))
 
@@ -124,7 +125,7 @@ def segment_folders(path_testing_images_folder, path_model,
 		img = imageio.imread(os.path.join(path_testing_images_folder,file_))
 
 		# Generate tmpfile for segmentation pipeline
-		fp = tempfile.NamedTemporaryFile(dir=path_testing_images_folder,suffix='.png',mode='wb')
+		fp = open(os.path.join(path_testing_images_folder, '__tmp_segment__.png'), 'wb+')
 
 		img_name_original, file_extension = os.path.splitext(file_)  
 
@@ -151,6 +152,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
 		# Remove temporary file used for the segmentation
 		fp.close()
+		os.remove(os.path.join(path_testing_images_folder, '__tmp_segment__.png'))
 
 	return None
 
