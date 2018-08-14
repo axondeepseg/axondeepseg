@@ -8,6 +8,10 @@ import imageio
 import json
 from skimage import transform
 from skimage.filters import gaussian
+from sys import platform as _platform
+if _platform == "darwin": # Mac OSX
+    import matplotlib as mpl
+    mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 from shutil import copy
 import math

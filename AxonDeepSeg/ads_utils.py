@@ -43,10 +43,10 @@ def _main_thread_terminated(self):
                 print("Press Ctrl-C to quit")
 
             # -- Function override statement --#
-            configPath = getConfigPath()
+            config_path = get_config_path()
             print ("Note: you can opt out of Sentry reporting by changing the "
                    "value of bugTracking to 0 in the "
-                   "file {}".format(configPath))
+                   "file {}".format(config_path))
             # -- EO Function override statement --#
 
             self._timed_queue_join(timeout - initial_timeout)
@@ -62,7 +62,7 @@ raven.transport.threaded.AsyncWorker.main_thread_terminated = _main_thread_termi
 
 def config_setup():
 
-    configPath = getConfigPath()
+    config_path = get_config_path()
     
     if 'pytest' in sys.modules:
         bugTracking = bool(0)
@@ -78,19 +78,19 @@ def config_setup():
     if bugTracking:
         print ("Note: you can opt out of Sentry reporting by changing the "
                "value of bugTracking from 1 to 0 in the "
-               "file AxonDeepSeg/.adsconfig")
+               "file {}".format(config_path))
 
     config = configparser.ConfigParser()
     config['Global'] = {
         'bugTracking': bugTracking,
     }
 
-    with open(configPath, 'w') as configFile:
+    with open(config_path, 'w') as configFile:
         config.write(configFile)
 
     print("Configuration saved successfully !")
 
-def getConfigPath():
+def get_config_path():
     """Get the full path of the AxonDeepSeg configuration file.
     :return: String with the full path to the ADS config file.
     """
@@ -103,13 +103,15 @@ def read_config():
     """Read the system configuration file.
     :return: a dict with the configuration parameters.
     """
-    configPath = getConfigPath()
 
-    if not os.path.exists(configPath):
+    config_path = get_config_path()
+
+    if not os.path.exists(config_path):
         raise IOError("Could not find configuration file.")
 
-    config = configparser.ConfigParser()
-    config.read(configPath)
+    config = ConfigParser.ConfigParser()
+    config.read(config_path)
+
     return config
 
 
@@ -118,9 +120,9 @@ def init_ads():
     :return:
     """
 
-    configPath = getConfigPath()
+    config_path = get_config_path()
 
-    if not os.path.isfile(configPath):
+    if not os.path.isfile(config_path):
         config_setup()
     else:
         pass

@@ -4,6 +4,10 @@ import numpy as np
 import math
 import os
 import imageio
+from sys import platform as _platform
+if _platform == "darwin": # Mac OSX
+    import matplotlib as mpl
+    mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
