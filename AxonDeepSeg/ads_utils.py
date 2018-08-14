@@ -44,9 +44,9 @@ def _main_thread_terminated(self):
 
             # -- Function override statement --#
             config_path = get_config_path()
-            print ("Note: you can opt out of Sentry reporting by changing the "
+            print(("Note: you can opt out of Sentry reporting by changing the "
                    "value of bugTracking to 0 in the "
-                   "file {}".format(config_path))
+                   "file {}".format(config_path)))
             # -- EO Function override statement --#
 
             self._timed_queue_join(timeout - initial_timeout)
@@ -72,13 +72,13 @@ def config_setup():
                "and errors from users. These reports are anonymous.")
 
         bugTracking = strtobool(
-            input("Do you agree to help us improve ADS? [y]es/[n]o:")
+            eval(input("Do you agree to help us improve ADS? [y]es/[n]o:"))
             )
 
     if bugTracking:
-        print ("Note: you can opt out of Sentry reporting by changing the "
+        print(("Note: you can opt out of Sentry reporting by changing the "
                "value of bugTracking from 1 to 0 in the "
-               "file {}".format(config_path))
+               "file {}".format(config_path)))
 
     config = configparser.ConfigParser()
     config['Global'] = {
@@ -109,7 +109,7 @@ def read_config():
     if not os.path.exists(config_path):
         raise IOError("Could not find configuration file.")
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(config_path)
 
     return config
