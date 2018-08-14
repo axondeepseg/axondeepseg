@@ -114,7 +114,10 @@ class TestCore(object):
             )
 
         if os.path.exists(modelPath) and os.path.isdir(modelPath):
-            shutil.rmtree(modelPath)
+            try:
+                shutil.rmtree(modelPath)
+            except OSError:
+                print("Could not clean up {} - you may want to remove it manually.".format(modelPath))
 
     # --------------train_model tests-------------- #
     @pytest.mark.integration
