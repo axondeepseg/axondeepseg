@@ -21,13 +21,13 @@ def result_mapping(folder_models, path_datatest):
     """
 
     for root in os.listdir(folder_models)[:]:
-		if 'DS_Store' not in root:
-			subpath_model = os.path.join(folder_models, root)
-			filename = '/config_network.json'
-			with open(subpath_model + filename, 'r') as fd:
-				config_network = json.loads(fd.read())
+        if 'DS_Store' not in root:
+            subpath_model = os.path.join(folder_models, root)
+            filename = '/config_network.json'
+            with open(subpath_model + filename, 'r') as fd:
+                config_network = json.loads(fd.read())
 
-			axon_segmentation(path_datatest, subpath_model, config_network, segmentations_filenames='segmentation_' + root + '.png')
+            axon_segmentation(path_datatest, subpath_model, config_network, segmentations_filenames='segmentation_' + root + '.png')
 
     return 'segmented'
 
