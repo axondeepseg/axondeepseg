@@ -8,6 +8,15 @@ AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechn
 Changelog
 ===============================================================================
 
+Version [2.0] - 2018-09-05
+-------------------------------------------------------------------------------
+
+**Changed:**
+
+– Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
+- Minor changes to make ADS Windows-compatibile
+– Removed plot hold commands (deprecated)
+
 Version [1.1] - 2018-08-02
 -------------------------------------------------------------------------------
 
@@ -70,17 +79,17 @@ Installation
 The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
 instructions are provided to help you use AxonDeepSeg.
 
-.. NOTE :: AxonDeepSeg is not compatible with Windows due to third-party dependencies.
-           AxonDeepSeg was tested with Mac OS and Linux.
+.. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system.
+           However, please note that our continuous integration testing framework (Travis) only tests AxonDeepSeg for Unix-style systems.
 
 Python
 -------------------------------------------------------------------------------
 
-First, you should make sure that Python 2.7 is installed on your computer. Run the following command in the terminal::
+First, you should make sure that Python 3.6 is installed on your computer. Run the following command in the terminal::
 
     python -V
 
-The version of python should be displayed in the terminal. If not, you have to install Python 2.7 on your computer.
+The version of python should be displayed in the terminal. If not, you have to install Python 3.6 on your computer.
 To do that, you can follow the instructions given on
 `the official python wiki <https://wiki.python.org/moin/BeginnersGuide/Download>`_.
 
@@ -137,13 +146,9 @@ To install the latest stable release of AxonDeepSeg, you just need to install it
   "Could not find a version that satisfies the requirement tensorflow>=XXX (from axondeepseg) (from versions: )... ",
   you will need to manually install the TensorFlow dependency.
 
-  For OS X users, run the following command to install TensorFlow 1.3.0:
+  Run the following command to install TensorFlow 1.9.0:
   :: 
-    pip install https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.3.0-py2-none-any.whl
-
-  For Linux users, run the following command to install TensorFlow 1.3.0:
-  ::
-    pip install https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.3.0-cp34-cp34m-linux_x86_64.whl
+    pip install tensorflow==1.9.0
 
   You can get more information by following the instructions from the `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
 
@@ -382,4 +387,4 @@ SOFTWARE.
 Contributors
 ===============================================================================
 
-Pierre-Louis Antonsanti, Julien Cohen-Adad, Victor Herman, Christian Perone, Maxime Wabartha, Aldo Zaimi
+Pierre-Louis Antonsanti, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Christian Perone, Maxime Wabartha, Aldo Zaimi.

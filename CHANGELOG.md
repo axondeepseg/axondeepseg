@@ -2,6 +2,14 @@
 
 All notable changes to the AxonDeepSeg project will be documented in this file.
 
+## [2.0] - 2018-09-05
+
+## Changed
+
+– Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
+- Minor changes to make ADS Windows-compatibile
+– Removed plot hold commands (deprecated)
+
 ## [1.1] - 2018-08-02
 
 ## Changed
