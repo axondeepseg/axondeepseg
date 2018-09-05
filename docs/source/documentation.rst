@@ -97,7 +97,7 @@ To do that, you can follow the instructions given on
            the version of Python that you want installed in your virtual environment set up below, even if it differs from the version
            displayed by the "python -V" command. To see the list of Python versions available to be installed in your conda virtual 
            environment, run:
-
+           ::
                conda search python
 
 Virtualenv
@@ -134,11 +134,11 @@ virtual environment between parenthesis, like this::
     (ads_venv) username@hostname /home/...
 
 .. NOTE :: To create a virtual environment called "ads_venv" with the Anaconda Distribution, run:
-
+           ::
                conda create -n ads_venv python=3.6
 
            To activate it, run the following command: 
-
+           ::
                source activate ads_venv
 
 AxonDeepSeg
