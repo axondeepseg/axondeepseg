@@ -98,7 +98,8 @@ To do that, you can follow the instructions given on
            displayed by the "python -V" command. To see the list of Python versions available to be installed in your conda virtual 
            environment, run:
            ::
-               conda search python
+
+                conda search python
 
 Virtualenv
 -------------------------------------------------------------------------------
@@ -135,11 +136,13 @@ virtual environment between parenthesis, like this::
 
 .. NOTE :: To create a virtual environment called "ads_venv" with the Anaconda Distribution, run:
            ::
-               conda create -n ads_venv python=3.6
+
+                conda create -n ads_venv python=3.6
 
            To activate it, run the following command: 
            ::
-               source activate ads_venv
+
+                source activate ads_venv
 
 AxonDeepSeg
 -------------------------------------------------------------------------------
@@ -158,7 +161,8 @@ To install the latest stable release of AxonDeepSeg, you just need to install it
 .. NOTE ::
    Note that you can install a specific version of the software as follows (replace X.X with the version number, for example 0.2):
    ::
-    pip install axondeepseg==X.X
+
+        pip install axondeepseg==X.X
 
 .. WARNING ::    
   If you experience the following error:
@@ -166,14 +170,16 @@ To install the latest stable release of AxonDeepSeg, you just need to install it
   you will need to manually install the TensorFlow dependency.
 
   Run the following command to install TensorFlow 1.9.0:
-  :: 
-    pip install tensorflow==1.9.0
+  ::
+
+       pip install tensorflow==1.9.0
 
   You can get more information by following the instructions from the `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
 
   **Once TensorFlow is installed, re-run the pip command:**
-  :: 
-    pip install axondeepseg
+  ::
+
+       pip install axondeepseg
 
 Option 2: Installing AxonDeepSeg in development mode (from GitHub)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -192,9 +198,10 @@ Then, go to the newly created git repository and install the AxonDeepSeg package
 .. NOTE ::
    To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
    ::
-    cd axondeepseg
-    git pull
-    pip install -e .
+
+        cd axondeepseg
+        git pull
+        pip install -e .
 
 The advantage of this installation method over the option 1 (application mode) is that you will always get the last stable version of the package.
 
@@ -264,7 +271,8 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 .. NOTE ::
    You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
-    axondeepseg -h
+
+        axondeepseg -h
 
 Segment a single image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
