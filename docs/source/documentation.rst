@@ -93,12 +93,23 @@ The version of python should be displayed in the terminal. If not, you have to i
 To do that, you can follow the instructions given on
 `the official python wiki <https://wiki.python.org/moin/BeginnersGuide/Download>`_.
 
+.. NOTE :: If you have the [Anaconda distribution](https://www.anaconda.com/distribution/) installed on your system, you can specify
+           the version of Python that you want installed in your virtual environment set up below, even if it differs from the version
+           displayed by the "python -V" command. To see the list of Python versions available to be installed in your conda virtual 
+           environment, run:
+
+               conda search python
+
 Virtualenv
 -------------------------------------------------------------------------------
 `Virtualenv` is a Python package that allows you to create virtual environments where
 you can sandbox environments with different package versions without affecting
 your system packages. If you don't have it installed, please follow the instructions
 from the `virtualenv website <https://virtualenv.pypa.io/en/stable/installation/>`_.
+If you have the Anaconda Distribution installed on your system, you can alternatively
+use the conda virtual environment manager, which allows you to specify a different
+Python version to be installed in your virtual environment than what's available by
+default on your system (see note below)
 
 Before installing AxonDeepSeg, we will need to set up a virtual environment.
 A virtual environment is a tool that lets you install specific versions of the python modules you want.
@@ -121,6 +132,14 @@ If you performed all the steps correctly, your username in the console should no
 virtual environment between parenthesis, like this::
 
     (ads_venv) username@hostname /home/...
+
+.. NOTE :: To create a virtual environment called "ads_venv" with the Anaconda Distribution, run:
+
+               conda create -n ads_venv python=3.6
+
+           To activate it, run the following command: 
+
+               source activate ads_venv
 
 AxonDeepSeg
 -------------------------------------------------------------------------------
