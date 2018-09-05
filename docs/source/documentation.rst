@@ -93,7 +93,7 @@ The version of python should be displayed in the terminal. If not, you have to i
 To do that, you can follow the instructions given on
 `the official python wiki <https://wiki.python.org/moin/BeginnersGuide/Download>`_.
 
-.. NOTE :: If you have the [Anaconda distribution](https://www.anaconda.com/distribution/) installed on your system, you can specify
+.. NOTE :: If you have the `Anaconda distribution] <https://www.anaconda.com/distribution/>`_ installed on your system, you can specify
            the version of Python that you want installed in your virtual environment set up below, even if it differs from the version
            displayed by the "python -V" command. To see the list of Python versions available to be installed in your conda virtual 
            environment, run:
