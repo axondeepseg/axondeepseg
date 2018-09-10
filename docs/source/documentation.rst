@@ -8,7 +8,7 @@ AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechn
 Changelog
 ===============================================================================
 
-Version [2.0] - 2018-09-05
+Version [2.0] - 2018-09-11
 -------------------------------------------------------------------------------
 
 **Changed:**
@@ -84,6 +84,9 @@ instructions are provided to help you use AxonDeepSeg.
 
 Python
 -------------------------------------------------------------------------------
+
+.. WARNING ::
+   Starting with AxonDeepSeg version 2.0+, Python 2.7 is no longer supported.
 
 First, you should make sure that Python 3.6 is installed on your computer. Run the following command in the terminal::
 
