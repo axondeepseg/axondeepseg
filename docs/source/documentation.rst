@@ -8,6 +8,15 @@ AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechn
 Changelog
 ===============================================================================
 
+Version [2.0] - 2018-09-11
+-------------------------------------------------------------------------------
+
+**Changed:**
+
+– Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
+- Minor changes to make ADS Windows-compatibile
+– Removed plot hold commands (deprecated)
+
 Version [1.1] - 2018-08-02
 -------------------------------------------------------------------------------
 
@@ -70,19 +79,30 @@ Installation
 The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
 instructions are provided to help you use AxonDeepSeg.
 
-.. NOTE :: AxonDeepSeg is not compatible with Windows due to third-party dependencies.
-           AxonDeepSeg was tested with Mac OS and Linux.
+.. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system.
+           However, please note that our continuous integration testing framework (Travis) only tests AxonDeepSeg for Unix-style systems.
 
 Python
 -------------------------------------------------------------------------------
 
-First, you should make sure that Python 2.7 is installed on your computer. Run the following command in the terminal::
+.. WARNING ::
+   Starting with AxonDeepSeg version 2.0+, Python 2.7 is no longer supported.
+
+First, you should make sure that Python 3.6 is installed on your computer. Run the following command in the terminal::
 
     python -V
 
-The version of python should be displayed in the terminal. If not, you have to install Python 2.7 on your computer.
+The version of python should be displayed in the terminal. If not, you have to install Python 3.6 on your computer.
 To do that, you can follow the instructions given on
 `the official python wiki <https://wiki.python.org/moin/BeginnersGuide/Download>`_.
+
+.. NOTE :: If you have the `Anaconda distribution] <https://www.anaconda.com/distribution/>`_ installed on your system, you can specify
+           the version of Python that you want installed in your virtual environment set up below, even if it differs from the version
+           displayed by the "python -V" command. To see the list of Python versions available to be installed in your conda virtual 
+           environment, run:
+           ::
+
+                conda search python
 
 Virtualenv
 -------------------------------------------------------------------------------
@@ -90,6 +110,10 @@ Virtualenv
 you can sandbox environments with different package versions without affecting
 your system packages. If you don't have it installed, please follow the instructions
 from the `virtualenv website <https://virtualenv.pypa.io/en/stable/installation/>`_.
+If you have the Anaconda Distribution installed on your system, you can alternatively
+use the conda virtual environment manager, which allows you to specify a different
+Python version to be installed in your virtual environment than what's available by
+default on your system (see note below)
 
 Before installing AxonDeepSeg, we will need to set up a virtual environment.
 A virtual environment is a tool that lets you install specific versions of the python modules you want.
@@ -113,6 +137,16 @@ virtual environment between parenthesis, like this::
 
     (ads_venv) username@hostname /home/...
 
+.. NOTE :: To create a virtual environment called "ads_venv" with the Anaconda Distribution, run:
+           ::
+
+                conda create -n ads_venv python=3.6
+
+           To activate it, run the following command: 
+           ::
+
+                source activate ads_venv
+
 AxonDeepSeg
 -------------------------------------------------------------------------------
 
@@ -130,26 +164,25 @@ To install the latest stable release of AxonDeepSeg, you just need to install it
 .. NOTE ::
    Note that you can install a specific version of the software as follows (replace X.X with the version number, for example 0.2):
    ::
-    pip install axondeepseg==X.X
+
+        pip install axondeepseg==X.X
 
 .. WARNING ::    
   If you experience the following error:
   "Could not find a version that satisfies the requirement tensorflow>=XXX (from axondeepseg) (from versions: )... ",
   you will need to manually install the TensorFlow dependency.
 
-  For OS X users, run the following command to install TensorFlow 1.3.0:
-  :: 
-    pip install https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.3.0-py2-none-any.whl
-
-  For Linux users, run the following command to install TensorFlow 1.3.0:
+  Run the following command to install TensorFlow 1.9.0:
   ::
-    pip install https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.3.0-cp34-cp34m-linux_x86_64.whl
+
+       pip install tensorflow==1.9.0
 
   You can get more information by following the instructions from the `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
 
   **Once TensorFlow is installed, re-run the pip command:**
-  :: 
-    pip install axondeepseg
+  ::
+
+       pip install axondeepseg
 
 Option 2: Installing AxonDeepSeg in development mode (from GitHub)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -168,9 +201,10 @@ Then, go to the newly created git repository and install the AxonDeepSeg package
 .. NOTE ::
    To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
    ::
-    cd axondeepseg
-    git pull
-    pip install -e .
+
+        cd axondeepseg
+        git pull
+        pip install -e .
 
 The advantage of this installation method over the option 1 (application mode) is that you will always get the last stable version of the package.
 
@@ -240,7 +274,8 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 .. NOTE ::
    You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
-    axondeepseg -h
+
+        axondeepseg -h
 
 Segment a single image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -382,4 +417,4 @@ SOFTWARE.
 Contributors
 ===============================================================================
 
-Pierre-Louis Antonsanti, Julien Cohen-Adad, Victor Herman, Christian Perone, Maxime Wabartha, Aldo Zaimi
+Pierre-Louis Antonsanti, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Christian Perone, Maxime Wabartha, Aldo Zaimi.

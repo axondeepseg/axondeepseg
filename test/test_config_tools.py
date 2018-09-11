@@ -161,7 +161,7 @@ class TestCore(object):
             base_config=self.config
             )
 
-        for key in config_list.keys():
+        for key in list(config_list.keys()):
             assert validate_config(config_list[key])
 
     @pytest.mark.unit
@@ -185,7 +185,7 @@ class TestCore(object):
             base_config=self.config
             )
 
-        for key in config_list.keys():
+        for key in list(config_list.keys()):
             assert validate_config(config_list[key])
 
     @pytest.mark.unit

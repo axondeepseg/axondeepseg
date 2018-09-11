@@ -79,13 +79,9 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
     if visualization:
         plt.figure(1)
         plt.imshow(img, cmap=plt.get_cmap('gray'))
-        plt.hold(True)
         plt.imshow(prediction, alpha=0.7)
-        plt.hold(True)
         plt.scatter(centroids_T[:, 1], centroids_T[:, 0], color='g')
-        plt.hold(True)
         plt.scatter(centroids_F[:, 1], centroids_F[:, 0], color='r')
-        plt.hold(True)
 
         notDetected = np.array(notDetected) # Bug fix, was a list of an np array, which can't be sliced using integer index
         plt.scatter(notDetected[:, 1], notDetected[:, 0], color='y')
@@ -93,11 +89,8 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
 
         plt.figure(2)
         plt.imshow(img, cmap=plt.get_cmap('gray'))
-        plt.hold(True)
         plt.imshow(groundtruth, alpha=0.7)
-        plt.hold(True)
         plt.scatter(centroids_T[:, 1], centroids_T[:, 0], color='g')
-        plt.hold(True)
         plt.scatter(centroids_F[:, 1], centroids_F[:, 0], color='r')
         plt.title('Ground Truth, Sensitivity : %s , Precision : %s ' % (sensitivity, precision))
         plt.show()

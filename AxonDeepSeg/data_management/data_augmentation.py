@@ -5,7 +5,7 @@ from skimage import transform
 from skimage.filters import gaussian
 import numpy as np
 import random
-from patch_extraction import extract_patch
+from .patch_extraction import extract_patch
 import AxonDeepSeg.ads_utils
 
 #######################################################################################################################
@@ -37,7 +37,7 @@ def shifting(patch, percentage_max = 0.1, verbose=0):
     begin_w = np.random.randint(2*size_shift-1)
     
     if verbose >= 1:
-        print 'height shift: ',begin_h, ', width shift: ', begin_w     
+        print(('height shift: ',begin_h, ', width shift: ', begin_w))     
     
     shifted_image = image[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size]
     shifted_mask = np.stack([np.squeeze(e)[begin_h:begin_h+patch_size,begin_w:begin_w+patch_size] for e in np.split(mask, n_classes, axis=-1)], axis=-1)
@@ -66,7 +66,7 @@ def rescaling(patch, factor_max=1.2, verbose=0):
     # Randomly choosing the resampling factor.
     scale = np.random.uniform(low_bound, high_bound, 1)[0]
     if verbose >= 1:
-        print 'rescaling factor: ', scale
+        print(('rescaling factor: ', scale))
         
     patch_size = patch[0].shape[0]
     new_patch_size = int(patch_size*scale)
@@ -133,7 +133,7 @@ def random_rotation(patch, low_bound=5, high_bound=89, verbose=0):
     angle = np.random.uniform(low_bound, high_bound, 1)
     
     if verbose >= 1:
-        print 'rotation angle: ', angle
+        print(('rotation angle: ', angle))
 
     image_rotated = transform.rotate(image, angle, resize = False, mode = 'symmetric',preserve_range=True)
     mask_rotated = transform.rotate(mask, angle, resize = False, mode = 'symmetric', preserve_range=True)
@@ -163,7 +163,7 @@ def elastic_transform(patch, alpha, sigma):
     shape = image.shape
 
     d = 4
-    sub_shape = (shape[0]/d, shape[0]/d)
+    sub_shape = (shape[0] // d, shape[0] // d)
 
     deformations_x = random_state.rand(*sub_shape) * 2 - 1
     deformations_y = random_state.rand(*sub_shape) * 2 - 1
@@ -200,9 +200,9 @@ def elastic(patch, alpha_max=9, verbose=0):
     :return: List of 2 or 3 ndarrays [deformed_image, deformed_mask, (deformed_weights)]
     """
 
-    alpha = random.choice(range(1, alpha_max))
+    alpha = random.choice(list(range(1, alpha_max)))
     if verbose>=1:
-        print 'elastic transform alpha coeff: ', alpha
+        print(('elastic transform alpha coeff: ', alpha))
     
     patch_deformed = elastic_transform(patch, alpha = alpha, sigma = 4)
     return patch_deformed
@@ -228,7 +228,7 @@ def flipping(patch, verbose=0):
         if len(patch) == 3:
             weights = np.fliplr(weights)
         if verbose >= 1:
-            print 'flipping left-right'
+            print('flipping left-right')
     # Then we toss a coin and depending on the result we flip the image horizontally.
 
     s = np.random.binomial(1, 0.5, 1)
@@ -237,7 +237,7 @@ def flipping(patch, verbose=0):
         if len(patch) == 3:
             weights = np.flipud(weights)
         if verbose >= 1:
-            print 'flipping up-down'
+            print('flipping up-down')
     if len(patch) == 3:
         return [image, mask, weights]
     else:
@@ -261,7 +261,7 @@ def gaussian_blur(patch, sigma_max=3, verbose=0):
     # Choosing the parameter and applying the transformation
     sigma = np.random.uniform(0,sigma_max, 1)[0]
     if verbose>=1:
-        print 'maximum sigma: ', sigma
+        print(('maximum sigma: ', sigma))
     image = gaussian(image, sigma=sigma, preserve_range=True) 
 
     if len(patch) ==3:

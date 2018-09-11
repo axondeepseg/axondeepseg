@@ -46,9 +46,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'AxonDeepSeg'
-copyright = u'2017, NeuroPoly'
-author = u'NeuroPoly'
+project = 'AxonDeepSeg'
+copyright = '2017, NeuroPoly'
+author = 'NeuroPoly'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -156,8 +156,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'AxonDeepSeg.tex', u'AxonDeepSeg Documentation',
-     u'NeuroPoly', 'manual'),
+    (master_doc, 'AxonDeepSeg.tex', 'AxonDeepSeg Documentation',
+     'NeuroPoly', 'manual'),
 ]
 
 
@@ -166,7 +166,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'axondeepseg', u'AxonDeepSeg Documentation',
+    (master_doc, 'axondeepseg', 'AxonDeepSeg Documentation',
      [author], 1)
 ]
 
@@ -177,7 +177,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'AxonDeepSeg', u'AxonDeepSeg Documentation',
+    (master_doc, 'AxonDeepSeg', 'AxonDeepSeg Documentation',
      author, 'AxonDeepSeg', 'One line description of project.',
      'Miscellaneous'),
 ]

@@ -13,7 +13,6 @@ import os, json, imageio
 from tqdm import tqdm
 import pkg_resources
 import argparse
-import tempfile
 from argparse import RawTextHelpFormatter
 import AxonDeepSeg.ads_utils
 
@@ -49,7 +48,7 @@ def segment_image(path_testing_image, path_model,
 	if os.path.exists(path_testing_image):
 
 		# Extracting the image name and its folder path from the total path.
-		tmp_path = path_testing_image.split('/')
+		tmp_path = path_testing_image.split(os.sep)
 		acquisition_name = tmp_path[-1]
 		path_acquisition = '/'.join(tmp_path[:-1])
 
@@ -60,7 +59,7 @@ def segment_image(path_testing_image, path_model,
 		img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
 
 		# Generate tmp file
-		fp = tempfile.NamedTemporaryFile(dir=path_acquisition,suffix='.png',mode='wb')
+		fp = open(os.path.join(path_acquisition, '__tmp_segment__.png'), 'wb+')
 
 		img_name_original, file_extension = os.path.splitext(acquisition_name) 
 
@@ -84,12 +83,14 @@ def segment_image(path_testing_image, path_model,
 						  prediction_proba_activate=False, write_mode=True)
 
 		if verbosity_level >= 1:
-			print "Image {0} segmented.".format(path_testing_image)
+			print(("Image {0} segmented.".format(path_testing_image)))
 
 		# Remove temporary file used for the segmentation
 		fp.close()
+		os.remove(os.path.join(path_acquisition, '__tmp_segment__.png'))
+
 	else:
-		print "The path {0} does not exist.".format(path_testing_image)
+		print(("The path {0} does not exist.".format(path_testing_image)))
 
 	return None
 
@@ -124,7 +125,7 @@ def segment_folders(path_testing_images_folder, path_model,
 		img = imageio.imread(os.path.join(path_testing_images_folder,file_))
 
 		# Generate tmpfile for segmentation pipeline
-		fp = tempfile.NamedTemporaryFile(dir=path_testing_images_folder,suffix='.png',mode='wb')
+		fp = open(os.path.join(path_testing_images_folder, '__tmp_segment__.png'), 'wb+')
 
 		img_name_original, file_extension = os.path.splitext(file_)  
 
@@ -151,6 +152,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
 		# Remove temporary file used for the segmentation
 		fp.close()
+		os.remove(os.path.join(path_testing_images_folder, '__tmp_segment__.png'))
 
 	return None
 
@@ -224,7 +226,7 @@ def main():
 	Main loop.
 	:return: None.
 	'''
-	print 'AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)
+	print(('AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)))
 	ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
 	requiredName = ap.add_argument_group('required arguments')
@@ -244,7 +246,7 @@ def main():
 															  'file needs to be added to the image folder path. The pixel size \n'+
 															  'in that file will be used for the segmentation.',
 															  default=0.0)
-	ap.add_argument('-v', '--verbose', required=False, type=int, choices=range(0,4), help='Verbosity level. \n'+
+	ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
 															'0 (default) : Displays the progress bar for the segmentation. \n'+
 															'1: Also displays the path of the image(s) being segmented. \n'+
 															'2: Also displays the information about the prediction step \n'+ 
@@ -295,10 +297,10 @@ def main():
 							acquired_resolution=psm,
 							verbosity_level=verbosity_level)
 
-				print "Segmentation finished."
+				print("Segmentation finished.")
 
 			else:
-				print "The path(s) specified is/are not image(s). Please update the input path(s) and try again."
+				print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
 				break
 
 		else:
@@ -309,7 +311,7 @@ def main():
 							acquired_resolution=psm,
 							verbosity_level=verbosity_level)
 
-			print "Segmentation finished."
+			print("Segmentation finished.")
 
 # Calling the script
 if __name__ == '__main__':

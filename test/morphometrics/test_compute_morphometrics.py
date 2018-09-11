@@ -5,7 +5,6 @@ import os
 import inspect
 import random
 import string
-import tempfile
 import numpy as np
 import shutil
 
@@ -45,20 +44,21 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_pixelsize_throws_error_for_nonexisisting_file(self):
         nonExistingFile = ''.join(
-            random.choice(string.lowercase) for i in range(16))
+            random.choice(string.ascii_lowercase) for i in range(16))
 
         with pytest.raises(IOError):
             get_pixelsize(nonExistingFile)
 
     @pytest.mark.unit
     def test_get_pixelsize_throws_error_for_invalid_data_file(self):
-        with tempfile.NamedTemporaryFile() as tmp:
-            # Data written using tempfile module are saved in a binary format
-            # by default, which get_pixelsize doesn't currently support.
-            tmp.write(repr(self.pixelsizeValue))
+        tmpName = 'tmpInvalid.txt'
+        with open(os.path.join(self.tmpDir, tmpName),'wb') as tmp:
 
-            with pytest.raises(ValueError):
-                get_pixelsize(tmp.name)
+            tmp.write('&&&'.encode())
+
+        with pytest.raises(ValueError):
+
+            get_pixelsize(os.path.join(self.tmpDir, tmpName))
 
     # --------------get_axon_morphometrics tests-------------- #
     @pytest.mark.unit
@@ -89,7 +89,7 @@ class TestCore(object):
 
         stats_array = get_axon_morphometrics(pred_axon, path_folder)
 
-        for key in stats_array[0].keys():
+        for key in list(stats_array[0].keys()):
             assert key in expectedKeys
 
     # --------------save and load _axon_morphometrics tests-------------- #
@@ -120,7 +120,7 @@ class TestCore(object):
 
         stats_array = get_axon_morphometrics(pred_axon, path_folder)
 
-        nonExistingFolder = ''.join(random.choice(string.lowercase) for i in range(16))
+        nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
 
         with pytest.raises(IOError):
             save_axon_morphometrics(nonExistingFolder, stats_array)
@@ -146,7 +146,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_load_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
 
-        nonExistingFolder = ''.join(random.choice(string.lowercase) for i in range(16))
+        nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
 
         with pytest.raises(IOError):
             load_axon_morphometrics(nonExistingFolder)
@@ -229,7 +229,7 @@ class TestCore(object):
             path_folder
             )
 
-        for key in aggregate_metrics.keys():
+        for key in list(aggregate_metrics.keys()):
             assert key in expectedKeys
 
     # --------------write_aggregate_morphometrics tests-------------- #
@@ -280,7 +280,7 @@ class TestCore(object):
             path_folder
             )
 
-        nonExistingFolder = ''.join(random.choice(string.lowercase) for i in range(16))
+        nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
 
         with pytest.raises(IOError):
             write_aggregate_morphometrics(nonExistingFolder, aggregate_metrics)

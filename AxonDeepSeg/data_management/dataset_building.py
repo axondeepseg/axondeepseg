@@ -3,7 +3,7 @@ from scipy.misc import imread, imsave
 from skimage.transform import rescale
 from AxonDeepSeg.data_management.input_data import labellize_mask_2d
 import numpy as np
-from patch_extraction import extract_patch
+from .patch_extraction import extract_patch
 from tqdm import tqdm
 import AxonDeepSeg.ads_utils
 

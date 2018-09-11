@@ -30,7 +30,7 @@ def launch_morphometrics_computation(path_img,path_prediction):
 		# Read prediction
 		pred = imageio.imread(path_prediction)
 	except (IOError, OSError) as e:
-		print ("launch_morphometrics_computation: " + e.message)
+		print(("launch_morphometrics_computation: " + str(e)))
 		raise
 	else:
 

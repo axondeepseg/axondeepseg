@@ -2,7 +2,7 @@
 # python set_config.py
 
 import argparse
-import ConfigParser as cp
+import configparser as cp
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--path_axonseg", required=True, help="absolute path of the AxonSeg toolbox (matlab) - Used for myelin detection")

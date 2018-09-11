@@ -15,7 +15,7 @@ def generate_heliosjob(path_project, path_venv, bashname, configfile, config, pa
     with open(os.path.join(path_model, configfile), 'w') as f:
         json.dump(config, f, indent=2)
         
-    name_model = path_model.split('/')[-1]
+    name_model = path_model.split(os.sep)[-1]
 
     file = open(os.path.join(path_model, bashname),"w")
     file.write("#!/bin/bash \n")
@@ -42,7 +42,7 @@ def generate_heliosjob(path_project, path_venv, bashname, configfile, config, pa
         file.write(" -g ")
         file.write(str(gpu_per))
         
-    print name_model + ' created ...'
+    print((name_model + ' created ...'))
         
     file.close()
 
@@ -86,7 +86,7 @@ def generate_guilliminjob(path_project, path_venv, bashname, configfile, config,
         file.write(" -g ")
         file.write(str(gpu_per))
         
-    print name_model + ' created ...'
+    print((name_model + ' created ...'))
         
     file.close()
     
@@ -137,6 +137,6 @@ def generate_cedarjob(path_project, path_venv, bashname, configfile, config, pat
         file.write(" -g ")
         file.write(str(gpu_per))
         
-    print name_model + ' created ...'
+    print((name_model + ' created ...'))
         
     file.close()

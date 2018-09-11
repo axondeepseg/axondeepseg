@@ -71,6 +71,7 @@ class TestCore(object):
             )
 
         assert os.path.exists(os.path.join(self.modelPath, self.statsFilename))
+        os.remove(os.path.join(self.modelPath, self.statsFilename))
 
     # --------------metrics_classic_wrapper tests-------------- #
     @pytest.mark.integration

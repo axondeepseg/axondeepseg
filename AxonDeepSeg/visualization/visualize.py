@@ -66,7 +66,7 @@ def visualize_segmentation(path):
     mask = False
 
     if not 'results.pkl' in os.listdir(path):
-        print 'results not present'
+        print('results not present')
 
     file = open(path + '/results.pkl', 'r')
     res = pickle.load(file)
@@ -123,7 +123,7 @@ def visualize_segmentation(path):
         scores_2 = tabulate(table, headers)
 
         text = text + subtitle3 + subtitle3 + scores_2
-        print text
+        print(text)
 
         file = open(path + "/Report_results.txt", 'w')
         file.write(text)
@@ -159,11 +159,11 @@ def retrieve_training_data(path_model, path_model_init = None):
     """
 
 
-    file = open(path_model + '/evolution.pkl', 'r')  # training variables : loss, accuracy, epoch
+    file = open(path_model + '/evolution.pkl', 'rb')  # training variables : loss, accuracy, epoch
     evolution = pickle.load(file)
 
     if path_model_init:
-        file_init = open(path_model_init + '/evolution.pkl', 'r')
+        file_init = open(path_model_init + '/evolution.pkl', 'rb')
         evolution_init = pickle.load(file_init)
         last_epoch = evolution_init['steps'][-1]
 

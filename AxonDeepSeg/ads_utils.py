@@ -1,6 +1,6 @@
 import os
 import sys
-import ConfigParser
+import configparser
 from distutils.util import strtobool
 import raven
 
@@ -33,9 +33,9 @@ def _main_thread_terminated(self):
             # add or remove items
             size = self._queue.qsize()
 
-            print("Sentry is attempting to send %i pending error messages"
-                  % size)
-            print("Waiting up to %s seconds" % timeout)
+            print(("Sentry is attempting to send %i pending error messages"
+                  % size))
+            print(("Waiting up to %s seconds" % timeout))
 
             if os.name == 'nt':
                 print("Press Ctrl-Break to quit")
@@ -44,9 +44,9 @@ def _main_thread_terminated(self):
 
             # -- Function override statement --#
             config_path = get_config_path()
-            print ("Note: you can opt out of Sentry reporting by changing the "
+            print(("Note: you can opt out of Sentry reporting by changing the "
                    "value of bugTracking to 0 in the "
-                   "file {}".format(config_path))
+                   "file {}".format(config_path)))
             # -- EO Function override statement --#
 
             self._timed_queue_join(timeout - initial_timeout)
@@ -72,17 +72,18 @@ def config_setup():
                "and errors from users. These reports are anonymous.")
 
         bugTracking = strtobool(
-            raw_input("Do you agree to help us improve ADS? [y]es/[n]o:")
+            eval(input("Do you agree to help us improve ADS? [y]es/[n]o:"))
             )
 
     if bugTracking:
-        print ("Note: you can opt out of Sentry reporting by changing the "
+        print(("Note: you can opt out of Sentry reporting by changing the "
                "value of bugTracking from 1 to 0 in the "
-               "file {}".format(config_path))
+               "file {}".format(config_path)))
 
-    config = ConfigParser.ConfigParser()
-    config.add_section('Global')
-    config.set('Global', 'bugTracking', bugTracking)
+    config = configparser.ConfigParser()
+    config['Global'] = {
+        'bugTracking': bugTracking,
+    }
 
     with open(config_path, 'w') as configFile:
         config.write(configFile)
@@ -102,13 +103,15 @@ def read_config():
     """Read the system configuration file.
     :return: a dict with the configuration parameters.
     """
+
     config_path = get_config_path()
 
     if not os.path.exists(config_path):
         raise IOError("Could not find configuration file.")
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(config_path)
+
     return config
 
 
@@ -148,7 +151,7 @@ def init_error_client(bugTracking):
             traceback_to_server(client)
 
         except:
-            print "Unexpected error: bug tracking may not be functionning."
+            print("Unexpected error: bug tracking may not be functionning.")
 
 
 def traceback_to_server(client):

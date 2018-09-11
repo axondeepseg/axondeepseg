@@ -55,7 +55,7 @@ def generate_dict_weights(config):
     :return: Rearranged dict with the parameters related to weights.
     """
     weights_modifier = {}
-    for key, val in config.iteritems():
+    for key, val in list(config.items()):
         if key == 'weighted_cost_activate':
             update_recur_dict(weights_modifier, {key: val})
         elif key[:13] == 'weighted_cost':
@@ -74,7 +74,7 @@ def generate_dict_da(config):
 
     transformations = {}
 
-    for key, val in config.iteritems():
+    for key, val in list(config.items()):
         if key == 'da-type':
             key1, key2 = key.split('-')
             update_recur_dict(transformations, {key2: val})
@@ -93,7 +93,7 @@ def update_recur_dict(d, u):
     :param u: Dict, update to process recursively.
     :return: Updated dict.
     """
-    for k, v in u.iteritems():
+    for k, v in list(u.items()):
         if isinstance(v, collections.Mapping):
             r = update_recur_dict(d.get(k, {}), v)
             d[k] = r
