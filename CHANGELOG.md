@@ -2,7 +2,7 @@
 
 All notable changes to the AxonDeepSeg project will be documented in this file.
 
-## [2.0] - 2018-09-05
+## [2.0] - 2018-09-11
 
 ## Changed
 
