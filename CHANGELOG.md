@@ -2,6 +2,12 @@
 
 All notable changes to the AxonDeepSeg project will be documented in this file.
 
+## [2.1] - 2018-09-25
+
+## Changed
+
+– Fixed bug that would crash when user inputed consent for Sentry tracking
+
 ## [2.0] - 2018-09-11
 
 ## Changed
