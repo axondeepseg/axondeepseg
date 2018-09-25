@@ -8,6 +8,15 @@ AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechn
 Changelog
 ===============================================================================
 
+## [2.1] - 2018-09-25
+
+Version [2.0] - 2018-09-11
+-------------------------------------------------------------------------------
+
+**Changed:**
+
+– Fixed bug that would crash when user inputed consent for Sentry tracking
+
 Version [2.0] - 2018-09-11
 -------------------------------------------------------------------------------
 
