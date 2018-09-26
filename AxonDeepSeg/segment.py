@@ -224,7 +224,9 @@ def main(argv=None):
 
 	'''
 	Main loop.
-	:return: None.
+	:return: Exit code.
+		0: Success
+		2: Invalid argument value
 	'''
 	print(('AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)))
 	ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -290,7 +292,20 @@ def main(argv=None):
 
 			if current_path_target.lower().endswith(validExtensions):
 
-			# Performing the segmentation over the image
+				# Check that image size is large enough for given resolution to reach minimum patch size after resizing.
+				height, width, _ = imageio.imread(current_path_target).shape
+				image_size = [height, width]
+				minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
+
+				if psm < minimum_resolution:
+					print("EXCEPTION: The size of the image is too small for the provided pixel size ({0}).\n".format(psm),
+					      "The image size must be at least {0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
+						  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(psm * min(image_size) / resolution_model)
+					)
+
+					sys.exit(2)
+
+				# Performing the segmentation over the image
 				segment_image(current_path_target, path_model, overlap_value, config,
 							resolution_model,
 							acquired_resolution=psm,

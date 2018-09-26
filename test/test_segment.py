@@ -142,10 +142,24 @@ class TestCore(object):
             assert os.path.exists(os.path.join(self.imageFolderPath, fileName))
 
     # --------------main (cli) tests-------------- #
-    @pytest.mark.current
+    @pytest.mark.integration
     def test_main_cli_runs_succesfully_with_valid_inputs(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2", "-s", "0.37"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_for_too_small_resolution_due_to_min_resampled_patch_size(self):
+
+        image_size = [436, 344] # of self.imagePath
+        default_SEM_resolution = 0.1
+        default_SEM_patch_size = 512
+
+        minimum_resolution = default_SEM_patch_size * default_SEM_resolution / min(image_size)
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2", "-s", str(0.99*minimum_resolution)])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
