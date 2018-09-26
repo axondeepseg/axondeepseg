@@ -293,7 +293,15 @@ def main(argv=None):
 			if current_path_target.lower().endswith(validExtensions):
 
 				# Check that image size is large enough for given resolution to reach minimum patch size after resizing.
-				height, width, _ = imageio.imread(current_path_target).shape
+				
+				try:
+					height, width, _ = imageio.imread(current_path_target).shape
+				except:
+					try:
+						height, width = imageio.imread(current_path_target).shape
+					except Exception as e:
+						raise e
+
 				image_size = [height, width]
 				minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
 
