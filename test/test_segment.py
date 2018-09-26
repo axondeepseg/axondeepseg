@@ -160,6 +160,6 @@ class TestCore(object):
         minimum_resolution = default_SEM_patch_size * default_SEM_resolution / min(image_size)
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2", "-s", str(0.99*minimum_resolution)])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2", "-s", str(round(0.99*minimum_resolution,3))])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)

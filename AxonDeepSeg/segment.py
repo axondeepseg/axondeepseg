@@ -298,9 +298,10 @@ def main(argv=None):
 				minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
 
 				if psm < minimum_resolution:
-					print("EXCEPTION: The size of the image is too small for the provided pixel size ({0}).\n".format(psm),
-					      "The image size must be at least {0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
-						  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(psm * min(image_size) / resolution_model)
+					print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, psm),
+					      "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
+						  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(psm * min(image_size) / resolution_model)),
+						  "Image file location: {0}".format(current_path_target)
 					)
 
 					sys.exit(2)
