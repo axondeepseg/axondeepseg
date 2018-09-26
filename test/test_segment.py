@@ -3,7 +3,7 @@
 import pytest
 import os
 from AxonDeepSeg.segment import *
-
+import AxonDeepSeg.segment
 
 class TestCore(object):
     def setup(self):
@@ -140,3 +140,12 @@ class TestCore(object):
 
         for fileName in outputFiles:
             assert os.path.exists(os.path.join(self.imageFolderPath, fileName))
+
+    # --------------main (cli) tests-------------- #
+    @pytest.mark.current
+    def test_main_cli_runs_succesfully_with_valid_inputs(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2", "-s", "0.37"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)

@@ -9,7 +9,7 @@
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
-import os, json, imageio
+import os, json, imageio, sys
 from tqdm import tqdm
 import pkg_resources
 import argparse
@@ -220,7 +220,7 @@ def generate_resolution(type_acquisition, model_input_size):
 
 # Main loop
 
-def main():
+def main(argv=None):
 
 	'''
 	Main loop.
@@ -261,9 +261,8 @@ def main():
 															default=25)
 	ap._action_groups.reverse()
 
-
 	# Processing the arguments
-	args = vars(ap.parse_args())
+	args = vars(ap.parse_args(argv))
 	type_ = str(args["type"])
 	verbosity_level = int(args["verbose"])
 	overlap_value = int(args["overlap"])
@@ -312,6 +311,8 @@ def main():
 							verbosity_level=verbosity_level)
 
 			print("Segmentation finished.")
+
+	sys.exit(0)
 
 # Calling the script
 if __name__ == '__main__':
