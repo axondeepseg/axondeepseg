@@ -18,4 +18,4 @@ script:
   - echo "Launch general integrity test"
   - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
 after_success:
-  - coveralls
+  - coveralls 
