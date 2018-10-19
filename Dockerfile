@@ -1,4 +1,4 @@
-FROM continuumio/anaconda3
+FROM jupyter/base-notebook:8ccdfc1da8d5
 
 USER root
 
@@ -26,6 +26,7 @@ RUN apt-get update && \
         \
         gnuplot-x11 \
         libopenblas-base \
+        python3.6 \
         \
         ttf-dejavu && \
     apt-get clean && \
@@ -38,7 +39,6 @@ RUN cd $HOME/work;\
     python -m sos_notebook.install;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg; \
     cd axondeepseg;\
-    conda install python=3.6.0;\
     pip install -e .;\
     axondeepseg_test;
 
