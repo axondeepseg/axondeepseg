@@ -41,7 +41,9 @@ RUN cd $HOME/work;\
     cd axondeepseg;\
     pip install -e .;\
     chmod -R 777 $HOME/work/axondeepseg;\
-    y | axondeepseg_test;
+    echo '[Global]' >> ~/axondeepseg.cfg;\
+    echo 'bugtracking = 1' >> ~/axondeepseg.cfg;\
+    axondeepseg_test;
 
 WORKDIR $HOME/work/axondeepseg
 
