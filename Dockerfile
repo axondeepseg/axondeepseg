@@ -43,7 +43,7 @@ RUN cd $HOME/work;\
     chmod -R 777 $HOME/work/axondeepseg;\
     echo '[Global]' >> ~/axondeepseg.cfg;\
     echo 'bugtracking = 1' >> ~/axondeepseg.cfg;\
-    axondeepseg_test;
+    py.test --cov AxonDeepSeg/ --cov-report term-missing;
 
 WORKDIR $HOME/work/axondeepseg
 
