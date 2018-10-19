@@ -39,8 +39,9 @@ RUN cd $HOME/work;\
     python -m sos_notebook.install;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg; \
     cd axondeepseg;\
-    pip install -e .;
+    pip install -e .;\
+    chmod -R 777 $HOME/work/axondeepseg;
 
-WORKDIR $HOME/work/t1_notebooks
+WORKDIR $HOME/work/axondeepseg
 
 USER $NB_UID
