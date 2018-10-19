@@ -39,8 +39,7 @@ RUN cd $HOME/work;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg;\
     cd axondeepseg;\
     conda create -n ads_venv python=3.6;\
-    activate ads_venv;\
-    pip install -e .;\
+    /bin/bash -c “source activate ads_venv && pip install -e .”;
 
 WORKDIR $HOME/work/t1_notebooks
 
