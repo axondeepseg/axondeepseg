@@ -38,6 +38,7 @@ RUN cd $HOME/work;\
     python -m sos_notebook.install;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg; \
     cd axondeepseg;\
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc;\
     conda create -n ads_venv python=3.6;\
     conda activate ads_venv;\
     pip install -e .;
