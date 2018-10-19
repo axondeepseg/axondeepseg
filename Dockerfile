@@ -35,12 +35,13 @@ RUN apt-get update && \
 
 RUN cd $HOME/work;\
     pip install --upgrade pip;\
-    pip install sos sos-notebook scipy plotly dash dash_core_components dash_html_components dash_dangerously_set_inner_html dash-renderer flask==0.12.2;\
+    pip install y sos sos-notebook scipy plotly dash dash_core_components dash_html_components dash_dangerously_set_inner_html dash-renderer flask==0.12.2;\
     python -m sos_notebook.install;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg; \
     cd axondeepseg;\
     pip install -e .;\
-    chmod -R 777 $HOME/work/axondeepseg;
+    chmod -R 777 $HOME/work/axondeepseg;\
+    y | axondeepseg_test;
 
 WORKDIR $HOME/work/axondeepseg
 
