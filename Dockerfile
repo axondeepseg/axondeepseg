@@ -38,8 +38,8 @@ RUN cd $HOME/work;\
     python -m sos_notebook.install;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg;\
     cd axondeepseg;\
-    pip install tensorflow==;\
-    pip install -e .;\
+    pip3 install tensorflow==;\
+    pip3 install -e .;\
     y | axondeepseg_test;
 
 WORKDIR $HOME/work/t1_notebooks
