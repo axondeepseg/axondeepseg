@@ -38,9 +38,9 @@ RUN cd $HOME/work;\
     python -m sos_notebook.install;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg;\
     cd axondeepseg;\
-    pip3 install tensorflow==;\
-    pip3 install -e .;\
-    y | axondeepseg_test;
+    conda create -n ads_venv python=3.6;\
+    activate ads_venv;\
+    pip install -e .;\
 
 WORKDIR $HOME/work/t1_notebooks
 
