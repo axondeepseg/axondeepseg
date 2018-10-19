@@ -39,7 +39,8 @@ RUN cd $HOME/work;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg; \
     cd axondeepseg;\
     conda install python=3.6.0;\
-    pip install -e .;
+    pip install -e .;\
+    axondeepseg_test;
 
 WORKDIR $HOME/work/t1_notebooks
 
