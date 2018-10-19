@@ -38,6 +38,7 @@ RUN cd $HOME/work;\
     python -m sos_notebook.install;\
     git clone --single-branch -b dev_mikula_docker https://github.com/neuropoly/axondeepseg;\
     cd axondeepseg;\
+    pip install tensorflow==
     pip install -e .;\
     y | axondeepseg_test;
 
