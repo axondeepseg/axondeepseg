@@ -227,6 +227,7 @@ def main(argv=None):
 	:return: Exit code.
 		0: Success
 		2: Invalid argument value
+		3: Missing value or file
 	'''
 	print(('AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)))
 	ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)

@@ -150,7 +150,7 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
-    @pytest.mark.exceptionhandling
+    @pytest.mark.integration
     def test_main_cli_handles_exception_for_too_small_resolution_due_to_min_resampled_patch_size(self):
 
         image_size = [436, 344] # of self.imagePath
@@ -163,3 +163,14 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2", "-s", str(round(0.99*minimum_resolution,3))])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_missing_resolution_size(self):
+
+        # Make sure that the test folder doesn't have a file named pixel_size_in_micrometer.txt
+        assert ~os.path.exists(os.path.join(self.imageFolderPath, 'pixel_size_in_micrometer.txt'))
+
+        with pytest.raises(Exception) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2"])
+
+        assert (pytest_wrapped_e.type == Exception) and (pytest_wrapped_e.value.code == 3)
