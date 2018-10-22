@@ -30,7 +30,7 @@ default_overlap = 25
 
 def segment_image(path_testing_image, path_model,
 			      overlap_value, config, resolution_model,
-				  acquired_resolution = 0.0, verbosity_level=0):
+				  acquired_resolution = None, verbosity_level=0):
 
 	'''
 	Segment the image located at the path_testing_image location.
@@ -96,7 +96,7 @@ def segment_image(path_testing_image, path_model,
 
 def segment_folders(path_testing_images_folder, path_model,
 					overlap_value, config, resolution_model,
-					acquired_resolution = 0.0,
+					acquired_resolution = None,
 					verbosity_level=0):
 	'''
 	Segments the images contained in the image folders located in the path_testing_images_folder.
@@ -248,7 +248,7 @@ def main(argv=None):
 															  'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
 															  'file needs to be added to the image folder path. The pixel size \n'+
 															  'in that file will be used for the segmentation.',
-															  default=0.0)
+															  default=None)
 	ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
 															'0 (default) : Displays the progress bar for the segmentation. \n'+
 															'1: Also displays the path of the image(s) being segmented. \n'+
@@ -269,7 +269,10 @@ def main(argv=None):
 	type_ = str(args["type"])
 	verbosity_level = int(args["verbose"])
 	overlap_value = int(args["overlap"])
-	psm = float(args["sizepixel"])
+	if args["sizepixel"] is not None:
+		psm = float(args["sizepixel"])
+	else:
+		psm = None
 	path_target_list = args["imgpath"]
 	new_path = args["model"]
 
@@ -292,6 +295,25 @@ def main(argv=None):
 		if not os.path.isdir(current_path_target):
 
 			if current_path_target.lower().endswith(validExtensions):
+				
+				# Handle cases if no resolution is provided on the CLI
+				if psm == None:
+					
+					# Check if a pixel size file exists, if so read it.
+					if os.path.exists(os.path.join(os.path.dirname(current_path_target), 'pixel_size_in_micrometer.txt')):
+
+						resolution_file = open(os.path.join(os.path.dirname(current_path_target), 'pixel_size_in_micrometer.txt'), 'r')
+
+						psm = float(resolution_file.read())
+
+
+					else:
+
+						print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+									  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+									  "containing the pixel size value."
+						)
+						sys.exit(3)
 
 				# Check that image size is large enough for given resolution to reach minimum patch size after resizing.
 				

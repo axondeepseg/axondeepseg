@@ -175,7 +175,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_model_folder, config_dict,
 					  ckpt_name='model',
 					  segmentations_filenames=['AxonDeepSeg.png'], inference_batch_size=1,
-					  overlap_value=25, resampled_resolutions=0.1, acquired_resolution=0.0,
+					  overlap_value=25, resampled_resolutions=0.1, acquired_resolution=None,
 					  prediction_proba_activate=False, write_mode=True, gpu_per=1.0, verbosity_level=0):
 
 	'''
@@ -215,7 +215,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 	path_acquisitions = [os.path.join(path_acquisitions_folders[i], e) for i, e in enumerate(acquisitions_filenames)]
 
 	# If we did not receive any resolution we read the pixel size in micrometer from each pixel.
-	if acquired_resolution == 0.0:
+	if acquired_resolution == None:
 
 		if os.path.exists(os.path.join(path_acquisitions_folders[0], 'pixel_size_in_micrometer.txt')):
 
