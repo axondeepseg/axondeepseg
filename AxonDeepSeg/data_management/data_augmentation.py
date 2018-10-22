@@ -75,10 +75,10 @@ def rescaling(patch, factor_max=1.2, verbose=0):
     if (new_patch_size <= patch_size+5) and (new_patch_size >= patch_size-5): # To avoid having q_h = 0
         return patch
     else :
-        image_rescale = rescale(patch[0], scale, preserve_range= True)
-        mask_rescale = rescale(patch[1], scale, preserve_range= True)
+        image_rescale = rescale(patch[0], scale, preserve_range= True, mode='constant')
+        mask_rescale = rescale(patch[1], scale, preserve_range= True, mode='constant')
         if len(patch) == 3:
-            weights_rescale = rescale(patch[2], scale, preserve_range=True)
+            weights_rescale = rescale(patch[2], scale, preserve_range=True, mode='constant')
 
         s_r = mask_rescale.shape[0]
         q_h, r_h = divmod(patch_size-s_r,2)
