@@ -118,6 +118,26 @@ def segment_folders(path_testing_images_folder, path_model,
 
 	# Pre-processing: convert to png if not already done and adapt to model contrast
 	for file_ in tqdm(img_files, desc="Segmentation..."):
+		print(os.path.join(path_testing_images_folder,file_))
+		try:
+			height, width, _ = imageio.imread(os.path.join(path_testing_images_folder,file_)).shape
+		except:
+			try:
+				height, width = imageio.imread(os.path.join(path_testing_images_folder,file_)).shape
+			except Exception as e:
+				raise e
+
+		image_size = [height, width]
+		minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
+
+		if acquired_resolution < minimum_resolution:
+			print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, acquired_resolution),
+				  "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
+				  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(acquired_resolution * min(image_size) / resolution_model)),
+				  "Image file location: {0}".format(os.path.join(file_,path_testing_images_folder))
+			)
+
+			sys.exit(2)
 
 		tmp_path, selected_model = os.path.split(path_model)
 
@@ -350,6 +370,24 @@ def main(argv=None):
 				break
 
 		else:
+
+			# Handle cases if no resolution is provided on the CLI
+			if psm == None:
+
+				# Check if a pixel size file exists, if so read it.
+				if os.path.exists(os.path.join(current_path_target, 'pixel_size_in_micrometer.txt')):
+
+					resolution_file = open(os.path.join(current_path_target, 'pixel_size_in_micrometer.txt'), 'r')
+
+					psm = float(resolution_file.read())
+
+				else:
+
+					print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+								  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+								  "containing the pixel size value."
+					)
+					sys.exit(3)
 
 			# Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
 			segment_folders(current_path_target, path_model, overlap_value, config,
