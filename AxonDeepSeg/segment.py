@@ -9,7 +9,7 @@
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
-import os, json, imageio
+import os, json, imageio, sys
 from tqdm import tqdm
 import pkg_resources
 import argparse
@@ -30,7 +30,7 @@ default_overlap = 25
 
 def segment_image(path_testing_image, path_model,
 			      overlap_value, config, resolution_model,
-				  acquired_resolution = 0.0, verbosity_level=0):
+				  acquired_resolution = None, verbosity_level=0):
 
 	'''
 	Segment the image located at the path_testing_image location.
@@ -96,7 +96,7 @@ def segment_image(path_testing_image, path_model,
 
 def segment_folders(path_testing_images_folder, path_model,
 					overlap_value, config, resolution_model,
-					acquired_resolution = 0.0,
+					acquired_resolution = None,
 					verbosity_level=0):
 	'''
 	Segments the images contained in the image folders located in the path_testing_images_folder.
@@ -118,6 +118,26 @@ def segment_folders(path_testing_images_folder, path_model,
 
 	# Pre-processing: convert to png if not already done and adapt to model contrast
 	for file_ in tqdm(img_files, desc="Segmentation..."):
+		print(os.path.join(path_testing_images_folder,file_))
+		try:
+			height, width, _ = imageio.imread(os.path.join(path_testing_images_folder,file_)).shape
+		except:
+			try:
+				height, width = imageio.imread(os.path.join(path_testing_images_folder,file_)).shape
+			except Exception as e:
+				raise e
+
+		image_size = [height, width]
+		minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
+
+		if acquired_resolution < minimum_resolution:
+			print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, acquired_resolution),
+				  "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
+				  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(acquired_resolution * min(image_size) / resolution_model)),
+				  "Image file location: {0}".format(os.path.join(file_,path_testing_images_folder))
+			)
+
+			sys.exit(2)
 
 		tmp_path, selected_model = os.path.split(path_model)
 
@@ -220,11 +240,14 @@ def generate_resolution(type_acquisition, model_input_size):
 
 # Main loop
 
-def main():
+def main(argv=None):
 
 	'''
 	Main loop.
-	:return: None.
+	:return: Exit code.
+		0: Success
+		2: Invalid argument value
+		3: Missing value or file
 	'''
 	print(('AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)))
 	ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -245,7 +268,7 @@ def main():
 															  'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
 															  'file needs to be added to the image folder path. The pixel size \n'+
 															  'in that file will be used for the segmentation.',
-															  default=0.0)
+															  default=None)
 	ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
 															'0 (default) : Displays the progress bar for the segmentation. \n'+
 															'1: Also displays the path of the image(s) being segmented. \n'+
@@ -261,13 +284,15 @@ def main():
 															default=25)
 	ap._action_groups.reverse()
 
-
 	# Processing the arguments
-	args = vars(ap.parse_args())
+	args = vars(ap.parse_args(argv))
 	type_ = str(args["type"])
 	verbosity_level = int(args["verbose"])
 	overlap_value = int(args["overlap"])
-	psm = float(args["sizepixel"])
+	if args["sizepixel"] is not None:
+		psm = float(args["sizepixel"])
+	else:
+		psm = None
 	path_target_list = args["imgpath"]
 	new_path = args["model"]
 
@@ -290,8 +315,49 @@ def main():
 		if not os.path.isdir(current_path_target):
 
 			if current_path_target.lower().endswith(validExtensions):
+				
+				# Handle cases if no resolution is provided on the CLI
+				if psm == None:
+					
+					# Check if a pixel size file exists, if so read it.
+					if os.path.exists(os.path.join(os.path.dirname(current_path_target), 'pixel_size_in_micrometer.txt')):
 
-			# Performing the segmentation over the image
+						resolution_file = open(os.path.join(os.path.dirname(current_path_target), 'pixel_size_in_micrometer.txt'), 'r')
+
+						psm = float(resolution_file.read())
+
+
+					else:
+
+						print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+									  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+									  "containing the pixel size value."
+						)
+						sys.exit(3)
+
+				# Check that image size is large enough for given resolution to reach minimum patch size after resizing.
+				
+				try:
+					height, width, _ = imageio.imread(current_path_target).shape
+				except:
+					try:
+						height, width = imageio.imread(current_path_target).shape
+					except Exception as e:
+						raise e
+
+				image_size = [height, width]
+				minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
+
+				if psm < minimum_resolution:
+					print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, psm),
+					      "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
+						  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(psm * min(image_size) / resolution_model)),
+						  "Image file location: {0}".format(current_path_target)
+					)
+
+					sys.exit(2)
+
+				# Performing the segmentation over the image
 				segment_image(current_path_target, path_model, overlap_value, config,
 							resolution_model,
 							acquired_resolution=psm,
@@ -305,6 +371,24 @@ def main():
 
 		else:
 
+			# Handle cases if no resolution is provided on the CLI
+			if psm == None:
+
+				# Check if a pixel size file exists, if so read it.
+				if os.path.exists(os.path.join(current_path_target, 'pixel_size_in_micrometer.txt')):
+
+					resolution_file = open(os.path.join(current_path_target, 'pixel_size_in_micrometer.txt'), 'r')
+
+					psm = float(resolution_file.read())
+
+				else:
+
+					print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+								  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+								  "containing the pixel size value."
+					)
+					sys.exit(3)
+
 			# Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
 			segment_folders(current_path_target, path_model, overlap_value, config,
 						resolution_model, 
@@ -312,6 +396,8 @@ def main():
 							verbosity_level=verbosity_level)
 
 			print("Segmentation finished.")
+
+	sys.exit(0)
 
 # Calling the script
 if __name__ == '__main__':

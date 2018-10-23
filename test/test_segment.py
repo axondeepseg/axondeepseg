@@ -3,7 +3,7 @@
 import pytest
 import os
 from AxonDeepSeg.segment import *
-
+import AxonDeepSeg.segment
 
 class TestCore(object):
     def setup(self):
@@ -27,6 +27,15 @@ class TestCore(object):
             self.imageFolderPath,
             'image.png'
             )
+        self.imageFolderPathWithPixelSize = os.path.join(
+            self.testPath,
+            '__test_files__',
+            '__test_segment_files_with_pixel_size__'
+            )
+        self.imagePathWithPixelSize = os.path.join(
+            self.imageFolderPathWithPixelSize,
+            'image.png'
+            )
         self.statsFilename = 'model_statistics_validation.json'
 
     @classmethod
@@ -39,15 +48,27 @@ class TestCore(object):
             '__test_segment_files__'
             )
 
+        imageFolderPathWithPixelSize = os.path.join(
+            testPath,
+            '__test_files__',
+            '__test_segment_files_with_pixel_size__'
+            )
+
         outputFiles = [
             'image_seg-axon.png',
             'image_seg-myelin.png',
-            'image_seg-axonmyelin.png'
+            'image_seg-axonmyelin.png',
+            'image_2_seg-axon.png',
+            'image_2_seg-myelin.png',
+            'image_2_seg-axonmyelin.png',
             ]
 
         for fileName in outputFiles:
             if os.path.exists(os.path.join(imageFolderPath, fileName)):
                 os.remove(os.path.join(imageFolderPath, fileName))
+
+            if os.path.exists(os.path.join(imageFolderPathWithPixelSize, fileName)):
+                os.remove(os.path.join(imageFolderPathWithPixelSize, fileName))
 
     # --------------generate_config_dict tests-------------- #
     @pytest.mark.unit
@@ -140,3 +161,86 @@ class TestCore(object):
 
         for fileName in outputFiles:
             assert os.path.exists(os.path.join(self.imageFolderPath, fileName))
+
+    # --------------main (cli) tests-------------- #
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_with_valid_inputs(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2", "-s", "0.37"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+   
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_with_valid_inputs_with_pixel_size_file(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePathWithPixelSize, "-v", "2"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_for_too_small_resolution_due_to_min_resampled_patch_size(self):
+
+        image_size = [436, 344] # of self.imagePath
+        default_SEM_resolution = 0.1
+        default_SEM_patch_size = 512
+
+        minimum_resolution = default_SEM_patch_size * default_SEM_resolution / min(image_size)
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2", "-s", str(round(0.99*minimum_resolution,3))])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_missing_resolution_size(self):
+
+        # Make sure that the test folder doesn't have a file named pixel_size_in_micrometer.txt
+        assert ~os.path.exists(os.path.join(self.imageFolderPath, 'pixel_size_in_micrometer.txt'))
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imagePath, "-v", "2"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imageFolderPath, "-v", "2", "-s", "0.37"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input_with_pixel_size_file(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imageFolderPathWithPixelSize, "-v", "2"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_for_too_small_resolution_due_to_min_resampled_patch_size_for_folder_input(self):
+
+        image_size = [436, 344] # of self.imagePath
+        default_SEM_resolution = 0.1
+        default_SEM_patch_size = 512
+
+        minimum_resolution = default_SEM_patch_size * default_SEM_resolution / min(image_size)
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imageFolderPath, "-v", "2", "-s", str(round(0.99*minimum_resolution,3))])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_missing_resolution_size_for_folder_input(self):
+
+        # Make sure that the test folder doesn't have a file named pixel_size_in_micrometer.txt
+        assert ~os.path.exists(os.path.join(self.imageFolderPath, 'pixel_size_in_micrometer.txt'))
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", self.imageFolderPath, "-v", "2"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
