@@ -4,6 +4,7 @@ import pytest
 import os
 import imageio
 import numpy as np
+import scipy as sp
 
 from AxonDeepSeg.visualization.get_masks import *
 
@@ -96,3 +97,37 @@ class TestCore(object):
         assert os.path.isfile(rgbFile)
 
         assert np.array_equal(rgb_mask, imageio.imread(rgbFile))
+
+    @pytest.mark.unit
+    def test_get_image_properties_returns_expected_number_of_unique_values(self):
+        pred_img = os.path.join(
+            self.path_folder,
+            'AxonDeepSeg_seg-axonmyelin.png'
+            )
+        
+        image_properties = get_image_properties(pred_img)
+
+        assert image_properties['num_uniques'] == 3
+        assert np.array_equal(image_properties['unique_values'], [0, 127, 255])
+
+    @pytest.mark.unit
+    def test_get_image_properties_returns_expeception_for_unexpected_number_of_unique_values(self):
+        pred_img = os.path.join(
+            self.path_folder,
+            'AxonDeepSeg_seg-axonmyelin.png'
+            )
+
+        loaded_image = imageio.imread(pred_img)
+
+        image_properties = get_image_properties(loaded_image)
+
+        assert image_properties['num_uniques'] == 3
+        assert np.array_equal(image_properties['unique_values'], [0, 127, 255])
+
+
+        # Resizing image with interpolation will add values to the image.
+        resized_image = sp.misc.imresize(loaded_image, size=200 , interp='bilinear')
+
+        resized_image_properties = get_image_properties(resized_image)
+
+        assert not resized_image_properties['num_uniques'] == 3

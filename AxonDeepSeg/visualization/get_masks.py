@@ -52,3 +52,27 @@ def rgb_rendering_of_mask(pred_img, writing_path=None):
         imageio.imwrite(writing_path, rgb_mask)
 
     return rgb_mask
+
+def get_image_properties(image):
+    """
+    Returns dict with image properties.
+    :param image: np.ndarray or string path to image an file.
+    :return: image_properties: dict.
+        Keys:
+            num_uniques: Integer number of unique pixel values in the image.
+            unique_values: Array containing the unique pixel values in the
+                           image.
+    """
+    if not isinstance(image, np.ndarray):
+        try:
+            image = imageio.imread(image)
+        except:
+            Exception('get_mask_image_properties: Error reading image.'
+                      'Function arg must be either an np.ndarray or string'
+                      'path to an image file.')
+
+    image_properties = dict()
+    image_properties['unique_values'] = np.unique(image)
+    image_properties['num_uniques'] = len(image_properties['unique_values'])
+
+    return image_properties
