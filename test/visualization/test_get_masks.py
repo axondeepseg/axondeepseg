@@ -67,6 +67,7 @@ class TestCore(object):
         pred_img = os.path.join(
             self.testPath,
             '__test_files__',
+            '__test_demo_files__',
             'image.png'
             )
 
