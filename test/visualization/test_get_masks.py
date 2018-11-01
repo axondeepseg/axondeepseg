@@ -65,8 +65,9 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_masks_writes_expected_files(self):
         pred_img = os.path.join(
-            self.path_folder,
-            'mask_2.png'
+            self.testPath,
+            '__test_files__',
+            'image.png'
             )
 
         with pytest.raises(ValueError) as pytest_wrapped_e:
