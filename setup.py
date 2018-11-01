@@ -45,7 +45,9 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'axondeepseg = AxonDeepSeg.segment:main','axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test'
+            'axondeepseg = AxonDeepSeg.segment:main',
+            'axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test',
+            'axondeepseg_qc = AxonDeepSeg.visualization.qc_masks:main'
         ],
     },
 )
