@@ -105,7 +105,7 @@ class TestCore(object):
             'AxonDeepSeg_seg-axonmyelin.png'
             )
         
-        image_properties = get_image_properties(pred_img)
+        image_properties = get_image_unique_vals_properties(pred_img)
 
         assert image_properties['num_uniques'] == 3
         assert np.array_equal(image_properties['unique_values'], [0, 127, 255])
@@ -119,7 +119,7 @@ class TestCore(object):
 
         loaded_image = imageio.imread(pred_img)
 
-        image_properties = get_image_properties(loaded_image)
+        image_properties = get_image_unique_vals_properties(loaded_image)
 
         assert image_properties['num_uniques'] == 3
         assert np.array_equal(image_properties['unique_values'], [0, 127, 255])
@@ -128,6 +128,6 @@ class TestCore(object):
         # Resizing image with interpolation will add values to the image.
         resized_image = sp.misc.imresize(loaded_image, size=200 , interp='bilinear')
 
-        resized_image_properties = get_image_properties(resized_image)
+        resized_image_properties = get_image_unique_vals_properties(resized_image)
 
         assert not resized_image_properties['num_uniques'] == 3

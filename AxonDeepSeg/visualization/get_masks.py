@@ -53,9 +53,9 @@ def rgb_rendering_of_mask(pred_img, writing_path=None):
 
     return rgb_mask
 
-def get_image_properties(image):
+def get_image_unique_vals_properties(image):
     """
-    Returns dict with image properties.
+    Returns dict with image unique values properties.
     :param image: np.ndarray or string path to image an file.
     :return: image_properties: dict.
         Keys:
