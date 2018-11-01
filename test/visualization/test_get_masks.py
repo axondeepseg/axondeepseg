@@ -62,6 +62,16 @@ class TestCore(object):
         assert os.path.isfile(axonFile)
         assert os.path.isfile(myelinFile)
 
+    @pytest.mark.unit
+    def test_get_masks_writes_expected_files(self):
+        pred_img = os.path.join(
+            self.path_folder,
+            'mask_2.png'
+            )
+
+        with pytest.raises(ValueError) as pytest_wrapped_e:
+            get_masks(pred_img)
+
     # --------------rgb_rendering_of_mask tests-------------- #
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_returns_array_with_extra_dim_of_len_3(self):
@@ -98,6 +108,7 @@ class TestCore(object):
 
         assert np.array_equal(rgb_mask, imageio.imread(rgbFile))
 
+    # --------------get_image_properties tests-------------- #
     @pytest.mark.unit
     def test_get_image_properties_returns_expected_number_of_unique_values(self):
         pred_img = os.path.join(

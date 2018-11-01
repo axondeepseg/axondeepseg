@@ -9,6 +9,18 @@ import AxonDeepSeg.ads_utils
 
 def get_masks(path_prediction):
     prediction = imageio.imread(path_prediction)
+    
+    # Check the masks to ensure the proper number of unique values
+    # Possible causes to throw error could be resampling/resizing
+    # of the mask, due to the interpolations needed resize the mask.
+    image_properties = get_image_unique_vals_properties(prediction)
+    num_unique_vals = image_properties['num_uniques']
+
+    if num_unique_vals > 3:
+        raise ValueError('AxonDeepSeg.get_masks: Masks must contain no more than '
+                         'three unique values (axon: 255, myelin: 127, else: 0. '
+                         'The file {0} has {1} unique pixel '
+                         'values'.format(path_prediction, num_unique_vals))
 
     # compute the axon mask
     axon_prediction = prediction > 200
@@ -67,9 +79,9 @@ def get_image_unique_vals_properties(image):
         try:
             image = imageio.imread(image)
         except:
-            Exception('get_mask_image_properties: Error reading image.'
-                      'Function arg must be either an np.ndarray or string'
-                      'path to an image file.')
+            raise IOError('AxonDeepSeg.get_image_unique_vals_properties: Error '
+                          'reading image. Function arg must be either an '
+                          'np.ndarray or string path to an image file.')
 
     image_properties = dict()
     image_properties['unique_values'] = np.unique(image)
