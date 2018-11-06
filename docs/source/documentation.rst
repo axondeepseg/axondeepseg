@@ -181,10 +181,10 @@ To install the latest stable release of AxonDeepSeg, you just need to install it
   "Could not find a version that satisfies the requirement tensorflow>=XXX (from axondeepseg) (from versions: )... ",
   you will need to manually install the TensorFlow dependency.
 
-  Run the following command to install TensorFlow 1.9.0:
+  Run the following command to install TensorFlow 1.3.0:
   ::
 
-       pip install tensorflow==1.9.0
+       pip install tensorflow==1.3.0
 
   You can get more information by following the instructions from the `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
 
