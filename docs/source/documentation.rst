@@ -36,7 +36,7 @@ Version [2.0] - 2018-09-11
 Version [1.1] - 2018-08-02
 -------------------------------------------------------------------------------
 
-**Changed:**x
+**Changed:**
 
 - Minor Mac OSX-related bug fix
 - Changed installation requirements to exact release versions
@@ -53,15 +53,15 @@ Version [0.6] - 2018-08-01
 
 **Added:**
 
-- Comprehensive testing suite
-- Bug tracking (Sentry)
-- Blue-red visualisation function for segmented masks
+- Comprehensive testing suite
+- Bug tracking (Sentry)
+- Blue-red visualisation function for segmented masks
 
 **Changed:**
 
 - Dataset building and training notebook
-- Minor documentation improvements
-- Minor bug fixes
+- Minor documentation improvements
+- Minor bug fixes
 
 Version [0.4.1] - 2018-05-16
 -------------------------------------------------------------------------------
