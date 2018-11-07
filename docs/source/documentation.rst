@@ -13,33 +13,33 @@ Version [2.2dev] - XXXX-XX-XX
 
 **Changed:**
 
-– Resolve image rescale warnings
-– Handle exception for images smaller than minimum patch size after resizing
-– Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
+- Resolve image rescale warnings
+- Handle exception for images smaller than minimum patch size after resizing
+- Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
 
 Version [2.1] - 2018-09-25
 -------------------------------------------------------------------------------
 
 **Changed:**
 
-– Fixed bug that would crash when user inputed consent for Sentry tracking
+- Fixed bug that would crash when user inputed consent for Sentry tracking
 
 Version [2.0] - 2018-09-11
 -------------------------------------------------------------------------------
 
 **Changed:**
 
-– Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
+- Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
 - Minor changes to make ADS Windows-compatibile
-– Removed plot hold commands (deprecated)
+- Removed plot hold commands (deprecated)
 
 Version [1.1] - 2018-08-02
 -------------------------------------------------------------------------------
 
-**Changed:**
+**Changed:**x
 
-– Minor Mac OSX-related bug fix
-– Changed installation requirements to exact release versions
+- Minor Mac OSX-related bug fix
+- Changed installation requirements to exact release versions
 
 Version [1.0] - 2018-08-02
 -------------------------------------------------------------------------------
@@ -53,15 +53,15 @@ Version [0.6] - 2018-08-01
 
 **Added:**
 
-– Comprehensive testing suite
-– Bug tracking (Sentry)
-– Blue-red visualisation function for segmented masks
+- Comprehensive testing suite
+- Bug tracking (Sentry)
+- Blue-red visualisation function for segmented masks
 
 **Changed:**
 
-– Dataset building and training notebook
-– Minor documentation improvements
-– Minor bug fixes
+- Dataset building and training notebook
+- Minor documentation improvements
+- Minor bug fixes
 
 Version [0.4.1] - 2018-05-16
 -------------------------------------------------------------------------------

@@ -4,7 +4,7 @@ All notable changes to the AxonDeepSeg project will be documented in this file.
 
 ## [2.2dev] - XXXX-XX-XX
 
-## Changed
+### Changed
 
 – Resolve image rescale warnings
 – Handle exception for images smaller than minimum patch size after resizing
@@ -12,13 +12,13 @@ All notable changes to the AxonDeepSeg project will be documented in this file.
 
 ## [2.1] - 2018-09-25
 
-## Changed
+### Changed
 
 – Fixed bug that would crash when user inputed consent for Sentry tracking
 
 ## [2.0] - 2018-09-11
 
-## Changed
+### Changed
 
 – Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
 - Minor changes to make ADS Windows-compatibile
@@ -26,7 +26,7 @@ All notable changes to the AxonDeepSeg project will be documented in this file.
 
 ## [1.1] - 2018-08-02
 
-## Changed
+### Changed
 
 – Minor Mac OSX-related bug fix
 – Changed installation requirements to exact release versions
@@ -39,13 +39,13 @@ Versions 1.x will remain Python 2.7-compatible
 
 (version 0.5 was skipped due to conflicting file on PyPI)
 
-## Added
+### Added
 
 – Comprehensive testing suite
 – Bug tracking (Sentry)
 – Blue-red visualisation function for segmented masks
 
-## Changed
+### Changed
 
 – Dataset building and training notebook
 – Minor documentation improvements
