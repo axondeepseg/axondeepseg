@@ -10,18 +10,15 @@ from .patch_management_tools import im2patches_overlap, patches2im_overlap
 from .visualization.get_masks import get_masks
 import AxonDeepSeg.ads_utils
 
-def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict,
-				  acquisitions_names = None,
-				  ckpt_name='model', inference_batch_size=1,
-				  overlap_value=25, resampled_resolutions=[0.1], prediction_proba_activate=False,
-				  gpu_per=1.0, verbosity_level=0):
+def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict, ckpt_name='model',
+				  inference_batch_size=1, overlap_value=25, resampled_resolutions=[0.1],
+				  prediction_proba_activate=False, gpu_per=1.0, verbosity_level=0):
 	"""
 	Preprocesses the images, transform them into patches, applies the network, stitches the predictions and return them.
 	:param path_acquisitions: List of path to the acquisitions.
 	:param acquisitions_resolutions: List of the acquisitions resolutions (floats).
 	:param path_model_folder: Path to the model folder.
 	:param config_dict: Dictionary containing the model's parameters.
-	:param acquisitions_names: List of names of the acquisitions.
 	:param ckpt_name: String, checkpoint to use.
 	:param inference_batch_size: Int, batch size to use when doing inference.
 	:param overlap_value: Int, number of pixels to use when overlapping the predictions of the network.
@@ -43,7 +40,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 	patch_size = config_dict["trainingset_patchsize"]
 	n_classes = config_dict["n_classes"]
 
-	########### STEP 1: we load and rescale the acquisitions, and transform them into patches.
+	# STEP 1: Load and rescale the acquisitions, and transform them into patches.
 
 	rs_acquisitions, rs_coeffs, original_acquisitions_shapes = load_acquisitions(
 		path_acquisitions, acquisitions_resolutions, resampled_resolutions, verbose_mode=verbosity_level)
@@ -55,27 +52,26 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
 	L_data, L_n_patches, L_positions = prepare_patches(rs_acquisitions, patch_size, overlap_value)
 
-
-	########### STEP 2: Construction of Tensorflow's computing graph and restoration of the session
+	# STEP 2: Construct Tensorflow's computing graph and restoration of the session
 
 	# Construction of the graph
-	if verbosity_level>=2:
+	if verbosity_level >= 2:
 		print("Graph construction ...")
 	x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size))
 	pred = uconv_net(x, config_dict, phase=False, verbose=False)  # Inference
-	saver = tf.train.Saver() # Loading the previous model
+	saver = tf.train.Saver()  # Load previous model
 
-	# We limit the amount of GPU we are going to use for inference.
+	# We limit the amount of GPU for inference
 	config_gpu = tf.ConfigProto(log_device_placement=False)
 	config_gpu.gpu_options.per_process_gpu_memory_fraction = gpu_per
 
-	# Launch the session. This is the part that takes time, and we are now going to process all images by loading the session just once.
+	# Launch the session (this part takes time). All images will be processed by loading the session just once.
 	sess = tf.Session(config=config_gpu)
 	saver.restore(sess, os.path.join(path_model_folder, ckpt_name + '.ckpt'))
 
-	########### STEP 3: Inference
+	# STEP 3: Inference
 
-	if verbosity_level>=2:
+	if verbosity_level >= 2:
 		print("Beginning inference ...")
 
 	n_patches = len(L_data)
@@ -87,7 +83,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 	# Inference of complete batches
 	for i in range(it):
 
-		if verbosity_level>=3:
+		if verbosity_level >= 3:
 			print(('processing patch %s of %s' % (i+1, it)))
 
 		batch_x = np.asarray(L_data[i * inference_batch_size:(i + 1) * inference_batch_size])
