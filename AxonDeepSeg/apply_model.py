@@ -189,7 +189,8 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 	:param segmentations_filenames: List of the names of the segmentations files, to be used when creating the files.
 	:param inference_batch_size: Size of the batches fed to the network.
 	:param overlap_value: Int, number of pixels to use for overlapping the predictions.
-	:param resampled_resolutions: List of the resolutions (floats) we are going to resample to.
+	:param resampled_resolutions: List of the resolutions (in µm) to resample to.
+	:param acquired_resolution: List of the resolutions (in µm) for native images.
 	:param prediction_proba_activate: Boolean, whether to compute probability maps or not.
 	:param write_mode: Boolean, whether to create segmentation images or not.
 	:param gpu_per: Percentage of the GPU to use, if we use it.
