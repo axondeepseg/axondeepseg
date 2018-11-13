@@ -172,8 +172,8 @@ def traceback_to_server(client):
 
     sys.excepthook = excepthook
 
-def download_osf(url_data, zip_filename):
-    """ Downloads and extracts zip files hosted on OSF.io
+def download_data(url_data, zip_filename):
+    """ Downloads and extracts zip files from the web.
     :return: 0 - Success, 1 - Encountered an exception.
     """
 

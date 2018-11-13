@@ -3,7 +3,7 @@
 import pytest
 import os
 import shutil
-from AxonDeepSeg.ads_utils import download_osf
+from AxonDeepSeg.ads_utils import download_data
 
 
 class TestCore(object):
@@ -20,14 +20,14 @@ class TestCore(object):
         if os.path.exists(output_path[0]):
             shutil.rmtree(output_path[0])
 
-    # --------------download_osf tests-------------- #
+    # --------------download_data tests-------------- #
     @pytest.mark.unit
-    def test_download_osf_returns_0_for_valid_link(self):
-        exit_code = download_osf(self.osf_link, self.zip_filename)
+    def test_download_data_returns_0_for_valid_link(self):
+        exit_code = download_data(self.osf_link, self.zip_filename)
         assert exit_code == 0
 
     @pytest.mark.unit
-    def test_download_osf_returns_1_for_invalid_link(self):
-        exit_code = download_osf(self.bad_osf_link, self.zip_filename)
+    def test_download_data_returns_1_for_invalid_link(self):
+        exit_code = download_data(self.bad_osf_link, self.zip_filename)
         assert exit_code == 1
 
