@@ -3,6 +3,12 @@ import sys
 import configparser
 from distutils.util import strtobool
 import raven
+from tqdm import tqdm
+import tempfile
+import zipfile
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util import Retry
 
 DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
@@ -165,6 +171,43 @@ def traceback_to_server(client):
         sys.__excepthook__(exctype, value, traceback)
 
     sys.excepthook = excepthook
+
+def download_osf(url_data, zip_filename):
+    """ Downloads and extracts zip files hosted on OSF.io
+    :return: 0 - Success, 1 - Encountered an exception.
+    """
+
+    # Download
+    try:
+        print('Trying URL: %s' % url_data)
+        retry = Retry(total=3, backoff_factor=0.5, status_forcelist=[500, 503, 504])
+        session = requests.Session()
+        session.mount('https://', HTTPAdapter(max_retries=retry))
+        response = session.get(url_data, stream=True)
+        tmp_path = os.path.join(tempfile.mkdtemp(), zip_filename)
+        with open(tmp_path, 'wb') as tmp_file:
+            total = int(response.headers.get('content-length', 1))
+            tqdm_bar = tqdm(total=total, unit='B', unit_scale=True, desc="Downloading", ascii=True)
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    tmp_file.write(chunk)
+                    dl_chunk = len(chunk)
+                    tqdm_bar.update(dl_chunk)
+            tqdm_bar.close()
+    except Exception as e:
+        print("ERROR: %s" % e)
+        return 1
+
+    # Unzip
+    print("Unzip...")
+    try:
+        zf = zipfile.ZipFile(tmp_path)
+        zf.extractall(".")
+    except (zipfile.BadZipfile):
+        print('ERROR: ZIP package corrupted. Please try downloading again.')
+        return 1
+    print("--> Folder created: " + os.path.join(os.path.abspath(os.curdir), zip_filename.strip(".zip")))
+    return 0
 
 # Call init_ads() automatically when module is imported
 init_ads()
