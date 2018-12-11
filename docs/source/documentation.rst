@@ -340,7 +340,7 @@ Jupyter notebooks
 
 Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 
-* `getting_started.ipynb.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_: 
+* `getting_started.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_: 
     Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb>`_.
 
 * `guide_dataset_building.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/guide_dataset_building.ipynb>`_: 
