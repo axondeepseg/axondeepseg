@@ -355,7 +355,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         if debug_mode:
             t0 = 0
-
+        
+        print("NOTE: The maximum number of epochs for this training session is {0}.".format(int(max_epoch)))
+        
         while epoch < max_epoch:
             ### --------------------------------------------------------------------------------------------------- ###
             #### a) Optimizing the network with the training set. Keep track of the metric on TensorBoard.
