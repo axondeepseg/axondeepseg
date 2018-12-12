@@ -98,27 +98,52 @@ instructions are provided to help you use AxonDeepSeg.
 .. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system.
            However, please note that our continuous integration testing framework (Travis) only tests AxonDeepSeg for Unix-style systems.
 
-Python
+Miniconda
 -------------------------------------------------------------------------------
+Starting with AxonDeepSeg versions 2.0+, Python 3 is required. Although your system may already have
+a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_ (lightweight version
+version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_). Miniconda is used to create
+virtual environments, which provides a separation of installation dependencies between different Python softwares. Although
+it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions
+for this recommended installation setup.
 
-.. WARNING ::
-   Starting with AxonDeepSeg version 2.0+, Python 2.7 is no longer supported.
+First, verify if you already have Miniconda or Anaconda properly installed and is in your systems path. 
 
-First, you should make sure that Python 3.6 is installed on your computer. Run the following command in the terminal::
+In a new terminal window (Mac OSX or Linux) or Anaconda Prompt (Windows – if it is installed), run the following command:::
 
-    python -V
+    conda search python
 
-The version of python should be displayed in the terminal. If not, you have to install Python 3.6 on your computer.
-To do that, you can follow the instructions given on
-`the official python wiki <https://wiki.python.org/moin/BeginnersGuide/Download>`_.
+If a list of available Python versions are displayed and show versions >=3.6.0, you may skip to the next section (Virtualenv).
 
-.. NOTE :: If you have the `Anaconda distribution] <https://www.anaconda.com/distribution/>`_ installed on your system, you can specify
-           the version of Python that you want installed in your virtual environment set up below, even if it differs from the version
-           displayed by the "python -V" command. To see the list of Python versions available to be installed in your conda virtual 
-           environment, run:
-           ::
+Linux
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-                conda search python
+To install Miniconda, run the following commands in your terminal:::
+
+    cd ~
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+    bash ~/miniconda.sh -b -p $HOME/miniconda
+    echo 'export PATH="$HOME/miniconda/bin:$PATH"' >> ~/.bashrc
+    source ~./bashrc
+
+Mac (OSX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To install Miniconda, run the following commands in your terminal:::
+
+    cd ~
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
+    bash ~/miniconda.sh -b -p $HOME/miniconda
+    echo 'export PATH="$HOME/miniconda/bin:$PATH"' >> ~/.bashrc
+    source ~./bashrc
+
+Windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To install Miniconda, go to the `Miniconda installation website <https://conda.io/miniconda.html>`_ and click on the Python 3.x version
+installer compatible with your Windows system (64 bit recommended). After the download is complete, execute the
+downloaded file, and follow the graphical user interface instructions. If you are unsure about any of the
+installation options, we recommend you use the default settings.
 
 Virtualenv
 -------------------------------------------------------------------------------
