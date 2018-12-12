@@ -134,8 +134,8 @@ To install Miniconda, run the following commands in your terminal:::
     cd ~
     curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh
     bash ~/miniconda.sh -b -p $HOME/miniconda
-    echo 'export PATH="$HOME/miniconda/bin:$PATH"' >> ~/.bashrc
-    source ~/.bashrc
+    echo 'export PATH="$HOME/miniconda/bin:$PATH"' >> ~/.bash_profile
+    source ~/.bash_profile
 
 Windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
