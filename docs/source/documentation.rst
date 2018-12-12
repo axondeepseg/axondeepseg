@@ -103,7 +103,7 @@ Miniconda
 Starting with AxonDeepSeg versions 2.0+, Python 3 is required. Although your system may already have
 a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_ (lightweight version
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_). Miniconda is used to create
-virtual environments, which provides a separation of installation dependencies between different Python softwares. Although
+virtual environments, which provides a separation of installation dependencies between different Python projects. Although
 it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions
 for this recommended installation setup.
 
@@ -113,7 +113,7 @@ In a new terminal window (Mac OSX or Linux) or Anaconda Prompt (Windows – if i
 
     conda search python
 
-If a list of available Python versions are displayed and show versions >=3.6.0, you may skip to the next section (Virtualenv).
+If a list of available Python versions are displayed and show versions >=3.6.0, you may skip to the next section (Git).
 
 Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,7 +145,18 @@ installer compatible with your Windows system (64 bit recommended). After the do
 downloaded file, and follow the graphical user interface instructions. If you are unsure about any of the
 installation options, we recommend you use the default settings.
 
-Virtualenv
+Git (Optional)
+-------------------------------------------------------------------------------
+Git is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
+service that hosts Git repositories, having Git installed on your system can allow you
+to download the most up-to-date development version of AxonDeepSeg from the command line
+of your operating system, as well as contribute to the project.
+
+Although an optional step (AxonDeepSeg can also be downloaded other ways, see below), if you 
+want to install Git, please follow instructions for your operating system on the 
+`Git website <https://git-scm.com/downloads>`_
+
+Virtual Environment
 -------------------------------------------------------------------------------
 `Virtualenv` is a Python package that allows you to create virtual environments where
 you can sandbox environments with different package versions without affecting
