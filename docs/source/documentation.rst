@@ -251,7 +251,8 @@ If all tests pass, AxonDeepSeg was installed succesfully.
 GPU-compatible installation
 --------------------------------------------------------------------------------
 .. NOTE ::
-   This feature is not available if you installed AxonDeepSeg using ``pip``.
+   This feature is not available if you installed AxonDeepSeg using ``pip``,
+   or if you are using a Mac OSX.
 
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
 using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
