@@ -113,7 +113,7 @@ In a new terminal window (Mac OSX or Linux) or Anaconda Prompt (Windows – if i
 
     conda search python
 
-If a list of available Python versions are displayed and show versions >=3.6.0, you may skip to the next section (Git).
+If a list of available Python versions are displayed and versions >=3.6.0 are available, you may skip to the next section (Git).
 
 Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,46 +158,28 @@ want to install Git, please follow instructions for your operating system on the
 
 Virtual Environment
 -------------------------------------------------------------------------------
-`Virtualenv` is a Python package that allows you to create virtual environments where
-you can sandbox environments with different package versions without affecting
-your system packages. If you don't have it installed, please follow the instructions
-from the `virtualenv website <https://virtualenv.pypa.io/en/stable/installation/>`_.
-If you have the Anaconda Distribution installed on your system, you can alternatively
-use the conda virtual environment manager, which allows you to specify a different
-Python version to be installed in your virtual environment than what's available by
-default on your system (see note below)
+Virtual environments are a tool to separate the Python environment and packages used 
+between Python projects. They allow for different versions of Python packages to be 
+installed and managed for the specific needs of your projects. There are several 
+virtual managers available, but the one we recommend and will use in our installation 
+guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. 
+Before installing AxonDeepSeg, we strongly recommend you create a virtual environment before 
+you continue with your installation.
 
-Before installing AxonDeepSeg, we will need to set up a virtual environment.
-A virtual environment is a tool that lets you install specific versions of the python modules you want.
-It will allow AxonDeepSeg to run with respect to its module requirements,
-without affecting the rest of your python installation.
+To create a Python 3.6 virtual environment named "ads_venv", in a terminal window (Mac OSX or Linux) 
+or Anaconda Prompt (Windows) run the following command and answer "yes" to the installation 
+instructions::
 
-First, navigate to your home directory::
+    conda create -n ads_venv python=3.6
 
-    cd ~
+Then, activate your virtual environment::
 
-We will now create a virtual environment. For clarity, we will name it ads_venv::
+    source activate ads_venv
 
-    virtualenv ads_venv
+.. NOTE ::
+   To switch back to your default environment, run::
 
-To activate it, run the following command::
-
-    source ads_venv/bin/activate
-
-If you performed all the steps correctly, your username in the console should now be preceded by the name of your
-virtual environment between parenthesis, like this::
-
-    (ads_venv) username@hostname /home/...
-
-.. NOTE :: To create a virtual environment called "ads_venv" with the Anaconda Distribution, run:
-           ::
-
-                conda create -n ads_venv python=3.6
-
-           To activate it, run the following command: 
-           ::
-
-                source activate ads_venv
+       source deactivate
 
 AxonDeepSeg
 -------------------------------------------------------------------------------
