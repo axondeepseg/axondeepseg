@@ -183,54 +183,29 @@ Then, activate your virtual environment::
 
 AxonDeepSeg
 -------------------------------------------------------------------------------
-
-Option 1: Installing AxonDeepSeg in application mode (stable release)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. WARNING ::
-   Make sure that the virtual environment is activated before you run the following command.
+   Ensure that the virtual environment is activated before you begin your installation.
 
-We are now going to install the software AxonDeepSeg.
-
-To install the latest stable release of AxonDeepSeg, you just need to install it with ``pip`` using the following command::
-
-    pip install axondeepseg
-
-.. NOTE ::
-   Note that you can install a specific version of the software as follows (replace X.X with the version number, for example 0.2):
-   ::
-
-        pip install axondeepseg==X.X
-
-.. WARNING ::    
-  If you experience the following error:
-  "Could not find a version that satisfies the requirement tensorflow>=XXX (from axondeepseg) (from versions: )... ",
-  you will need to manually install the TensorFlow dependency.
-
-  Run the following command to install TensorFlow 1.3.0:
-  ::
-
-       pip install tensorflow==1.3.0
-
-  You can get more information by following the instructions from the `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
-
-  **Once TensorFlow is installed, re-run the pip command:**
-  ::
-
-       pip install axondeepseg
-
-Option 2: Installing AxonDeepSeg in development mode (from GitHub)
+Latest version (development)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. WARNING ::
-   Make sure that the virtual environment is activated before you run the following command.
 
-To install AxonDeepSeg in development mode, you first need to clone the AxonDeepSeg repository using the following command::
+To install AxonDeepSeg the latest version of AxonDeepSeg (development), we recommend that you clone the AxonDeepSeg repository 
+if you have ``git`` installed on your system::
 
     git clone https://github.com/neuropoly/axondeepseg.git
 
-Then, go to the newly created git repository and install the AxonDeepSeg package using the following commands::
+Otherwise, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
+
+Then, in your terminal window, go to the AxonDeepSeg folder and install the 
+AxonDeepSeg package. The following ``cd`` command assumes that you followed the ``git clone``
+instruction above::
 
     cd axondeepseg
     pip install -e .
+
+.. NOTE ::
+   If you downloaded AxonDeepSeg using the link above instead of ``git clone``, you may need to ``cd`` to a different folder (e.g. ``Downloads`` folder 
+   located within your home folder ``~``), and the AxonDeepSeg folder may have a different name (e.g. ``axondeepseg-master``).
 
 .. NOTE ::
    To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
@@ -240,19 +215,49 @@ Then, go to the newly created git repository and install the AxonDeepSeg package
         git pull
         pip install -e .
 
-The advantage of this installation method over the option 1 (application mode) is that you will always get the last stable version of the package.
+Stable release
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
+
+    pip install axondeepseg
 
 Testing the installation
 -------------------------------------------------------------------------------
+.. WARNING ::
+   Ensure that the virtual environment is activated.
 
-In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section)::
+Quick installation test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To test if the software was installed correctly, you can launch a quick integrity test by running the following command on the terminal::
 
     axondeepseg_test
 
-
-This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal, meaning that the software was correctly installed::
+This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal::
 
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
+
+Comprehensive installation test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. NOTE ::
+   This feature is not available if you installed AxonDeepSeg using ``pip``.
+
+To run the entire testing suite, go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
+
+    cd axondeepseg
+    py.test --cov AxonDeepSeg/ --cov-report term-missing
+
+GPU-compatible installation
+--------------------------------------------------------------------------------
+.. NOTE ::
+   This feature is not available if you installed AxonDeepSeg using ``pip``.
+
+By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
+using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
+and install the GPU version of it::
+
+    pip uninstall tensorflow
+    pip install tensorflow-gpu==1.3.0
 
 Existing models
 ===============================================================================
