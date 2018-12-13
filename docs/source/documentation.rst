@@ -92,22 +92,22 @@ Version [0.3] - 2018-02-22
 
 Installation
 ===============================================================================
-The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
-instructions are provided to help you use AxonDeepSeg.
+The following sections will help you install all the tools you need to run AxonDeepSeg.
 
 .. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system.
-           However, please note that our continuous integration testing framework (Travis) only tests AxonDeepSeg for Unix-style systems.
+           However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg
+           for Unix-style systems, so releases may be more unstable for Windows than Linux/MacOSX.
 
 Miniconda
 -------------------------------------------------------------------------------
-Starting with AxonDeepSeg versions 2.0+, Python 3 is required. Although your system may already have
-a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_ (lightweight version
-version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_). Miniconda is used to create
-virtual environments, which provides a separation of installation dependencies between different Python projects. Although
+Starting with versions 2.0+, AxonDeepSeg is only supported using Python 3.0. Although your system may already have
+a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
+version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
+virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
 it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions
 for this recommended installation setup.
 
-First, verify if you already have Miniconda or Anaconda properly installed and is in your systems path. 
+First, verify if you already have an AxonDeepSeg-compatible version of Miniconda or Anaconda properly installed and is in your systems path. 
 
 In a new terminal window (Mac OSX or Linux) or Anaconda Prompt (Windows – if it is installed), run the following command:::
 
@@ -142,15 +142,15 @@ Windows
 
 To install Miniconda, go to the `Miniconda installation website <https://conda.io/miniconda.html>`_ and click on the Python 3.x version
 installer compatible with your Windows system (64 bit recommended). After the download is complete, execute the
-downloaded file, and follow the graphical user interface instructions. If you are unsure about any of the
+downloaded file, and follow the instructions. If you are unsure about any of the
 installation options, we recommend you use the default settings.
 
-Git (Optional)
+Git (optional)
 -------------------------------------------------------------------------------
 Git is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
-service that hosts Git repositories, having Git installed on your system can allow you
-to download the most up-to-date development version of AxonDeepSeg from the command line
-of your operating system, as well as contribute to the project.
+service that hosts Git repositories, having Git installed on your system allows you
+to download the most up-to-date development version of AxonDeepSeg from a terminal, and 
+also allows you to contribute to the project if you wish to do so.
 
 Although an optional step (AxonDeepSeg can also be downloaded other ways, see below), if you 
 want to install Git, please follow instructions for your operating system on the 
@@ -161,25 +161,24 @@ Virtual Environment
 Virtual environments are a tool to separate the Python environment and packages used 
 between Python projects. They allow for different versions of Python packages to be 
 installed and managed for the specific needs of your projects. There are several 
-virtual managers available, but the one we recommend and will use in our installation 
+virtual environment managers available, but the one we recommend and will use in our installation 
 guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. 
-Before installing AxonDeepSeg, we strongly recommend you create a virtual environment before 
-you continue with your installation.
+We strongly recommend you create a virtual environment before you continue with your installation.
 
 To create a Python 3.6 virtual environment named "ads_venv", in a terminal window (Mac OSX or Linux) 
-or Anaconda Prompt (Windows) run the following command and answer "yes" to the installation 
+or Anaconda Prompt (Windows) run the following command and answer "y" to the installation 
 instructions::
 
     conda create -n ads_venv python=3.6
 
 Then, activate your virtual environment::
 
-    source activate ads_venv
+    conda activate ads_venv
 
 .. NOTE ::
    To switch back to your default environment, run::
 
-       source deactivate
+       conda deactivate
 
 AxonDeepSeg
 -------------------------------------------------------------------------------
@@ -189,7 +188,7 @@ AxonDeepSeg
 Latest version (development)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To install AxonDeepSeg the latest version of AxonDeepSeg (development), we recommend that you clone the AxonDeepSeg repository 
+To install the latest version of AxonDeepSeg (development), we recommend that you clone the AxonDeepSeg repository 
 if you have ``git`` installed on your system::
 
     git clone https://github.com/neuropoly/axondeepseg.git
@@ -226,7 +225,7 @@ Testing the installation
 .. WARNING ::
    Ensure that the virtual environment is activated.
 
-Quick installation test
+Quick test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To test if the software was installed correctly, you can launch a quick integrity test by running the following command on the terminal::
@@ -237,15 +236,17 @@ This integrity test automatically performs the axon and myelin segmentation of a
 
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
 
-Comprehensive installation test
+Comprehensive test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. NOTE ::
    This feature is not available if you installed AxonDeepSeg using ``pip``.
 
-To run the entire testing suite, go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
+To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
 
     cd axondeepseg
     py.test --cov AxonDeepSeg/ --cov-report term-missing
+
+If all tests pass, AxonDeepSeg was installed succesfully.
 
 GPU-compatible installation
 --------------------------------------------------------------------------------
