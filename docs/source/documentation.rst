@@ -96,7 +96,7 @@ The following sections will help you install all the tools you need to run AxonD
 
 .. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system.
            However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg
-           for Unix-style systems, so releases may be more unstable for Windows than Linux/MacOSX.
+           for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
 
 Miniconda
 -------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ for this recommended installation setup.
 
 First, verify if you already have an AxonDeepSeg-compatible version of Miniconda or Anaconda properly installed and is in your systems path. 
 
-In a new terminal window (Mac OSX or Linux) or Anaconda Prompt (Windows – if it is installed), run the following command:::
+In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it is installed), run the following command:::
 
     conda search python
 
@@ -126,7 +126,7 @@ To install Miniconda, run the following commands in your terminal:::
     echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
     source ~/.bashrc
 
-Mac (OSX)
+macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To install Miniconda, run the following commands in your terminal:::
@@ -165,7 +165,7 @@ virtual environment managers available, but the one we recommend and will use in
 guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. 
 We strongly recommend you create a virtual environment before you continue with your installation.
 
-To create a Python 3.6 virtual environment named "ads_venv", in a terminal window (Mac OSX or Linux) 
+To create a Python 3.6 virtual environment named "ads_venv", in a terminal window (macOS or Linux) 
 or Anaconda Prompt (Windows) run the following command and answer "y" to the installation 
 instructions::
 
@@ -252,7 +252,7 @@ GPU-compatible installation
 --------------------------------------------------------------------------------
 .. NOTE ::
    This feature is not available if you installed AxonDeepSeg using ``pip``,
-   or if you are using a Mac OSX.
+   or if you are using a macOS.
 
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
 using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
