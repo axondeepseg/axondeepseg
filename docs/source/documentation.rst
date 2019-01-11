@@ -8,31 +8,38 @@ AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechn
 Changelog
 ===============================================================================
 
-## [2.1] - 2018-09-25
+Version [2.2dev] - XXXX-XX-XX
+-------------------------------------------------------------------------------
+
+**Changed:**
+
+- Resolve image rescale warnings
+- Handle exception for images smaller than minimum patch size after resizing
+- Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
+
+Version [2.1] - 2018-09-25
+-------------------------------------------------------------------------------
+
+**Changed:**
+
+- Fixed bug that would crash when user inputed consent for Sentry tracking
 
 Version [2.0] - 2018-09-11
 -------------------------------------------------------------------------------
 
 **Changed:**
 
-– Fixed bug that would crash when user inputed consent for Sentry tracking
-
-Version [2.0] - 2018-09-11
--------------------------------------------------------------------------------
-
-**Changed:**
-
-– Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
+- Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
 - Minor changes to make ADS Windows-compatibile
-– Removed plot hold commands (deprecated)
+- Removed plot hold commands (deprecated)
 
 Version [1.1] - 2018-08-02
 -------------------------------------------------------------------------------
 
 **Changed:**
 
-– Minor Mac OSX-related bug fix
-– Changed installation requirements to exact release versions
+- Minor Mac OSX-related bug fix
+- Changed installation requirements to exact release versions
 
 Version [1.0] - 2018-08-02
 -------------------------------------------------------------------------------
@@ -46,15 +53,15 @@ Version [0.6] - 2018-08-01
 
 **Added:**
 
-– Comprehensive testing suite
-– Bug tracking (Sentry)
-– Blue-red visualisation function for segmented masks
+- Comprehensive testing suite
+- Bug tracking (Sentry)
+- Blue-red visualisation function for segmented masks
 
 **Changed:**
 
-– Dataset building and training notebook
-– Minor documentation improvements
-– Minor bug fixes
+- Dataset building and training notebook
+- Minor documentation improvements
+- Minor bug fixes
 
 Version [0.4.1] - 2018-05-16
 -------------------------------------------------------------------------------
@@ -85,127 +92,123 @@ Version [0.3] - 2018-02-22
 
 Installation
 ===============================================================================
-The following lines will help you install all you need to ensure that AxonDeepSeg is working. Test data and
-instructions are provided to help you use AxonDeepSeg.
+The following sections will help you install all the tools you need to run AxonDeepSeg.
 
 .. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system.
-           However, please note that our continuous integration testing framework (Travis) only tests AxonDeepSeg for Unix-style systems.
+           However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg
+           for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
 
-Python
+Miniconda
 -------------------------------------------------------------------------------
+Starting with versions 2.0+, AxonDeepSeg is only supported using Python 3.0. Although your system may already have
+a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
+version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
+virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
+it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions
+for this recommended installation setup.
 
-.. WARNING ::
-   Starting with AxonDeepSeg version 2.0+, Python 2.7 is no longer supported.
+First, verify if you already have an AxonDeepSeg-compatible version of Miniconda or Anaconda properly installed and is in your systems path. 
 
-First, you should make sure that Python 3.6 is installed on your computer. Run the following command in the terminal::
+In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it is installed), run the following command:::
 
-    python -V
+    conda search python
 
-The version of python should be displayed in the terminal. If not, you have to install Python 3.6 on your computer.
-To do that, you can follow the instructions given on
-`the official python wiki <https://wiki.python.org/moin/BeginnersGuide/Download>`_.
+If a list of available Python versions are displayed and versions >=3.6.0 are available, you may skip to the next section (Git).
 
-.. NOTE :: If you have the `Anaconda distribution] <https://www.anaconda.com/distribution/>`_ installed on your system, you can specify
-           the version of Python that you want installed in your virtual environment set up below, even if it differs from the version
-           displayed by the "python -V" command. To see the list of Python versions available to be installed in your conda virtual 
-           environment, run:
-           ::
+Linux
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-                conda search python
-
-Virtualenv
--------------------------------------------------------------------------------
-`Virtualenv` is a Python package that allows you to create virtual environments where
-you can sandbox environments with different package versions without affecting
-your system packages. If you don't have it installed, please follow the instructions
-from the `virtualenv website <https://virtualenv.pypa.io/en/stable/installation/>`_.
-If you have the Anaconda Distribution installed on your system, you can alternatively
-use the conda virtual environment manager, which allows you to specify a different
-Python version to be installed in your virtual environment than what's available by
-default on your system (see note below)
-
-Before installing AxonDeepSeg, we will need to set up a virtual environment.
-A virtual environment is a tool that lets you install specific versions of the python modules you want.
-It will allow AxonDeepSeg to run with respect to its module requirements,
-without affecting the rest of your python installation.
-
-First, navigate to your home directory::
+To install Miniconda, run the following commands in your terminal:::
 
     cd ~
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+    bash ~/miniconda.sh -b -p $HOME/miniconda
+    echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
+    source ~/.bashrc
 
-We will now create a virtual environment. For clarity, we will name it ads_venv::
+macOS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    virtualenv ads_venv
+To install Miniconda, run the following commands in your terminal:::
 
-To activate it, run the following command::
+    cd ~
+    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh
+    bash ~/miniconda.sh -b -p $HOME/miniconda
+    echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bash_profile
+    source ~/.bash_profile
 
-    source ads_venv/bin/activate
+Windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you performed all the steps correctly, your username in the console should now be preceded by the name of your
-virtual environment between parenthesis, like this::
+.. NOTE ::
+   The AxonDeepSeg installation instruction using the Miniconda have only been tested for Windows 10. Older
+   versions of Windows may not be compatible with the tools required to run AxonDeepSeg.
 
-    (ads_venv) username@hostname /home/...
+To install Miniconda, go to the `Miniconda installation website <https://conda.io/miniconda.html>`_ and click on the Python 3.x version
+installer compatible with your Windows system (64 bit recommended). After the download is complete, execute the
+downloaded file, and follow the instructions. If you are unsure about any of the
+installation options, we recommend you use the default settings.
 
-.. NOTE :: To create a virtual environment called "ads_venv" with the Anaconda Distribution, run:
-           ::
+Git (optional)
+-------------------------------------------------------------------------------
+Git is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
+service that hosts Git repositories, having Git installed on your system allows you
+to download the most up-to-date development version of AxonDeepSeg from a terminal, and 
+also allows you to contribute to the project if you wish to do so.
 
-                conda create -n ads_venv python=3.6
+Although an optional step (AxonDeepSeg can also be downloaded other ways, see below), if you 
+want to install Git, please follow instructions for your operating system on the 
+`Git website <https://git-scm.com/downloads>`_
 
-           To activate it, run the following command: 
-           ::
+Virtual Environment
+-------------------------------------------------------------------------------
+Virtual environments are a tool to separate the Python environment and packages used 
+between Python projects. They allow for different versions of Python packages to be 
+installed and managed for the specific needs of your projects. There are several 
+virtual environment managers available, but the one we recommend and will use in our installation 
+guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. 
+We strongly recommend you create a virtual environment before you continue with your installation.
 
-                source activate ads_venv
+To create a Python 3.6 virtual environment named "ads_venv", in a terminal window (macOS or Linux) 
+or Anaconda Prompt (Windows) run the following command and answer "y" to the installation 
+instructions::
+
+    conda create -n ads_venv python=3.6
+
+Then, activate your virtual environment::
+
+    conda activate ads_venv
+
+.. NOTE ::
+   To switch back to your default environment, run::
+
+       conda deactivate
 
 AxonDeepSeg
 -------------------------------------------------------------------------------
-
-Option 1: Installing AxonDeepSeg in application mode (stable release)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. WARNING ::
-   Make sure that the virtual environment is activated before you run the following command.
+   Ensure that the virtual environment is activated before you begin your installation.
 
-We are now going to install the software AxonDeepSeg.
-
-To install the latest stable release of AxonDeepSeg, you just need to install it with ``pip`` using the following command::
-
-    pip install axondeepseg
-
-.. NOTE ::
-   Note that you can install a specific version of the software as follows (replace X.X with the version number, for example 0.2):
-   ::
-
-        pip install axondeepseg==X.X
-
-.. WARNING ::    
-  If you experience the following error:
-  "Could not find a version that satisfies the requirement tensorflow>=XXX (from axondeepseg) (from versions: )... ",
-  you will need to manually install the TensorFlow dependency.
-
-  Run the following command to install TensorFlow 1.9.0:
-  ::
-
-       pip install tensorflow==1.9.0
-
-  You can get more information by following the instructions from the `TensorFlow website <https://www.tensorflow.org/install/install_mac#the_url_of_the_tensorflow_python_package>`_.
-
-  **Once TensorFlow is installed, re-run the pip command:**
-  ::
-
-       pip install axondeepseg
-
-Option 2: Installing AxonDeepSeg in development mode (from GitHub)
+Latest version (development)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. WARNING ::
-   Make sure that the virtual environment is activated before you run the following command.
 
-To install AxonDeepSeg in development mode, you first need to clone the AxonDeepSeg repository using the following command::
+To install the latest version of AxonDeepSeg (development), we recommend that you clone the AxonDeepSeg repository 
+if you have ``git`` installed on your system::
 
     git clone https://github.com/neuropoly/axondeepseg.git
 
-Then, go to the newly created git repository and install the AxonDeepSeg package using the following commands::
+Otherwise, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
+
+Then, in your terminal window, go to the AxonDeepSeg folder and install the 
+AxonDeepSeg package. The following ``cd`` command assumes that you followed the ``git clone``
+instruction above::
 
     cd axondeepseg
     pip install -e .
+
+.. NOTE ::
+   If you downloaded AxonDeepSeg using the link above instead of ``git clone``, you may need to ``cd`` to a different folder (e.g. ``Downloads`` folder 
+   located within your home folder ``~``), and the AxonDeepSeg folder may have a different name (e.g. ``axondeepseg-master``).
 
 .. NOTE ::
    To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
@@ -215,19 +218,56 @@ Then, go to the newly created git repository and install the AxonDeepSeg package
         git pull
         pip install -e .
 
-The advantage of this installation method over the option 1 (application mode) is that you will always get the last stable version of the package.
+Stable release
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
+
+    pip install axondeepseg
 
 Testing the installation
 -------------------------------------------------------------------------------
+.. WARNING ::
+   Ensure that the virtual environment is activated.
 
-In order to test the installation, you can launch an integrity test by running the following command on the terminal (make sure your virtual env is activated before, as explained in the `Creation a virtual environment <https://neuropoly.github.io/axondeepseg/documentation.html#creating-a-virtual-environment>`_ section)::
+Quick test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To test if the software was installed correctly, you can launch a quick integrity test by running the following command on the terminal::
 
     axondeepseg_test
 
-
-This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal, meaning that the software was correctly installed::
+This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal::
 
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
+
+Comprehensive test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. NOTE ::
+   This feature is not available if you installed AxonDeepSeg using ``pip``.
+
+To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
+
+    cd axondeepseg
+    py.test --cov AxonDeepSeg/ --cov-report term-missing
+
+If all tests pass, AxonDeepSeg was installed succesfully.
+
+GPU-compatible installation
+--------------------------------------------------------------------------------
+.. NOTE ::
+   This feature is not available if you installed AxonDeepSeg using ``pip``,
+   or if you are using a macOS.
+
+By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
+using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
+and install the GPU version of it::
+
+    pip uninstall tensorflow
+    pip install tensorflow-gpu==1.3.0
+
+.. WARNING ::
+   Because we recommend the use of version 1.3.0 of Tensorflow GPU, the CUDA version on your system should be 8.0.
+   CUDA 9.0+ is not compatible with Tensorflow 1.3.0. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
 
 Existing models
 ===============================================================================
@@ -333,7 +373,7 @@ Jupyter notebooks
 
 Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 
-* `getting_started.ipynb.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_: 
+* `getting_started.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_: 
     Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb>`_.
 
 * `guide_dataset_building.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/guide_dataset_building.ipynb>`_: 
