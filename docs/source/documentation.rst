@@ -266,7 +266,7 @@ and install the GPU version of it::
     pip install tensorflow-gpu==1.3.0
 
 .. WARNING ::
-   Because we recommend the use of version 1.3.0 of Tensorflow GPU, the CUDA installation on your system should be 8.0.
+   Because we recommend the use of version 1.3.0 of Tensorflow GPU, the CUDA version on your system should be 8.0.
    CUDA 9.0+ is not compatible with Tensorflow 1.3.0. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
 
 Existing models
