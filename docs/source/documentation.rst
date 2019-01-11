@@ -140,6 +140,10 @@ To install Miniconda, run the following commands in your terminal:::
 Windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. NOTE ::
+   The AxonDeepSeg installation instruction using the Miniconda have only been tested for Windows 10. Older
+   versions of Windows may not be compatible with the tools required to run AxonDeepSeg.
+
 To install Miniconda, go to the `Miniconda installation website <https://conda.io/miniconda.html>`_ and click on the Python 3.x version
 installer compatible with your Windows system (64 bit recommended). After the download is complete, execute the
 downloaded file, and follow the instructions. If you are unsure about any of the
