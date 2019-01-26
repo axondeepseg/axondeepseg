@@ -9,6 +9,7 @@ import zipfile
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util import Retry
+import cgi
 
 DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
@@ -172,7 +173,7 @@ def traceback_to_server(client):
 
     sys.excepthook = excepthook
 
-def download_data(url_data, zip_filename):
+def download_data(url_data):
     """ Downloads and extracts zip files from the web.
     :return: 0 - Success, 1 - Encountered an exception.
     """
@@ -184,7 +185,15 @@ def download_data(url_data, zip_filename):
         session = requests.Session()
         session.mount('https://', HTTPAdapter(max_retries=retry))
         response = session.get(url_data, stream=True)
+
+        if "Content-Disposition" in response.headers:
+            _, content = cgi.parse_header(response.headers['Content-Disposition'])
+            zip_filename = content["filename"]
+        else:
+            print("Unexpected: link doesn't provide a filename")
+
         tmp_path = os.path.join(tempfile.mkdtemp(), zip_filename)
+
         with open(tmp_path, 'wb') as tmp_file:
             total = int(response.headers.get('content-length', 1))
             tqdm_bar = tqdm(total=total, unit='B', unit_scale=True, desc="Downloading", ascii=True)
