@@ -8,7 +8,7 @@ from PIL import Image
 import os
 import json
 
-# from AxonDeepSeg.apply_model import axon_segmentation
+from AxonDeepSeg.apply_model import axon_segmentation
 
 class Ads_control_v2(ctrlpanel.ControlPanel):
 
@@ -50,34 +50,12 @@ class Ads_control_v2(ctrlpanel.ControlPanel):
         self.imageDirPath = os.path.dirname(inFile)
         self.pngImageName = inFile[self.imageDirPath.__len__()+1:]
 
-        # Convert the png image into NIfTI
-        img_png = np.asarray(Image.open(inFile).convert('LA'), dtype=np.uint8)
-
-        if np.size(img_png.shape) == 3:
-            img_png2D = img_png[:,:,0]
+        self.loadPngImageFromPath(inFile)
 
 
-        elif np.size(img_png.shape) == 2:
-            img_png2D = img_png[:, :]
-
-        else:
-            print("Invalid image dimensions")
-            return
-
-        img_NIfTI = nib.Nifti1Image(np.flipud(np.rot90(img_png2D, k=3, axes=(0,1))), np.eye(4))
-
-
-        # Save the NIfTI image
-        outFile = inFile[:-3] + 'nii.gz'
-        nib.save(img_NIfTI, outFile, )
-
-        img_overlay = ovLoad.loadOverlays(paths=[outFile], inmem=True, blocking=True)[0]
-        self.overlayList.append(img_overlay)
 
     def onApplyModel_button(self, event):
 
-        print('work in progress')
-        # Axondeepseg and FSLeyes have incompatible numpy versions
 
         if self.imageDirPath is None:
             print('Please load a PNG file')
@@ -101,7 +79,37 @@ class Ads_control_v2(ctrlpanel.ControlPanel):
         with open(model_configfile, 'r') as fd:
             config_network = json.loads(fd.read())
 
-        print('work in progress')
+        prediction = axon_segmentation([self.imageDirPath], [self.pngImageName], modelPath,
+                                       config_network, verbosity_level=3)
+
+        print('work_in_progress')
+        maskFilePath = self.imageDirPath + '/AxonDeepSeg.png'
+
+        self.loadPngImageFromPath(maskFilePath)
+
+
+    def loadPngImageFromPath(self, imagePath):
+        img_png = np.asarray(Image.open(imagePath).convert('LA'), dtype=np.uint8)
+
+        if np.size(img_png.shape) == 3:
+            img_png2D = img_png[:, :, 0]
+
+
+        elif np.size(img_png.shape) == 2:
+            img_png2D = img_png[:, :]
+
+        else:
+            print("Invalid image dimensions")
+            return
+
+        img_NIfTI = nib.Nifti1Image(np.flipud(np.rot90(img_png2D, k=3, axes=(0, 1))), np.eye(4))
+
+        # Save the NIfTI image
+        outFile = imagePath[:-3] + 'nii.gz'
+        nib.save(img_NIfTI, outFile, )
+
+        img_overlay = ovLoad.loadOverlays(paths=[outFile], inmem=True, blocking=True)[0]
+        self.overlayList.append(img_overlay)
 
 
 
