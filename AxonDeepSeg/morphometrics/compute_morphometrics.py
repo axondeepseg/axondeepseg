@@ -45,18 +45,46 @@ def get_pixelsize(path_pixelsize_file):
         return pixelsize
 
 
-def get_axon_morphometrics(pred_axon, path_folder):
+def get_axon_morphometrics(pred_axon, path_folder, pred_myelin=None):
     """
+    Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
+    If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
     :param pred_axon: axon binary mask, output of axondeepseg
     :param path_folder: absolute path of folder containing pixel size file
-    :return: list of dictionaries containing for each axon, various morphometrics
+    :param pred_myelin: myelin binary mask, output of axondeepseg
+    :return: array of dictionaries containing morphometric results for each axon
     """
+    from scipy import ndimage as ndi
+    from skimage.morphology import watershed
+    from skimage.feature import peak_local_max
     # Array for keeping axon-wise metrics
     stats_array = np.empty(0)
 
     # Label each axon object
     labels = measure.label(pred_axon)
     axon_objects = regionprops(labels)
+    #
+    axonmyelin = pred_axon + pred_myelin
+    distance = ndi.distance_transform_edt(axonmyelin)
+    local_maxi = peak_local_max(distance, indices=False, footprint=np.ones((31, 31)), labels=axonmyelin)
+
+    # Get axon centroid as int (not float) to be used as index
+    ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
+                     [int(props.centroid[1]) for props in axon_objects])
+    # Create a map with a different value per axon centroid
+    markers_axon = np.zeros_like(pred_axon)
+    for i in range(len(ind_centroid[0])):
+        markers_axon[ind_centroid[0][i], ind_centroid[1][i]] = i
+
+    # markers = ndi.label(local_maxi)[0]
+    labels = watershed(-distance, markers_axon, mask=axonmyelin)
+    # DEBUG
+    # from matplotlib.pylab import *
+    # matshow(pred_axon, fignum=1, cmap=cm.gray), show()
+    # matshow(pred_myelin, fignum=2, cmap=cm.gray), show()
+    # matshow(axonmyelin, fignum=3, cmap=cm.gray), show()
+    # random_cmap = matplotlib.colors.ListedColormap(np.random.rand(256, 3))
+    # matshow(labels, fignum=4, cmap=random_cmap), show()
 
     # Get axon morphometrics of interest
     for props in axon_objects:
