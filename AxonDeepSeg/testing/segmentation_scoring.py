@@ -88,9 +88,7 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
         ax1.scatter(centroids_T[:, 1], centroids_T[:, 0], color="g")
         ax1.scatter(centroids_F[:, 1], centroids_F[:, 0], color="r")
 
-        notDetected = np.array(
-            notDetected
-        )  # Bug fix, was a list of an np array, which can't be sliced using integer index #TODO remove the previous comment
+        notDetected = np.array(notDetected)
         ax1.scatter(notDetected[:, 1], notDetected[:, 0], color="y")
         ax1.set_title(
             "Prediction, Sensitivity : %s , Precision : %s " % (sensitivity, precision)
