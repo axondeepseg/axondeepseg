@@ -69,7 +69,6 @@ class TestCore(object):
             flatten=True)
 
         stats_array = get_axon_morphometrics(pred_axon, path_folder)
-
         assert isinstance(stats_array, np.ndarray)
 
     @pytest.mark.unit
@@ -91,6 +90,19 @@ class TestCore(object):
 
         for key in list(stats_array[0].keys()):
             assert key in expectedKeys
+
+    @pytest.mark.unit
+    def test_get_axon_morphometrics_with_myelin_mask(self):
+        path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
+        pred_axon = imread(
+            os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
+            flatten=True)
+        pred_myelin = imread(
+            os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
+            flatten=True)
+
+        stats_array = get_axon_morphometrics(pred_axon, path_folder, pred_myelin=pred_myelin)
+
 
     # --------------save and load _axon_morphometrics tests-------------- #
     @pytest.mark.unit
