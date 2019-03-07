@@ -29,6 +29,46 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
     :param min_area: minimal area of the predicted axon to count.
     :return: [sensitivity, precision, diffusion]
     """
+    if visualization:
+        # Define helper functions for plotting
+        def _create_figure(result_img, title):
+            """
+            Full OO syntax for plotting a segmentation and centroids 
+            over the base image.
+            Fuction made for internal usage because it depends on the closure 
+            of local variables.
+            NB: In the future, `score_analysis` should be refactored 
+            as a class.
+            :param result_img: result of the segmentation
+            :param title: str to add to the title of the figure
+            :return: matplotlib.figure.Figure
+            """
+            fig = Figure()
+            FigureCanvas(fig)
+            ax = fig.subplots()
+            # Plot base image and segmentation result
+            ax.imshow(img, cmap="gray")
+            ax.imshow(result_img, alpha=0.7)
+            # Add centroids
+            ax.scatter(centroids_T[:, 1], centroids_T[:, 0], color="g")
+            ax.scatter(centroids_F[:, 1], centroids_F[:, 0], color="r")
+            ax.scatter(notDetected[:, 1], notDetected[:, 0], color="y")
+            # Add title
+            ax.set_title(
+                title
+                + ", Sensitivity : %s , Precision : %s " % (sensitivity, precision)
+            )
+            return fig
+
+        def _save_prediction_and_ground_truth_images(prediction_img, groundtruth_img):
+            """
+            Plot and save pred and GT images. 
+            """
+            fig1 = _create_figure(prediction_img, "Prediction")
+            fig2 = _create_figure(groundtruth_img, "Ground Truth")
+
+            fig1.savefig("./prediction.png")
+            fig2.savefig("./ground_truth.png")
 
     labels_pred = measure.label(prediction)
     regions_pred = regionprops(labels_pred)
@@ -78,30 +118,10 @@ def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2
     precision = round(float(TP) / (TP + FP), 3)
 
     if visualization:
-        fig1 = plt.figure(1)
-        ax1 = fig1.add_subplot(1, 1, 1)
-        ax1.imshow(img, cmap=plt.get_cmap("gray"))
-        ax1.imshow(prediction, alpha=0.7)
-        ax1.scatter(centroids_T[:, 1], centroids_T[:, 0], color="g")
-        ax1.scatter(centroids_F[:, 1], centroids_F[:, 0], color="r")
-
+        # Prepare data
         notDetected = np.array(notDetected)
-        ax1.scatter(notDetected[:, 1], notDetected[:, 0], color="y")
-        ax1.set_title(
-            "Prediction, Sensitivity : %s , Precision : %s " % (sensitivity, precision)
-        )
-
-        fig2 = plt.figure(2)
-        ax2 = fig2.add_subplot(1, 1, 1)
-        ax2.imshow(img, cmap=plt.get_cmap("gray"))
-        ax2.imshow(groundtruth, alpha=0.7)
-        ax2.scatter(centroids_T[:, 1], centroids_T[:, 0], color="g")
-        ax2.scatter(centroids_F[:, 1], centroids_F[:, 0], color="r")
-        ax2.set_title(
-            "Ground Truth, Sensitivity : %s , Precision : %s "
-            % (sensitivity, precision)
-        )
-        plt.show()
+        # Save images
+        _save_prediction_and_ground_truth_images(prediction, groundtruth)
 
     return [sensitivity, precision, round(diffusion, 4)]
 
