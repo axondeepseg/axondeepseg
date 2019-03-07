@@ -1,5 +1,15 @@
-import pickle
+import os
 import sys
+import pickle
+
+# Scientific modules imports
+import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn import preprocessing
+from scipy.misc import imread
+from tabulate import tabulate
+
+# Graphs and plots imports
 from sys import platform as _platform
 if 'pytest' in sys.modules:
     import matplotlib as mpl
@@ -7,15 +17,12 @@ if 'pytest' in sys.modules:
 elif _platform == "darwin": # Mac OSX
     import matplotlib as mpl
     mpl.use('TkAgg')
-import matplotlib.pyplot as plt
-from scipy.misc import imread
-from sklearn.metrics import accuracy_score
-from ..testing.segmentation_scoring import score_analysis, dice
-from sklearn import preprocessing
-import os
-from tabulate import tabulate
-import numpy as np
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+# AxonDeepSeg imports
 import AxonDeepSeg.ads_utils
+from ..testing.segmentation_scoring import score_analysis, dice
 
 
 def visualize_training(path_model, start_visu=0):
