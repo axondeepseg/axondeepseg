@@ -1,14 +1,17 @@
 # coding: utf-8
 
 import os
+
 # Scientific modules imports
 import math
 import numpy as np
 from skimage import measure
 from skimage.measure import regionprops
+
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+
 # AxonDeepSeg imports
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.testing.segmentation_scoring import *
@@ -151,7 +154,8 @@ def display_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
                     labels[pix_x, pix_y] - 1
                 ]
 
-    # Axon overlay on original image + myelin display (same color for every myelin sheath)
+    # Axon overlay on original image + myelin display (same color for every
+    # myelin sheath)
     fig = Figure(figsize=(12, 9))
     FigureCanvas(fig)
     ax = fig.subplots()
