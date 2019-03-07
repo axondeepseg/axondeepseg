@@ -1,10 +1,11 @@
 # coding: utf-8
-
-import numpy as np
-import math
 import os
+
+# Scientific modules imports
+import numpy as np
 import imageio
-from sys import platform as _platformgi
+
+# AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 import AxonDeepSeg.ads_utils
 
