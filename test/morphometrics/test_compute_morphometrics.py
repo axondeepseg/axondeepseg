@@ -3,8 +3,9 @@
 import pytest
 import os
 import inspect
-import random
+from scipy.misc import imread as scipy_imread  # to avoid confusion with mpl.pyplot.imread
 import string
+import random
 import numpy as np
 import shutil
 
@@ -64,7 +65,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_type(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True)
 
@@ -82,7 +83,7 @@ class TestCore(object):
                         }
 
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True)
 
@@ -94,21 +95,21 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True)
-        pred_myelin = imread(
+        pred_myelin = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True)
 
-        stats_array = get_axon_morphometrics(pred_axon, path_folder, pred_myelin=pred_myelin)
-
+        stats_array = get_axon_morphometrics(pred_axon, path_folder, im_myelin=pred_myelin)
+        assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
 
     # --------------save and load _axon_morphometrics tests-------------- #
     @pytest.mark.unit
     def test_save_axon_morphometrics_creates_file_in_expected_location(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True
             )
@@ -125,7 +126,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_save_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True
             )
@@ -140,7 +141,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_load_axon_morphometrics_returns_identical_var_as_was_saved(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True
             )
@@ -167,17 +168,17 @@ class TestCore(object):
     @pytest.mark.unit
     def test_display_axon_diameter_creates_file_in_expected_location(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        img = imread(os.path.join(path_folder, 'image.png'))
+        img = scipy_imread(os.path.join(path_folder, 'image.png'))
         path_prediction = os.path.join(
             path_folder,
             'AxonDeepSeg_seg-axonmyelin.png'
             )
 
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True)
 
-        pred_myelin = imread(
+        pred_myelin = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True)
 
@@ -195,12 +196,12 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_expected_type(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True
             )
 
-        pred_myelin = imread(
+        pred_myelin = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True
             )
@@ -217,7 +218,7 @@ class TestCore(object):
     def test_get_aggregate_morphometrics_returns_returns_expected_keys(self):
         expectedKeys = {'avf',
                         'mvf',
-                        'gratio',
+                        'gratio_aggr',
                         'mean_axon_diam',
                         'mean_myelin_diam',
                         'mean_myelin_thickness',
@@ -225,12 +226,12 @@ class TestCore(object):
                         }
 
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True
             )
 
-        pred_myelin = imread(
+        pred_myelin = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True
             )
@@ -248,12 +249,12 @@ class TestCore(object):
     @pytest.mark.unit
     def test_write_aggregate_morphometrics_creates_file_in_expected_location(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True
             )
 
-        pred_myelin = imread(
+        pred_myelin = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True
             )
@@ -276,12 +277,12 @@ class TestCore(object):
     @pytest.mark.unit
     def test_write_aggregate_morphometrics_throws_error_if_folder_doesnt_exist(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
-        pred_axon = imread(
+        pred_axon = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-axon.png'),
             flatten=True
             )
 
-        pred_myelin = imread(
+        pred_myelin = scipy_imread(
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True
             )
