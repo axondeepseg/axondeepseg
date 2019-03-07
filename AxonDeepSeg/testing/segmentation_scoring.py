@@ -1,21 +1,18 @@
-from skimage import measure
-from skimage.measure import regionprops
+import sys
+
+# Scientific modules imports
 import numpy as np
 import pandas as pd
+from skimage import measure
+from skimage.measure import regionprops
 from skimage.morphology import binary_erosion, disk, label
 from scipy.spatial.distance import directed_hausdorff
-import sys
-from sys import platform as _platform
 
-if "pytest" in sys.modules:
-    import matplotlib as mpl
+# Graphs and plots imports
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
-    mpl.use("Agg")  # Enforces mpl to not open new plot windows
-elif _platform == "darwin":  # Mac OSX
-    import matplotlib as mpl
-
-    mpl.use("TkAgg")
-import matplotlib.pyplot as plt
+# AxonDeepSeg imports
 import AxonDeepSeg.ads_utils
 
 
