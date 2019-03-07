@@ -151,18 +151,19 @@ def display_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
                     labels[pix_x, pix_y] - 1
                 ]
 
-                # Axon overlay on original image + myelin display (same color for every myelin sheath)
-    fig = plt.figure(figsize=(12, 9))
-    ax = fig.add_subplot(1, 1, 1)
+    # Axon overlay on original image + myelin display (same color for every myelin sheath)
+    fig = Figure(figsize=(12, 9))
+    FigureCanvas(fig)
+    ax = fig.subplots()
     ax.imshow(img, cmap="gray", alpha=0.8)
     ax.imshow(pred_myelin, cmap="gray", alpha=0.3)
     im = ax.imshow(axon_diam_display, cmap="hot", alpha=0.5)
-    plt.colorbar(im, fraction=0.03, pad=0.02)
+    fig.colorbar(im, fraction=0.03, pad=0.02)
     ax.set_title(
         "Axon overlay (colorcoded with axon diameter in um) and myelin display",
         fontsize=12,
     )
-    plt.savefig(tmp_path[0] + "_map-axondiameter.png")
+    fig.savefig(tmp_path[0] + "_map-axondiameter.png")
 
 
 def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
