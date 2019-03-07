@@ -3,6 +3,11 @@
 from scipy import ndimage as ndi
 import os
 import math
+from sys import platform as _platform
+if _platform == "darwin": # Mac OSX
+    import matplotlib as mpl
+    mpl.use('TkAgg')
+import matplotlib.pyplot as plt
 from skimage import measure, morphology, feature
 from AxonDeepSeg.testing.segmentation_scoring import *
 
