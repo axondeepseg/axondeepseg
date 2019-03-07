@@ -1,26 +1,17 @@
 # coding: utf-8
 
-import numpy as np
-from skimage import io
-from scipy.misc import imread, imsave
 import os
-import imageio
-import json
-from skimage import transform
-from skimage.filters import gaussian
-from sys import platform as _platform
-
-if _platform == "darwin":  # Mac OSX
-    import matplotlib as mpl
-
-    mpl.use("TkAgg")
-import matplotlib.pyplot as plt
-from shutil import copy
+# Scientific modules imports
 import math
-from AxonDeepSeg.apply_model import axon_segmentation
-from AxonDeepSeg.testing.segmentation_scoring import *
+import numpy as np
 from skimage import measure
 from skimage.measure import regionprops
+# Graphs and plots imports
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+# AxonDeepSeg imports
+from AxonDeepSeg.apply_model import axon_segmentation
+from AxonDeepSeg.testing.segmentation_scoring import *
 import AxonDeepSeg.ads_utils
 
 
