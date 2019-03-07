@@ -219,7 +219,7 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
     axon_density_mm2 = float(len(axon_diam_list)) / float(img_area_mm2)
 
     # Create disctionary to store aggregate metrics
-    aggregate_metrics = {'avf': avf, 'mvf': mvf, 'gratio': gratio, 'mean_axon_diam': mean_axon_diam,
+    aggregate_metrics = {'avf': avf, 'mvf': mvf, 'gratio_aggr': gratio, 'mean_axon_diam': mean_axon_diam,
                          'mean_myelin_diam': mean_myelin_diam, 'mean_myelin_thickness': mean_myelin_thickness,
                          'axon_density_mm2': axon_density_mm2}
 
