@@ -1,27 +1,10 @@
 # coding: utf-8
 
-import numpy as np
-from skimage import io
-from scipy.misc import imread, imsave
+from scipy import ndimage as ndi
 import os
-import imageio
-import json
-from skimage import transform
-from skimage.filters import gaussian
-from sys import platform as _platform
-
-if _platform == "darwin":  # Mac OSX
-    import matplotlib as mpl
-
-    mpl.use('TkAgg')
-import matplotlib.pyplot as plt
-from shutil import copy
 import math
-from AxonDeepSeg.apply_model import axon_segmentation
+from skimage import measure, morphology, feature
 from AxonDeepSeg.testing.segmentation_scoring import *
-from skimage import measure
-from skimage.measure import regionprops
-import AxonDeepSeg.ads_utils
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -54,19 +37,14 @@ def get_axon_morphometrics(pred_axon, path_folder, pred_myelin=None):
     :param pred_myelin: myelin binary mask, output of axondeepseg
     :return: array of dictionaries containing morphometric results for each axon
     """
-    from scipy import ndimage as ndi
-    from skimage.morphology import watershed
-    from skimage.feature import peak_local_max
-    # Array for keeping axon-wise metrics
     stats_array = np.empty(0)
 
     # Label each axon object
     labels = measure.label(pred_axon)
-    axon_objects = regionprops(labels)
-    #
+
     axonmyelin = pred_axon + pred_myelin
     distance = ndi.distance_transform_edt(axonmyelin)
-    local_maxi = peak_local_max(distance, indices=False, footprint=np.ones((31, 31)), labels=axonmyelin)
+    local_maxi = feature.peak_local_max(distance, indices=False, footprint=np.ones((31, 31)), labels=axonmyelin)
 
     # Get axon centroid as int (not float) to be used as index
     ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
@@ -77,7 +55,7 @@ def get_axon_morphometrics(pred_axon, path_folder, pred_myelin=None):
         markers_axon[ind_centroid[0][i], ind_centroid[1][i]] = i
 
     # markers = ndi.label(local_maxi)[0]
-    labels = watershed(-distance, markers_axon, mask=axonmyelin)
+    labels = morphology.watershed(-distance, markers_axon, mask=axonmyelin)
     # DEBUG
     # from matplotlib.pylab import *
     # matshow(pred_axon, fignum=1, cmap=cm.gray), show()
@@ -86,7 +64,10 @@ def get_axon_morphometrics(pred_axon, path_folder, pred_myelin=None):
     # random_cmap = matplotlib.colors.ListedColormap(np.random.rand(256, 3))
     # matshow(labels, fignum=4, cmap=random_cmap), show()
 
-    # Get axon morphometrics of interest
+    # Measure properties for each axon object
+    axon_objects = measure.regionprops(labels)
+
+    # Loop across axon property and fill up dictionary with morphometrics of interest
     for props in axon_objects:
         # Centroid
         y0, x0 = props.centroid
