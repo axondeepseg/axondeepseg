@@ -94,12 +94,15 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
         eccentricity = prop_axon.eccentricity
         # Axon equivalent diameter in micrometers
         axon_diam = prop_axon.equivalent_diameter * pixelsize
+        # Axon area in µm^2
+        axon_area = prop_axon.area * (pixelsize ** 2)
         # Axon orientation angle
         orientation = prop_axon.orientation
         # Add metrics to list of dictionaries
         stats = {'y0': y0,
                  'x0': x0,
                  'axon_diam': axon_diam,
+                 'axon_area': axon_area,
                  'solidity': solidity,
                  'eccentricity': eccentricity,
                  'orientation': orientation}
@@ -115,8 +118,10 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
                 ind_axonmyelin = \
                     [axonmyelin_object.label for axonmyelin_object in axonmyelin_objects].index(label_axonmyelin)
                 myelin_diam = axonmyelin_objects[ind_axonmyelin].equivalent_diameter * pixelsize
+                myelin_area = axonmyelin_objects[ind_axonmyelin].area * (pixelsize ** 2)
                 stats['myelin_diam'] = myelin_diam
-                stats['gratio'] = axon_diam / myelin_diam
+                stats['myelin_area'] = myelin_area
+                stats['gratio'] = np.sqrt(axon_area / myelin_area)
             else:
                 # TODO: use logger
                 print('WARNING: Myelin object not found for axon centroid [{},{}]'.format(y0, x0))
