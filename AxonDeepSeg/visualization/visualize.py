@@ -84,7 +84,7 @@ def visualize_segmentation(path):
         """
         Helper function to create a figure
         :param overlayed_img: the image to add on top on image_init
-        :param fig_title: the title of the figure
+        :param fig_title: str title of the figure
         :return: matplotlib.figure.Figure
         """
         fig = Figure()
