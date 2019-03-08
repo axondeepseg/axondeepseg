@@ -10,16 +10,6 @@ from scipy.misc import imread
 from tabulate import tabulate
 
 # Graphs and plots imports
-from sys import platform as _platform
-
-if "pytest" in sys.modules:
-    import matplotlib as mpl
-
-    mpl.use("Agg")  # Enforces mpl to not open new plot windows
-elif _platform == "darwin":  # Mac OSX
-    import matplotlib as mpl
-
-    mpl.use("TkAgg")
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -28,12 +18,12 @@ import AxonDeepSeg.ads_utils
 from ..testing.segmentation_scoring import score_analysis, dice
 
 
-def visualize_training(path_model, start_visu=0):
+def visualize_training(path_model, start_for_viz=0):
     """
     :param path_model: path of the folder with the model parameters .ckpt
     :param start_visu: first iterations can reach extreme values, 
         start_visuset another start than epoch 0
-    :return: evolution
+    :return: (matplotlib.figure.Figure, evolution)
 
     figure(1) represent the evolution of the loss and the accuracy evaluated on
     the validation set along the learning process.
@@ -42,42 +32,45 @@ def visualize_training(path_model, start_visu=0):
     evolution of the model.
     """
 
+    def _create_figure_helper(data_evolution):
+        fig = Figure()
+        FigureCanvas(fig)
+
+        # Drawing the evolution curves
+        ax1 = fig.subplots()
+        ax2 = ax1.twinx()
+        ax1.plot(
+            data_evolution["steps"][start_for_viz:],
+            data_evolution["accuracy"][start_for_viz:],
+            "-",
+            label="accuracy",
+        )
+        ax1.set_ylim(ymin=0)
+        ax2.plot(
+            data_evolution["steps"][start_for_viz:],
+            data_evolution["loss"][start_for_viz:],
+            "-r",
+            label="loss",
+        )
+
+        # Annotating the graph
+        ax1.set_title("Accuracy and loss evolution")
+        ax1.set_xlabel("Epoch")
+        ax1.set_ylabel("Accuracy")
+        ax2.set_ylabel("Loss")
+        return fig
+
     evolution = retrieve_training_data(path_model)
+    fig = _create_figure_helper(evolution)
 
-    fig = Figure()
-    FigureCanvas(fig)
-    # Drawing the evolution curves
-
-    ax1 = fig.subplots()
-    ax2 = ax1.twinx()
-    ax1.plot(
-        evolution["steps"][start_visu:],
-        evolution["accuracy"][start_visu:],
-        "-",
-        label="accuracy",
-    )
-    ax1.set_ylim(ymin=0)
-    ax2.plot(
-        evolution["steps"][start_visu:],
-        evolution["loss"][start_visu:],
-        "-r",
-        label="loss",
-    )
-
-    # Annotating the graph
-    ax1.set_title("Accuracy and loss evolution")
-    ax1.set_xlabel("Epoch")
-    ax1.set_ylabel("Accuracy")
-    ax2.set_ylabel("Loss")
-
-    return evolution
+    return fig, evolution
 
 
 def visualize_segmentation(path):
     """
     :param path: path of the folder including the data and the results obtained
         after by the segmentation process.
-    :return: no return
+    :return: list of matplotlib.figure.Figure
     if there is a mask (ground truth) in the folder, 
     scores are calculated: sensitivity, errors and dice
     figure(1) segmentation without mrf
@@ -85,6 +78,7 @@ def visualize_segmentation(path):
     if there is MyelinSeg.jpg in the folder, myelin and image, myelin and axon
     segmentated, myelin and groundtruth are represented
     """
+    figs = []
 
     def _create_fig_helper(overlayed_img, fig_title):
         """
@@ -117,12 +111,12 @@ def visualize_segmentation(path):
     predict_mrf = np.ma.masked_where(prediction_mrf == 0, prediction_mrf)
 
     title = "Axon Segmentation (with mrf) mask"
-    fig = _create_fig_helper(predict_mrf, title)
-    fig.savefig(path + "/fig1.png")
+    fig1 = _create_fig_helper(predict_mrf, title)
+    figs.append(fig1)
 
     title = "Axon Segmentation (without mrf) mask"
-    fig = _create_fig_helper(predict, title)
-    fig.savefig(path + "/fig2.png")
+    fig2 = _create_fig_helper(predict, title)
+    figs.append(fig2)
 
     if "mask.png" in os.listdir(path):
         Mask = True
@@ -183,16 +177,17 @@ def visualize_segmentation(path):
         myelin = np.ma.masked_where(myelin == 0, myelin)
 
         title = "Myelin Segmentation"
-        fig = _create_fig_helper(myelin, title)
-        fig.savefig(path + "/fig3.png")
+        fig3 = _create_fig_helper(myelin, title)
+        figs.append(fig3)
 
         if Mask:
             # New base image for plotting
             image_init = mask
             # Create figure
             title = "Myelin - GroundTruth"
-            fig = _create_fig_helper(myelin, title)
-            fig.savefig(path + "/fig4.png")
+            fig4 = _create_fig_helper(myelin, title)
+            figs.append(fig4)
+    return figs
 
 
 def retrieve_training_data(path_model, path_model_init=None):
@@ -228,7 +223,6 @@ def retrieve_training_data(path_model, path_model_init=None):
 def retrieve_hyperparameters(path_model):
 
     """
-
     :param path_model: path of the folder with the model parameters .ckpt
     :return: the dict containing the hyperparameters
     """
@@ -248,4 +242,5 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
     path_model = args["path_model"]
 
-    visualize_training(path_model)
+    fig, evo = visualize_training(path_model)
+    fig.savefig("./visualize_training_acc_vs_loss_evolution.png")
