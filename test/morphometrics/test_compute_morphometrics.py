@@ -170,15 +170,14 @@ class TestCore(object):
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True)
 
-        display_axon_diameter(img, path_prediction, pred_axon, pred_myelin)
-
-        assert os.path.isfile(
-            os.path.join(path_folder, 'AxonDeepSeg_map-axondiameter.png')
-            )
-
-        os.remove(
-            os.path.join(path_folder, 'AxonDeepSeg_map-axondiameter.png')
-            )
+        
+        result_path = os.path.join(path_folder, 'AxonDeepSeg_map-axondiameter.png')
+        fig = display_axon_diameter(img, path_prediction, pred_axon, pred_myelin)
+        assert fig.axes
+        fig.savefig(result_path)
+        
+        assert os.path.isfile(result_path)
+        os.remove(result_path)
 
     # --------------get_aggregate_morphometrics tests-------------- #
     @pytest.mark.unit
