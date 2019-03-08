@@ -77,6 +77,7 @@ class TestCore(object):
         expectedKeys = {'y0',
                         'x0',
                         'axon_diam',
+                        'axon_area',
                         'solidity',
                         'eccentricity',
                         'orientation'
