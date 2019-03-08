@@ -37,24 +37,21 @@ def visualize_training(path_model, start_visu=0):
 
     evolution = retrieve_training_data(path_model)
 
-    fig = plt.figure(1)
+    fig = Figure())
+    FigureCanvas(fig)
     # Drawing the evolution curves
 
-    ax = fig.add_subplot(111)
-    ax.plot(evolution['steps'][start_visu:], evolution['accuracy'][start_visu:], '-', label='accuracy')
-    plt.ylabel('Accuracy')
-    plt.ylim(ymin=0)
-    # plt.ylim(ymax=100)
-
-    ax2 = ax.twinx()
+    ax1 = fig.subplots()
+    ax2 = ax1.twinx()
+    ax1.plot(evolution['steps'][start_visu:], evolution['accuracy'][start_visu:], '-', label='accuracy')
+    ax1.set_ylim(ymin=0)
     ax2.plot(evolution['steps'][start_visu:], evolution['loss'][start_visu:], '-r', label='loss')
 
     # Annotating the graph
-
-    plt.title('Accuracy and loss evolution')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.show()
+    ax1.set_title('Accuracy and loss evolution')
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('Accuracy')
+    ax2.set_ylabel('Loss')
 
     return evolution
 
