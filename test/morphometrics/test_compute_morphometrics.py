@@ -7,7 +7,7 @@ import random
 import string
 import numpy as np
 import shutil
-from scipy import imread
+from scipy.misc import imread
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
