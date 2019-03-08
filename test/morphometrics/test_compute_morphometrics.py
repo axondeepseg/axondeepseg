@@ -7,6 +7,7 @@ import random
 import string
 import numpy as np
 import shutil
+from imageio import imread
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
