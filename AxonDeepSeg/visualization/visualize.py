@@ -37,7 +37,7 @@ def visualize_training(path_model, start_visu=0):
 
     evolution = retrieve_training_data(path_model)
 
-    fig = Figure())
+    fig = Figure()
     FigureCanvas(fig)
     # Drawing the evolution curves
 
@@ -65,6 +65,21 @@ def visualize_segmentation(path):
     figure(2) segmentation with mrf
     if there is MyelinSeg.jpg in the folder, myelin and image, myelin and axon segmentated, myelin and groundtruth are represented
     """
+    def _create_fig_helper(overlayed_img, fig_title):
+        """
+        Helper function to create a figure
+        :param overlayed_img: the image to add on top on image_init
+        :param fig_title: the title of the figure
+        :return: matplotlib.figure.Figure
+        """
+        fig = Figure()
+        FigureCanvas(fig)
+        ax = fig.subplots()
+        ax.set_title(fig_title)
+        ax.imshow(image_init, cmap='gray')
+        ax.imshow(overlayed_img, cmap='hsv', alpha=0.7)
+        return fig
+
 
     path_img = path + '/image.png'
     mask = False
@@ -81,22 +96,13 @@ def visualize_segmentation(path):
     predict = np.ma.masked_where(prediction == 0, prediction)
     predict_mrf = np.ma.masked_where(prediction_mrf == 0, prediction_mrf)
 
-    i_figure = 1
+    title = 'Axon Segmentation (with mrf) mask'
+    fig = _create_fig_helper(predict_mrf, title)
+    fig.savefig(path + "/fig1.png")
 
-    plt.figure(i_figure)
-    plt.title('Axon Segmentation (with mrf) mask')
-    plt.imshow(image_init, 'gray')
-    plt.hold(True)
-    plt.imshow(predict_mrf, 'hsv', alpha=0.7)
-
-    i_figure += 1
-
-    plt.figure(i_figure)
-    plt.title('Axon Segmentation (without mrf) mask')
-    plt.imshow(image_init, 'gray')
-    plt.imshow(predict, 'hsv', alpha=0.7)
-
-    i_figure += 1
+    title = 'Axon Segmentation (without mrf) mask'
+    fig = _create_fig_helper(predict, title)
+    fig.savefig(path + "/fig2.png")
 
     if 'mask.png' in os.listdir(path):
         Mask = True
@@ -138,21 +144,18 @@ def visualize_segmentation(path):
         myelin = preprocessing.binarize(imread(path_myelin, flatten=False, mode='L'), threshold=125)
         myelin = np.ma.masked_where(myelin == 0, myelin)
 
-        plt.figure(i_figure)
-        plt.title('Myelin Segmentation')
-        plt.imshow(image_init, 'gray')
-        plt.imshow(myelin, 'hsv', alpha=0.7)
-
-        i_figure += 1
+        title = 'Myelin Segmentation'
+        fig = _create_fig_helper(myelin, title)
+        fig.savefig(path + "/fig3.png")
 
         if Mask:
-            plt.figure(i_figure)
-            plt.title('Myelin - GroundTruth')
-            plt.imshow(mask, cmap=plt.get_cmap('gray'))
-            plt.hold(True)
-            plt.imshow(myelin, alpha=0.7)
+            # New base image for plotting
+            image_init = mask
+            # Create figure
+            title = 'Myelin - GroundTruth'
+            fig = _create_fig_helper(myelin, title)
+            fig.savefig(path + "/fig4.png")
 
-    plt.show()
 
 
 def retrieve_training_data(path_model, path_model_init = None):
