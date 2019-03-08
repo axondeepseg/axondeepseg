@@ -128,7 +128,7 @@ def load_axon_morphometrics(path_folder):
         return stats_array
 
 
-def display_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
+def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
     """
 	:param img: sample grayscale image (png)
 	:param path_prediction: full path to the segmented file (*_seg-axonmyelin.png) 
@@ -137,16 +137,14 @@ def display_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
 	:param pred_myelin: myelin mask from axondeepseg segmentation output
 	:return: matplotlib.figure.Figure
 	"""
-    path_folder, file_name = os.path.split(path_prediction)
-    tmp_path = path_prediction.split("_seg-axonmyelin")
+    path_folder, _ = os.path.split(path_prediction)
 
     stats_array = get_axon_morphometrics(pred_axon, path_folder)
     axon_diam_list = [d["axon_diam"] for d in stats_array]
     axon_diam_array = np.asarray(axon_diam_list)
-    axon_iter = np.arange(np.size(axon_diam_array))
 
     labels = measure.label(pred_axon)
-    axon_diam_display = a = np.zeros((np.shape(labels)[0], np.shape(labels)[1]))
+    axon_diam_display = np.zeros((np.shape(labels)[0], np.shape(labels)[1]))
 
     for pix_x in np.arange(np.shape(labels)[0]):
         for pix_y in np.arange(np.shape(labels)[1]):
@@ -171,6 +169,16 @@ def display_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
     return fig
 
 
+def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
+    """
+	 :param path_folder: absolute path of the sample and the segmentation folder
+     :param axon_diameter_figure: figure create with draw_axon_diameter
+     :return: None
+     """
+    file_path = os.path.join(path_folder, "AxonDeepSeg_map-axondiameter.png")
+    axon_diameter_figure.savefig(file_path)
+
+
 def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
     """
 	:param pred_axon: axon mask from axondeepseg segmentation output
@@ -192,7 +200,7 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
     axon_diam_list = [d["axon_diam"] for d in stats_array]
     mean_axon_diam = np.mean(axon_diam_list)
 
-    # Estimate mean myelin diameter (axon+myelin diameter) by using 
+    # Estimate mean myelin diameter (axon+myelin diameter) by using
     # aggregate g-ratio = mean_axon_diam/mean_myelin_diam
     mean_myelin_diam = mean_axon_diam / gratio
 
