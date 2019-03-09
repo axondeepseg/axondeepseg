@@ -1,6 +1,6 @@
-=====================
-Contributing to SCT
-=====================
+============================
+Contributing to AxonDeepSeg
+============================
 
 
 .. contents:: Table of Contents
@@ -139,7 +139,7 @@ have your branches named as follows:
 Examples:
 
 - ``maf88/fix-lossy-int8-conversion``
-- ``jca/1234-rewrite-sct-in-cobol``
+- ``jca/1234-rewrite-segment_axon``
 
 
 Additional Info on Github
@@ -237,11 +237,10 @@ Examples:
 - ``deepseg_sc: add utility functions``
 - ``documentation: sphinx: add a section about support``
 - ``documentation: sphinx: development: fixup typo``
-- ``refactor msct_image into image module and compatibility layer``
 - ``Travis: remove jobs running Python 2.7``
 - ``setup.py: add optional label for installing documentation tooling deps``
 - ``testing: add image unit tests``
-- ``testing: add sct_deepseg integration tests``
+- ``testing: add ConvNet integration tests``
 
 
 Commit Sequences
@@ -317,9 +316,9 @@ You **must** add Labels to PRs, as these are used to automatically generate Chan
   background).
 
 - **Cross-compatibility:** If your PR breaks cross-compatibility with a previous
-  stable release of SCT, you should add the label ``compatibility``.
+  stable release of ADS, you should add the label ``compatibility``.
 
-`Here <https://github.com/neuropoly/axondeepseg/pull/44>`_ is an example of PR
+`Here <https://github.com/neuropoly/axondeepseg/pull/176>`_ is an example of PR
 with proper labels and description. (#TODO: Find a better example)
 
 
