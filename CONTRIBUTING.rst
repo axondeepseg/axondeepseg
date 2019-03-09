@@ -69,7 +69,7 @@ Issue Body
 
 - Provide steps to reproduce the issue.
 
- Please try to reproduce your issue using ``AxonDeepSeg\data_test`` as inputs,
+ Please try to reproduce your issue using ``./AxonDeepSeg/data_test`` as inputs,
   and to provide a sequence of commands that can reproduce it.
 
  If this is not possible, try to isolate a minimal input on which the issue
