@@ -176,8 +176,7 @@ Guidelines for developing
 
 - Please add tests, especially with new code:
 
- #TODO: UPDATE PARAGRAPH FOR ADS As of now, we have integration tests (that run in `sct_testing`),
- and unit tests (in `/unit_testing/`).
+ As of now, we have integration tests and unit tests in the ``./test/`` folder.
 
  They are straightforward to augment, but we understand it's the
  extra mile; it would still be appreciated if you provide something
