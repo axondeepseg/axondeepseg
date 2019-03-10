@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from skimage import measure, morphology, feature
 from AxonDeepSeg.testing.segmentation_scoring import *
 
-
 def get_pixelsize(path_pixelsize_file):
     """
     :param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
@@ -64,7 +63,7 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
                         [int(props.centroid[1]) for props in axon_objects])
 
         # Create an image with axon centroids, which value corresponds to the value of the axon object
-        im_centroid = np.zeros_like(im_axon)
+        im_centroid = np.zeros_like(im_axon, dtype='uint8')
         for i in range(len(ind_centroid[0])):
             # Note: The value "i" corresponds to the label number of im_axon_label
             im_centroid[ind_centroid[0][i], ind_centroid[1][i]] = i
