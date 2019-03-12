@@ -23,14 +23,14 @@ from ..testing.segmentation_scoring import score_analysis, dice
 def visualize_training(path_model, start_for_viz=0):
     """
     :param path_model: path of the folder with the model parameters .ckpt
-    :param start_visu: first iterations can reach extreme values, 
+    :param start_visu: first iterations can reach extreme values,
         start_visuset another start than epoch 0
     :return: (matplotlib.figure.Figure, evolution)
 
     figure(1) represent the evolution of the loss and the accuracy evaluated on
     the validation set along the learning process.
-    If the learning began from an initial model, the figure plots first the 
-    accuracy and loss evolution from this initial model and then stacks the 
+    If the learning began from an initial model, the figure plots first the
+    accuracy and loss evolution from this initial model and then stacks the
     evolution of the model.
     """
 
@@ -73,7 +73,7 @@ def visualize_segmentation(path):
     :param path: path of the folder including the data and the results obtained
         after by the segmentation process.
     :return: list of matplotlib.figure.Figure
-    if there is a mask (ground truth) in the folder, 
+    if there is a mask (ground truth) in the folder,
     scores are calculated: sensitivity, errors and dice
     figure(1) segmentation without mrf
     figure(2) segmentation with mrf
@@ -197,7 +197,7 @@ def retrieve_training_data(path_model, path_model_init=None):
     :param path_model: path of the folder with the model parameters .ckpt
     :param path_model_init: if the model is initialized by another, path of its
         folder
-    :return: dictionary {steps, accuracy, loss} describing the evolution over 
+    :return: dictionary {steps, accuracy, loss} describing the evolution over
         epochs of the performance of the model. Stacks the initial model if needed
     """
 
