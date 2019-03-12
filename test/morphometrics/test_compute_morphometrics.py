@@ -53,7 +53,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_pixelsize_throws_error_for_invalid_data_file(self):
         tmpName = 'tmpInvalid.txt'
-        with open(os.path.join(self.tmpDir, tmpName),'wb') as tmp:
+        with open(os.path.join(self.tmpDir, tmpName), 'wb') as tmp:
 
             tmp.write('&&&'.encode())
 
@@ -170,12 +170,11 @@ class TestCore(object):
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True)
 
-        
         result_path = os.path.join(path_folder, 'AxonDeepSeg_map-axondiameter.png')
         fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin)
         assert fig.axes
         fig.savefig(result_path)
-        
+
         assert os.path.isfile(result_path)
         os.remove(result_path)
 
