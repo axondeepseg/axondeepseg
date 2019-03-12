@@ -100,7 +100,7 @@ def visualize_segmentation(path):
     path_img = path + "/image.png"
     mask = False
 
-    if not "results.pkl" in os.listdir(path):
+    if "results.pkl" not in os.listdir(path):
         print("results not present")
 
     file = open(path + "/results.pkl", "r")
