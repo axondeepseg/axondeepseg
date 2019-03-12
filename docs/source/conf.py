@@ -102,7 +102,7 @@ html_theme_options = {
     'display_version': False,
     'navigation_depth': 4,
 }
-html_logo = '_static/logo_ads.pdf'
+html_logo = '_static/logo_ads_mathieu_2.png'
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
