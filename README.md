@@ -1,4 +1,4 @@
-# AxonDeepSeg
+<img src="https://github.com/neuropoly/axondeepseg/blob/jca/171-logo/docs/source/_static/logo_ads-alpha.png" width="400">
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb)
 [![Build Status](https://api.travis-ci.org/neuropoly/axondeepseg.svg?branch=master)](https://travis-ci.org/neuropoly/axondeepseg)
