@@ -12,13 +12,13 @@ import AxonDeepSeg.ads_utils
 
 def launch_morphometrics_computation(path_img, path_prediction):
     """
-	This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
-	It automatically performs all steps (computations, savings, displays,...) of the 
-	morphometrics extraction of a given sample.
-	:param path_img: path of the input image (microscopy sample)
-	:param path_prediction: path of the segmented image (output of AxonDeepSeg)
-	:return: none.
-	"""
+    This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
+    It automatically performs all steps (computations, savings, displays,...) of the
+    morphometrics extraction of a given sample.
+    :param path_img: path of the input image (microscopy sample)
+    :param path_prediction: path of the segmented image (output of AxonDeepSeg)
+    :return: none.
+    """
     try:
         # Read image
         img = imageio.imread(path_img)
