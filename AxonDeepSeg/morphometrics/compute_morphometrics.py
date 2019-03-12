@@ -20,9 +20,9 @@ import AxonDeepSeg.ads_utils
 
 def get_pixelsize(path_pixelsize_file):
     """
-	:param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
-	:return: the pixel size value.
-	"""
+    :param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
+    :return: the pixel size value.
+    """
     try:
         with open(path_pixelsize_file, "r") as text_file:
             pixelsize = float(text_file.read())
@@ -49,10 +49,10 @@ def get_pixelsize(path_pixelsize_file):
 
 def get_axon_morphometrics(pred_axon, path_folder):
     """
-	:param pred_axon: axon binary mask, output of axondeepseg
-	:param path_folder: absolute path of folder containing pixel size file
-	:return: list of dictionaries containing for each axon, various morphometrics
-	"""
+    :param pred_axon: axon binary mask, output of axondeepseg
+    :param path_folder: absolute path of folder containing pixel size file
+    :return: list of dictionaries containing for each axon, various morphometrics
+    """
 
     # Array for keeping axon-wise metrics
     stats_array = np.empty(0)
@@ -93,10 +93,10 @@ def get_axon_morphometrics(pred_axon, path_folder):
 
 def save_axon_morphometrics(path_folder, stats_array):
     """
-	:param path_folder: absolute path of the sample and the segmentation folder
-	:param stats_array: list of dictionaries containing axon morphometrics
-	:return: nothing
-	"""
+    :param path_folder: absolute path of the sample and the segmentation folder
+    :param stats_array: list of dictionaries containing axon morphometrics
+    :return: nothing
+    """
     try:
         np.save(os.path.join(path_folder, "axonlist.npy"), stats_array)
     except IOError as e:
@@ -111,9 +111,9 @@ def save_axon_morphometrics(path_folder, stats_array):
 
 def load_axon_morphometrics(path_folder):
     """
-	:param path_folder: absolute path of the sample and the segmentation folder
-	:return: stats_array: list of dictionaries containing axon morphometrics
-	"""
+    :param path_folder: absolute path of the sample and the segmentation folder
+    :return: stats_array: list of dictionaries containing axon morphometrics
+    """
     try:
         stats_array = np.load(os.path.join(path_folder, "axonlist.npy"))
     except IOError as e:
@@ -130,13 +130,13 @@ def load_axon_morphometrics(path_folder):
 
 def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
     """
-	:param img: sample grayscale image (png)
-	:param path_prediction: full path to the segmented file (*_seg-axonmyelin.png) 
+    :param img: sample grayscale image (png)
+    :param path_prediction: full path to the segmented file (*_seg-axonmyelin.png) 
         from axondeepseg segmentation output
-	:param pred_axon: axon mask from axondeepseg segmentation output
-	:param pred_myelin: myelin mask from axondeepseg segmentation output
-	:return: matplotlib.figure.Figure
-	"""
+    :param pred_axon: axon mask from axondeepseg segmentation output
+    :param pred_myelin: myelin mask from axondeepseg segmentation output
+    :return: matplotlib.figure.Figure
+    """
     path_folder, _ = os.path.split(path_prediction)
 
     stats_array = get_axon_morphometrics(pred_axon, path_folder)
@@ -171,21 +171,21 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
 
 def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
     """
-	 :param path_folder: absolute path of the sample and the segmentation folder
-     :param axon_diameter_figure: figure create with draw_axon_diameter
-     :return: None
-     """
+    :param path_folder: absolute path of the sample and the segmentation folder
+    :param axon_diameter_figure: figure create with draw_axon_diameter
+    :return: None
+    """
     file_path = os.path.join(path_folder, "AxonDeepSeg_map-axondiameter.png")
     axon_diameter_figure.savefig(file_path)
 
 
 def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
     """
-	:param pred_axon: axon mask from axondeepseg segmentation output
-	:param pred_myelin: myelin mask from axondeepseg segmentation output
-	:param path_folder: absolute path of folder containing pixel size file
-	:return: aggregate_metrics: dictionary containing values of aggregate metrics
-	"""
+    :param pred_axon: axon mask from axondeepseg segmentation output
+    :param pred_myelin: myelin mask from axondeepseg segmentation output
+    :param path_folder: absolute path of folder containing pixel size file
+    :return: aggregate_metrics: dictionary containing values of aggregate metrics
+    """
 
     # Compute AVF (axon volume fraction) = area occupied by axons in sample
     avf = np.count_nonzero(pred_axon) / float((pred_axon.size))
@@ -233,10 +233,10 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
 
 def write_aggregate_morphometrics(path_folder, aggregate_metrics):
     """
-	:param path_folder: absolute path of folder containing sample + segmentation
-	:param aggregate_metrics: dictionary containing values of aggregate metrics
-	:return: nothing
-	"""
+    :param path_folder: absolute path of folder containing sample + segmentation
+    :param aggregate_metrics: dictionary containing values of aggregate metrics
+    :return: nothing
+    """
 
     try:
         with open(
