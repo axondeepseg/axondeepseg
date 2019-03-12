@@ -20,15 +20,15 @@ import AxonDeepSeg.ads_utils
 from ..testing.segmentation_scoring import score_analysis, dice
 
 
-def visualize_training(path_model, start_for_viz=0):
+def visualize_training(path_model, iteration_start_for_viz=0):
     """
     :param path_model: path of the folder with the model parameters .ckpt
-    :param start_visu: first iterations can reach extreme values,
-        start_visuset another start than epoch 0
-    :return: (matplotlib.figure.Figure, evolution)
+    :param iteration_start_for_viz: first iterations can reach extreme values,
+        iteration_start_for_viz set a beginning other than epoch 0
+    :return: matplotlib.figure.Figure
 
-    figure(1) represent the evolution of the loss and the accuracy evaluated on
-    the validation set along the learning process.
+    The returned figure represents the evolution of the loss and the accuracy 
+    evaluated on the validation set along the learning process.
     If the learning began from an initial model, the figure plots first the
     accuracy and loss evolution from this initial model and then stacks the
     evolution of the model.
@@ -42,15 +42,15 @@ def visualize_training(path_model, start_for_viz=0):
         ax1 = fig.subplots()
         ax2 = ax1.twinx()
         ax1.plot(
-            data_evolution["steps"][start_for_viz:],
-            data_evolution["accuracy"][start_for_viz:],
+            data_evolution["steps"][iteration_start_for_viz:],
+            data_evolution["accuracy"][iteration_start_for_viz:],
             "-",
             label="accuracy",
         )
         ax1.set_ylim(ymin=0)
         ax2.plot(
-            data_evolution["steps"][start_for_viz:],
-            data_evolution["loss"][start_for_viz:],
+            data_evolution["steps"][iteration_start_for_viz:],
+            data_evolution["loss"][iteration_start_for_viz:],
             "-r",
             label="loss",
         )
@@ -65,7 +65,7 @@ def visualize_training(path_model, start_for_viz=0):
     evolution = retrieve_training_data(path_model)
     fig = _create_figure_helper(evolution)
 
-    return fig, evolution
+    return fig
 
 
 def visualize_segmentation(path):
