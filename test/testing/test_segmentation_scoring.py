@@ -62,7 +62,7 @@ class TestCore(object):
         assert precision == 1.0
         assert diffusion == 0.0
 
-    @pytest.mark.antoine
+    @pytest.mark.unit
     def test_score_analysis_runs_successfully_with_visualization_on(self):
         tmp_folder = "/tmp"
         saved_dir = os.getcwd()
