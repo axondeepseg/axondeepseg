@@ -62,15 +62,28 @@ class TestCore(object):
         assert precision == 1.0
         assert diffusion == 0.0
 
-    @pytest.mark.unit
+    @pytest.mark.antoine
     def test_score_analysis_runs_successfully_with_visualization_on(self):
-
+        tmp_folder = "/tmp"
+        saved_dir = os.getcwd()
+        os.chdir(tmp_folder)
+        # Test function
         assert score_analysis(
             self.img,
             self.groundtruth,
             self.prediction,
             visualization=True
             )
+        # Test success of visualisation
+        pred_path = os.path.join(tmp_folder, "prediction.png")
+        gt_path = os.path.join(tmp_folder, "ground_truth.png")
+        assert os.path.isfile(pred_path)
+        assert os.path.isfile(gt_path)
+        # Clean
+        os.remove(pred_path)
+        os.remove(gt_path)
+        # Go back to previous dir
+        os.chdir(saved_dir)
 
     # --------------dice tests-------------- #
     @pytest.mark.unit
