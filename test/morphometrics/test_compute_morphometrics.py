@@ -8,6 +8,7 @@ import string
 import random
 import numpy as np
 import shutil
+from scipy.misc import imread
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
@@ -53,7 +54,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_pixelsize_throws_error_for_invalid_data_file(self):
         tmpName = 'tmpInvalid.txt'
-        with open(os.path.join(self.tmpDir, tmpName),'wb') as tmp:
+        with open(os.path.join(self.tmpDir, tmpName), 'wb') as tmp:
 
             tmp.write('&&&'.encode())
 
@@ -212,9 +213,9 @@ class TestCore(object):
         with pytest.raises(IOError):
             load_axon_morphometrics(nonExistingFolder)
 
-    # --------------display_axon_diameter tests-------------- #
+    # --------------draw_axon_diameter tests-------------- #
     @pytest.mark.unit
-    def test_display_axon_diameter_creates_file_in_expected_location(self):
+    def test_draw_axon_diameter_creates_file_in_expected_location(self):
         path_folder = self.pixelsizeFileName.split('pixel_size_in_micrometer.txt')[0]
         img = scipy_imread(os.path.join(path_folder, 'image.png'))
         path_prediction = os.path.join(
@@ -230,15 +231,13 @@ class TestCore(object):
             os.path.join(path_folder, 'AxonDeepSeg_seg-myelin.png'),
             flatten=True)
 
-        display_axon_diameter(img, path_prediction, pred_axon, pred_myelin)
+        result_path = os.path.join(path_folder, 'AxonDeepSeg_map-axondiameter.png')
+        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin)
+        assert fig.axes
+        fig.savefig(result_path)
 
-        assert os.path.isfile(
-            os.path.join(path_folder, 'AxonDeepSeg_map-axondiameter.png')
-            )
-
-        os.remove(
-            os.path.join(path_folder, 'AxonDeepSeg_map-axondiameter.png')
-            )
+        assert os.path.isfile(result_path)
+        os.remove(result_path)
 
     # --------------get_aggregate_morphometrics tests-------------- #
     @pytest.mark.unit
