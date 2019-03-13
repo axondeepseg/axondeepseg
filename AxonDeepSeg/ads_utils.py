@@ -33,7 +33,7 @@ def _main_thread_terminated(self):
         # wake the processing thread up
         self._queue.put_nowait(self._terminator)
 
-        timeout = self.options["shutdown_timeout"]
+        timeout = self.options['shutdown_timeout']
 
         # wait briefly, initially
         initial_timeout = 0.1
@@ -46,23 +46,20 @@ def _main_thread_terminated(self):
             # add or remove items
             size = self._queue.qsize()
 
-            print(("Sentry is attempting to send %i pending error messages" % size))
+            print(("Sentry is attempting to send %i pending error messages"
+                   % size))
             print(("Waiting up to %s seconds" % timeout))
 
-            if os.name == "nt":
+            if os.name == 'nt':
                 print("Press Ctrl-Break to quit")
             else:
                 print("Press Ctrl-C to quit")
 
             # -- Function override statement --#
             config_path = get_config_path()
-            print(
-                (
-                    "Note: you can opt out of Sentry reporting by changing the "
+            print(("Note: you can opt out of Sentry reporting by changing the "
                     "value of bugTracking to 0 in the "
-                    "file {}".format(config_path)
-                )
-            )
+                    "file {}".format(config_path)))
             # -- EO Function override statement --#
 
             self._timed_queue_join(timeout - initial_timeout)
@@ -78,40 +75,32 @@ raven.transport.threaded.AsyncWorker.main_thread_terminated = _main_thread_termi
 
 
 def config_setup():
-    """
-    Ask user to enable bug tracking and create the config file as specified by
-    the `DEFAULT_CONFIGFILE` variable.
-    """
 
     config_path = get_config_path()
 
-    if "pytest" in sys.modules:
-        bug_tracking = bool(0)
+    if 'pytest' in sys.modules:
+        bugTracking = bool(0)
     else:
-        print(
-            "To improve user experience and fix bugs, the ADS development team "
+        print("To improve user experience and fix bugs, the ADS development team "
             "is using a report system to automatically receive crash reports "
-            "and errors from users. These reports are anonymous."
-        )
+            "and errors from users. These reports are anonymous.")
 
-        bug_tracking = strtobool(
+        bugTracking = strtobool(
             input("Do you agree to help us improve ADS? [y]es/[n]o:")
         )
 
-    if bug_tracking:
-        print(
-            (
-                "Note: you can opt out of Sentry reporting by changing the "
+    if bugTracking:
+        print(("Note: you can opt out of Sentry reporting by changing the "
                 "value of bugTracking from 1 to 0 in the "
-                "file {}".format(config_path)
-            )
-        )
+                "file {}".format(config_path)))
 
     config = configparser.ConfigParser()
-    config["Global"] = {"bugTracking": bug_tracking}
+    config["Global"] = {
+        "bugTracking": bugTracking
+    }
 
-    with open(config_path, "w") as config_file:
-        config.write(config_file)
+    with open(config_path, 'w') as configFile:
+        config.write(configFile)
 
     print("Configuration saved successfully !")
 
@@ -130,11 +119,11 @@ def read_config():
 
     config_path = get_config_path()
 
-    if not config_path.exists():
+    if not os.path.exists(config_path):
         raise IOError("Could not find configuration file.")
 
     config = configparser.ConfigParser()
-    config.read(str(config_path))
+    config.read(config_path)
 
     return config
 
@@ -146,38 +135,36 @@ def init_ads():
 
     config_path = get_config_path()
 
-    if not config_path.exists():
+    if not os.path.isfile(config_path):
         config_setup()
     else:
         pass
 
     config = read_config()
 
-    init_error_client(config.get("Global", "bugTracking"))
+    init_error_client(config.get('Global','bugTracking'))
 
 
-def init_error_client(bug_tracking):
+def init_error_client(bugTracking):
     """ Send traceback to neuropoly servers
     :return:
     """
 
-    if strtobool(bug_tracking):
+    if strtobool(bugTracking):
 
         try:
 
             client = raven.Client(
-                "https://e04a130541c64bc9a64939672f19ad52@sentry.io/1238683",
-                processors=(
-                    "raven.processors.RemoveStackLocalsProcessor",
-                    "raven.processors.SanitizePasswordsProcessor",
-                ),
-            )
+                        "https://e04a130541c64bc9a64939672f19ad52@sentry.io/1238683",
+                        processors=(
+                        'raven.processors.RemoveStackLocalsProcessor',
+                        'raven.processors.SanitizePasswordsProcessor')
+                        )
 
             traceback_to_server(client)
 
         except:
             print("Unexpected error: bug tracking may not be functionning.")
-            raise
 
 
 def traceback_to_server(client):
@@ -191,7 +178,6 @@ def traceback_to_server(client):
         sys.__excepthook__(exctype, value, traceback)
 
     sys.excepthook = excepthook
-
 
 def download_data(url_data):
     """ Downloads and extracts zip files from the web.
