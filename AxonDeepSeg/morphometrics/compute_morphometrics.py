@@ -6,7 +6,6 @@ import os
 import math
 import numpy as np
 from skimage import measure, morphology, feature
-from skimage.measre import regionprops
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
