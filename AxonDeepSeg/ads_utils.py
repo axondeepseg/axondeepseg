@@ -47,7 +47,7 @@ def _main_thread_terminated(self):
             size = self._queue.qsize()
 
             print(("Sentry is attempting to send %i pending error messages"
-                   % size))
+                  % size))
             print(("Waiting up to %s seconds" % timeout))
 
             if os.name == 'nt':
@@ -58,8 +58,8 @@ def _main_thread_terminated(self):
             # -- Function override statement --#
             config_path = get_config_path()
             print(("Note: you can opt out of Sentry reporting by changing the "
-                    "value of bugTracking to 0 in the "
-                    "file {}".format(config_path)))
+                   "value of bugTracking to 0 in the "
+                   "file {}".format(config_path)))
             # -- EO Function override statement --#
 
             self._timed_queue_join(timeout - initial_timeout)
@@ -73,7 +73,6 @@ def _main_thread_terminated(self):
 raven.transport.threaded.AsyncWorker.main_thread_terminated = _main_thread_terminated
 # -- End function override -- #
 
-
 def config_setup():
 
     config_path = get_config_path()
@@ -81,29 +80,28 @@ def config_setup():
     if 'pytest' in sys.modules:
         bugTracking = bool(0)
     else:
-        print("To improve user experience and fix bugs, the ADS development team "
-            "is using a report system to automatically receive crash reports "
-            "and errors from users. These reports are anonymous.")
+        print ("To improve user experience and fix bugs, the ADS development team "
+               "is using a report system to automatically receive crash reports "
+               "and errors from users. These reports are anonymous.")
 
         bugTracking = strtobool(
             input("Do you agree to help us improve ADS? [y]es/[n]o:")
-        )
+            )
 
     if bugTracking:
         print(("Note: you can opt out of Sentry reporting by changing the "
-                "value of bugTracking from 1 to 0 in the "
-                "file {}".format(config_path)))
+               "value of bugTracking from 1 to 0 in the "
+               "file {}".format(config_path)))
 
     config = configparser.ConfigParser()
-    config["Global"] = {
-        "bugTracking": bugTracking
+    config['Global'] = {
+        'bugTracking': bugTracking
     }
 
     with open(config_path, 'w') as configFile:
         config.write(configFile)
 
     print("Configuration saved successfully !")
-
 
 def get_config_path():
     """Get the full path of the AxonDeepSeg configuration file.
@@ -157,8 +155,8 @@ def init_error_client(bugTracking):
             client = raven.Client(
                         "https://e04a130541c64bc9a64939672f19ad52@sentry.io/1238683",
                         processors=(
-                        'raven.processors.RemoveStackLocalsProcessor',
-                        'raven.processors.SanitizePasswordsProcessor')
+                            'raven.processors.RemoveStackLocalsProcessor',
+                            'raven.processors.SanitizePasswordsProcessor')
                         )
 
             traceback_to_server(client)
