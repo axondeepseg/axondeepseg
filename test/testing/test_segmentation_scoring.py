@@ -64,13 +64,24 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_score_analysis_runs_successfully_with_visualization_on(self):
-
-        assert score_analysis(
-            self.img,
-            self.groundtruth,
-            self.prediction,
-            visualization=True
-            )
+        saved_dir = os.getcwd()
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.chdir(tmpdir)
+            # Test function
+            assert score_analysis(
+                self.img,
+                self.groundtruth,
+                self.prediction,
+                visualization=True
+                )
+            # Test success of visualisation
+            pred_path = os.path.join(tmpdir, "prediction.png")
+            gt_path = os.path.join(tmpdir, "ground_truth.png")
+            assert os.path.isfile(pred_path)
+            assert os.path.isfile(gt_path)
+        # Go back to previous dir
+        os.chdir(saved_dir)
 
     # --------------dice tests-------------- #
     @pytest.mark.unit
