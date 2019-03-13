@@ -5,6 +5,7 @@ import os
 # Scientific modules imports
 import math
 import numpy as np
+from scipy import ndimage as ndi
 from skimage import measure, morphology, feature
 
 # Graphs and plots imports
