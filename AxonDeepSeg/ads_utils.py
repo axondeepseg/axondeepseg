@@ -117,11 +117,11 @@ def read_config():
 
     config_path = get_config_path()
 
-    if not os.path.exists(config_path):
+    if not config_path.exists():
         raise IOError("Could not find configuration file.")
 
     config = configparser.ConfigParser()
-    config.read(config_path)
+    config.read(str(config_path))
 
     return config
 
@@ -133,7 +133,7 @@ def init_ads():
 
     config_path = get_config_path()
 
-    if not os.path.isfile(config_path):
+    if not config_path.is_file():
         config_setup()
     else:
         pass
@@ -181,65 +181,44 @@ def download_data(url_data):
     """ Downloads and extracts zip files from the web.
     :return: 0 - Success, 1 - Encountered an exception.
     """
-
-    def _start_session(url_data):
+    # Download
+    try:
+        print('Trying URL: %s' % url_data)
         retry = Retry(total=3, backoff_factor=0.5, status_forcelist=[500, 503, 504])
         session = requests.Session()
-        session.mount("https://", HTTPAdapter(max_retries=retry))
+        session.mount('https://', HTTPAdapter(max_retries=retry))
         response = session.get(url_data, stream=True)
-        return response
 
-    # Download
-    print("Trying URL: %s" % url_data)
-    try:
-        response = _start_session(url_data)
-        tmp_path = download_zip_file_in_tmp_folder(response)
-    except Exception as err:
-        print("ERROR: %s" % err)
-        print("ERROR: Data at link `%s` was not retrieved properly." % url_data)
-        return 1
+        if "Content-Disposition" in response.headers:
+            _, content = cgi.parse_header(response.headers['Content-Disposition'])
+            zip_filename = content["filename"]
+        else:
+            print("Unexpected: link doesn't provide a filename")
 
-    # Unzip
-    print("Unzip...")
-    try:
-        zip_file = zipfile.ZipFile(str(tmp_path))
-        zip_file.extractall(str(Path.cwd()))
-    except zipfile.BadZipfile:
-        print("ERROR: ZIP package corrupted. Please try downloading again.")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir) / zip_filename
+            with open(tmp_path, 'wb') as tmp_file:
+                total = int(response.headers.get('content-length', 1))
+                tqdm_bar = tqdm(total=total, unit='B', unit_scale=True, desc="Downloading", ascii=True)
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        tmp_file.write(chunk)
+                        dl_chunk = len(chunk)
+                        tqdm_bar.update(dl_chunk)
+                tqdm_bar.close()
+            # Unzip
+            print("Unzip...")
+            try:
+                zf = zipfile.ZipFile(str(tmp_path))
+                zf.extractall(".")
+            except (zipfile.BadZipfile):
+                print('ERROR: ZIP package corrupted. Please try downloading again.')
+                return 1
+            print("--> Folder created: " + str(Path.cwd() / Path(zip_filename).stem))
+    except Exception as e:
+        print("ERROR: %s" % e)
         return 1
-    print("--> Folder created: " + str(Path.cwd() / tmp_path.stem))
     return 0
-
-
-def download_zip_file_in_tmp_folder(response):
-    """
-    :param response: requests.Response object that points to the compressed data
-    :return: Path object that points to downloaded zip file. On Unix folder is
-    created in the '/tmp' folder.
-    """
-    # Retrieve zip filename
-    zip_filename = ""
-    try:
-        _, content = cgi.parse_header(response.headers["Content-Disposition"])
-        zip_filename = content["filename"]
-    except KeyError:
-        raise ValueError("Filename cannot be found for the provided link.")
-
-    # Download zip file in tmp_folder_path
-    _tmp = Path(tempfile.mkdtemp())
-    tmp_folder_path = _tmp / zip_filename
-    with open(tmp_folder_path, "wb") as tmp_file:
-        total = int(response.headers.get("content-length", 1))
-        tqdm_bar = tqdm(
-            total=total, unit="B", unit_scale=True, desc="Downloading", ascii=True
-        )
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                tmp_file.write(chunk)
-                dl_chunk = len(chunk)
-                tqdm_bar.update(dl_chunk)
-        tqdm_bar.close()
-    return tmp_folder_path
 
 
 # Call init_ads() automatically when module is imported
