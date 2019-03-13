@@ -5,17 +5,15 @@ import os
 # Scientific modules imports
 import math
 import numpy as np
-from skimage import measure
-from skimage.measure import regionprops
+from skimage import measure, morphology, feature
+from skimage.measre import regionprops
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 # AxonDeepSeg imports
-from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.testing.segmentation_scoring import *
-import AxonDeepSeg.ads_utils
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -27,65 +25,112 @@ def get_pixelsize(path_pixelsize_file):
         with open(path_pixelsize_file, "r") as text_file:
             pixelsize = float(text_file.read())
     except IOError as e:
-        print(
-            (
-                '\nError: Could not open file "{0}" from '
-                'directory "{1}".\n'.format(path_pixelsize_file, os.getcwd())
-            )
-        )
+
+        print(("\nError: Could not open file \"{0}\" from "
+               "directory \"{1}\".\n".format(path_pixelsize_file, os.getcwd())))
         raise
     except ValueError as e:
-        print(
-            (
-                '\nError: Pixel size data in file "{0}" is not valid – must '
-                "be a plain text file with a single a numerical value (float) "
-                " on the fist line.".format(path_pixelsize_file)
-            )
-        )
+        print(("\nError: Pixel size data in file \"{0}\" is not valid – must "
+               "be a plain text file with a single a numerical value (float) "
+               " on the fist line.".format(path_pixelsize_file)))
         raise
     else:
         return pixelsize
 
 
-def get_axon_morphometrics(pred_axon, path_folder):
+def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
     """
-    :param pred_axon: axon binary mask, output of axondeepseg
-    :param path_folder: absolute path of folder containing pixel size file
-    :return: list of dictionaries containing for each axon, various morphometrics
+    Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
+    If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
+    :param im_axon: Array: axon binary mask, output of axondeepseg
+    :param path_folder: str: absolute path of folder containing pixel size file
+    :param im_myelin: Array: myelin binary mask, output of axondeepseg
+    :return: Array(dict): dictionaries containing morphometric results for each axon
     """
-
-    # Array for keeping axon-wise metrics
+    # TODO: externalize reading of pixel_size_in_micrometer.txt and input float
+    pixelsize = get_pixelsize(os.path.join(path_folder, 'pixel_size_in_micrometer.txt'))
     stats_array = np.empty(0)
-
     # Label each axon object
-    labels = measure.label(pred_axon)
-    axon_objects = regionprops(labels)
+    im_axon_label = measure.label(im_axon)
+    # Measure properties for each axon object
+    axon_objects = measure.regionprops(im_axon_label)
+    # Deal with myelin mask
+    if im_myelin is not None:
+        # sum axon and myelin masks
+        im_axonmyelin = im_axon + im_myelin
+        # Compute distance between each pixel and the background. Note: this distance is calculated from the im_axon,
+        # note from the im_axonmyelin image, because we know that each axon object is already isolated, therefore the
+        # distance metric will be more useful for the watershed algorithm below.
+        distance = ndi.distance_transform_edt(im_axon)
+        # local_maxi = feature.peak_local_max(distance, indices=False, footprint=np.ones((31, 31)), labels=axonmyelin)
 
-    # Get axon morphometrics of interest
-    for props in axon_objects:
+        # Get axon centroid as int (not float) to be used as index
+        ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
+                        [int(props.centroid[1]) for props in axon_objects])
 
+        # Create an image with axon centroids, which value corresponds to the value of the axon object
+        im_centroid = np.zeros_like(im_axon, dtype='uint16')
+        for i in range(len(ind_centroid[0])):
+            # Note: The value "i" corresponds to the label number of im_axon_label
+            im_centroid[ind_centroid[0][i], ind_centroid[1][i]] = i + 1
+
+        # markers = ndi.label(local_maxi)[0]
+        # Watershed segmentation of axonmyelin using distance map
+        im_axonmyelin_label = morphology.watershed(-distance, im_centroid, mask=im_axonmyelin)
+        # Measure properties of each axonmyelin object
+        axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
+
+    # DEBUG
+    # from matplotlib import colors
+    # from matplotlib.pylab import *
+    # random_cmap = matplotlib.colors.ListedColormap(np.random.rand(256, 3))
+    # matshow(im_axon_label, fignum=1, cmap=random_cmap), show()
+    # import datetime
+    # savefig('fig_' + datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M%S%f') + '.png', format='png',
+    #         transparent=True, dpi=100)
+
+    # Loop across axon property and fill up dictionary with morphometrics of interest
+    for prop_axon in axon_objects:
         # Centroid
-        y0, x0 = props.centroid
+        y0, x0 = prop_axon.centroid
         # Solidity
-        solidity = props.solidity
+        solidity = prop_axon.solidity
         # Eccentricity
-        eccentricity = props.eccentricity
+        eccentricity = prop_axon.eccentricity
         # Axon equivalent diameter in micrometers
-        axon_diam = (props.equivalent_diameter) * get_pixelsize(
-            os.path.join(path_folder, "pixel_size_in_micrometer.txt")
-        )
+        axon_diam = prop_axon.equivalent_diameter * pixelsize
+        # Axon area in µm^2
+        axon_area = prop_axon.area * (pixelsize ** 2)
         # Axon orientation angle
-        orientation = props.orientation
-
+        orientation = prop_axon.orientation
         # Add metrics to list of dictionaries
-        stats = {
-            "y0": y0,
-            "x0": x0,
-            "axon_diam": axon_diam,
-            "solidity": solidity,
-            "eccentricity": eccentricity,
-            "orientation": orientation,
-        }
+        stats = {'y0': y0,
+                 'x0': x0,
+                 'axon_diam': axon_diam,
+                 'axon_area': axon_area,
+                 'solidity': solidity,
+                 'eccentricity': eccentricity,
+                 'orientation': orientation}
+        # Deal with myelin
+        if im_myelin is not None:
+            # Find label of axonmyelin corresponding to axon centroid
+            label_axonmyelin = im_axonmyelin_label[int(y0), int(x0)]
+            # TODO: use logger
+            # print(label_axonmyelin)
+            # print('x, y = {}, {}'.format(x0, y0))
+            if label_axonmyelin:
+                # Get corresponding index from axonmyelin_objects list
+                ind_axonmyelin = \
+                    [axonmyelin_object.label for axonmyelin_object in axonmyelin_objects].index(label_axonmyelin)
+                myelin_diam = axonmyelin_objects[ind_axonmyelin].equivalent_diameter * pixelsize
+                myelin_area = axonmyelin_objects[ind_axonmyelin].area * (pixelsize ** 2)
+                stats['myelin_diam'] = myelin_diam
+                stats['myelin_area'] = myelin_area
+                stats['gratio'] = np.sqrt(axon_area / myelin_area)
+            else:
+                # TODO: use logger
+                print('WARNING: Myelin object not found for axon centroid [{},{}]'.format(y0, x0))
+
         stats_array = np.append(stats_array, [stats], axis=0)
 
     return stats_array
@@ -95,34 +140,27 @@ def save_axon_morphometrics(path_folder, stats_array):
     """
     :param path_folder: absolute path of the sample and the segmentation folder
     :param stats_array: list of dictionaries containing axon morphometrics
-    :return: nothing
+    :return:
     """
     try:
-        np.save(os.path.join(path_folder, "axonlist.npy"), stats_array)
+        np.save(os.path.join(path_folder, 'axonlist.npy'), stats_array)
     except IOError as e:
-        print(
-            (
-                '\nError: Could not save file "{0}" in '
-                'directory "{1}".\n'.format("axonlist.npy", path_folder)
-            )
-        )
+        print(("\nError: Could not save file \"{0}\" in "
+               "directory \"{1}\".\n".format('axonlist.npy', path_folder)))
         raise
 
 
 def load_axon_morphometrics(path_folder):
     """
     :param path_folder: absolute path of the sample and the segmentation folder
+
     :return: stats_array: list of dictionaries containing axon morphometrics
     """
     try:
-        stats_array = np.load(os.path.join(path_folder, "axonlist.npy"))
+        stats_array = np.load(os.path.join(path_folder, 'axonlist.npy'))
     except IOError as e:
-        print(
-            (
-                '\nError: Could not load file "{0}" in '
-                'directory "{1}".\n'.format("axonlist.npy", path_folder)
-            )
-        )
+        print(("\nError: Could not load file \"{0}\" in "
+               "directory \"{1}\".\n".format('axonlist.npy', path_folder)))
         raise
     else:
         return stats_array
@@ -202,32 +240,22 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
 
     # Estimate mean myelin diameter (axon+myelin diameter) by using
     # aggregate g-ratio = mean_axon_diam/mean_myelin_diam
+
     mean_myelin_diam = mean_axon_diam / gratio
 
     # Estimate mean myelin thickness = mean_myelin_radius - mean_axon_radius
     mean_myelin_thickness = (float(mean_myelin_diam) / 2) - (float(mean_axon_diam) / 2)
 
     # Compute axon density (number of axons per mm2)
-    y, x = pred_axon.shape
-    img_area_mm2 = (
-        float(pred_axon.size)
-        * get_pixelsize(os.path.join(path_folder, "pixel_size_in_micrometer.txt"))
-        * get_pixelsize(os.path.join(path_folder, "pixel_size_in_micrometer.txt"))
-        / (float(1000000))
-    )
+    img_area_mm2 = float(pred_axon.size) * get_pixelsize(
+        os.path.join(path_folder, 'pixel_size_in_micrometer.txt')) * get_pixelsize(
+        os.path.join(path_folder, 'pixel_size_in_micrometer.txt')) / (float(1000000))
     axon_density_mm2 = float(len(axon_diam_list)) / float(img_area_mm2)
 
     # Create disctionary to store aggregate metrics
-    aggregate_metrics = {
-        "avf": avf,
-        "mvf": mvf,
-        "gratio": gratio,
-        "mean_axon_diam": mean_axon_diam,
-        "mean_myelin_diam": mean_myelin_diam,
-        "mean_myelin_thickness": mean_myelin_thickness,
-        "axon_density_mm2": axon_density_mm2,
-    }
-
+    aggregate_metrics = {'avf': avf, 'mvf': mvf, 'gratio_aggr': gratio, 'mean_axon_diam': mean_axon_diam,
+                         'mean_myelin_diam': mean_myelin_diam, 'mean_myelin_thickness': mean_myelin_thickness,
+                         'axon_density_mm2': axon_density_mm2}
     return aggregate_metrics
 
 
@@ -237,17 +265,11 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
     :param aggregate_metrics: dictionary containing values of aggregate metrics
     :return: nothing
     """
-
     try:
-        with open(
-            os.path.join(path_folder, "aggregate_morphometrics.txt"), "w"
-        ) as text_file:
-            text_file.write("aggregate_metrics: " + repr(aggregate_metrics) + "\n")
+        with open(os.path.join(path_folder, 'aggregate_morphometrics.txt'), 'w') as text_file:
+            text_file.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
     except IOError as e:
-        print(
-            (
-                '\nError: Could not save file "{0}" in '
-                'directory "{1}".\n'.format("aggregate_morphometrics.txt", path_folder)
-            )
-        )
+        print(("\nError: Could not save file \"{0}\" in "
+               "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
+
         raise
