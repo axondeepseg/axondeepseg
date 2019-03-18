@@ -7,13 +7,14 @@ import fsleyes.actions.loadoverlay as ovLoad
 import numpy as np
 import nibabel as nib
 from PIL import Image
+import scipy.misc
 import os
 import json
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
 
-class Ads_control_v2(ctrlpanel.ControlPanel):
+class ADScontrol(ctrlpanel.ControlPanel):
 
     def __init__(self, *args, **kwargs):
         ctrlpanel.ControlPanel.__init__(self, *args, **kwargs)
@@ -40,27 +41,35 @@ class Ads_control_v2(ctrlpanel.ControlPanel):
         sizerV1.Add(citationBox, flag=wx.SHAPED, proportion=1)
 
 
-        loadPng_button = wx.Button(self, label = "Load PNG file")
+        loadPng_button = wx.Button(self, label="Load PNG file")
         loadPng_button.Bind(wx.EVT_BUTTON, self.onLoadPngButton)
         sizerV2.Add(loadPng_button, flag=wx.SHAPED, proportion=1)
 
-        saveSegmentation_button = wx.Button(self, label="Save segmentation")
-        sizerV2.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
+
 
         self.modelChoices = ['SEM', 'TEM', 'other']
         self.modelCombobox = wx.ComboBox(self, choices=self.modelChoices, size=(100, 20), value='Select the modality')
-        sizerV3.Add(self.modelCombobox, flag=wx.SHAPED, proportion=1)
+        sizerV2.Add(self.modelCombobox, flag=wx.SHAPED, proportion=1)
 
-        applyModel_button = wx.Button(self, label = 'Apply ADS prediction model')
+        applyModel_button = wx.Button(self, label='Apply ADS prediction model')
         applyModel_button.Bind(wx.EVT_BUTTON, self.onApplyModel_button)
-        sizerV3.Add(applyModel_button, flag=wx.SHAPED, proportion=1)
+        sizerV2.Add(applyModel_button, flag=wx.SHAPED, proportion=1)
 
-        fillMyelin_button = wx.Button(self, label='Fill closed myelin')
-        sizerV4.Add(fillMyelin_button, flag=wx.SHAPED, proportion=1)
+        saveSegmentation_button = wx.Button(self, label="Save segmentation")
+        saveSegmentation_button.Bind(wx.EVT_BUTTON, self.onSaveSegmentation_button)
+        sizerV3.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
+
+        separateAxons_button = wx.Button(self, label='separate axons')
+        sizerV4.Add(separateAxons_button, flag=wx.SHAPED, proportion=1)
+
+        separateAxons_button = wx.Button(self, label='fill axons')
+        sizerV4.Add(separateAxons_button, flag=wx.SHAPED, proportion=1)
 
         self.SetSizer(sizerH)
 
         self.imageDirPath = None
+        self.mostRecentMyelinMaskName = None
+        self.mostRecentAxonMaskName = None
 
 
 
@@ -129,6 +138,45 @@ class Ads_control_v2(ctrlpanel.ControlPanel):
         self.loadPngImageFromPath(axonMaskPath, isMask=True)
         self.loadPngImageFromPath(myelinMaskPath, isMask=True)
 
+        self.mostRecentAxonMaskName = 'AxonDeepSeg_seg-axon'
+        self.mostRecentMyelinMaskName = 'AxonDeepSeg_seg-myelin'
+
+    def onSaveSegmentation_button(self, event):
+
+        # Check if a mask was loaded
+        if (self.mostRecentMyelinMaskName is None) or (self.mostRecentAxonMaskName is None):
+            'Masks not found'
+            return
+
+        # Ask the user where to save the segmentation
+        with wx.DirDialog(self, "select the directory in which the segmentation will be save", defaultPath="",
+                          style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+        saveDir = fileDialog.GetPath()
+
+        # Find most recent segmentation masks overlays within the overlay list
+        for anImage in self.overlayList:
+            if anImage.name == self.mostRecentMyelinMaskName:
+                myelinArray = np.array(anImage[:, :, 0]*255, copy=True, dtype=np.uint8)
+                myelinArray = np.flipud(np.rot90(myelinArray,k=3, axes=(0, 1)))
+            if anImage.name == self.mostRecentAxonMaskName:
+                axonArray = np.array(anImage[:, :, 0]*255, copy=True, dtype=np.uint8)
+                axonArray = np.flipud(np.rot90(axonArray,k=3 ,axes=(0, 1)))
+
+           # Save the arrays as PNG files
+        myelinAndAxonImage = Image.fromarray((myelinArray//2 + axonArray).astype(np.uint8))
+        myelinAndAxonImage.save(saveDir + '/ADS_seg.png')
+        myelinImage = Image.fromarray(myelinArray)
+        myelinImage.save(saveDir + '/ADS_seg-myelin.png')
+        axonImage = Image.fromarray(axonArray)
+        axonImage.save(saveDir + '/ADS_seg-axon.png')
+
+
+
+
 
     def loadPngImageFromPath(self, imagePath, isMask=False):
         img_png = np.asarray(Image.open(imagePath).convert('LA'), dtype=np.uint8)
@@ -166,22 +214,16 @@ class Ads_control_v2(ctrlpanel.ControlPanel):
                 'Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)')
 
     def getLogo(self):
-        path = os.path.dirname(AxonDeepSeg.__file__)
+
+        path = os.path.join(os.getcwd(), '..', '..', '..', '..')
 
         logoFile = path + '/ADS_logo.png'
         png = wx.Image(logoFile,
                        wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        png.SetSize((png.GetWidth()//3, png.GetHeight()//3))
+        png.SetSize((png.GetWidth()//10, png.GetHeight()//10))
         logoImage = wx.StaticBitmap(self, -1, png, wx.DefaultPosition,
                                     (png.GetWidth(), png.GetHeight()))
         return logoImage
-
-
-
-
-
-
-
 
 
     @staticmethod
