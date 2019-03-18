@@ -1,6 +1,7 @@
 # This files is used to generate statistics on a select sample of images, using the specified model.
 
-import os, json
+from pathlib import Path
+import json
 import numpy as np
 from tqdm import tqdm
 import pickle
@@ -34,11 +35,11 @@ def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_res
 
     # First we load every information independent of the model
     # We generate the list of testing folders, each one containing one image
-    images_folders = [d for d in os.listdir(path_images_folder) if os.path.isdir(os.path.join(path_images_folder, d))]
-    path_images_folder = [os.path.join(path_images_folder, x) for x in images_folders]
+    images_folders = filter(lambda p: p.is_dir(), path_images_folder.iterdir())
+    path_images_folder = [path_images_folder / x for x in images_folders]
 
     # We check that the model path we were given exists.
-    if os.path.isdir(path_model_folder):
+    if path_model_folder.is_dir():
 
         # Generation of statistics
         stats_dict = generate_statistics(path_model_folder, path_images_folder, resampled_resolution, overlap_value, verbosity_level=verbosity_level)
@@ -67,11 +68,11 @@ def metrics_single_wrapper(path_model_folder, path_images_folder, resampled_reso
 
     # First we load every information independent of the model
     # We generate the list of testing folders, each one containing one image
-    images_folders = [d for d in os.listdir(path_images_folder) if os.path.isdir(os.path.join(path_images_folder, d))]
-    path_images_folder = [os.path.join(path_images_folder, x) for x in images_folders]
+    images_folders = filter(lambda p: p.is_dir(), path_images_folder.iterdir())
+    path_images_folder = [path_images_folder / x for x in images_folders]
 
     # We check that the model path we were given exists.
-    if os.path.isdir(path_model_folder):
+    if path_model_folder.is_dir():
 
         # Generation of statistics for each image one after the other
         for current_path_images_folder in path_images_folder:
@@ -139,19 +140,19 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
     model_statistics_dict = {"date":time.strftime("%Y-%m-%d"),
                              "data":{}}
     # First we load the network parameters from the config file
-    with open(os.path.join(path_model_folder, 'config_network.json'), 'r') as fd:
+    with open(path_model_folder / 'config_network.json', 'r') as fd:
         config_network = json.loads(fd.read())
 
     n_classes = config_network['n_classes']
-    model_name = path_model_folder.split(os.sep)[-2] # Extraction of the name of the model.
+    model_name = path_model_folder.parts[-2] # Extraction of the name of the model.
 
     # We loop over all checkpoint files to compute statistics for each checkpoint.
-    for checkpoint in os.listdir(path_model_folder):
+    for checkpoint in path_model_folder.iterdir():
 
-        if checkpoint[-10:] == '.ckpt.meta':
+        if str(checkpoint)[-10:] == '.ckpt.meta':
 
             result_model = {}
-            name_checkpoint = checkpoint[:-10]
+            name_checkpoint = str(checkpoint)[:-10]
 
             result_model.update({'id_model': model_name,
                                  'ckpt': name_checkpoint,
@@ -212,12 +213,11 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
                 current_network_output = outputs_network[i]
 
                 # Reading the images and processing them
-                mask_raw = imread(os.path.join(image_folder, 'mask.png'), flatten=True, mode='L')
+                mask_raw = imread(image_folder / 'mask.png', flatten=True, mode='L')
                 mask = labellize(mask_raw)
 
                 # We infer the name of the different files
-                name_image = image_folder.split(os.sep)[-1]
-
+                name_image = image_folder.name
 
                 # Computing metrics and storing them in the json file.
                 current_proba = output_network_to_proba(current_network_output, n_classes)
@@ -240,12 +240,12 @@ def save_metrics(model_statistics_dict, path_model_folder, statistics_filename):
     """
 
     # If the file already exists we rename the old one with a .old suffix.
-    path_statistics_file = os.path.join(path_model_folder, statistics_filename)
+    path_statistics_file = path_model_folder / statistics_filename
 
-    if os.path.exists(path_statistics_file):
+    if path_statistics_file.exists():
         with open(path_statistics_file) as f:
             original_stats_dict = json.load(f)
-            os.remove(path_statistics_file)
+            path_statistics_file.unlink()
     else:
         original_stats_dict = {}
 
@@ -354,7 +354,7 @@ class metrics():
     def load_models(self):
         for path in self.path_models:
             try:
-                with open(os.path.join(path, self.statistics_filename)) as f:
+                with open(path / self.statistics_filename) as f:
                     stats_dict = json.loads(f.read())['data']
             except:
                 raise ValueError('No config file found: statistics json file missing in the model folder.')
