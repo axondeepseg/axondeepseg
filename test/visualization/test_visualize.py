@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from pathilb import Path
+from pathlib import Path
 import numpy as np
 from scipy.misc import imread
 
