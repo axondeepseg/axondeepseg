@@ -1,9 +1,10 @@
 # coding: utf-8
 
-import pytest
-import os
-import shutil
 from pathlib import Path
+import shutil
+
+import pytest
+
 from AxonDeepSeg.ads_utils import download_data
 
 
@@ -14,8 +15,8 @@ class TestCore(object):
         self.bad_osf_link = "https://af7lafuoDs"
 
     def teardown(self):
-        output_path = "TEM_striatum" # Name of zip file downloaded, folder was created in this name too
-        if os.path.exists(output_path):
+        output_path = Path("TEM_striatum") # Name of zip file downloaded, folder was created in this name too
+        if output_path.exists():
             shutil.rmtree(output_path)
 
     # --------------download_data tests-------------- #
