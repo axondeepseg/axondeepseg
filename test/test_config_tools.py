@@ -67,7 +67,7 @@ class TestCore(object):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         self.tmpPath = self.fullPath / '__tmp__'
-        if not self.tmpPath.exists:
+        if not self.tmpPath.exists():
             self.tmpPath.mkdir()
 
     @classmethod
@@ -104,13 +104,11 @@ class TestCore(object):
         # Create temp config file
         configPath = self.tmpPath / 'config_network.json'
 
-        if configPath.exists():
+        if configPath.exists() :
             configPath.unlink()
-            with open(configPath, 'w') as f:
-                json.dump(self.config, f, indent=2)
-        else:   # There is no config file for the moment
-            with open(configPath, 'w') as f:
-                json.dump(self.config, f, indent=2)
+
+        with open(configPath, 'w') as f:
+            json.dump(self.config, f, indent=2)
 
         generatedConfig = generate_config(config_path=configPath)
         assert generatedConfig != generate_config()
