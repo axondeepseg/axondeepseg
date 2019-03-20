@@ -5,7 +5,7 @@
 # Launches a segmentation in the data_test folder.
 
 import json
-import os
+from pathlib import Path
 from AxonDeepSeg.testing.segmentation_scoring import *
 from time import time
 from AxonDeepSeg.apply_model import axon_segmentation
@@ -17,20 +17,20 @@ def integrity_test():
     try:
 
         # get path of directory where AxonDeepSeg was installed
-        dir_path = os.path.dirname(os.path.abspath(__file__))
+        dir_path = Path(__file__).resolve().parent
 
         # input parameters
 
-        path = os.path.join('folder_name', 'file_name')
-        path_testing = os.path.join(dir_path, 'data_test')
+        path = Path('folder_name') / 'file_name'
+        path_testing = dir_path / 'data_test'
         model_name = 'default_SEM_model_v1'
-        path_model = os.path.join(dir_path, 'models',model_name)
-        path_configfile = os.path.join(path_model, 'config_network.json')
+        path_model = dir_path / 'models' / model_name
+        path_configfile = path_model / 'config_network.json'
 
         # Read the configuration file 
         print('Reading test configuration file.')
-        if not os.path.exists(path_model):
-            os.makedirs(path_model)
+        if not path_model.exists():
+            path_model.mkdir(parents=True)
 
         with open(path_configfile, 'r') as fd:
             config_network = json.loads(fd.read())
