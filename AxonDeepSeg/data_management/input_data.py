@@ -1,14 +1,20 @@
-from skimage import exposure
+# -*- coding: utf-8 -*-
+
+from pathlib import Path
+import copy
+import functools
+
+# Scientific modules import
+import random
+import numpy as np
 from scipy.misc import imread
 from scipy import ndimage
-import numpy as np
-import random
-import os
-from .data_augmentation import *
-from AxonDeepSeg.patch_management_tools import apply_legacy_preprocess, apply_preprocess
-import functools
-import copy
+from skimage import exposure
+
+# AxonDeepSeg imports
 import AxonDeepSeg.ads_utils
+from AxonDeepSeg.patch_management_tools import apply_legacy_preprocess, apply_preprocess
+from .data_augmentation import *
 
 
 def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5], verbose=0):
@@ -143,13 +149,13 @@ class input_data:
         """
 
         if type_ == 'train' : # Data for train
-            self.path = trainingset_path+'/Train/'
-            self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
+            self.path = Path(trainingset_path) / 'Train'
+            self.set_size = len([f for f in self.path.iterdir() if ('image' in f)])
             self.each_sample_once = False
 
         if type_ == 'validation': # Data for validation
-            self.path = trainingset_path+'/Validation/'
-            self.set_size = len([f for f in os.listdir(self.path) if ('image' in f)])
+            self.path = Path(trainingset_path) / 'Validation'
+            self.set_size = len([f for f in self.path.iterdir() if ('image' in f)])
             self.each_sample_once = True
 
         self.size_image = config["trainingset_patchsize"]
@@ -297,7 +303,8 @@ class input_data:
         '''
 
         # Loading the image using 8-bit pixels (0-255)
-        return imread(os.path.join(self.path,str(type_) + '_%s.png' % i), flatten=False, mode='L')
+        filename = str(type_) + '_%s.png' % i
+        return imread(self.path / filename, flatten=False, mode='L')
 
     def prepare_image_mask(self):
         """
