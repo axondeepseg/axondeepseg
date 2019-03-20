@@ -1,10 +1,11 @@
 # coding: utf-8
 
 import json
-import os
+from pathlib import Path
 import shutil
 import tensorflow as tf
 from shutil import copy
+
 import pytest
 
 from AxonDeepSeg.train_network import train_model
@@ -15,34 +16,33 @@ class TestCore(object):
         # reset the tensorflow graph for new training
         tf.reset_default_graph()
 
-        self.fullPath = os.path.dirname(os.path.abspath(__file__))
+        # Get the directory where this current file is saved
+        self.fullPath = Path(__file__).resolve().parent
 
-        self.modelPath = os.path.join(
-            self.fullPath,
-            '__test_files__',
-            '__test_training_files__',
+        self.modelPath = (
+            self.fullPath /
+            '__test_files__' /
+            '__test_training_files__' /
             'Model'
             )
 
-        self.configPath = os.path.join(
-            self.fullPath,
-            '__test_files__',
-            '__test_training_files__',
-            'Model',
+        self.configPath = (
+            self.fullPath /
+            '__test_files__' /
+            '__test_training_files__' /
+            'Model' /
             'config_network.json'
             )
 
-        self.trainingPath = os.path.join(
-            self.fullPath,
-            '__test_files__',
+        self.trainingPath = (
+            self.fullPath /
+            '__test_files__' /
             '__test_training_files__'
             )
 
-        if not os.path.exists(self.modelPath):
-            os.makedirs(self.modelPath)
+        self.modelPath.mkdir(parents=True, exist_ok=True)
 
         self.config = {
-
             # General parameters:
             "n_classes": 3,
             "thresholds": [0, 0.2, 0.8],
@@ -93,27 +93,25 @@ class TestCore(object):
             "da-1-rescaling-activate": False
         }
 
-        if os.path.exists(self.configPath):
-            with open(self.configPath, 'r') as fd:
-                self.config_network = json.loads(fd.read())
-        else:   # There is no config file for the moment
+        if not self.configPath.exists():
             with open(self.configPath, 'w') as f:
                 json.dump(self.config, f, indent=2)
-            with open(self.configPath, 'r') as fd:
-                self.config_network = json.loads(fd.read())
+
+        with open(self.configPath, 'r') as fd:
+            self.config_network = json.loads(fd.read())
 
     @classmethod
     def teardown_class(cls):
-        fullPath = os.path.dirname(os.path.abspath(__file__))
+        fullPath = Path(__file__).resolve().parent
 
-        modelPath = os.path.join(
-            fullPath,
-            '__test_files__',
-            '__test_training_files__',
+        modelPath = (
+            fullPath /
+            '__test_files__' /
+            '__test_training_files__' /
             'Model'
             )
 
-        if os.path.exists(modelPath) and os.path.isdir(modelPath):
+        if modelPath.is_dir():
             try:
                 shutil.rmtree(modelPath)
             except OSError:
@@ -127,8 +125,8 @@ class TestCore(object):
         # itself.
 
         train_model(
-            self.trainingPath,
-            self.modelPath,
+            str(self.trainingPath), #TODO: see if str conversion can be removed
+            str(self.modelPath),    #TODO: see if str conversion can be removed
             self.config_network,
             debug_mode=True
             )
@@ -144,7 +142,7 @@ class TestCore(object):
             "report.txt"
             ]
 
-        existingFiles = os.listdir(self.modelPath)
+        existingFiles = [f.name for f in self.modelPath.iterdir()]
 
         for fileName in expectedFiles:
             assert fileName in existingFiles
