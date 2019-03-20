@@ -1,16 +1,18 @@
+from pathlib import Path
 from setuptools import setup, find_packages
 from codecs import open
-from os import path
+#from os import path
 
 import AxonDeepSeg
 
 
-here = path.abspath(path.dirname(__file__))
+# Get the directory where this current file is saved
+here = Path(__file__).resolve().parent
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(here / 'README.md', encoding='utf-8') as f:
     long_description = f.read()
 
-req_path = path.join(here, 'requirements.txt')
+req_path = here / 'requirements.txt'
 with open(req_path, "r") as f:
     install_reqs = f.read().strip()
     install_reqs = install_reqs.split("\n")
