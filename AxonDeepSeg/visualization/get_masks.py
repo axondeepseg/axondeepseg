@@ -17,17 +17,16 @@ def get_masks(path_prediction):
     myelin_prediction = prediction > 100
     myelin_prediction = myelin_prediction ^ axon_prediction
 
-    # get main path
-    path_folder, file_name = os.path.split(path_prediction)
+    # We want to keep the filename path up to the '_seg-axonmyelin' part 
+    tmp_broken_filename = str(path_prediction).split('_seg-axonmyelin')[0]
 
-    tmp_path = str(path_prediction).split('_seg-axonmyelin')
+    # Extra check to ensure that the extension was removed
+    if tmp_broken_filename.endswith('.png'):
+        tmp_broken_filename = os.path.splitext(tmp_broken_filename)[0]
 
-    # save the masks
-    if tmp_path[0].endswith('.png'):
-        tmp_path[0] = os.path.splitext(tmp_path[0])[0]
-
-    imageio.imwrite(tmp_path[0] + '_seg-axon.png', axon_prediction.astype(int))
-    imageio.imwrite(tmp_path[0] + '_seg-myelin.png', myelin_prediction.astype(int))
+    # Save masks
+    imageio.imwrite(tmp_broken_filename + '_seg-axon.png', axon_prediction.astype(int))
+    imageio.imwrite(tmp_broken_filename + '_seg-myelin.png', myelin_prediction.astype(int))
 
     return axon_prediction, myelin_prediction
 
