@@ -40,8 +40,8 @@ def integrity_test():
         prediction = axon_segmentation([path_testing], ["image.png"], path_model, config_network, prediction_proba_activate=True, verbosity_level=4)
 
         # Read the ground truth mask and the obtained segmentation mask
-        mask = imread(path_testing + '/mask.png', flatten=True)
-        pred = imread(path_testing + '/AxonDeepSeg.png', flatten=True)
+        mask = imread(path_testing / 'mask.png', flatten=True)
+        pred = imread(path_testing / 'AxonDeepSeg.png', flatten=True)
 
         # Generate separate axon and myelin masks of the segmentation output
         print('Generating axon and myelin segmentation masks and saving.')
