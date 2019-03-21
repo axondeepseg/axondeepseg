@@ -329,7 +329,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         # Loading a previous session if requested.
         if path_model_init:
             folder_restored_model = path_model_init
-            saver.restore(session, folder_restored_model / "model.ckpt")
+            saver.restore(session, str(folder_restored_model / "model.ckpt"))
 
             if save_trainable:
                 session.run(tf.global_variables_initializer())
@@ -547,7 +547,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     loss_moving_avg = np.mean(Loss[-save_best_moving_avg_window:])
                     if acc_moving_avg > acc_current_best:
 
-                        save_path = saver.save(session, path_model / "best_acc_model.ckpt")
+                        save_path = saver.save(session, str(path_model / "best_acc_model.ckpt"))
                         acc_current_best = acc_moving_avg
                         print(("Best accuracy model saved in file: %s" % save_path))
 
@@ -561,7 +561,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
                     if loss_moving_avg < loss_current_best:
 
-                        save_path = saver.save(session, path_model / "best_loss_model.ckpt")
+                        save_path = saver.save(session, str(path_model / "best_loss_model.ckpt"))
                         loss_current_best = loss_moving_avg
                         print(("Best loss model saved in file: %s" % save_path))
 
@@ -579,7 +579,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
                     with open(path_model / 'evolution.pkl', 'wb') as handle:
                         pickle.dump(evolution, handle)
-                    save_path = saver.save(session, path_model / "model.ckpt")
+                    save_path = saver.save(session, str(path_model / "model.ckpt"))
 
                     print(("Model saved in file: %s" % save_path))
 
@@ -601,7 +601,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             step += 1
 
         # At the end of the training we save the model in a checkpoint file
-        save_path = saver.save(session, path_model / "model.ckpt")
+        save_path = saver.save(session, str(path_model / "model.ckpt"))
 
         # Initialize best model with model after epoch 1
         evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
