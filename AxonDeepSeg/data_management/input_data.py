@@ -18,7 +18,7 @@ from .data_augmentation import *
 
 
 def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5], verbose=0):
-    
+
     L_transformations = []
 
     dict_transformations = {'shifting':shifting,
@@ -28,7 +28,7 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
                             'flipping':flipping,
                             'gaussian_blur':gaussian_blur
                            }
-    
+
     if transformations == {}:
         L_transformations = [functools.partial(v, verbose=verbose) for k,v in list(dict_transformations.items())]
     else:
@@ -39,16 +39,16 @@ def generate_list_transformations(transformations = {}, thresh_indices = [0,0.5]
                 number = v['order']
                 c = (number,k,v)
                 L_c.append(c)
-        # We sort the transformations to make by the number preceding the transformation in the dict in the config file        
-        L_c_sorted = sorted(L_c, key=lambda x: x[0]) 
-        
+        # We sort the transformations to make by the number preceding the transformation in the dict in the config file
+        L_c_sorted = sorted(L_c, key=lambda x: x[0])
+
         # Creation of the list of transformations to apply
         for tup in L_c_sorted:
             k = tup[1]
             v = tup[2]
             list(map(v.pop, ['order','activate']))
             L_transformations.append(functools.partial(dict_transformations[k], verbose=verbose, **v))
-            
+
     return L_transformations
 
 
@@ -58,12 +58,12 @@ def all_transformations(patch, thresh_indices = [0,0.5], transformations = {}, v
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return: application of the random transformations to the pair [image,mask].
     """
-    
+
     L_transformations = generate_list_transformations(transformations, thresh_indices, verbose=verbose)
 
     for transfo in L_transformations:
         patch = transfo(patch)
-       
+
     return patch
 
 def random_transformation(patch, thresh_indices = [0,0.5], transformations = {}, verbose=0):
@@ -72,11 +72,11 @@ def random_transformation(patch, thresh_indices = [0,0.5], transformations = {},
     :param thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
     :return: application of a random transformation to the pair [image,mask].
     """
-    
+
     L_transformations = generate_list_transformations(transformations, thresh_indices, verbose=verbose)
-                    
+
     patch = random.choice(L_transformations)(patch)
-       
+
     return patch
 
 def labellize_mask_2d(patch, thresh_indices=[0, 0.5]):
@@ -88,13 +88,13 @@ def labellize_mask_2d(patch, thresh_indices=[0, 0.5]):
     '''
     mask = np.zeros_like(patch)
     for indice in range(len(thresh_indices)-1):
-        
+
         thresh_inf_8bit = 255*thresh_indices[indice]
         thresh_sup_8bit = 255*thresh_indices[indice+1]
-        
+
         idx = np.where((patch >= thresh_inf_8bit) & (patch < thresh_sup_8bit)) # returns (x, y) of the corresponding indices
         mask[idx] = np.mean([thresh_inf_8bit/255,thresh_sup_8bit/255])
-   
+
     mask[(patch >= 255*thresh_indices[-1])] = 1
 
     return patch
@@ -110,21 +110,21 @@ def transform_batches(list_batches):
     batch_y = list_batches[1]
     if len(list_batches) == 3:
         batch_w = list_batches[2]
-        
+
     if len(batch_y) == 1: # If we have only one image in the list np.stack won't work
         transformed_batches = []
         transformed_batches.append(np.reshape(batch_x[0], (1, batch_x[0].shape[0], batch_x[0].shape[1])))
         transformed_batches.append(np.reshape(batch_y[0], (1, batch_y[0].shape[0], batch_y[0].shape[1], -1)))
-        
+
         if len(list_batches) == 3:
             transformed_batches.append(np.reshape(batch_w[0], (1, batch_w[0].shape[0], batch_w[0].shape[1])))
-            
+
     else:
         transformed_batches = [np.stack(batch_x), np.stack(batch_y)]
-         
+
         if len(list_batches) == 3:
             transformed_batches.append(np.stack(batch_w))
-        
+
     return transformed_batches
 
 
@@ -138,9 +138,10 @@ class input_data:
 
     def __init__(self, trainingset_path, config, type_ ='train', batch_size = 8, preload_all=True):
         """
-        Input: 
-            trainingset_path : string : path to the trainingset folder containing 2 folders Validation and Train
-                                    with images and ground truthes.
+        Input:
+            trainingset_path : string or pathlib.Path: path to the trainingset
+                               folder containing 2 folders Validation and Train
+                               with images and ground truthes.
             type_ : string 'train' or 'validation' : for the network's training.
             thresh_indices : list of float in [0,1] : the thresholds for the ground truthes labels.
             preload_all : if put to True, will load every image into the memory.
@@ -150,12 +151,12 @@ class input_data:
 
         if type_ == 'train' : # Data for train
             self.path = Path(trainingset_path) / 'Train'
-            self.set_size = len([f for f in self.path.iterdir() if ('image' in f)])
+            self.set_size = len([f for f in self.path.iterdir() if f.match('*image*')])
             self.each_sample_once = False
 
         if type_ == 'validation': # Data for validation
             self.path = Path(trainingset_path) / 'Validation'
-            self.set_size = len([f for f in self.path.iterdir() if ('image' in f)])
+            self.set_size = len([f for f in self.path.iterdir() if  f.match('*image*')])
             self.each_sample_once = True
 
         self.size_image = config["trainingset_patchsize"]
@@ -171,29 +172,29 @@ class input_data:
         #self.variance = config['dataset_variance']
 
         # Loading all images if asked so
-        
+
         if preload_all:
             self.loaded_data = {}
             for id_image in self.samples_list:
                 # We are reading directly the images. Range of values : 0-255
                 image = self.read_image('image', id_image)
                 mask = self.read_image('mask', id_image)
-                self.loaded_data.update({str(id_image):[image,mask]})        
+                self.loaded_data.update({str(id_image):[image,mask]})
 
     def get_size(self):
         return self.set_size
-    
+
     def reset_set(self, type_= 'train', shuffle=True):
         """
         Reset the set.
         :param shuffle: If True, the set is shuffled, so that each batch won't systematically contain the same images.
         :return list: List of ids of training samples
         """
-        
+
         self.sample_seen = 0
-        
+
         if type_ == 'train':
-            # Generation of a shuffled list of images      
+            # Generation of a shuffled list of images
             samples_list = list(range(self.set_size))
             if shuffle:
                 np.random.shuffle(samples_list)
@@ -204,7 +205,7 @@ class input_data:
                 samples_list += np.random.choice(samples_list, self.batch_size - rem, replace=False).tolist()
         else:
             samples_list = list(range(self.set_size))
-            
+
         return samples_list
 
 
@@ -213,10 +214,10 @@ class input_data:
         :param augmented_data: if True, each patch of the batch is randomly transformed with the data augmentation process.
         :return: The pair [batch_x (data), batch_y (prediction)] to feed the network.
         """
-                
+
         batch_x = []
         batch_y = []
-        
+
         # Set the range of indices
         # Read the image and mask files.
         for i in range(self.batch_size) :
@@ -234,7 +235,7 @@ class input_data:
             # We save the obtained image and mask.
             batch_x.append(image)
             batch_y.append(real_mask)
-            
+
             # If we are at the end of an epoch, we reset the list of samples, so that during next epoch all sets will be different.
             if self.sample_seen == self.epoch_size:
                 if each_sample_once:
@@ -242,8 +243,8 @@ class input_data:
                     break
                 else:
                     self.samples_list = self.reset_set(type_ = 'train')
-        
-        # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them 
+
+        # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them
         return transform_batches([batch_x, batch_y])
 
 
@@ -274,16 +275,16 @@ class input_data:
 
             image, real_mask, real_weights = self.apply_data_augmentation([image, real_mask, real_weights],
                                                                           augmented_data, data_aug_verbose)
-            
+
             # Normalisation of the image
             image = apply_legacy_preprocess(image)
 
             # We have now loaded the good image, a mask (under the shape of a matrix, with different labels) that still needs to be converted to a volume (meaning, a sparse cube where each layer of depth relates to a class)
-            
+
             batch_x.append(image)
             batch_y.append(real_mask)
             batch_w.append(real_weights)
-            
+
             # If we are at the end of an epoch, we reset the list of samples, so that during next epoch all sets will be different.
             if self.sample_seen == self.epoch_size:
                 if each_sample_once:
@@ -291,15 +292,15 @@ class input_data:
                     break
                 else:
                     self.samples_list = self.reset_set(type_ = 'train')
-                    
 
-        # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them        
+
+        # Ensuring that we do have np.arrays of the good size for batch_x and batch_y before returning them
         return transform_batches([batch_x, batch_y, batch_w])
-    
+
     def read_image(self, type_, i):
         '''
         :param i: indice of the image or mask to read.
-        :return image: the loaded image with 8 bit pixels, range of values being [0,288] 
+        :return image: the loaded image with 8 bit pixels, range of values being [0,288]
         '''
 
         # Loading the image using 8-bit pixels (0-255)
