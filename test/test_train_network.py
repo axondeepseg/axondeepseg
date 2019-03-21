@@ -125,8 +125,8 @@ class TestCore(object):
         # itself.
 
         train_model(
-            str(self.trainingPath), #TODO: see if str conversion can be removed
-            str(self.modelPath),    #TODO: see if str conversion can be removed
+            self.trainingPath,
+            self.modelPath,
             self.config_network,
             debug_mode=True
             )
