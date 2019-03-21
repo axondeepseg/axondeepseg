@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
-
-import tensorflow as tf
-import numpy as np
 import os
+from pathlib import Path
 import pickle
-from .data_management.input_data import input_data
-from .config_tools import generate_config
+import time
+from datetime import datetime
+
+import numpy as np
+import tensorflow as tf
+
 from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.train_network_tools import *
-from datetime import datetime
-import time
 import AxonDeepSeg.ads_utils
+
+from .data_management.input_data import input_data
+from .config_tools import generate_config
 
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
@@ -27,15 +30,15 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     most trainable variables, and also outputs more information.
     :param gpu_per: Float, between 0 and 1. Percentage of GPU to use.
     :return: Nothing.
-    """ 
-  
+    """
+
     ###################################################################################################################
     ############################################## VARIABLES INITIALIZATION ###########################################
     ###################################################################################################################
- 
+
     # Results and Models
-    if not os.path.exists(path_model):
-        os.makedirs(path_model)
+    if not path_model.exists():
+        path_model.mkdir(parents=True)
 
     # Translating useful variables from the config file.
     learning_rate = config["learning_rate"]
@@ -52,11 +55,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     data_augmentation = generate_dict_da(config)
     weights_modifier = generate_dict_weights(config)
     data_aug_verbose = 0
-   
+
     # Loading the datasets
     data_train = input_data(trainingset_path=path_trainingset, config=config, type_='train', batch_size=batch_size_training)
     data_validation = input_data(trainingset_path=path_trainingset, config=config, type_='validation', batch_size=batch_size_validation)
-    
+
     n_iter_val = int(np.ceil(float(data_validation.set_size)/batch_size_validation))
 
     # Main loop parameters
@@ -70,13 +73,13 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         save_last_epoch_freq = 5
     save_best_moving_avg_epoch_freq = 5
     save_best_moving_avg_window = 10
-    
+
     # Initializing the text to write in report.txt
     Report = ''
     output_2 = ''
     verbose = 1
     Report += '\n\n---Savings---'
-    Report += '\n Model saved in : ' + path_model
+    Report += '\n Model saved in : ' + str(path_model)
     Report += '\n\n---PARAMETERS---\n'
     Report += 'learning_rate : ' + str(learning_rate) + '; \n batch_size :  ' + str(batch_size_training) + ';\n depth :  ' + str(
         config["depth"]) \
@@ -86,16 +89,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ###################################################################################################################
     ############################################# GRAPH CONSTRUCTION ##################################################
     ###################################################################################################################
-    
+
     ### ----------------------------------------------------------------------------------------------------------- ###
     #### 1 - Declaring the placeholders and other Tensorflow variables
     ### ----------------------------------------------------------------------------------------------------------- ###
-    
+
     x = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="input") # None relates to batch_size
     y = tf.placeholder(tf.float32, shape=(None, image_size, image_size, n_classes), name="ground_truth")
     phase = tf.placeholder(tf.bool, name="training_phase") # True if training phase, False for other phases.
     if weighted_cost == True:
-        spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="spatial_weights") 
+        spatial_weights = tf.placeholder(tf.float32, shape=(None, image_size, image_size), name="spatial_weights")
     keep_prob = tf.placeholder(tf.float32, name="keep_prob")
     adapt_learning_rate = tf.placeholder(tf.float32, name="learning_rate") # If the learning rate changes over epochs
     adapt_bn_decay = tf.placeholder(tf.float32, name="batch_norm_decay") # If the learning rate changes over epochs
@@ -112,7 +115,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # removing a lot of if conditions. Nevertheless, for computational reasons, we prefer to avoid the multiplication
     # by the spatial weights if the associated matrix is composed of only ones.
     # This position may be revised in the future.
-  
+
     ### ----------------------------------------------------------------------------------------------------------- ###
     #### 2 - Decaying hyperparameters and processing the computation graph associated to the prediction
     ####     made by the U-net.
@@ -147,7 +150,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     else:
         adapt_bn_decay = None
-    
+
     # Next, we construct the computational graph linking the input and the prediction.
     pred = uconv_net(x, config, phase, bn_updated_decay = adapt_bn_decay)
 
@@ -155,20 +158,20 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     output_params = count_number_parameters(tf.trainable_variables())
     print(("Total number of parameters to train: " + str(output_params)))
     Report += '\n'+str(output_params)+'\n'
-    
+
     ### ----------------------------------------------------------------------------------------------------------- ###
     #### 3 - Adapting the dimensions of the different tensors, then defining the optimization of the graph (loss + opt.)
     ### ----------------------------------------------------------------------------------------------------------- ###
 
-    # Reshaping pred and y so that they are understandable by softmax_cross_entropy 
+    # Reshaping pred and y so that they are understandable by softmax_cross_entropy
     with tf.name_scope('preds_reshaped'):
         pred_ = tf.reshape(pred, [-1,tf.shape(pred)[-1]])
-    with tf.name_scope('y_reshaped'):    
+    with tf.name_scope('y_reshaped'):
         y_ = tf.reshape(y, [-1,tf.shape(y)[-1]])
-   
+
     # Define loss and optimizer
     with tf.name_scope('cost'):
-        if weighted_cost == True:    
+        if weighted_cost == True:
             spatial_weights_ = tf.reshape(spatial_weights,[-1])
             cost = tf.reduce_mean(tf.multiply(spatial_weights_,
                                               tf.nn.softmax_cross_entropy_with_logits(logits=pred_, labels=y_)))
@@ -182,7 +185,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         # Ensures that we execute the update_ops (including the BN parameters) before performing the train_step
         # First we compute the gradients
         grads_list = tf.train.AdamOptimizer(learning_rate=adapt_learning_rate).compute_gradients(cost)
-        
+
         if debug_mode == True:
             # We make a summary of the gradients
             for grad, weight in grads_list:
@@ -197,20 +200,20 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ### ----------------------------------------------------------------------------------------------------------- ###
     #### 4 - Constructing the metrics and storing the results to visualise them in TensorBoard
     ### ----------------------------------------------------------------------------------------------------------- ###
-     
+
     # We evaluate the accuracy pixel-by-pixel
     correct_pred = tf.equal(tf.argmax(pred_, 1), tf.argmax(y_, 1))
-    
+
     with tf.name_scope('accuracy_'):
         accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
-        
+
     # Now we create the pixel-wise dice
     pred_absolute = tf.cast(tf.equal(pred, tf.expand_dims(tf.reduce_max(pred, axis=-1),axis=-1)), tf.float32)
-    
+
     dice = pw_dices(pred_absolute, tf.reshape(y,[-1, tf.shape(y)[1]*tf.shape(y)[2], tf.shape(y)[-1]]))
     dice = tf.reduce_mean(dice, axis=0)
     _, pw_dice_myelin, pw_dice_axon = tf.split(dice, n_classes, axis=0)
-    
+
     # Defining list variables to keep track of the train error over one whole epoch
     # instead of just one batch (these are the ones we are going to summarize)
     training_loss = tf.reduce_mean(L_training_loss)
@@ -229,12 +232,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     # Debugging metric summaries
     if debug_mode == True:
-        
+
         # Creation of a collection containing only the information we want to summarize
         for e in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
             if ('Adam' not in e.name) and (('weights' in e.name) or ('moving' in e.name) or ('bias' in e.name)):
                 tf.add_to_collection('vals_to_summarize', e)
-            
+
         summary_activations = tf.contrib.layers.summarize_collection("activations",
                                                                      summarizer=tf.contrib.layers.summarize_activation)
         summary_variables = tf.contrib.layers.summarize_collection('vals_to_summarize', name_filter=None)
@@ -250,7 +253,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         L_im_summ = []
         L_im_summ.append(tf.summary.image('input_image', tf.expand_dims(x, axis = -1)))
         L_im_summ.append(tf.summary.image('mask', y))
-    
+
         # Creating the operation giving the probabilities
         with tf.name_scope('prob_maps'):
             # We compute the softmax predictions and reshape them to (b_s, imsz, imsz, n_classes)
@@ -258,21 +261,21 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                                  (-1, image_size * image_size, n_classes)),
                                       (-1, image_size, image_size, n_classes))
             probability_maps = tf.split(softmax_pred, n_classes, axis=3)
-    
+
         # Adding a probability map for each class to the image summary
         for i, probmap in enumerate(probability_maps):
             L_im_summ.append(tf.summary.image('probability_map_class_'+str(i), probmap))
-    
+
         # Merging the image summary
         images_merged_summaries = tf.summary.merge(L_im_summ)
 
     ### ----------------------------------------------------------------------------------------------------------- ###
     #### 6 - Initializing variables and summaries
     ### ----------------------------------------------------------------------------------------------------------- ###
- 
+
     # We create the directories where we will store our model
-    train_writer = tf.summary.FileWriter(logdir=path_model + '/train')
-    validation_writer = tf.summary.FileWriter(logdir=path_model + '/validation')
+    train_writer = tf.summary.FileWriter(logdir=str(path_model / 'train'))
+    validation_writer = tf.summary.FileWriter(logdir=str(path_model / 'validation'))
 
     # Initializing all the variables
     init = tf.global_variables_initializer()
@@ -289,16 +292,16 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ###################################################################################################################
 
     Report += '\n\n---Intermediary results---\n'
-    
+
     # Limiting the memory used by the training
     config_gpu = tf.ConfigProto(log_device_placement=True)
     config_gpu.gpu_options.per_process_gpu_memory_fraction = gpu_per
     #config_gpu.gpu_options.allow_growth = True # Activate if you only want to be dynamically attributed GPU memory.
 
     with tf.Session(config=config_gpu) as session:
-        
+
         # Session initialized !
-        
+
         ### ------------------------------------------------------------------------------------------------------- ###
         #### 1 - Preparing the main loop
         ### ------------------------------------------------------------------------------------------------------- ###
@@ -324,14 +327,14 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         validation_writer.add_graph(session.graph)
 
         # Loading a previous session if requested.
-        if path_model_init: 
+        if path_model_init:
             folder_restored_model = path_model_init
-            saver.restore(session, folder_restored_model + "/model.ckpt")
+            saver.restore(session, folder_restored_model / "model.ckpt")
 
             if save_trainable:
                 session.run(tf.global_variables_initializer())
 
-            file = open(folder_restored_model + '/evolution.pkl', 'r')
+            file = open(folder_restored_model / 'evolution.pkl', 'r')
             evolution_restored = pickle.load(file)
             last_epoch = evolution_restored["steps"][-1]
         # Else, initializing the variables
@@ -355,9 +358,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         if debug_mode:
             t0 = 0
-        
+
         print("NOTE: The maximum number of epochs for this training session is {0}.".format(int(max_epoch)))
-        
+
         while epoch < max_epoch:
             ### --------------------------------------------------------------------------------------------------- ###
             #### a) Optimizing the network with the training set. Keep track of the metric on TensorBoard.
@@ -390,15 +393,15 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
             epoch_training_acc.append(stepacc)
             epoch_training_dice_myelin.append(step_dice_myelin)
             epoch_training_dice_axon.append(step_dice_axon)
-                
+
             # Printing some info
             if verbose>=2:
                 print(('epoch_size:'+str(epoch_size)+'-global_step:'+str(global_step)))
-                
+
             # If we just finished an epoch, we summarize the performance of the
             # net on the training set to see it in TensorBoard.
             if step*batch_size_training % epoch_size == 0:
-                    
+
                 # Writing the summary (metrics, + images if in debug mode).
                 # We do two separates cases in order to only have one session.run call, what should be better for
                 # computation times purposes.
@@ -425,11 +428,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 epoch_training_acc = []
                 epoch_training_dice_myelin = []
                 epoch_training_dice_axon = []
-  
+
             ### --------------------------------------------------------------------------------------------------- ###
             #### b) Evaluating the performance on the validation set. Keep track of it on TensorBoard.
             ### --------------------------------------------------------------------------------------------------- ###
-            
+
             # At the end of every epoch we compute the performance of our network on the validation set and we
             # save the summaries to see them on TensorBoard
             if step*batch_size_training % epoch_size == 0:
@@ -443,7 +446,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 if debug_mode:
                     t1 = time.time()
                     dt01 = t1 - t0 # time taken for the training phase
-                
+
                 if weighted_cost == True:
 
                     # We compute the metrics for each batch of the validation set
@@ -486,7 +489,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     epoch_validation_acc = [np.sum(epoch_validation_acc)]
                     epoch_validation_dice_myelin = [np.sum(epoch_validation_dice_myelin)]
                     epoch_validation_dice_axon = [np.sum(epoch_validation_dice_axon)]
-                    
+
                     # Writing the summary for this validation epoch. Metrics (+ images if in debug mode)
                     feed_dict_summary_val = {
                                 x: batch_x, y: batch_y, keep_prob: dropout, L_training_loss: epoch_validation_loss,
@@ -511,17 +514,17 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                 # We display the metrics (evaluated on the validation set).
                 acc = np.mean(epoch_validation_acc)
                 loss = np.mean(epoch_validation_loss)
-                
+
                 Accuracy.append(acc)
                 Loss.append(loss)
                 Epoch.append(epoch)
                 output_2 = '\n----\n Last epoch: ' + str(epoch)
                 output_2 += '\n Accuracy: ' + str(acc) + ';'
                 output_2 += '\n Loss: ' + str(loss) + ';'
-                
+
                 output_training = str(datetime.now()) + '-epoch:'+str(epoch)+'-loss:'+str(loss) + '-acc:'+str(acc)
                 print(output_training)
-                
+
                 if debug_mode:
                     t2 = time.time()
                     dt12 = t2 - t1 # Time needed for the validation phase
@@ -543,66 +546,66 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                     acc_moving_avg = np.mean(Accuracy[-save_best_moving_avg_window:])
                     loss_moving_avg = np.mean(Loss[-save_best_moving_avg_window:])
                     if acc_moving_avg > acc_current_best:
-                        
-                        save_path = saver.save(session, path_model + "/best_acc_model.ckpt")
+
+                        save_path = saver.save(session, path_model / "best_acc_model.ckpt")
                         acc_current_best = acc_moving_avg
                         print(("Best accuracy model saved in file: %s" % save_path))
-                        
+
                         # Saving the evolution in a pickle file
-                        evolution = {'loss': np.mean(Loss[-10:]), 
-                                     'steps': epoch, 
+                        evolution = {'loss': np.mean(Loss[-10:]),
+                                     'steps': epoch,
                                      'accuracy': np.mean(Accuracy[-10:])}
-                        
-                        with open(path_model + '/best_acc_stats.pkl', 'wb') as handle:
+
+                        with open(path_model / 'best_acc_stats.pkl', 'wb') as handle:
                             pickle.dump(evolution, handle)
-                        
+
                     if loss_moving_avg < loss_current_best:
-                        
-                        save_path = saver.save(session, path_model + "/best_loss_model.ckpt")
+
+                        save_path = saver.save(session, path_model / "best_loss_model.ckpt")
                         loss_current_best = loss_moving_avg
                         print(("Best loss model saved in file: %s" % save_path))
-                        
+
                         # Saving the evolution in a pickle file
-                        evolution = {'loss': np.mean(Loss[-10:]), 
-                                     'steps': epoch, 
+                        evolution = {'loss': np.mean(Loss[-10:]),
+                                     'steps': epoch,
                                      'accuracy': np.mean(Accuracy[-10:])}
-                        
-                        with open(path_model + '/best_loss_stats.pkl', 'wb') as handle:
+
+                        with open(path_model / 'best_loss_stats.pkl', 'wb') as handle:
                             pickle.dump(evolution, handle)
 
                 # Moreover at a frequency we save the model regardless of the performance
                 if epoch % save_last_epoch_freq == 0:
 
                     evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
-                    with open(path_model + '/evolution.pkl', 'wb') as handle:
+                    with open(path_model / 'evolution.pkl', 'wb') as handle:
                         pickle.dump(evolution, handle)
-                    save_path = saver.save(session, path_model + "/model.ckpt")
+                    save_path = saver.save(session, path_model / "model.ckpt")
 
                     print(("Model saved in file: %s" % save_path))
 
-                    evolution = {'loss': np.mean(Loss[-10:]), 
-                                 'steps': epoch, 
+                    evolution = {'loss': np.mean(Loss[-10:]),
+                                 'steps': epoch,
                                  'accuracy': np.mean(Accuracy[-10:])}
 
-                    with open(path_model + '/evolution_stats.pkl', 'wb') as handle:
+                    with open(path_model / 'evolution_stats.pkl', 'wb') as handle:
                         pickle.dump(evolution, handle)
-                    
-                    file = open(path_model + "/report.txt", 'w')
+
+                    file = open(path_model / "report.txt", 'w')
                     file.write(Report + output_2)
                     file.close()
-                
+
                 # Increase the epoch #
                 epoch += 1
-                
+
             # Increase the step #
             step += 1
 
         # At the end of the training we save the model in a checkpoint file
-        save_path = saver.save(session, path_model + "/model.ckpt")
+        save_path = saver.save(session, path_model / "model.ckpt")
 
         # Initialize best model with model after epoch 1
         evolution = {'loss': Loss, 'steps': Epoch, 'accuracy': Accuracy}
-        with open(path_model + '/evolution.pkl', 'wb') as handle:
+        with open(path_model / 'evolution.pkl', 'wb') as handle:
             pickle.dump(evolution, handle)
 
         print(("Model saved in file: %s" % save_path))
@@ -621,8 +624,8 @@ def pw_dices(prediction, gt):
     sum_ = tf.reduce_sum(prediction, axis=1) + tf.reduce_sum(gt, axis=1)
     intersection = tf.logical_and(tf.cast(prediction, tf.bool), tf.cast(gt, tf.bool))
     return tf.multiply(2., tf.div(tf.reduce_sum(tf.cast(intersection, tf.float32), axis=1), sum_))
-    
-        
+
+
 # To Call the training in the terminal
 
 def main():
@@ -635,9 +638,9 @@ def main():
     ap.add_argument("-gpu", "--GPU", required=False, help="")
 
     args = vars(ap.parse_args())
-    path_training = args["path_training"]
-    path_model = args["path_model"]
-    path_model_init = args["path_model_init"]
+    path_training = Path(args["path_training"])
+    path_model = Path(args["path_model"])
+    path_model_init = Path(args["path_model_init"])
     config_file = args["config_file"]
     gpu = args["GPU"]
 
