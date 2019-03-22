@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+import imageio
+
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
+
 from AxonDeepSeg.network_construction import *
-from .config_tools import update_config, default_configuration
-import os
-import imageio
-from .patch_management_tools import im2patches_overlap, patches2im_overlap
-from .visualization.get_masks import get_masks
 import AxonDeepSeg.ads_utils
+
+from .visualization.get_masks import get_masks
+from .patch_management_tools import im2patches_overlap, patches2im_overlap
+from .config_tools import update_config, default_configuration
 
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict, ckpt_name='model',
 				  inference_batch_size=1, overlap_value=25, resampled_resolutions=[0.1],
@@ -46,7 +49,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 		path_acquisitions, acquisitions_resolutions, resampled_resolutions, verbose_mode=verbosity_level)
 
 	# If we are unable to load the model, we return an error message
-	if not os.path.exists(path_model_folder):
+	if not path_model_folder.exists():
 		print('Error: unable to find the requested model.')
 		return [None] * len(path_acquisitions)
 
@@ -67,7 +70,8 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
 	# Launch the session (this part takes time). All images will be processed by loading the session just once.
 	sess = tf.Session(config=config_gpu)
-	saver.restore(sess, os.path.join(path_model_folder, ckpt_name + '.ckpt'))
+    model_previous_path = path_model_folder.joinpath(ckpt_name).with_suffix('.ckpt')
+	saver.restore(sess, str(model_previous_path))
 
 	# STEP 3: Inference
 
@@ -208,12 +212,12 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 		resampled_resolutions = [resampled_resolutions[0]] * len(path_acquisitions_folders)
 
 	# Generating the patch to acquisitions and loading the acquisitions resolutions.
-	path_acquisitions = [os.path.join(path_acquisitions_folders[i], e) for i, e in enumerate(acquisitions_filenames)]
+	path_acquisitions = [path_acquisitions_folders[i] / e for i, e in enumerate(acquisitions_filenames)]
 
 	# If we did not receive any resolution we read the pixel size in micrometer from each pixel.
 	if acquired_resolution == None:
-		if os.path.exists(os.path.join(path_acquisitions_folders[0], 'pixel_size_in_micrometer.txt')):
-			resolutions_files = [open(os.path.join(path_acquisition_folder, 'pixel_size_in_micrometer.txt'), 'r')
+		if (path_acquisitions_folders[0] / 'pixel_size_in_micrometer.txt').exists():
+			resolutions_files = [open(path_acquisition_folder / 'pixel_size_in_micrometer.txt', 'r')
 								for path_acquisition_folder in path_acquisitions_folders]
 			acquisitions_resolutions = [float(file_.read()) for file_ in resolutions_files]
 		else:
@@ -258,9 +262,9 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 			for j in range(n_classes):
 				mask[pred == j] = paint_vals[j]
 			# Then we save the image
-			imsave(os.path.join(path_acquisitions_folders[i], segmentations_filenames[i]), mask, 'png')
+			imsave(path_acquisitions_folders[i] / segmentations_filenames[i], mask, 'png')
 
-			axon_prediction, myelin_prediction = get_masks(os.path.join(path_acquisitions_folders[i], segmentations_filenames[i]))
+			axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] / segmentations_filenames[i])
 
 	if prediction_proba_activate:
 		return prediction, prediction_proba
