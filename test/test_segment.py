@@ -139,7 +139,7 @@ class TestCore(object):
             assert (self.imageFolderPath / fileName).exists()
 
         segment_image(
-            path_testing_image=str(self.imagePath), #TODO: check if arg type can becom Path instead of str
+            path_testing_image=self.imagePath,
             path_model=path_model,
             overlap_value=overlap_value,
             config=config,
@@ -159,7 +159,7 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-   
+
     @pytest.mark.integration
     def test_main_cli_runs_succesfully_with_valid_inputs_with_pixel_size_file(self):
 
