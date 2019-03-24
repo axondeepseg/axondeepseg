@@ -165,6 +165,7 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(self.pred_axon, self.test_folder_path)
 
         nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
+        nonExistingFolder = Path(nonExistingFolder)
 
         with pytest.raises(IOError):
             save_axon_morphometrics(nonExistingFolder, stats_array)
@@ -185,6 +186,7 @@ class TestCore(object):
     def test_load_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
 
         nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
+        nonExistingFolder = Path(nonExistingFolder)
 
         with pytest.raises(IOError):
             load_axon_morphometrics(nonExistingFolder)
@@ -262,6 +264,7 @@ class TestCore(object):
             )
 
         nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
+        nonExistingFolder = Path(nonExistingFolder)
 
         with pytest.raises(IOError):
             write_aggregate_morphometrics(nonExistingFolder, aggregate_metrics)

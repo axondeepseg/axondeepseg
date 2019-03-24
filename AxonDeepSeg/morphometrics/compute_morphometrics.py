@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import os
+from pathlib import Path
 
 # Scientific modules imports
 import math
@@ -27,7 +27,7 @@ def get_pixelsize(path_pixelsize_file):
     except IOError as e:
 
         print(("\nError: Could not open file \"{0}\" from "
-               "directory \"{1}\".\n".format(path_pixelsize_file, os.getcwd())))
+               "directory \"{1}\".\n".format(path_pixelsize_file, Path.cwd())))
         raise
     except ValueError as e:
         print(("\nError: Pixel size data in file \"{0}\" is not valid – must "
@@ -48,7 +48,7 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
     # TODO: externalize reading of pixel_size_in_micrometer.txt and input float
-    pixelsize = get_pixelsize(os.path.join(path_folder, 'pixel_size_in_micrometer.txt'))
+    pixelsize = get_pixelsize(path_folder / 'pixel_size_in_micrometer.txt')
     stats_array = np.empty(0)
     # Label each axon object
     im_axon_label = measure.label(im_axon)
@@ -143,7 +143,7 @@ def save_axon_morphometrics(path_folder, stats_array):
     :return:
     """
     try:
-        np.save(os.path.join(path_folder, 'axonlist.npy'), stats_array)
+        np.save(str(path_folder / 'axonlist.npy'), stats_array)
     except IOError as e:
         print(("\nError: Could not save file \"{0}\" in "
                "directory \"{1}\".\n".format('axonlist.npy', path_folder)))
@@ -157,7 +157,7 @@ def load_axon_morphometrics(path_folder):
     :return: stats_array: list of dictionaries containing axon morphometrics
     """
     try:
-        stats_array = np.load(os.path.join(path_folder, 'axonlist.npy'))
+        stats_array = np.load(str(path_folder / 'axonlist.npy'))
     except IOError as e:
         print(("\nError: Could not load file \"{0}\" in "
                "directory \"{1}\".\n".format('axonlist.npy', path_folder)))
@@ -175,7 +175,7 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :return: matplotlib.figure.Figure
     """
-    path_folder, _ = os.path.split(path_prediction)
+    path_folder = path_prediction.parent
 
     stats_array = get_axon_morphometrics(pred_axon, path_folder)
     axon_diam_list = [d["axon_diam"] for d in stats_array]
@@ -213,7 +213,7 @@ def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
     :param axon_diameter_figure: figure create with draw_axon_diameter
     :return: None
     """
-    file_path = os.path.join(path_folder, "AxonDeepSeg_map-axondiameter.png")
+    file_path = path_folder / "AxonDeepSeg_map-axondiameter.png"
     axon_diameter_figure.savefig(file_path)
 
 
@@ -247,9 +247,8 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
     mean_myelin_thickness = (float(mean_myelin_diam) / 2) - (float(mean_axon_diam) / 2)
 
     # Compute axon density (number of axons per mm2)
-    img_area_mm2 = float(pred_axon.size) * get_pixelsize(
-        os.path.join(path_folder, 'pixel_size_in_micrometer.txt')) * get_pixelsize(
-        os.path.join(path_folder, 'pixel_size_in_micrometer.txt')) / (float(1000000))
+    px_size_um = get_pixelsize(path_folder / 'pixel_size_in_micrometer.txt')
+    img_area_mm2 = float(pred_axon.size) * px_size_um * px_size_um / (float(1000000))
     axon_density_mm2 = float(len(axon_diam_list)) / float(img_area_mm2)
 
     # Create disctionary to store aggregate metrics
@@ -266,10 +265,9 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
     :return: nothing
     """
     try:
-        with open(os.path.join(path_folder, 'aggregate_morphometrics.txt'), 'w') as text_file:
+        with open(path_folder / 'aggregate_morphometrics.txt', 'w') as text_file:
             text_file.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
     except IOError as e:
         print(("\nError: Could not save file \"{0}\" in "
                "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
-
         raise
