@@ -1,9 +1,13 @@
+from pathlib import Path
+
+# Scientific modules import
 import numpy as np
 import pandas as pd
 from skimage import io
 from scipy.misc import imread, imsave
-import os
 import imageio
+
+# AxonDeepSeg modules import
 import AxonDeepSeg.ads_utils
 
 
@@ -17,16 +21,16 @@ def get_masks(path_prediction):
     myelin_prediction = prediction > 100
     myelin_prediction = myelin_prediction ^ axon_prediction
 
-    # We want to keep the filename path up to the '_seg-axonmyelin' part 
-    tmp_broken_filename = str(path_prediction).split('_seg-axonmyelin')[0]
-
+    # We want to keep the filename path up to the '_seg-axonmyelin' part
+    path = path_prediction.parent
+    broken_filename = path_prediction.name.split('_seg-axonmyelin')[0]
     # Extra check to ensure that the extension was removed
-    if tmp_broken_filename.endswith('.png'):
-        tmp_broken_filename = os.path.splitext(tmp_broken_filename)[0]
+    if broken_filename.endswith('.png'):
+        broken_filename = broken_filename.split('.png')[0]
 
     # Save masks
-    imageio.imwrite(tmp_broken_filename + '_seg-axon.png', axon_prediction.astype(int))
-    imageio.imwrite(tmp_broken_filename + '_seg-myelin.png', myelin_prediction.astype(int))
+    imageio.imwrite(path.joinpath(broken_filename + '_seg-axon.png'), axon_prediction.astype(int))
+    imageio.imwrite(path.joinpath(broken_filename + '_seg-myelin.png'), myelin_prediction.astype(int))
 
     return axon_prediction, myelin_prediction
 
