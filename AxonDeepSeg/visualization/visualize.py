@@ -1,7 +1,7 @@
 # coding: utf-8
 
-import os
 import sys
+from pathlib import Path
 import pickle
 
 # Scientific modules imports
@@ -99,8 +99,9 @@ def visualize_segmentation(path):
 
     path_img = path + "/image.png"
     mask = False
+    listdir = [item.name for item in path]
 
-    if "results.pkl" not in os.listdir(path):
+    if "results.pkl" not in listdir:
         print("results not present")
 
     file = open(path + "/results.pkl", "r")
@@ -120,7 +121,7 @@ def visualize_segmentation(path):
     fig2 = _create_fig_helper(predict, title)
     figs.append(fig2)
 
-    if "mask.png" in os.listdir(path):
+    if "mask.png" in listdir:
         Mask = True
         path_mask = path + "/mask.png"
         mask = preprocessing.binarize(
@@ -171,7 +172,7 @@ def visualize_segmentation(path):
         file.write(text)
         file.close()
 
-    if "MyelinSeg.jpg" in os.listdir(path):
+    if "MyelinSeg.jpg" in listdir:
         path_myelin = path + "/MyelinSeg.jpg"
         myelin = preprocessing.binarize(
             imread(path_myelin, flatten=False, mode="L"), threshold=125
