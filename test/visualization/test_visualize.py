@@ -30,4 +30,4 @@ class TestCore(object):
     @pytest.mark.unit
     def test_visualize_training_runs_successfully(self):
 
-        assert visualize_training(str(self.pathModel))
+        assert visualize_training(self.pathModel)
