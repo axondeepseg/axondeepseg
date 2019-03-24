@@ -97,7 +97,7 @@ def visualize_segmentation(path):
         ax.imshow(overlayed_img, cmap="hsv", alpha=0.7)
         return fig
 
-    path_img = path + "/image.png"
+    path_img = path / "image.png"
     mask = False
     listdir = [item.name for item in path]
 
@@ -123,7 +123,7 @@ def visualize_segmentation(path):
 
     if "mask.png" in listdir:
         Mask = True
-        path_mask = path + "/mask.png"
+        path_mask = path / "mask.png"
         mask = preprocessing.binarize(
             imread(path_mask, flatten=False, mode="L"), threshold=125
         )
@@ -168,12 +168,12 @@ def visualize_segmentation(path):
         text = text + subtitle3 + subtitle3 + scores_2
         print(text)
 
-        file = open(path + "/Report_results.txt", "w")
+        file = open(path / "Report_results.txt", "w")
         file.write(text)
         file.close()
 
     if "MyelinSeg.jpg" in listdir:
-        path_myelin = path + "/MyelinSeg.jpg"
+        path_myelin = path / "MyelinSeg.jpg"
         myelin = preprocessing.binarize(
             imread(path_myelin, flatten=False, mode="L"), threshold=125
         )
@@ -203,12 +203,12 @@ def retrieve_training_data(path_model, path_model_init=None):
     """
 
     file = open(
-        path_model + "/evolution.pkl", "rb"
+        path_model / "evolution.pkl", "rb"
     )  # training variables : loss, accuracy, epoch
     evolution = pickle.load(file)
 
     if path_model_init:
-        file_init = open(path_model_init + "/evolution.pkl", "rb")
+        file_init = open(path_model_init / "evolution.pkl", "rb")
         evolution_init = pickle.load(file_init)
         last_epoch = evolution_init["steps"][-1]
 
@@ -231,7 +231,7 @@ def retrieve_hyperparameters(path_model):
     """
 
     file = open(
-        path_model + "/hyperparameters.pkl", "r"
+        path_model / "hyperparameters.pkl", "r"
     )  # training variables : loss, accuracy, epoch
     return pickle.load(file)
 
@@ -245,5 +245,5 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
     path_model = args["path_model"]
 
-    fig, evo = visualize_training(path_model)
+    fig = visualize_training(path_model)
     fig.savefig("./visualize_training_acc_vs_loss_evolution.png")

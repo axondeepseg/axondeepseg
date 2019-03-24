@@ -129,7 +129,7 @@ def generate_cedarjob(path_project, path_venv, bashname, configfile, config, pat
         name_model +
         "/ \n"
         )
-    file.write("source "+path_venv+"/bin/activate \n")
+    file.write("source " + str(path_venv) + "/bin/activate \n")
     file.write("python ../../AxonDeepSeg/trainingforhelios.py -co ")
     file.write(str(configfile))
     file.write(" -t ")
