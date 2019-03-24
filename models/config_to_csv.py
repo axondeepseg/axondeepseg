@@ -36,7 +36,7 @@ def describe(write_model):
             for data in path.iterdir():
                 if data.match('*config_network*'):
                     models = config_decode(models, path, 'describe')
-    
+
     models.reindex_axis(sorted(models.columns), axis=1)
     models = models.fillna('None')
     if write_model:
@@ -47,20 +47,20 @@ def describe(write_model):
     for index, rows in models.iterrows():
         t.add_row(rows)
     print(t)
-    
+
 def compare(compare_models):
     models = pd.DataFrame()
-    
+
     L_models = []
     L_models.append(compare_models[0])
     L_models.append(compare_models[1])
-        
+
     for model_name in L_models:
         for path in Path.cwd().iterdir():
             if path.is_dir() and path.match("*{0}".format(model_name)):
                 for data in path.iterdir():
                     if data.match('*config_network*'):
-                        models = config_decode(models, path, 'compare')  
+                        models = config_decode(models, path, 'compare')
     models.index = [0,1]
 
     # Now we display the differences between the dataframes
@@ -69,24 +69,24 @@ def compare(compare_models):
         if (models.loc[0,col] != models.loc[1,col]) and (str(col) != '0_name'):
             t.add_row([str(col), str(models.loc[0,col]), str(models.loc[1,col])])
     print(t)
-    
+
 def describe_model(model_name):
     models = pd.DataFrame()
     for path in Path.cwd().iterdir():
         if path.is_dir() and path.match("*{0}".format(model_name)):
             for data in path.iterdir():
                 if data.match('*config_network*'):
-                    models = config_decode(models, path, 'compare')  
+                    models = config_decode(models, path, 'compare')
     # Now we display the differences between the dataframes
     t = PrettyTable(['param', model_name])
     for col in models.columns:
         if (str(col) != '0_name'):
             t.add_row([str(col), str(models.loc[0,col])])
     print(t)
-# -------------------------------------------------------------------------------------------------------------                 
 # -------------------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------------------
-                        
+# -------------------------------------------------------------------------------------------------------------
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
@@ -100,13 +100,13 @@ def main():
     write_model = args["write"]
     compare_models = args["compare"]
     model_config = args["listconfig"]
-    
+
     if describe_models:
         describe(write_model)
     elif model_config is not None:
         describe_model(model_config[0])
     else:
-        compare(compare_models)    
+        compare(compare_models)
 
 
 if __name__ == '__main__':
