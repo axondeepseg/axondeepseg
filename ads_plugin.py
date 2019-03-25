@@ -384,7 +384,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
     def getLogo(self):
 
-        path = os.path.join(os.getcwd(), '..', '..', '..', '..')
+        # path = os.path.join(os.getcwd(), '..', '..', '..', '..')
+        print(os.getcwd())
+        path = 'docs/source/_static'
 
         logoFile = path + '/ADS_logo.png'
         png = wx.Image(logoFile,
