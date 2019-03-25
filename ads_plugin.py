@@ -6,13 +6,21 @@ import fsleyes.actions.loadoverlay as ovLoad
 
 import numpy as np
 import nibabel as nib
-from PIL import Image
+from PIL import Image, ImageDraw, ImageOps
 import scipy.misc
 import os
 import json
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
+import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
+
+import math
+from scipy import ndimage as ndi
+from skimage import measure, morphology, feature
+
+
+
 
 class ADScontrol(ctrlpanel.ControlPanel):
 
@@ -59,17 +67,20 @@ class ADScontrol(ctrlpanel.ControlPanel):
         saveSegmentation_button.Bind(wx.EVT_BUTTON, self.onSaveSegmentation_button)
         sizerV3.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
 
-        separateAxons_button = wx.Button(self, label='separate axons')
-        sizerV4.Add(separateAxons_button, flag=wx.SHAPED, proportion=1)
+        runWatershed_button = wx.Button(self, label='Run Watershed')
+        runWatershed_button.Bind(wx.EVT_BUTTON, self.onRunWatershed_button)
+        sizerV4.Add(runWatershed_button, flag=wx.SHAPED, proportion=1)
 
-        separateAxons_button = wx.Button(self, label='fill axons')
-        sizerV4.Add(separateAxons_button, flag=wx.SHAPED, proportion=1)
+        fillAxons_button = wx.Button(self, label='Fill axons')
+        fillAxons_button.Bind(wx.EVT_BUTTON, self.onFillAxons_button)
+        sizerV4.Add(fillAxons_button, flag=wx.SHAPED, proportion=1)
 
         self.SetSizer(sizerH)
 
         self.imageDirPath = None
         self.mostRecentMyelinMaskName = None
         self.mostRecentAxonMaskName = None
+        self.mostRecentWatershedMaskName = None
 
 
 
@@ -166,7 +177,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 axonArray = np.array(anImage[:, :, 0]*255, copy=True, dtype=np.uint8)
                 axonArray = np.flipud(np.rot90(axonArray,k=3 ,axes=(0, 1)))
 
-           # Save the arrays as PNG files
+        # Save the arrays as PNG files
         myelinAndAxonImage = Image.fromarray((myelinArray//2 + axonArray).astype(np.uint8))
         myelinAndAxonImage.save(saveDir + '/ADS_seg.png')
         myelinImage = Image.fromarray(myelinArray)
@@ -175,11 +186,156 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axonImage.save(saveDir + '/ADS_seg-axon.png')
 
 
+    def onRunWatershed_button(self, event):
+
+        if self.mostRecentAxonMaskName is None:
+            print('No axon mask loaded')
+            return
+
+        # Find the most recent axon and myelin masks
+
+        axonMaskOverlay = None
+        watershedMaskOverlay = None
+
+        for anOverlay in self.overlayList:
+            if anOverlay.name == self.mostRecentAxonMaskName:
+                axonMaskOverlay = anOverlay
+
+            if anOverlay.name == self.mostRecentMyelinMaskName:
+                myelinMaskOverlay = anOverlay
+
+            if (self.mostRecentWatershedMaskName is not None) and (anOverlay.name == self.mostRecentWatershedMaskName):
+                watershedMaskOverlay = anOverlay
+
+        if axonMaskOverlay is None:
+            print("Couldn't find an axon mask.")
+            return
+
+        # Extract the data from the overlays
+        axonArray = axonMaskOverlay[:, :, 0]
+        myelinArray = myelinMaskOverlay[:, :, 0]
+
+        # Compute the watershed mask
+        watershedData = self.getWatershedSegmentation(axonArray, myelinArray)
+
+        if self.mostRecentWatershedMaskName is None:
+            # Save the watershed mask as a png then load it as an overlay
+            watershedImageArray = np.flipud(np.rot90(watershedData, k=3, axes=(0, 1)))
+            watershedImage = Image.fromarray(watershedImageArray)
+            fileName = self.imageDirPath + '/watershed_mask.png'
+            watershedImage.save(fileName)
+            watershedMaskOverlay = self.loadPngImageFromPath(fileName, addToOverlayList=False)
+            watershedMaskOverlay[:, :, 0] = watershedData
+            self.overlayList.append(watershedMaskOverlay)
+
+
+            self.mostRecentWatershedMaskName = 'watershed_mask'
+
+        elif watershedMaskOverlay is not None:
+            # Update the current watershed mask
+            watershedMaskOverlay[:, :, 0] = watershedData
+
+            # This is the only way I could find to update an overlay once its data has been modified.
+            # It is not very elegant. I should contact the FSL developers and ask them if there's another way to do
+            # this.
+            self.overlayList.remove(watershedMaskOverlay)
+            self.overlayList.append(watershedMaskOverlay)
+
+    def onFillAxons_button(self, event):
+        # Find the most recent axon and myelin masks
+
+        axonMaskOverlay = None
+        myelinMaskOverlay = None
+
+        for anOverlay in self.overlayList:
+            if anOverlay.name == self.mostRecentAxonMaskName:
+                axonMaskOverlay = anOverlay
+
+            if anOverlay.name == self.mostRecentMyelinMaskName:
+                myelinMaskOverlay = anOverlay
+
+        if (axonMaskOverlay is None) or (myelinMaskOverlay is None):
+            print("Couldn't find an axon or myelin mask.")
+            return
+
+        # Extract the data from the overlays
+        axonArray = axonMaskOverlay[:, :, 0]
+        myelinArray = myelinMaskOverlay[:, :, 0]
+
+        # Get the centroid indexes
+        watershedData, centroidIndexMap = self.getWatershedSegmentation(axonArray, myelinArray, returnCentroids=True)
+        del watershedData
+
+        # # Crate an RGB array for the myelin image. The floodfill only uses RBG images.
+        # arrayShape = [myelinArray.shape[0], myelinArray.shape[1]]
+        # myelinRGBArray = np.zeros(arrayShape, dtype='3uint8')
+
+
+        # Create an image with the myelinMask and floodfill at the coordinates of the centroids
+        myelinImage = Image.fromarray(myelinArray*255)
+        myelinImage = ImageOps.colorize(myelinImage, (0, 0, 0, 255), (255, 255, 255, 255))
+        for i in range(len(centroidIndexMap[0])):
+            ImageDraw.floodfill(myelinImage, xy=(centroidIndexMap[1][i], centroidIndexMap[0][i]),
+                                value=(127, 127, 127, 255))
+
+        # Extract the axonArray and update the axon mask overlay
+        axonExtractedArray = np.array(myelinImage.convert('LA'))
+        axonExtractedArray = axonExtractedArray[:, :, 0]
+        axonExtractedArray = np.equal(axonExtractedArray, 127*np.ones_like(axonExtractedArray))
+        axonExtractedArray = axonExtractedArray.astype(np.uint8)
+
+
+        axonMaskOverlay[:, :, 0] = axonExtractedArray
+        self.overlayList.remove(axonMaskOverlay)
+        self.overlayList.append(axonMaskOverlay)
 
 
 
-    def loadPngImageFromPath(self, imagePath, isMask=False):
-        img_png = np.asarray(Image.open(imagePath).convert('LA'), dtype=np.uint8)
+    def getWatershedSegmentation(self, im_axon, im_myelin, returnCentroids=False):
+        """
+        Parts of this function were copied from the code found in this document :
+        https://github.com/neuropoly/axondeepseg/blob/master/AxonDeepSeg/morphometrics/compute_morphometrics.py
+        :param im_axon:
+        :param im_myelin:
+        :return:
+        """
+
+        # Label each axon object
+        im_axon_label = measure.label(im_axon)
+        # Measure properties for each axon object
+        axon_objects = measure.regionprops(im_axon_label)
+        # Deal with myelin mask
+        if im_myelin is not None:
+            # sum axon and myelin masks
+            im_axonmyelin = im_axon + im_myelin
+            # Compute distance between each pixel and the background. Note: this distance is calculated from the im_axon,
+            # note from the im_axonmyelin image, because we know that each axon object is already isolated, therefore the
+            # distance metric will be more useful for the watershed algorithm below.
+            distance = ndi.distance_transform_edt(im_axon)
+            # local_maxi = feature.peak_local_max(distance, indices=False, footprint=np.ones((31, 31)), labels=axonmyelin)
+
+            # Get axon centroid as int (not float) to be used as index
+            ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
+                            [int(props.centroid[1]) for props in axon_objects])
+
+            # Create an image with axon centroids, which value corresponds to the value of the axon object
+            im_centroid = np.zeros_like(im_axon, dtype='uint16')
+            for i in range(len(ind_centroid[0])):
+                # Note: The value "i" corresponds to the label number of im_axon_label
+                im_centroid[ind_centroid[0][i], ind_centroid[1][i]] = i + 1
+
+            # markers = ndi.label(local_maxi)[0]
+            # Watershed segmentation of axonmyelin using distance map
+            im_axonmyelin_label = morphology.watershed(-distance, im_centroid, mask=im_axonmyelin)
+            if returnCentroids is True:
+                return im_axonmyelin_label, ind_centroid
+            else:
+                return im_axonmyelin_label
+
+
+
+    def loadPngImageFromPath(self, imagePath, isMask=False, addToOverlayList=True):
+        img_png = np.asarray(Image.open(imagePath).convert('LA'))
 
         if np.size(img_png.shape) == 3:
             img_png2D = img_png[:, :, 0]
@@ -202,7 +358,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         nib.save(img_NIfTI, outFile, )
 
         img_overlay = ovLoad.loadOverlays(paths=[outFile], inmem=True, blocking=True)[0]
-        self.overlayList.append(img_overlay)
+
+        if addToOverlayList is True:
+            self.overlayList.append(img_overlay)
+
+        return img_overlay
 
     def getCitation(self):
 
