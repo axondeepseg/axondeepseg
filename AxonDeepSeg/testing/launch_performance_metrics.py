@@ -1,7 +1,3 @@
-"""
-#TODO: Docstring
-"""
-
 import numpy as np
 from scipy.misc import imread
 
