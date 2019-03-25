@@ -1,5 +1,4 @@
 import wx
-import wx.lib.agw.hyperlink as hl
 
 import fsleyes.controls.controlpanel as ctrlpanel
 import fsleyes.actions.loadoverlay as ovLoad
