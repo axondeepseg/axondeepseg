@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from scipy.misc import imread, imsave
@@ -177,7 +176,7 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 # We load every image
                 filenames = [f for f in path_patches_folder.iterdir()]
                 n_img = np.floor(len(filenames)/2)
-                
+
                 for data in filenames:
                     root, index = data.stem.split('_')
                     if 'image' in data.name:
@@ -226,8 +225,8 @@ def find_minority_type(SEM_patches_folder, TEM_patches_folder):
     the path to the majority path folder and the number of patches in this folder.
     """
 
-    SEM_len = sum([len(files) for r, d, files in os.walk(SEM_patches_folder)])
-    TEM_len = sum([len(files) for r, d, files in os.walk(TEM_patches_folder)])
+    SEM_len = len([f for f in SEM_patches_folder.rglob("*") if f.is_file()])
+    TEM_len = len([f for f in TEM_patches_folder.rglob("*") if f.is_file()])
 
     if SEM_len < TEM_len:
         minority_patches_folder = SEM_patches_folder
