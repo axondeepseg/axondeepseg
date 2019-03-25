@@ -263,8 +263,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelinArray = myelinMaskOverlay[:, :, 0]
 
         # Get the centroid indexes
-        watershedData, centroidIndexMap = self.getWatershedSegmentation(axonArray, myelinArray, returnCentroids=True)
-        del watershedData
+        centroidIndexMap = self.getMyelinCentroids(myelinArray)
+
 
         # # Crate an RGB array for the myelin image. The floodfill only uses RBG images.
         # arrayShape = [myelinArray.shape[0], myelinArray.shape[1]]
@@ -288,6 +288,16 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axonMaskOverlay[:, :, 0] = axonExtractedArray
         self.overlayList.remove(axonMaskOverlay)
         self.overlayList.append(axonMaskOverlay)
+
+
+    def getMyelinCentroids(self, im_myelin):
+        # Label each myelin object
+        im_myelin_label = measure.label(im_myelin)
+        # Find the centroids of the myelin objects
+        myelin_objects = measure.regionprops(im_myelin_label)
+        ind_centroid = ([int(props.centroid[0]) for props in myelin_objects],
+                        [int(props.centroid[1]) for props in myelin_objects])
+        return ind_centroid
 
 
 
@@ -390,3 +400,4 @@ class ADScontrol(ctrlpanel.ControlPanel):
     def supportedViews():
         from fsleyes.views.orthopanel import OrthoPanel
         return [OrthoPanel]
+
