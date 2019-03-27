@@ -255,8 +255,6 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_write_aggregate_morphometrics_throws_error_if_folder_doesnt_exist(self):
-
-
         aggregate_metrics = get_aggregate_morphometrics(
             self.pred_axon,
             self.pred_myelin,
