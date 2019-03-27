@@ -83,13 +83,17 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
     # DEBUG
     # from matplotlib import colors
     # from matplotlib.pylab import *
-    # random_cmap = matplotlib.colors.ListedColormap(np.random.rand(256, 3))
-    # matshow(im_axon_label, fignum=1, cmap=random_cmap), show()
     # import datetime
-    # savefig('fig_' + datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M%S%f') + '.png', format='png',
-    #         transparent=True, dpi=100)
+    # random_cmap = matplotlib.colors.ListedColormap(np.random.rand(256, 3))
+    # matshow(im_axon_label, fignum=1, cmap=random_cmap)#, show()
+    # savefig('fig_axon_' + datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M%S%f') + '.png', format='png',
+    #         transparent=False, dpi=100)
+    # matshow(im_axonmyelin_label, fignum=1, cmap=random_cmap)#, show()
+    # savefig('fig_axonmyelin_' + datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M%S%f') + '.png', format='png',
+    #         transparent=False, dpi=100)
 
     # Loop across axon property and fill up dictionary with morphometrics of interest
+    axonmyelin_labels_list = [axonmyelin_object.label for axonmyelin_object in axonmyelin_objects]
     for prop_axon in axon_objects:
         # Centroid
         y0, x0 = prop_axon.centroid
@@ -120,11 +124,16 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
             # print('x, y = {}, {}'.format(x0, y0))
             if label_axonmyelin:
                 # Get corresponding index from axonmyelin_objects list
-                ind_axonmyelin = \
-                    [axonmyelin_object.label for axonmyelin_object in axonmyelin_objects].index(label_axonmyelin)
-                myelin_diam = axonmyelin_objects[ind_axonmyelin].equivalent_diameter * pixelsize
-                myelin_area = axonmyelin_objects[ind_axonmyelin].area * (pixelsize ** 2)
-                stats['myelin_diam'] = myelin_diam
+                idx = axonmyelin_labels_list.index(label_axonmyelin)
+                prop_axonmyelin = axonmyelin_objects[idx]
+
+                mt_px = evaluate_myelin_thickness_in_px(prop_axon, prop_axonmyelin)
+                myelin_thickness = pixelsize * mt_px
+
+                ma_px= evaluate_myelin_area_in_px(prop_axon, prop_axonmyelin)
+                myelin_area = (pixelsize ** 2) * ma_px
+
+                stats['myelin_thickness'] = myelin_thickness
                 stats['myelin_area'] = myelin_area
                 stats['gratio'] = np.sqrt(axon_area / myelin_area)
             else:
@@ -135,6 +144,55 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
 
     return stats_array
 
+def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object):
+    """
+    Returns the outer equivalent diameter for the myelinated axon minus the
+    axon equivalent diameter (see note [1] below). The result is in pixels.
+    :param axon_object (skimage.measure._regionprops): object returned after
+        measuring a axon labeled region
+    :param axonmyelin_object (skimage.measure._regionprops): object returned after
+        measuring a axon with myelin labeled region
+
+    [1] According to https://scikit-image.org/docs/dev/api/skimage.measure.html?highlight=region%20properties#regionprops,
+    the equivalent diameter is the diameter of a circle with the same area as
+    the region.
+    """
+    _check_measures_are_relatively_valid(
+        axon_object,
+        axonmyelin_object,
+        "equivalent_diameter"
+        )
+
+    axon_diam = axon_object.equivalent_diameter
+    axonmyelin_diam = axonmyelin_object.equivalent_diameter
+    return axonmyelin_diam - axon_diam
+
+def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
+    """
+    Returns the myenlinated axon area minus the axon area.
+
+    :param axon_object (skimage.measure._regionprops): object returned after
+    measuring an axon labeled  region
+    :param axonmyelin_object (skimage.measure._regionprops): object returned after
+    measuring a axon with myelin labeled region
+    """
+    _check_measures_are_relatively_valid(
+        axon_object,
+        axonmyelin_object,
+        "area"
+        )
+    return axonmyelin_object.area - axon_object.area
+
+def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
+    """
+    Checks if the attribute is positive and if the myelinated axon has a greater value
+    """
+    val_axon = getattr(axon_object, attribute)
+    val_axonmyelin = getattr(axonmyelin_object, attribute)
+    if val_axon > 0 and val_axonmyelin > 0 and val_axonmyelin > val_axon:
+        return True
+    else:
+        raise ValueError("Unexcepted values for region property {0}".format(attribute))
 
 def save_axon_morphometrics(path_folder, stats_array):
     """
@@ -169,7 +227,7 @@ def load_axon_morphometrics(path_folder):
 def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
     """
     :param img: sample grayscale image (png)
-    :param path_prediction: full path to the segmented file (*_seg-axonmyelin.png) 
+    :param path_prediction: full path to the segmented file (*_seg-axonmyelin.png)
         from axondeepseg segmentation output
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
@@ -273,3 +331,4 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
                "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
 
         raise
+
