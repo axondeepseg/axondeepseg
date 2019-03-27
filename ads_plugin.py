@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw, ImageOps
 import scipy.misc
 import os
 import json
+from pathlib import Path
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
@@ -384,12 +385,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
     def getLogo(self):
 
-        # path = os.path.join(os.getcwd(), '..', '..', '..', '..')
-        print(os.getcwd())
-        path = 'docs/source/_static'
+        ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[1]
 
-        logoFile = path + '/ADS_logo.png'
-        png = wx.Image(logoFile,
+        logoFile = ads_path / 'docs' / 'source' / '_static' / 'logo_ads-alpha.png'
+
+        png = wx.Image(str(logoFile),
                        wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         png.SetSize((png.GetWidth()//10, png.GetHeight()//10))
         logoImage = wx.StaticBitmap(self, -1, png, wx.DefaultPosition,
