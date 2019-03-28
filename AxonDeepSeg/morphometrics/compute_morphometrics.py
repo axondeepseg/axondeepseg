@@ -197,6 +197,7 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
         x_a, y_a = axon_object.centroid
         x_am, y_am = axonmyelin_object.centroid
         data = {
+            "attribute": attribute,
             "axon_label": axon_object.label,
             "x_a": x_a,
             "y_a": y_a,
@@ -204,9 +205,9 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
             "x_am": x_am,
             "y_am": y_am
         }
-        warning = Template("Warning, axon #$axon_label at ($x_a, $y_a) and" +
-            "corresponding myelinated axon #$axonmyelin_label$ at ($x_am, $y_am)" +
-            "have unexpected measure values." 
+        warning = Template("Warning, axon #$axon_label at ($x_a, $y_a) and " +
+            "corresponding myelinated axon #$axonmyelin_label at ($x_am, $y_am) " +
+            "have unexpected measure values for $attribute attributest."
             )
         print(warning.safe_substitute(data))
 
