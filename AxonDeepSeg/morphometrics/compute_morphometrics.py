@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+from string import Template
 
 # Scientific modules imports
 import math
@@ -79,6 +80,8 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
         im_axonmyelin_label = morphology.watershed(-distance, im_centroid, mask=im_axonmyelin)
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
+        axonmyelin_labels_list = [axonmyelin_object.label for axonmyelin_object in axonmyelin_objects]
+
 
     # DEBUG
     # from matplotlib import colors
@@ -93,7 +96,6 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
     #         transparent=False, dpi=100)
 
     # Loop across axon property and fill up dictionary with morphometrics of interest
-    axonmyelin_labels_list = [axonmyelin_object.label for axonmyelin_object in axonmyelin_objects]
     for prop_axon in axon_objects:
         # Centroid
         y0, x0 = prop_axon.centroid
@@ -132,10 +134,12 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
 
                 ma_px= evaluate_myelin_area_in_px(prop_axon, prop_axonmyelin)
                 myelin_area = (pixelsize ** 2) * ma_px
+                axonmyelin_area = (pixelsize ** 2) * prop_axonmyelin.area
 
                 stats['myelin_thickness'] = myelin_thickness
                 stats['myelin_area'] = myelin_area
-                stats['gratio'] = np.sqrt(axon_area / myelin_area)
+                stats['axonmyelin_area'] = axonmyelin_area
+                stats['gratio'] = np.sqrt(axon_area / axonmyelin_area)
             else:
                 # TODO: use logger
                 print('WARNING: Myelin object not found for axon centroid [{},{}]'.format(y0, x0))
@@ -157,7 +161,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object):
     the equivalent diameter is the diameter of a circle with the same area as
     the region.
     """
-    _check_measures_are_relatively_valid(
+    warn_if_measures_are_unexpected(
         axon_object,
         axonmyelin_object,
         "equivalent_diameter"
@@ -176,12 +180,35 @@ def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
     measuring a axon with myelin labeled region
     """
-    _check_measures_are_relatively_valid(
+    warn_if_measures_are_unexpected(
         axon_object,
         axonmyelin_object,
         "area"
         )
     return axonmyelin_object.area - axon_object.area
+
+def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
+    """
+    Calls the `_check_measures_are_relatively_valid` function and if return
+    value is False, print a warning.
+    """
+    checked = _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute)
+    if checked is False:
+        x_a, y_a = axon_object.centroid
+        x_am, y_am = axonmyelin_object.centroid
+        data = {
+            "axon_label": axon_object.label,
+            "x_a": x_a,
+            "y_a": y_a,
+            "axonmyelin_label": axonmyelin_object.label,
+            "x_am": x_am,
+            "y_am": y_am
+        }
+        warning = Template("Warning, axon #$axon_label at ($x_a, $y_a) and" +
+            "corresponding myelinated axon #$axonmyelin_label$ at ($x_am, $y_am)" +
+            "have unexpected measure values." 
+            )
+        print(warning.safe_substitute(data))
 
 def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
     """
@@ -192,7 +219,7 @@ def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribu
     if val_axon > 0 and val_axonmyelin > 0 and val_axonmyelin > val_axon:
         return True
     else:
-        raise ValueError("Unexcepted values for region property {0}".format(attribute))
+        return False
 
 def save_axon_morphometrics(path_folder, stats_array):
     """
