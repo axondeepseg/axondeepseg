@@ -154,7 +154,7 @@ class TestCore(object):
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
 
     @pytest.mark.unit
-    def test_get_axon_morphometrics_with_wrong_myelin_mask_simulated_axons(self):
+    def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons(self):
         path_pred = os.path.join(
             self.testPath,
             '__test_files__',
@@ -164,11 +164,11 @@ class TestCore(object):
         # Read paths and compute axon/myelin masks
         pred = scipy_imread(path_pred, flatten=True)
         pred_axon = pred > 200
-        wrong_pred_myelin = np.zeros(pred.shape)
+        unexpected_pred_myelin = np.zeros(pred.shape)
         path_folder, file_name = os.path.split(path_pred)
 
         # Compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon,path_folder,im_myelin=wrong_pred_myelin)
+        stats_array = get_axon_morphometrics(pred_axon,path_folder,im_myelin=unexpected_pred_myelin)
         for axon_prop in stats_array:
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
