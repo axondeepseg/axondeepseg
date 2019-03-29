@@ -150,8 +150,8 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
 
 def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object):
     """
-    Returns the outer equivalent diameter for the myelinated axon minus the
-    axon equivalent diameter (see note [1] below). The result is in pixels.
+    Returns the equivavent thickness of a myelin ring around an axon of a
+    given equivalent diameter (see note [1] below). The result is in pixels.
     :param axon_object (skimage.measure._regionprops): object returned after
         measuring a axon labeled region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
@@ -169,7 +169,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object):
 
     axon_diam = axon_object.equivalent_diameter
     axonmyelin_diam = axonmyelin_object.equivalent_diameter
-    return axonmyelin_diam - axon_diam
+    return (axonmyelin_diam - axon_diam)/2
 
 def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
     """
