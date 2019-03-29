@@ -150,7 +150,7 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
 
 def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object):
     """
-    Returns the equivavent thickness of a myelin ring around an axon of a
+    Returns the equivalent thickness of a myelin ring around an axon of a
     given equivalent diameter (see note [1] below). The result is in pixels.
     :param axon_object (skimage.measure._regionprops): object returned after
         measuring a axon labeled region
@@ -205,11 +205,11 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
             "x_am": x_am,
             "y_am": y_am
         }
-        warning = Template("Warning, axon #$axon_label at ($x_a, $y_a) and " +
+        warning_msg = Template("Warning, axon #$axon_label at ($x_a, $y_a) and " +
             "corresponding myelinated axon #$axonmyelin_label at ($x_am, $y_am) " +
             "have unexpected measure values for $attribute attributest."
             )
-        print(warning.safe_substitute(data))
+        print(warning_msg.safe_substitute(data))
 
 def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
     """
