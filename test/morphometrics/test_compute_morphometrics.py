@@ -108,7 +108,7 @@ class TestCore(object):
 
         assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons(self):
         path_pred = os.path.join(
             self.testPath,
