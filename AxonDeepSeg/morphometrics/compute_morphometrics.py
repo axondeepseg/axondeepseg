@@ -194,12 +194,13 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
             "y_ax": y_a,
             "axonmyelin_label": axonmyelin_object.label,
         }
-        warning = Template(
+        
+        warning_msg = Template(
             "Warning, axon #$axon_label at [y:$y_ax, x:$x_ax] and " +
             "corresponding myelinated axon #$axonmyelin_label " +
             "have unexpected measure values for $attribute attributest."
             )
-        print(warning.safe_substitute(data))
+        print(warning_msg.safe_substitute(data))
 
 def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
     """
