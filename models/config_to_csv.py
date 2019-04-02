@@ -31,11 +31,11 @@ def config_decode(array_config, path_model, type_):
 def describe(write_model):
     models = pd.DataFrame()
 
-    for path in Path.cwd().iterdir():
-        if path.is_dir():
-            for data in path.iterdir():
+    for item_path in Path.cwd().iterdir():
+        if item_path.is_dir():
+            for data in item_path.iterdir():
                 if data.match('*config_network*'):
-                    models = config_decode(models, path, 'describe')
+                    models = config_decode(models, item_path, 'describe')
 
     models.reindex_axis(sorted(models.columns), axis=1)
     models = models.fillna('None')
@@ -56,11 +56,11 @@ def compare(compare_models):
     L_models.append(compare_models[1])
 
     for model_name in L_models:
-        for path in Path.cwd().iterdir():
-            if path.is_dir() and path.match("*{0}".format(model_name)):
-                for data in path.iterdir():
+        for item_path in Path.cwd().iterdir():
+            if item_path.is_dir() and item_path.match("*{0}".format(model_name)):
+                for data in item_path.iterdir():
                     if data.match('*config_network*'):
-                        models = config_decode(models, path, 'compare')
+                        models = config_decode(models, item_path, 'compare')
     models.index = [0,1]
 
     # Now we display the differences between the dataframes
@@ -72,11 +72,11 @@ def compare(compare_models):
 
 def describe_model(model_name):
     models = pd.DataFrame()
-    for path in Path.cwd().iterdir():
-        if path.is_dir() and path.match("*{0}".format(model_name)):
-            for data in path.iterdir():
+    for item_path in Path.cwd().iterdir():
+        if item_path.is_dir() and item_path.match("*{0}".format(model_name)):
+            for data in item_path.iterdir():
                 if data.match('*config_network*'):
-                    models = config_decode(models, path, 'compare')
+                    models = config_decode(models, item_path, 'compare')
     # Now we display the differences between the dataframes
     t = PrettyTable(['param', model_name])
     for col in models.columns:
