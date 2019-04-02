@@ -99,9 +99,9 @@ def visualize_segmentation(path):
 
     path_img = path / "image.png"
     mask = False
-    listdir = [item.name for item in path]
+    cur_dir_items = [item.name for item in path]
 
-    if "results.pkl" not in listdir:
+    if "results.pkl" not in cur_dir_items:
         print("results not present")
 
     file = open(path + "/results.pkl", "r")
@@ -121,7 +121,7 @@ def visualize_segmentation(path):
     fig2 = _create_fig_helper(predict, title)
     figs.append(fig2)
 
-    if "mask.png" in listdir:
+    if "mask.png" in cur_dir_items:
         Mask = True
         path_mask = path / "mask.png"
         mask = preprocessing.binarize(
@@ -172,7 +172,7 @@ def visualize_segmentation(path):
         file.write(text)
         file.close()
 
-    if "MyelinSeg.jpg" in listdir:
+    if "MyelinSeg.jpg" in cur_dir_items:
         path_myelin = path / "MyelinSeg.jpg"
         myelin = preprocessing.binarize(
             imread(path_myelin, flatten=False, mode="L"), threshold=125
