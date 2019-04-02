@@ -17,6 +17,7 @@ Version [2.2dev] - XXXX-XX-XX
 - Handle exception for images smaller than minimum patch size after resizing
 - Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
 - Remove `matplotlib.pyplot` from source code and refactor to full OO plotting
+- Standardize path management to `pathlib` library
 
 
 Version [2.1] - 2018-09-25
