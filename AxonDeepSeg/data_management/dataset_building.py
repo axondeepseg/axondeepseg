@@ -112,20 +112,17 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
-                L_img, L_mask = sort_list_files(L_img, L_mask)
+                L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
 
                 # Saving the images in the new folder
-                for img,k in L_img:
+                for img,k in L_img_sorted:
                     imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
-                    imsave(path_dataset.joinpath('mask_%s.png'%i), L_mask[k][0], 'png')
+                    imsave(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0], 'png')
                     i = i+1 # Using the global i here.
 
     # Else we are using different types of acquisitions. It's important to have them separated in a SEM folder
     # and in a TEM folder.
     elif type_ == 'mixed':
-
-        i = 0
-
         # We determine which acquisition type we are going to upsample (understand : take the same images multiple times)
         SEM_patches_folder = path_patched_data / 'SEM'
         TEM_patches_folder = path_patched_data / 'TEM'
@@ -135,6 +132,7 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
 
         # First we move all patches from the majority acquisition type to the new dataset
         foldernames = [folder.name for folder in majority_patches_folder.iterdir()]
+        i = 0
         for patches_folder in tqdm(foldernames):
 
             path_patches_folder = majority_patches_folder / patches_folder
