@@ -150,11 +150,12 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons(self):
-        path_pred = os.path.join(
-            self.testPath,
-            '__test_files__',
-            '__test_simulated_axons__',
-            'SimulatedAxons.png')
+        path_pred = (
+            self.testPath /
+            '__test_files__' /
+            '__test_simulated_axons__' -
+            'SimulatedAxons.png'
+            )
 
         # Read paths and compute axon/myelin masks
         pred = scipy_imread(path_pred, flatten=True)
