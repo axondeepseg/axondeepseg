@@ -120,7 +120,7 @@ class TestCore(object):
                                 0.2,
                                 0.1
                                 ])
-        
+
         axon_diam_sim = np.array([
                                 100,
                                 90,
@@ -153,18 +153,20 @@ class TestCore(object):
         path_pred = (
             self.testPath /
             '__test_files__' /
-            '__test_simulated_axons__' -
+            '__test_simulated_axons__' /
             'SimulatedAxons.png'
             )
 
-        # Read paths and compute axon/myelin masks
-        pred = scipy_imread(path_pred, flatten=True)
-        pred_axon = pred > 200
-        unexpected_pred_myelin = np.zeros(pred.shape)
-        path_folder, file_name = os.path.split(path_pred)
+        prediction = scipy_imread(path_pred, flatten=True)
+        pred_axon = prediction > 200
+        unexpected_pred_myelin = np.zeros(prediction.shape)
 
-        # Compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon,path_folder,im_myelin=unexpected_pred_myelin)
+        stats_array = get_axon_morphometrics(
+            pred_axon,
+            path_pred.parent,
+            im_myelin=unexpected_pred_myelin
+            )
+
         for axon_prop in stats_array:
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
