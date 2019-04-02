@@ -93,13 +93,11 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask(self):
-
         stats_array = get_axon_morphometrics(
             self.pred_axon,
             self.test_folder_path,
             im_myelin=self.pred_myelin
             )
-
         assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
 
     @pytest.mark.unit
@@ -111,29 +109,31 @@ class TestCore(object):
             'SimulatedAxons.png'
         )
 
-        gratio_sim = [
-                      0.9,
-                      0.8,
-                      0.7,
-                      0.6,
-                      0.5,
-                      0.4,
-                      0.3,
-                      0.2,
-                      0.1
-                     ]
+        gratio_sim = np.array([
+                                0.9,
+                                0.8,
+                                0.7,
+                                0.6,
+                                0.5,
+                                0.4,
+                                0.3,
+                                0.2,
+                                0.1
+                                ])
+        
+        axon_diam_sim = np.array([
+                                100,
+                                90,
+                                80,
+                                70,
+                                60,
+                                46,
+                                36,
+                                24,
+                                12
+                                ])
 
-        axon_diam_sim = [
-                         100,
-                         90,
-                         80,
-                         70,
-                         60,
-                         46,
-                         36,
-                         24,
-                         12
-                        ]
+        myelin_thickness_sim = (axon_diam_sim / 2) * (1/gratio_sim - 1)
 
         # Read paths and compute axon/myelin masks
         pred = scipy_imread(path_pred)
@@ -146,7 +146,28 @@ class TestCore(object):
         for ii in range(0,9):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
+            assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
 
+    @pytest.mark.unit
+    def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons(self):
+        path_pred = os.path.join(
+            self.testPath,
+            '__test_files__',
+            '__test_simulated_axons__',
+            'SimulatedAxons.png')
+
+        # Read paths and compute axon/myelin masks
+        pred = scipy_imread(path_pred, flatten=True)
+        pred_axon = pred > 200
+        unexpected_pred_myelin = np.zeros(pred.shape)
+        path_folder, file_name = os.path.split(path_pred)
+
+        # Compute axon morphometrics
+        stats_array = get_axon_morphometrics(pred_axon,path_folder,im_myelin=unexpected_pred_myelin)
+        for axon_prop in stats_array:
+            assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
+            assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
+            assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
 
     # --------------save and load _axon_morphometrics tests-------------- #
     @pytest.mark.unit
