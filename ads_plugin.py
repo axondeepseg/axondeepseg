@@ -24,7 +24,7 @@ from skimage import measure, morphology, feature
 
 class ADScontrol(ctrlpanel.ControlPanel):
 
-        def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         ctrlpanel.ControlPanel.__init__(self, *args, **kwargs)
 
         # Adding sizers to the control panel
