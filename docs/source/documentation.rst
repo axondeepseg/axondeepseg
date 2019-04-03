@@ -433,6 +433,16 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 * Manually correct the axon mask (as explained in Option 1).
 * Use the `AxonSeg <https://github.com/neuropoly/axonseg>`_ software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the `as_tutorial guideline <https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m>`_.
 
+**Installing FSLeyes**
+ 
+* Install the FSLeyes_integration branch of AxonDeepSeg inside a conda environment
+* Install Wxpython using conda install -c anaconda wxpython
+* Install FSLeyes using pip install fsleyes
+* Launch FSLeyes using the command fsleyes
+* Go to file > load plugin > select ads_plugin.py > yes
+* view > ADScontrol (there might be an error if the script can't find the logo)
+* Manualy arrange the panel
+
 Citation
 ===============================================================================
 
