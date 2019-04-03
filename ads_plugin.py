@@ -24,56 +24,56 @@ from skimage import measure, morphology, feature
 
 class ADScontrol(ctrlpanel.ControlPanel):
 
-    def __init__(self, *args, **kwargs):
+        def __init__(self, *args, **kwargs):
         ctrlpanel.ControlPanel.__init__(self, *args, **kwargs)
 
         # Adding sizers to the control panel
-        sizerH = wx.BoxSizer(wx.HORIZONTAL)
-        sizerV1 = wx.BoxSizer(wx.VERTICAL)
-        sizerV2 = wx.BoxSizer(wx.VERTICAL)
-        sizerV3 = wx.BoxSizer(wx.VERTICAL)
-        sizerV4 = wx.BoxSizer(wx.VERTICAL)
+        sizerH = wx.BoxSizer(wx.VERTICAL)
+        # sizerV1 = wx.BoxSizer(wx.VERTICAL)
+        # sizerV2 = wx.BoxSizer(wx.VERTICAL)
+        # sizerV3 = wx.BoxSizer(wx.VERTICAL)
+        # sizerV4 = wx.BoxSizer(wx.VERTICAL)
 
-        sizerH.Add(sizerV1, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
-        sizerH.Add(sizerV2, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
-        sizerH.Add(sizerV3, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
-        sizerH.Add(sizerV4, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        # sizerH.Add(sizerV1, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        # sizerH.Add(sizerV2, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        # sizerH.Add(sizerV3, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        # sizerH.Add(sizerV4, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
 
         # Adding widgets to the control panel
 
         ADS_logo = self.getLogo()
-        sizerV1.Add(ADS_logo, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(ADS_logo, flag=wx.SHAPED, proportion=1)
 
 
         citationBox = wx.TextCtrl(self, value=self.getCitation(), size=(100, 50), style=wx.TE_MULTILINE)
-        sizerV1.Add(citationBox, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(citationBox, flag=wx.SHAPED, proportion=1)
 
 
         loadPng_button = wx.Button(self, label="Load PNG file")
         loadPng_button.Bind(wx.EVT_BUTTON, self.onLoadPngButton)
-        sizerV2.Add(loadPng_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(loadPng_button, flag=wx.SHAPED, proportion=1)
 
 
 
         self.modelChoices = ['SEM', 'TEM', 'other']
         self.modelCombobox = wx.ComboBox(self, choices=self.modelChoices, size=(100, 20), value='Select the modality')
-        sizerV2.Add(self.modelCombobox, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(self.modelCombobox, flag=wx.SHAPED, proportion=1)
 
         applyModel_button = wx.Button(self, label='Apply ADS prediction model')
         applyModel_button.Bind(wx.EVT_BUTTON, self.onApplyModel_button)
-        sizerV2.Add(applyModel_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(applyModel_button, flag=wx.SHAPED, proportion=1)
 
         saveSegmentation_button = wx.Button(self, label="Save segmentation")
         saveSegmentation_button.Bind(wx.EVT_BUTTON, self.onSaveSegmentation_button)
-        sizerV3.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
 
         runWatershed_button = wx.Button(self, label='Run Watershed')
         runWatershed_button.Bind(wx.EVT_BUTTON, self.onRunWatershed_button)
-        sizerV4.Add(runWatershed_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(runWatershed_button, flag=wx.SHAPED, proportion=1)
 
         fillAxons_button = wx.Button(self, label='Fill axons')
         fillAxons_button.Bind(wx.EVT_BUTTON, self.onFillAxons_button)
-        sizerV4.Add(fillAxons_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(fillAxons_button, flag=wx.SHAPED, proportion=1)
 
         self.SetSizer(sizerH)
 
@@ -146,8 +146,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axonMaskPath = self.imageDirPath + '/AxonDeepSeg_seg-axon.png'
         myelinMaskPath = self.imageDirPath + '/AxonDeepSeg_seg-myelin.png'
 
-        self.loadPngImageFromPath(axonMaskPath, isMask=True)
-        self.loadPngImageFromPath(myelinMaskPath, isMask=True)
+        self.loadPngImageFromPath(axonMaskPath, isMask=True, colormap='blue')
+        self.loadPngImageFromPath(myelinMaskPath, isMask=True, colormap='red')
 
         self.mostRecentAxonMaskName = 'AxonDeepSeg_seg-axon'
         self.mostRecentMyelinMaskName = 'AxonDeepSeg_seg-myelin'
@@ -227,19 +227,17 @@ class ADScontrol(ctrlpanel.ControlPanel):
             watershedMaskOverlay = self.loadPngImageFromPath(fileName, addToOverlayList=False)
             watershedMaskOverlay[:, :, 0] = watershedData
             self.overlayList.append(watershedMaskOverlay)
+            opts = self.displayCtx.getOpts(watershedMaskOverlay)
+            opts.cmap = 'random'
 
 
             self.mostRecentWatershedMaskName = 'watershed_mask'
 
         elif watershedMaskOverlay is not None:
             # Update the current watershed mask
-            watershedMaskOverlay[:, :, 0] = watershedData
+            watershedMaskOverlay[:, :, :] = watershedData
 
-            # This is the only way I could find to update an overlay once its data has been modified.
-            # It is not very elegant. I should contact the FSL developers and ask them if there's another way to do
-            # this.
-            self.overlayList.remove(watershedMaskOverlay)
-            self.overlayList.append(watershedMaskOverlay)
+
 
     def onFillAxons_button(self, event):
         # Find the most recent axon and myelin masks
@@ -285,9 +283,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axonExtractedArray = axonExtractedArray.astype(np.uint8)
 
 
-        axonMaskOverlay[:, :, 0] = axonExtractedArray
-        self.overlayList.remove(axonMaskOverlay)
-        self.overlayList.append(axonMaskOverlay)
+        axonMaskOverlay[:, :, :] = axonExtractedArray
 
 
     def getMyelinCentroids(self, im_myelin):
@@ -344,7 +340,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
 
 
-    def loadPngImageFromPath(self, imagePath, isMask=False, addToOverlayList=True):
+    def loadPngImageFromPath(self, imagePath, isMask=False, addToOverlayList=True, colormap = 'grayscale'):
         img_png = np.asarray(Image.open(imagePath).convert('LA'))
 
         if np.size(img_png.shape) == 3:
@@ -371,9 +367,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         if addToOverlayList is True:
             self.overlayList.append(img_overlay)
+            opts = self.displayCtx.getOpts(img_overlay)
+            opts.cmap = colormap
 
         return img_overlay
-
+    
     def getCitation(self):
 
         return ('If you use this work in your research, please cite it as follows: \n'
@@ -382,7 +380,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 'neural networks. Scientific Reports, 8(1), 3816. '
                 'Link to paper: https://doi.org/10.1038/s41598-018-22181-4. \n'
                 'Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)')
-
+    
     def getLogo(self):
 
         ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[1]
