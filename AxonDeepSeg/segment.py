@@ -299,7 +299,7 @@ def main(argv=None):
     else:
         psm = None
     path_target_list = [Path(p) for p in args["imgpath"]]
-    new_path = Path(args["model"])
+    new_path = Path(args["model"]) if args["model"] else None 
 
     # Preparing the arguments to axon_segmentation function
     path_model, config = generate_default_parameters(type_, new_path)
