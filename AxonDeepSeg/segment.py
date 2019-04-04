@@ -298,8 +298,8 @@ def main(argv=None):
         psm = float(args["sizepixel"])
     else:
         psm = None
-    path_target_list = [Path(path) for path in args["imgpath"]]
-    new_path = args["model"]
+    path_target_list = [Path(p) for p in args["imgpath"]]
+    new_path = Path(args["model"])
 
     # Preparing the arguments to axon_segmentation function
     path_model, config = generate_default_parameters(type_, new_path)
