@@ -383,9 +383,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
     
     def getLogo(self):
 
-        ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[1]
+        ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[0]
 
-        logoFile = ads_path / 'docs' / 'source' / '_static' / 'logo_ads-alpha.png'
+        logoFile = ads_path / 'logo_ads-alpha.png'
 
         png = wx.Image(str(logoFile),
                        wx.BITMAP_TYPE_ANY).ConvertToBitmap()
