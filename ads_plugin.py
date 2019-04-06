@@ -24,56 +24,56 @@ from skimage import measure, morphology, feature
 
 class ADScontrol(ctrlpanel.ControlPanel):
 
-    def __init__(self, *args, **kwargs):
-        ctrlpanel.ControlPanel.__init__(self, *args, **kwargs)
+    def __init__(self, ortho, *args, **kwargs):
+        ctrlpanel.ControlPanel.__init__(self, ortho, *args, **kwargs)
 
         # Adding sizers to the control panel
-        sizerH = wx.BoxSizer(wx.VERTICAL)
-        # sizerV1 = wx.BoxSizer(wx.VERTICAL)
-        # sizerV2 = wx.BoxSizer(wx.VERTICAL)
-        # sizerV3 = wx.BoxSizer(wx.VERTICAL)
+        sizerH = wx.BoxSizer(wx.HORIZONTAL)
+        sizerV1 = wx.BoxSizer(wx.VERTICAL)
+        sizerV2 = wx.BoxSizer(wx.VERTICAL)
+        sizerV3 = wx.BoxSizer(wx.VERTICAL)
         # sizerV4 = wx.BoxSizer(wx.VERTICAL)
 
-        # sizerH.Add(sizerV1, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
-        # sizerH.Add(sizerV2, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
-        # sizerH.Add(sizerV3, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        sizerH.Add(sizerV1, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        sizerH.Add(sizerV2, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        sizerH.Add(sizerV3, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
         # sizerH.Add(sizerV4, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
 
         # Adding widgets to the control panel
 
         ADS_logo = self.getLogo()
-        sizerH.Add(ADS_logo, flag=wx.SHAPED, proportion=1)
+        sizerV1.Add(ADS_logo, flag=wx.SHAPED, proportion=1)
 
 
         citationBox = wx.TextCtrl(self, value=self.getCitation(), size=(100, 50), style=wx.TE_MULTILINE)
-        sizerH.Add(citationBox, flag=wx.SHAPED, proportion=1)
+        sizerV1.Add(citationBox, flag=wx.SHAPED, proportion=1)
 
 
         loadPng_button = wx.Button(self, label="Load PNG file")
         loadPng_button.Bind(wx.EVT_BUTTON, self.onLoadPngButton)
-        sizerH.Add(loadPng_button, flag=wx.SHAPED, proportion=1)
+        sizerV2.Add(loadPng_button, flag=wx.SHAPED, proportion=1)
 
 
 
         self.modelChoices = ['SEM', 'TEM', 'other']
         self.modelCombobox = wx.ComboBox(self, choices=self.modelChoices, size=(100, 20), value='Select the modality')
-        sizerH.Add(self.modelCombobox, flag=wx.SHAPED, proportion=1)
+        sizerV2.Add(self.modelCombobox, flag=wx.SHAPED, proportion=1)
 
         applyModel_button = wx.Button(self, label='Apply ADS prediction model')
         applyModel_button.Bind(wx.EVT_BUTTON, self.onApplyModel_button)
-        sizerH.Add(applyModel_button, flag=wx.SHAPED, proportion=1)
+        sizerV2.Add(applyModel_button, flag=wx.SHAPED, proportion=1)
 
         saveSegmentation_button = wx.Button(self, label="Save segmentation")
         saveSegmentation_button.Bind(wx.EVT_BUTTON, self.onSaveSegmentation_button)
-        sizerH.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
+        sizerV3.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
 
         runWatershed_button = wx.Button(self, label='Run Watershed')
         runWatershed_button.Bind(wx.EVT_BUTTON, self.onRunWatershed_button)
-        sizerH.Add(runWatershed_button, flag=wx.SHAPED, proportion=1)
+        sizerV3.Add(runWatershed_button, flag=wx.SHAPED, proportion=1)
 
         fillAxons_button = wx.Button(self, label='Fill axons')
         fillAxons_button.Bind(wx.EVT_BUTTON, self.onFillAxons_button)
-        sizerH.Add(fillAxons_button, flag=wx.SHAPED, proportion=1)
+        sizerV3.Add(fillAxons_button, flag=wx.SHAPED, proportion=1)
 
         self.SetSizer(sizerH)
 
@@ -82,11 +82,16 @@ class ADScontrol(ctrlpanel.ControlPanel):
         self.mostRecentAxonMaskName = None
         self.mostRecentWatershedMaskName = None
 
+        # Toggle off the X and Y canvas
+        oopts = ortho.sceneOpts
+        oopts.showXCanvas = False
+        oopts.showYCanvas = False
+
 
 
     def onLoadPngButton(self, event):
         # Ask the user which file he wants to convert
-        with wx.FileDialog(self, "select PNG file", wildcard="PNG files (*.png)|*.png",
+        with wx.FileDialog(self, "select Image file",
                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -95,13 +100,15 @@ class ADScontrol(ctrlpanel.ControlPanel):
             inFile = fileDialog.GetPath()
 
 
-        if inFile[-4:] != '.png':
-            print('This is not a png file')
+        if (inFile[-4:] != '.png') and (inFile[-4:] != '.tif'):
+            print('Invalid file extension')
             return
 
         # Store the directory path and image name for later use
         self.imageDirPath = os.path.dirname(inFile)
         self.pngImageName = inFile[self.imageDirPath.__len__()+1:]
+
+        self.mostRecentWatershedMaskName = None
 
         self.loadPngImageFromPath(inFile)
 
@@ -118,7 +125,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         if selectedModel == 'other':
             # Ask the user where the model is located
-            with wx.DirDialog(self, "select the directory in which the model is locatted", defaultPath="",
+            with wx.DirDialog(self, "select the directory in which the model is located", defaultPath="",
                               style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST) as fileDialog:
 
                 if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -134,7 +141,22 @@ class ADScontrol(ctrlpanel.ControlPanel):
             print('Please select a model')
             return
 
+        # Check if the pixel size txt file exist in the imageDirPath
+        pixelSizeExists = os.path.isfile(self.imageDirPath + '/pixel_size_in_micrometer.txt')
 
+        # if it doesn't exist, ask the user to input the pixel size
+        if pixelSizeExists is False:
+            with wx.TextEntryDialog(self, "Enter the pixel size in micrometer", value="0.07") as textEntry:
+                if textEntry.ShowModal() == wx.ID_CANCEL:
+                    return
+
+                pixelSizeStr = textEntry.GetValue()
+            textFile = open(self.imageDirPath + '/pixel_size_in_micrometer.txt', 'w')
+            textFile.write(pixelSizeStr)
+            textFile.close()
+
+
+        # Load model configs and apply prediction
         model_configfile = os.path.join(modelPath, 'config_network.json')
         with open(model_configfile, 'r') as fd:
             config_network = json.loads(fd.read())
@@ -389,7 +411,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         png = wx.Image(str(logoFile),
                        wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        png.SetSize((png.GetWidth()//10, png.GetHeight()//10))
+        png.SetSize((png.GetWidth()//15, png.GetHeight()//15))
         logoImage = wx.StaticBitmap(self, -1, png, wx.DefaultPosition,
                                     (png.GetWidth(), png.GetHeight()))
         return logoImage
