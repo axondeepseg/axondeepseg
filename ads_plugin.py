@@ -28,62 +28,60 @@ class ADScontrol(ctrlpanel.ControlPanel):
         ctrlpanel.ControlPanel.__init__(self, ortho, *args, **kwargs)
 
         # Adding sizers to the control panel
-        sizerH = wx.BoxSizer(wx.HORIZONTAL)
-        sizerV1 = wx.BoxSizer(wx.VERTICAL)
-        sizerV2 = wx.BoxSizer(wx.VERTICAL)
-        sizerV3 = wx.BoxSizer(wx.VERTICAL)
+        sizerH = wx.BoxSizer(wx.VERTICAL)
+        # sizerV1 = wx.BoxSizer(wx.VERTICAL)
+        # sizerV2 = wx.BoxSizer(wx.VERTICAL)
+        # sizerV3 = wx.BoxSizer(wx.VERTICAL)
         # sizerV4 = wx.BoxSizer(wx.VERTICAL)
 
-        sizerH.Add(sizerV1, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
-        sizerH.Add(sizerV2, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
-        sizerH.Add(sizerV3, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        # sizerH.Add(sizerV1, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        # sizerH.Add(sizerV2, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
+        # sizerH.Add(sizerV3, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
         # sizerH.Add(sizerV4, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM, border=10)
 
         # Adding widgets to the control panel
 
         ADS_logo = self.getLogo()
-        sizerV1.Add(ADS_logo, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(ADS_logo, flag=wx.SHAPED, proportion=1)
 
 
         citationBox = wx.TextCtrl(self, value=self.getCitation(), size=(100, 50), style=wx.TE_MULTILINE)
-        sizerV1.Add(citationBox, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(citationBox, flag=wx.SHAPED, proportion=1)
 
 
         loadPng_button = wx.Button(self, label="Load PNG or TIF file")
         loadPng_button.Bind(wx.EVT_BUTTON, self.onLoadPngButton)
         loadPng_button.SetToolTip(wx.ToolTip("Loads a .png or .tif file into FSLeyes"))
-        sizerV2.Add(loadPng_button, flag=wx.SHAPED, proportion=1)
-
-
-
-        self.modelChoices = ['SEM', 'TEM', 'other']
-        self.modelCombobox = wx.ComboBox(self, choices=self.modelChoices, size=(100, 20), value='Select the modality')
-        self.modelCombobox.SetToolTip(wx.ToolTip("Select the modality used to acquire the image"))
-        sizerV2.Add(self.modelCombobox, flag=wx.SHAPED, proportion=1)
-
-        applyModel_button = wx.Button(self, label='Apply ADS prediction model')
-        applyModel_button.Bind(wx.EVT_BUTTON, self.onApplyModel_button)
-        applyModel_button.SetToolTip(wx.ToolTip("Applies the prediction model and displays the masks"))
-        sizerV2.Add(applyModel_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(loadPng_button, flag=wx.SHAPED, proportion=1)
 
         saveSegmentation_button = wx.Button(self, label="Save segmentation")
         saveSegmentation_button.Bind(wx.EVT_BUTTON, self.onSaveSegmentation_button)
         saveSegmentation_button.SetToolTip(wx.ToolTip("Saves the axon and myelin masks in the selected folder"))
-        sizerV3.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(saveSegmentation_button, flag=wx.SHAPED, proportion=1)
+
+        self.modelChoices = ['SEM', 'TEM', 'other']
+        self.modelCombobox = wx.ComboBox(self, choices=self.modelChoices, size=(100, 20), value='Select the modality')
+        self.modelCombobox.SetToolTip(wx.ToolTip("Select the modality used to acquire the image"))
+        sizerH.Add(self.modelCombobox, flag=wx.SHAPED, proportion=1)
+
+        applyModel_button = wx.Button(self, label='Apply ADS prediction model')
+        applyModel_button.Bind(wx.EVT_BUTTON, self.onApplyModel_button)
+        applyModel_button.SetToolTip(wx.ToolTip("Applies the prediction model and displays the masks"))
+        sizerH.Add(applyModel_button, flag=wx.SHAPED, proportion=1)
 
         runWatershed_button = wx.Button(self, label='Run Watershed')
         runWatershed_button.Bind(wx.EVT_BUTTON, self.onRunWatershed_button)
         runWatershed_button.SetToolTip(wx.ToolTip("Uses a watershed algorithm to find the different axon+myelin"
                                                   "objects. This is used to see if where are connections"
                                                   " between two axon+myelin objects."))
-        sizerV3.Add(runWatershed_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(runWatershed_button, flag=wx.SHAPED, proportion=1)
 
         fillAxons_button = wx.Button(self, label='Fill axons')
         fillAxons_button.Bind(wx.EVT_BUTTON, self.onFillAxons_button)
         fillAxons_button.SetToolTip(wx.ToolTip("Automatically fills the axons inside myelin objects."
                                                " THE MYELIN OBJECTS NEED TO BE CLOSED AND SEPARATED FROM EACH "
                                                "OTHER (THEY MUST NOT TOUCH) FOR THIS TOOL TO WORK CORRECTLY."))
-        sizerV3.Add(fillAxons_button, flag=wx.SHAPED, proportion=1)
+        sizerH.Add(fillAxons_button, flag=wx.SHAPED, proportion=1)
 
         self.SetSizer(sizerH)
 
@@ -434,4 +432,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
     def supportedViews():
         from fsleyes.views.orthopanel import OrthoPanel
         return [OrthoPanel]
-    
+
+    @staticmethod
+    def defaultLayout():
+        return {
+            'location': wx.LEFT,
+        }
