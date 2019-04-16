@@ -220,6 +220,13 @@ def download_data(url_data):
         return 1
     return 0
 
+def convert_path(object_path):
+    if isinstance(object_path, Path):
+        return object_path
+    elif isinstance(object_path, str):
+        return Path(object_path)
+    else:
+        raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects.')
 
 # Call init_ads() automatically when module is imported
 init_ads()

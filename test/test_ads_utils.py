@@ -5,7 +5,7 @@ import shutil
 
 import pytest
 
-from AxonDeepSeg.ads_utils import download_data
+from AxonDeepSeg.ads_utils import *
 
 
 class TestCore(object):
@@ -30,3 +30,24 @@ class TestCore(object):
         exit_code = download_data(str(self.bad_osf_link))
         assert exit_code == 1
 
+    # --------------convert_path tests-------------- #
+    @pytest.mark.unit
+    def test_convert_path_Path_object_input_returns_Path_object(self):
+        object_path = Path('folder_name/')
+        object_path = convert_path(object_path)
+
+        assert isinstance(object_path, Path)
+
+    @pytest.mark.unit
+    def test_convert_path_str_object_input_returns_Path_object(self):
+        object_path = 'folder_name/'
+        object_path = convert_path(object_path)
+
+        assert isinstance(object_path, Path)
+
+    @pytest.mark.unit
+    def test_convert_path_unexpected_input_raises_TypeError(self):
+        object_path = 2019
+
+        with pytest.raises(TypeError):
+            object_path = convert_path(object_path)
