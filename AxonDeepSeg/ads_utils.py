@@ -221,7 +221,13 @@ def download_data(url_data):
     return 0
 
 def convert_path(object_path):
+    """ Convert path
+    Convert path or list of paths to Path() objects.
+    If None type, returns None.
 
+    :param object_path: string, Path() object, None, or a list of these.
+    :return: Path() object, None, or a list of these.
+    """
     if isinstance(object_path, list):
         path_list = []
         for path_iter in object_path:
