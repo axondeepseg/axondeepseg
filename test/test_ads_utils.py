@@ -58,3 +58,11 @@ class TestCore(object):
 
         with pytest.raises(TypeError):
             object_path = convert_path(object_path)
+
+    @pytest.mark.unit
+    def test_convert_list_of_str_returns_expect_list(self):
+        object_path = ['folder_name/', Path('folder_name/'), None]
+        object_path = convert_path(object_path)
+
+        expected_output = [Path('folder_name/'), Path('folder_name/'), None]
+        assert expected_output == object_path

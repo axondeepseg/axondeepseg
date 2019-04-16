@@ -144,10 +144,11 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
     :param verbosity_level: Int. The higher, the more displayed information.
     :return:
     """
-
+    print(path_images_folder)
     # If string, convert to Path objects
     path_model_folder = convert_path(path_model_folder)
     path_images_folder = convert_path(path_images_folder)
+    print(path_images_folder)
 
     model_statistics_dict = {"date":time.strftime("%Y-%m-%d"),
                              "data":{}}
@@ -371,8 +372,7 @@ class metrics():
             
             # If string, convert to Path objects
             path = convert_path(path)
-            print(path)
-            print(self.statistics_filename)
+
             try:
                 with open(path / self.statistics_filename) as f:
                     stats_dict = json.loads(f.read())['data']

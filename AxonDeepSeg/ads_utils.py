@@ -233,6 +233,7 @@ def convert_path(object_path):
                 path_list.append(None)
             else:
                 raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
+        return path_list
     else:
         if isinstance(object_path, Path):
             return object_path

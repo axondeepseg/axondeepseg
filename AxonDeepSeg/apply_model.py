@@ -8,6 +8,7 @@ from skimage.transform import rescale, resize
 
 from AxonDeepSeg.network_construction import *
 import AxonDeepSeg.ads_utils
+from AxonDeepSeg.ads_utils import convert_path
 
 from .visualization.get_masks import get_masks
 from .patch_management_tools import im2patches_overlap, patches2im_overlap
@@ -301,7 +302,7 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
     :return:
     """
     # If string, convert to Path objects
-    path_acquisitions_folders = convert_path(path_acquisitions_folders)
+    path_acquisitions = convert_path(path_acquisitions)
 
     path_acquisitions, acquisitions_resolutions, resampled_resolutions = list(map(
         ensure_list_type, [path_acquisitions, acquisitions_resolutions, resampled_resolutions]))

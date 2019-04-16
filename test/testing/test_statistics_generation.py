@@ -55,7 +55,7 @@ class TestCore(object):
             (modelPath / statsFilename).unlink()
 
     # --------------metrics_single_wrapper tests-------------- #
-    @pytest.mark.debug
+    @pytest.mark.integration
     def test_metrics_single_wrapper_runs_successfully_and_outfile_exists(self):
         # reset the tensorflow graph for new training
         tf.reset_default_graph()
