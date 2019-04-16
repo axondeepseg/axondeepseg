@@ -9,9 +9,12 @@ import imageio
 
 # AxonDeepSeg modules import
 import AxonDeepSeg.ads_utils
-
+from AxonDeepSeg.ads_utils import convert_path
 
 def get_masks(path_prediction):
+    # If string, convert to Path objects
+    path_prediction = convert_path(path_prediction)
+
     prediction = imageio.imread(path_prediction)
 
     # compute the axon mask
@@ -45,6 +48,7 @@ def rgb_rendering_of_mask(pred_img, writing_path=None):
     :param writing_path: string: path where to save the mask if save_mask=True
     :return: rgb_mask: imageio.core.util.Image
     """
+
     pred_axon = pred_img == 255
     pred_myelin = pred_img == 127
 
@@ -54,6 +58,8 @@ def rgb_rendering_of_mask(pred_img, writing_path=None):
     rgb_mask[pred_myelin] = [255, 0, 0]
 
     if writing_path is not None:
+        # If string, convert to Path objects
+        writing_path = convert_path(writing_path)
         imageio.imwrite(writing_path, rgb_mask)
 
     return rgb_mask

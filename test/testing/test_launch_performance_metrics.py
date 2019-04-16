@@ -26,4 +26,4 @@ class TestCore(object):
     @pytest.mark.integration
     def test_launch_performance_metrics_runs_successfully(self):
 
-        assert launch_performance_metrics(self.prediction, self.groundtruth)
+        assert launch_performance_metrics(str(self.prediction), str(self.groundtruth))

@@ -20,6 +20,11 @@ def launch_morphometrics_computation(path_img, path_prediction):
     :param path_prediction: path of the segmented image (output of AxonDeepSeg)
     :return: none.
     """
+    
+    # If string, convert to Path objects
+    path_img = convert_path(path_img)
+    path_prediction = convert_path(path_prediction)
+
     try:
         # Read image
         img = imageio.imread(path_img)

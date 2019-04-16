@@ -16,6 +16,7 @@ from matplotlib.figure import Figure
 
 # AxonDeepSeg imports
 from AxonDeepSeg.testing.segmentation_scoring import *
+from AxonDeepSeg.ads_utils import convert_path
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -23,6 +24,10 @@ def get_pixelsize(path_pixelsize_file):
     :param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
     :return: the pixel size value.
     """
+    
+    # If string, convert to Path objects
+    path_pixelsize_file = convert_path(path_pixelsize_file)
+
     try:
         with open(path_pixelsize_file, "r") as text_file:
             pixelsize = float(text_file.read())
@@ -49,6 +54,10 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
     :param im_myelin: Array: myelin binary mask, output of axondeepseg
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
+    
+    # If string, convert to Path objects
+    path_folder = convert_path(path_folder)
+
     pixelsize = get_pixelsize(path_folder / 'pixel_size_in_micrometer.txt')
 
     stats_array = np.empty(0)
@@ -221,6 +230,10 @@ def save_axon_morphometrics(path_folder, stats_array):
     :param stats_array: list of dictionaries containing axon morphometrics
     :return:
     """
+    
+    # If string, convert to Path objects
+    path_folder = convert_path(path_folder)
+    
     try:
         np.save(str(path_folder / 'axonlist.npy'), stats_array)
     except IOError as e:
@@ -235,6 +248,10 @@ def load_axon_morphometrics(path_folder):
 
     :return: stats_array: list of dictionaries containing axon morphometrics
     """
+    
+    # If string, convert to Path objects
+    path_folder = convert_path(path_folder)
+
     try:
         stats_array = np.load(str(path_folder / 'axonlist.npy'))
     except IOError as e:
@@ -254,6 +271,10 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :return: matplotlib.figure.Figure
     """
+    
+    # If string, convert to Path objects
+    path_prediction = convert_path(path_prediction)
+
     path_folder = path_prediction.parent
 
     stats_array = get_axon_morphometrics(pred_axon, path_folder)
@@ -292,6 +313,10 @@ def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
     :param axon_diameter_figure: figure create with draw_axon_diameter
     :return: None
     """
+    
+    # If string, convert to Path objects
+    path_folder = convert_path(path_folder)
+    
     file_path = path_folder / "AxonDeepSeg_map-axondiameter.png"
     axon_diameter_figure.savefig(file_path)
 
@@ -303,6 +328,9 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
     :param path_folder: absolute path of folder containing pixel size file
     :return: aggregate_metrics: dictionary containing values of aggregate metrics
     """
+
+    # If string, convert to Path objects
+    path_folder = convert_path(path_folder)
 
     # Compute AVF (axon volume fraction) = area occupied by axons in sample
     avf = np.count_nonzero(pred_axon) / float((pred_axon.size))
@@ -343,6 +371,10 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
     :param aggregate_metrics: dictionary containing values of aggregate metrics
     :return: nothing
     """
+    
+    # If string, convert to Path objects
+    path_folder = convert_path(path_folder)
+    
     try:
         with open(path_folder / 'aggregate_morphometrics.txt', 'w') as text_file:
             text_file.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')

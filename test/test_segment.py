@@ -69,7 +69,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_generate_config_dict_outputs_dict(self):
 
-        config =  generate_config_dict(self.modelPath / 'config_network.json')
+        config =  generate_config_dict(str(self.modelPath / 'config_network.json'))
 
         assert type(config) is dict
 
@@ -77,7 +77,7 @@ class TestCore(object):
     def test_generate_config_dict_throws_exception_for_nonexisting_file(self):
 
         with pytest.raises(ValueError):
-            config = generate_config_dict(self.modelPath / 'n0n_3xist1ng_f1l3.json')
+            config = generate_config_dict(str(self.modelPath / 'n0n_3xist1ng_f1l3.json'))
 
     # --------------generate_resolution tests-------------- #
     @pytest.mark.unit
@@ -91,7 +91,7 @@ class TestCore(object):
     @pytest.mark.integration
     def test_segment_folders_creates_expected_files(self):
 
-        path_model, config = generate_default_parameters('SEM', self.modelPath)
+        path_model, config = generate_default_parameters('SEM', str(self.modelPath))
 
         overlap_value = 25
         resolution_model = generate_resolution('SEM', 512)
@@ -106,8 +106,8 @@ class TestCore(object):
             assert not (self.imageFolderPath / fileName).exists()
 
         segment_folders(
-            path_testing_images_folder=self.imageFolderPath,
-            path_model=path_model,
+            path_testing_images_folder=str(self.imageFolderPath),
+            path_model=str(path_model),
             overlap_value=overlap_value,
             config=config,
             resolution_model=resolution_model,
@@ -120,11 +120,11 @@ class TestCore(object):
 
     # --------------segment_image tests-------------- #
     @pytest.mark.integration
-    def test_segment_image_creates_runs_successfully_(self):
+    def test_segment_image_creates_runs_successfully(self):
         # Since segment_folders should have already run, the output files
         # should already exist, which this test tests for.
 
-        path_model, config = generate_default_parameters('SEM', self.modelPath)
+        path_model, config = generate_default_parameters('SEM', str(self.modelPath))
 
         overlap_value = 25
         resolution_model = generate_resolution('SEM', 512)
@@ -139,8 +139,8 @@ class TestCore(object):
             assert (self.imageFolderPath / fileName).exists()
 
         segment_image(
-            path_testing_image=self.imagePath,
-            path_model=path_model,
+            path_testing_image=str(self.imagePath),
+            path_model=str(path_model),
             overlap_value=overlap_value,
             config=config,
             resolution_model=resolution_model,

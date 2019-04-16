@@ -8,7 +8,7 @@ import numpy as np
 import imageio
 
 import AxonDeepSeg.ads_utils
-
+from AxonDeepSeg.ads_utils import convert_path
 
 def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
     """
@@ -16,6 +16,10 @@ def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
     :param path_myelin_corrected: path of corrected myelin by the user i.e. myelin mask (uint8 type with myelin=255, background=0)
     :return: merged and corrected axon+myelin image
     """
+
+    # If string, convert to Path objects
+    path_prediction = convert_path(path_prediction)
+    path_myelin_corrected = convert_path(path_myelin_corrected)
 
     # read output from axondeepseg and myelin mask corrected by user
     prediction = imageio.imread(path_prediction)

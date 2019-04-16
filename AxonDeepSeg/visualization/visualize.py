@@ -17,6 +17,7 @@ from matplotlib.figure import Figure
 
 # AxonDeepSeg imports
 import AxonDeepSeg.ads_utils
+from AxonDeepSeg.ads_utils import convert_path
 from ..testing.segmentation_scoring import score_analysis, dice
 
 
@@ -33,6 +34,9 @@ def visualize_training(path_model, iteration_start_for_viz=0):
     accuracy and loss evolution from this initial model and then stacks the
     evolution of the model.
     """
+
+    # If string, convert to Path objects
+    path_model = convert_path(path_model)
 
     def _create_figure_helper(data_evolution):
         fig = Figure()
@@ -80,6 +84,9 @@ def visualize_segmentation(path):
     if there is MyelinSeg.jpg in the folder, myelin and image, myelin and axon
     segmentated, myelin and groundtruth are represented
     """
+    # If string, convert to Path objects
+    path = convert_path(path)
+    
     figs = []
 
     def _create_fig_helper(overlayed_img, fig_title):
@@ -202,12 +209,18 @@ def retrieve_training_data(path_model, path_model_init=None):
         epochs of the performance of the model. Stacks the initial model if needed
     """
 
+    # If string, convert to Path objects
+    path_model = convert_path(path_model)
+
     file = open(
         path_model / "evolution.pkl", "rb"
     )  # training variables : loss, accuracy, epoch
     evolution = pickle.load(file)
 
     if path_model_init:
+        # If string, convert to Path objects
+        path_model_init = convert_path(path_model_init)
+
         file_init = open(path_model_init / "evolution.pkl", "rb")
         evolution_init = pickle.load(file_init)
         last_epoch = evolution_init["steps"][-1]
@@ -229,6 +242,9 @@ def retrieve_hyperparameters(path_model):
     :param path_model: path of the folder with the model parameters .ckpt
     :return: the dict containing the hyperparameters
     """
+
+    # If string, convert to Path objects
+    path_model = convert_path(path_model)
 
     file = open(
         path_model / "hyperparameters.pkl", "r"

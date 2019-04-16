@@ -8,7 +8,7 @@ from tqdm import tqdm
 import AxonDeepSeg.ads_utils
 from AxonDeepSeg.data_management.input_data import labellize_mask_2d
 from .patch_extraction import extract_patch
-
+from AxonDeepSeg.ads_utils import convert_path
 
 def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.2, 0.8],
                        patch_size=512, resampling_resolution=0.1):
@@ -24,6 +24,10 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
     has the same resolution in a dataset.
     :return: Nothing.
     """
+
+    # If string, convert to Path objects
+    path_raw_data = convert_path(path_raw_data)
+    path_patched_data = convert_path(path_patched_data)
 
     # First we define where we are going to store the patched data and we create the directory if it does not exist.
     if not path_patched_data.exists():
@@ -77,6 +81,10 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
     :param random_seed: Int, the random seed to use to be able to consistenly recreate generated datasets.
     :return: None.
     """
+
+    # If string, convert to Path objects
+    path_patched_data = convert_path(path_patched_data)
+    path_dataset = convert_path(path_dataset)
 
     # Using the randomseed fed so that given a fixed input, the generation of the datasets is always the same.
     np.random.seed(random_seed)

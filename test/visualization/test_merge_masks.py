@@ -39,7 +39,7 @@ class TestCore(object):
         if expectedFilePath.is_file():
             expectedFilePath.unlink()
 
-        both = merge_masks(path_axon, path_myelin)
+        both = merge_masks(str(path_axon), str(path_myelin))
 
         assert expectedFilePath.is_file()
         assert np.array_equal(both, imageio.imread(expectedFilePath))

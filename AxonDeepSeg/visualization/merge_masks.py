@@ -4,8 +4,11 @@ import numpy as np
 import imageio
 
 import AxonDeepSeg.ads_utils
+from AxonDeepSeg.ads_utils import convert_path
 
 def merge_masks(path_axon, path_myelin):
+    # If string, convert to Path objects
+    path_axon = convert_path(path_axon)
 
     axon = imageio.imread(path_axon)
     myelin = imageio.imread(path_myelin)

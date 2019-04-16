@@ -38,7 +38,7 @@ class TestCore(object):
     def test_get_masks_writes_expected_files(self):
         pred_img = self.path_folder/ 'AxonDeepSeg_seg-axonmyelin.png'
 
-        axon_prediction, myelin_prediction = get_masks(pred_img)
+        axon_prediction, myelin_prediction = get_masks(str(pred_img))
 
         axonFile = self.path_folder / 'AxonDeepSeg_seg-axon.png'
 
@@ -69,7 +69,7 @@ class TestCore(object):
         if rgbFile.is_file():
             rgbFile.unlink()
 
-        rgb_mask = rgb_rendering_of_mask(pred_img, rgbFile)
+        rgb_mask = rgb_rendering_of_mask(pred_img, str(rgbFile))
 
         assert rgbFile.is_file()
         assert np.array_equal(rgb_mask, imageio.imread(rgbFile))
