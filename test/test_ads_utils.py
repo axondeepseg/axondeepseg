@@ -46,6 +46,13 @@ class TestCore(object):
         assert isinstance(object_path, Path)
 
     @pytest.mark.unit
+    def test_convert_path_None_returns_None(self):
+        object_path = None
+        object_path = convert_path(object_path)
+
+        assert object_path == None
+
+    @pytest.mark.unit
     def test_convert_path_unexpected_input_raises_TypeError(self):
         object_path = 2019
 

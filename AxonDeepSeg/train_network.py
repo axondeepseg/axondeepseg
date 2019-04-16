@@ -11,6 +11,7 @@ import tensorflow as tf
 from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.train_network_tools import *
 import AxonDeepSeg.ads_utils
+from AxonDeepSeg.ads_utils import convert_path
 
 from .data_management.input_data import input_data
 from .config_tools import generate_config
@@ -32,9 +33,17 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     :return: Nothing.
     """
 
+    # If string, convert to Path objects
+    path_trainingset = convert_path(path_trainingset)
+    path_model = convert_path(path_model)
+
     ###################################################################################################################
     ############################################## VARIABLES INITIALIZATION ###########################################
     ###################################################################################################################
+
+    # If string, convert to Path objects
+    path_trainingset = convert_path(path_trainingset)
+    path_model = convert_path(path_model)
 
     # Results and Models
     if not path_model.exists():
@@ -328,6 +337,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
         # Loading a previous session if requested.
         if path_model_init:
+            # If string, convert to Path objects
+            path_model_init = convert_path(path_model_init)
+
             folder_restored_model = path_model_init
             saver.restore(session, str(folder_restored_model / "model.ckpt"))
 

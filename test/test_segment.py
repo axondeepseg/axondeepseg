@@ -120,11 +120,11 @@ class TestCore(object):
 
     # --------------segment_image tests-------------- #
     @pytest.mark.integration
-    def test_segment_image_creates_runs_successfully_(self):
+    def test_segment_image_creates_runs_successfully(self):
         # Since segment_folders should have already run, the output files
         # should already exist, which this test tests for.
 
-        path_model, config = generate_default_parameters('SEM', str(elf.modelPath))
+        path_model, config = generate_default_parameters('SEM', str(self.modelPath))
 
         overlap_value = 25
         resolution_model = generate_resolution('SEM', 512)
@@ -143,7 +143,7 @@ class TestCore(object):
             path_model=str(path_model),
             overlap_value=overlap_value,
             config=config,
-            resolution_model=str(resolution_model),
+            resolution_model=resolution_model,
             acquired_resolution=0.37,
             verbosity_level=2
             )

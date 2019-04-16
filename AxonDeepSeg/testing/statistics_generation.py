@@ -14,7 +14,7 @@ import time
 from AxonDeepSeg.config_tools import rec_update
 import pandas as pd
 import AxonDeepSeg.ads_utils
-
+from AxonDeepSeg.ads_utils import convert_path
 
 def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_resolution, overlap_value=25,
                             statistics_filename='model_statistics_validation.json',
@@ -32,6 +32,10 @@ def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_res
     :param verbosity_level: Int. The higher, the more information displayed about the metrics computing process.
     :return: Nothing.
     """
+
+    # If string, convert to Path objects
+    path_model_folder = convert_path(path_model_folder)
+    path_images_folder = convert_path(path_images_folder)
 
     # First we load every information independent of the model
     # We generate the list of testing folders, each one containing one image
@@ -65,6 +69,10 @@ def metrics_single_wrapper(path_model_folder, path_images_folder, resampled_reso
     :param verbosity_level: Int. The higher, the more displayed information.
     :return: Nothing.
     """
+
+    # If string, convert to Path objects
+    path_model_folder = convert_path(path_model_folder)
+    path_images_folder = convert_path(path_images_folder)
 
     # First we load every information independent of the model
     # We generate the list of testing folders, each one containing one image
@@ -136,6 +144,10 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
     :param verbosity_level: Int. The higher, the more displayed information.
     :return:
     """
+
+    # If string, convert to Path objects
+    path_model_folder = convert_path(path_model_folder)
+    path_images_folder = convert_path(path_images_folder)
 
     model_statistics_dict = {"date":time.strftime("%Y-%m-%d"),
                              "data":{}}
@@ -238,6 +250,9 @@ def save_metrics(model_statistics_dict, path_model_folder, statistics_filename):
     :param statistics_filename: Name of the file where we will store the computed statistics.
     :return:
     """
+
+    # If string, convert to Path objects
+    path_model_folder = convert_path(path_model_folder)
 
     # If the file already exists we rename the old one with a .old suffix.
     path_statistics_file = path_model_folder / statistics_filename
@@ -353,6 +368,11 @@ class metrics():
 
     def load_models(self):
         for path in self.path_models:
+            
+            # If string, convert to Path objects
+            path = convert_path(path)
+            print(path)
+            print(self.statistics_filename)
             try:
                 with open(path / self.statistics_filename) as f:
                     stats_dict = json.loads(f.read())['data']

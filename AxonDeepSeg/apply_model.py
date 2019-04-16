@@ -32,6 +32,10 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     :return: List of segmentations, and list of probability maps if requested.
     """
 
+    # If string, convert to Path objects
+    path_acquisitions = convert_path(path_acquisitions)
+    path_model_folder = convert_path(path_model_folder)
+
     # We set the logging from python and Tensorflow to a high level, to avoid messages
     # in the console when performing segmentation.
     from logging import ERROR
@@ -197,6 +201,10 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     :return: List of predictions, and optionally of probability maps.
     """
 
+    # If string, convert to Path objects
+    path_acquisitions_folders = convert_path(path_acquisitions_folders)
+    path_model_folder = convert_path(path_model_folder)
+
     # Processing input so they are lists in every situation
     path_acquisitions_folders, acquisitions_filenames, resampled_resolutions, segmentations_filenames = \
         list(map(ensure_list_type, [path_acquisitions_folders, acquisitions_filenames, resampled_resolutions,
@@ -292,6 +300,8 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
     :param verbose_mode: Int, how much information to display.
     :return:
     """
+    # If string, convert to Path objects
+    path_acquisitions_folders = convert_path(path_acquisitions_folders)
 
     path_acquisitions, acquisitions_resolutions, resampled_resolutions = list(map(
         ensure_list_type, [path_acquisitions, acquisitions_resolutions, resampled_resolutions]))

@@ -55,7 +55,7 @@ class TestCore(object):
             (modelPath / statsFilename).unlink()
 
     # --------------metrics_single_wrapper tests-------------- #
-    @pytest.mark.integration
+    @pytest.mark.debug
     def test_metrics_single_wrapper_runs_successfully_and_outfile_exists(self):
         # reset the tensorflow graph for new training
         tf.reset_default_graph()
@@ -64,11 +64,11 @@ class TestCore(object):
         path_images_folder = self.imagesPath
         resampled_resolution = 0.1
         metrics_single_wrapper(
-            str(path_model_folder),
-            str(path_images_folder),
+            path_model_folder,
+            path_images_folder,
             resampled_resolution,
             overlap_value=25,
-            statistics_filename=str(self.statsFilename),
+            statistics_filename=self.statsFilename,
             create_statistics_file=True,
             verbosity_level=2
             )
@@ -90,7 +90,7 @@ class TestCore(object):
             str(path_images_folder),
             resampled_resolution,
             overlap_value=25,
-            statistics_filename=str(self.statsFilename),
+            statistics_filename=self.statsFilename,
             create_statistics_file=True,
             verbosity_level=2)
 

@@ -21,6 +21,7 @@ import imageio
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils
 from AxonDeepSeg.apply_model import axon_segmentation
+from AxonDeepSeg.ads_utils import convert_path
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model_v1"
@@ -51,6 +52,10 @@ def segment_image(path_testing_image, path_model,
     process.
     :return: Nothing.
     '''
+
+    # If string, convert to Path objects
+    path_testing_image = convert_path(path_testing_image)
+    path_model = convert_path(path_model)
 
     if path_testing_image.exists():
 
@@ -117,6 +122,10 @@ def segment_folders(path_testing_images_folder, path_model,
     process.
     :return: Nothing.
     '''
+
+    # If string, convert to Path objects
+    path_testing_images_folder = convert_path(path_testing_images_folder)
+    path_model = convert_path(path_model)
 
     # Update list of images to segment by selecting only image files (not already segmented or not masks)
     img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
@@ -188,6 +197,10 @@ def generate_default_parameters(type_acquisition, new_path):
     :param new_path: Path to the model to use.
     :return: the config dictionary.
     '''
+    
+    # If string, convert to Path objects
+    new_path = convert_path(new_path)
+
     # Building the path of the requested model if it exists and was supplied, else we load the default model.
     if type_acquisition == 'SEM':
         if (new_path is not None) and new_path.exists():
@@ -213,6 +226,9 @@ def generate_config_dict(path_to_config_file):
     :return: dict containing the configuration of the network, or None if no configuration file was found at the
     mentioned path.
     '''
+
+    # If string, convert to Path objects
+    path_to_config_file = convert_path(path_to_config_file)
 
     try:
         with open(path_to_config_file, 'r') as fd:

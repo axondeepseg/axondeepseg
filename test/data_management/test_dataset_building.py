@@ -101,7 +101,7 @@ class TestCore(object):
 
         raw_img_to_patches(str(self.rawPath), str(self.mixedPatchPath / 'TEM'))
 
-        patched_to_dataset(str(self.mixedPatchPath), str(self.mixedDatasetPath, 'mixed'))
+        patched_to_dataset(str(self.mixedPatchPath), str(self.mixedDatasetPath), 'mixed')
 
         assert self.mixedDatasetPath.is_dir()
 
