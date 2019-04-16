@@ -1,32 +1,34 @@
 # coding: utf-8
 
-import pytest
 import json
-import os
+from pathlib import Path
 import tensorflow as tf
 import pandas as pd
+
+import pytest
+
 from AxonDeepSeg.testing.statistics_generation import *
 
 
 class TestCore(object):
     def setup(self):
-
-        self.fullPath = os.path.dirname(os.path.abspath(__file__))
+        # Get the directory where this current file is saved
+        self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
-        self.testPath = os.path.split(self.fullPath)[0]
-        self.projectPath = os.path.split(self.testPath)[0]
+        self.testPath = self.fullPath.parent
+        self.projectPath = self.testPath.parent
 
-        self.modelPath = os.path.join(
-            self.projectPath,
-            'AxonDeepSeg',
-            'models',
+        self.modelPath = (
+            self.projectPath /
+            'AxonDeepSeg' /
+            'models' /
             'default_SEM_model_v1'
             )
 
-        self.imagesPath = os.path.join(
-            self.testPath,
-            '__test_files__',
-            '__test_training_files__',
+        self.imagesPath = (
+            self.testPath /
+            '__test_files__' /
+            '__test_training_files__' /
             'Testing'
             )
 
@@ -34,22 +36,23 @@ class TestCore(object):
 
     @classmethod
     def teardown_class(cls):
-        fullPath = os.path.dirname(os.path.abspath(__file__))
+         # Get the directory where this current file is saved
+        fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
-        testPath = os.path.split(fullPath)[0]
-        projectPath = os.path.split(testPath)[0]
+        testPath = fullPath.parent
+        projectPath = testPath.parent
 
-        modelPath = os.path.join(
-            projectPath,
-            'AxonDeepSeg',
-            'models',
+        modelPath = (
+            projectPath /
+            'AxonDeepSeg' /
+            'models' /
             'default_SEM_model_v1'
             )
 
         statsFilename = 'model_statistics_validation.json'
 
-        if os.path.exists(os.path.join(modelPath, statsFilename)):
-            os.remove(os.path.join(modelPath, statsFilename))
+        if (modelPath / statsFilename).exists():
+            (modelPath / statsFilename).unlink()
 
     # --------------metrics_single_wrapper tests-------------- #
     @pytest.mark.integration
@@ -70,9 +73,9 @@ class TestCore(object):
             verbosity_level=2
             )
 
-        assert os.path.exists(os.path.join(self.modelPath, self.statsFilename))
-        os.remove(os.path.join(self.modelPath, self.statsFilename))
-
+        assert (self.modelPath / self.statsFilename).exists()
+        (self.modelPath / self.statsFilename).unlink()
+    
     # --------------metrics_classic_wrapper tests-------------- #
     @pytest.mark.integration
     def test_metrics_classic_wrapper_runs_successfully_and_outfile_exists(self):
@@ -83,15 +86,15 @@ class TestCore(object):
         path_images_folder = self.imagesPath
         resampled_resolution = 0.1
         metrics_classic_wrapper(
-            path_model_folder,
-            path_images_folder,
+            str(path_model_folder),
+            str(path_images_folder),
             resampled_resolution,
             overlap_value=25,
             statistics_filename=self.statsFilename,
             create_statistics_file=True,
             verbosity_level=2)
 
-        assert os.path.exists(os.path.join(self.modelPath, self.statsFilename))
+        assert (self.modelPath /self.statsFilename).exists()
 
     # --------------metrics class tests-------------- #
     # Though conceptually these could be classified as unit tests, they

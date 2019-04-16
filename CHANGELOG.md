@@ -10,6 +10,7 @@ All notable changes to the AxonDeepSeg project will be documented in this file.
 - Handle exception for images smaller than minimum patch size after resizing
 - Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
 - Remove `matplotlib.pyplot` from source code and refactor it to full OO plotting
+- Standardize path management to `pathlib` library
 
 ## [2.1] - 2018-09-25
 

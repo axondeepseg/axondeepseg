@@ -3,7 +3,7 @@ Set the config variable.
 '''
 
 import configparser as cp
-import os
+from pathlib import Path
 import json
 import collections
 import numpy as np
@@ -13,7 +13,8 @@ import AxonDeepSeg.ads_utils
 
 
 config = cp.RawConfigParser()
-config.read(os.path.dirname(__file__) + '/data_management/config.cfg')
+file_path = Path(__file__).resolve().parent
+config.read(file_path / 'data_management' / 'config.cfg')
 
 
 #### Network config file management. ####

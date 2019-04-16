@@ -1,98 +1,75 @@
 # coding: utf-8
 
-import pytest
-import os
+from pathlib import Path
 import imageio
 import numpy as np
+
+import pytest
 
 from AxonDeepSeg.visualization.get_masks import *
 
 
 class TestCore(object):
     def setup(self):
-        self.fullPath = os.path.dirname(os.path.abspath(__file__))
-
+        # Get the directory where this current file is saved
+        self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
-        self.testPath = os.path.split(self.fullPath)[0]
+        self.testPath = self.fullPath.parent
 
-        self.path_folder = os.path.join(
-            self.testPath,
-            '__test_files__',
-            '__test_demo_files__',
+        self.path_folder = (
+            self.testPath /
+            '__test_files__' /
+            '__test_demo_files__' /
             '__prediction_only__'
             )
 
     def teardown(self):
-        if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png')):
-            os.remove(
-               os.path.join(self.path_folder, 'AxonDeepSeg_seg-axon.png')
-               )
+        if (self.path_folder / 'AxonDeepSeg_seg-axon.png').is_file():
+            (self.path_folder / 'AxonDeepSeg_seg-axon.png').unlink()
 
-        if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-myelin.png')):
-            os.remove(
-               os.path.join(self.path_folder, 'AxonDeepSeg_seg-myelin.png')
-               )
+        if (self.path_folder / 'AxonDeepSeg_seg-myelin.png').is_file():
+            (self.path_folder / 'AxonDeepSeg_seg-myelin.png').unlink()
 
-        if os.path.isfile(os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png')):
-            os.remove(
-               os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin-rgb.png')
-               )
+        if (self.path_folder / 'AxonDeepSeg_seg-axonmyelin-rgb.png').is_file():
+            (self.path_folder / 'AxonDeepSeg_seg-axonmyelin-rgb.png').unlink()
 
     # --------------get_masks tests-------------- #
     @pytest.mark.unit
     def test_get_masks_writes_expected_files(self):
-        pred_img = os.path.join(
-            self.path_folder,
-            'AxonDeepSeg_seg-axonmyelin.png'
-            )
+        pred_img = self.path_folder/ 'AxonDeepSeg_seg-axonmyelin.png'
 
-        axon_prediction, myelin_prediction = get_masks(pred_img)
+        axon_prediction, myelin_prediction = get_masks(str(pred_img))
 
-        axonFile = os.path.join(
-            self.path_folder,
-            'AxonDeepSeg_seg-axon.png'
-            )
+        axonFile = self.path_folder / 'AxonDeepSeg_seg-axon.png'
 
-        myelinFile = os.path.join(
-            self.path_folder,
-            'AxonDeepSeg_seg-myelin.png'
-            )
+        myelinFile = self.path_folder / 'AxonDeepSeg_seg-myelin.png'
 
-        assert os.path.isfile(axonFile)
-        assert os.path.isfile(myelinFile)
+        assert axonFile.is_file()
+        assert myelinFile.is_file()
 
     # --------------rgb_rendering_of_mask tests-------------- #
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_returns_array_with_extra_dim_of_len_3(self):
-        pred_img = imageio.imread(
-            os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png')
-            )
+        pred_img = imageio.imread(self.path_folder / 'AxonDeepSeg_seg-axonmyelin.png')
 
         rgb_mask = rgb_rendering_of_mask(pred_img)
 
         predShape = pred_img.shape
         rgbShape = rgb_mask.shape
-
         expectedRgbShape = predShape + (3,)
 
         assert rgbShape == expectedRgbShape
 
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_writes_expected_files(self):
-        pred_img = imageio.imread(
-            os.path.join(self.path_folder, 'AxonDeepSeg_seg-axonmyelin.png')
-            )
+        pred_img = imageio.imread(self.path_folder / 'AxonDeepSeg_seg-axonmyelin.png')
 
-        rgbFile = os.path.join(
-            self.path_folder,
-            'AxonDeepSeg_seg-axonmyelin-rgb.png'
-            )
+        rgbFile = self.path_folder / 'AxonDeepSeg_seg-axonmyelin-rgb.png'
 
-        if os.path.isfile(rgbFile):
-            os.remove(rgbFile)
+        if rgbFile.is_file():
+            rgbFile.unlink()
 
-        rgb_mask = rgb_rendering_of_mask(pred_img, rgbFile)
+        rgb_mask = rgb_rendering_of_mask(pred_img, str(rgbFile))
 
-        assert os.path.isfile(rgbFile)
-
+        assert rgbFile.is_file()
         assert np.array_equal(rgb_mask, imageio.imread(rgbFile))
