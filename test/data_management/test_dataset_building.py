@@ -63,7 +63,7 @@ class TestCore(object):
         if self.patchPath.is_dir():
             shutil.rmtree(self.patchPath)
 
-        raw_img_to_patches(self.rawPath, self.patchPath)
+        raw_img_to_patches(str(self.rawPath), str(self.patchPath))
 
         assert self.patchPath.is_dir()
 
@@ -83,7 +83,7 @@ class TestCore(object):
         if self.datasetPath.is_dir():
             shutil.rmtree(self.datasetPath)
 
-        patched_to_dataset(self.patchPath, self.datasetPath, 'unique')
+        patched_to_dataset(str(self.patchPath), str(self.datasetPath), 'unique')
 
         assert self.datasetPath.is_dir()
 
@@ -97,11 +97,11 @@ class TestCore(object):
         if self.mixedDatasetPath.is_dir():
             shutil.rmtree(self.mixedDatasetPath)
 
-        raw_img_to_patches(self.rawPath, self.mixedPatchPath / 'SEM')
+        raw_img_to_patches(str(self.rawPath), str(self.mixedPatchPath / 'SEM'))
 
-        raw_img_to_patches(self.rawPath, self.mixedPatchPath / 'TEM')
+        raw_img_to_patches(str(self.rawPath), str(self.mixedPatchPath / 'TEM'))
 
-        patched_to_dataset(self.mixedPatchPath, self.mixedDatasetPath, 'mixed')
+        patched_to_dataset(str(self.mixedPatchPath), str(self.mixedDatasetPath, 'mixed'))
 
         assert self.mixedDatasetPath.is_dir()
 

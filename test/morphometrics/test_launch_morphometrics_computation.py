@@ -30,7 +30,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
         pathPrediction = self.dataPath / 'AxonDeepSeg_seg-axonmyelin.png'
 
-        launch_morphometrics_computation(pathImg, pathPrediction)
+        launch_morphometrics_computation(str(pathImg), str(pathPrediction))
 
         for fileName in expectedFiles:
             fullFilePath = self.dataPath / fileName
@@ -43,4 +43,4 @@ class TestCore(object):
         pathPrediction = self.dataPath / 'AxonDeepSeg_seg-axonmyelin.png'
 
         with pytest.raises((IOError, OSError)):
-            launch_morphometrics_computation(nonExistingFile, pathPrediction)
+            launch_morphometrics_computation(str(nonExistingFile), str(pathPrediction))

@@ -33,6 +33,6 @@ class TestCore(object):
         if (self.folderPath / 'axon_myelin_mask_corrected.png').is_file():
                 (self.folderPath / 'axon_myelin_mask_corrected.png').unlink()
 
-        generate_axons_from_myelin(self.axonMyelinMask, self.myelinMask)
+        generate_axons_from_myelin(str(self.axonMyelinMask), str(self.myelinMask))
 
         assert (self.folderPath / 'axon_myelin_mask_corrected.png').is_file()

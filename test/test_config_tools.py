@@ -110,7 +110,7 @@ class TestCore(object):
         with open(configPath, 'w') as f:
             json.dump(self.config, f, indent=2)
 
-        generatedConfig = generate_config(config_path=configPath)
+        generatedConfig = generate_config(config_path=str(configPath))
         assert generatedConfig != generate_config()
         assert validate_config(generatedConfig)
 
@@ -134,7 +134,7 @@ class TestCore(object):
                 json.dump(invalidConfig, f, indent=2)
 
         with pytest.raises(ValueError):
-            generatedConfig = generate_config(config_path=configPath)
+            generatedConfig = generate_config(config_path=str(configPath))
 
         if configPath.exists():
             configPath.unlink()

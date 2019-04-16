@@ -22,11 +22,11 @@ class TestCore(object):
     # --------------download_data tests-------------- #
     @pytest.mark.unit
     def test_download_data_returns_0_for_valid_link(self):
-        exit_code = download_data(self.osf_link)
+        exit_code = download_data(str(self.osf_link))
         assert exit_code == 0
 
     @pytest.mark.unit
     def test_download_data_returns_1_for_invalid_link(self):
-        exit_code = download_data(self.bad_osf_link)
+        exit_code = download_data(str(self.bad_osf_link))
         assert exit_code == 1
 

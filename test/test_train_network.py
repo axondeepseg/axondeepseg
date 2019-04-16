@@ -125,8 +125,8 @@ class TestCore(object):
         # itself.
 
         train_model(
-            self.trainingPath,
-            self.modelPath,
+            str(self.trainingPath),
+            str(self.modelPath),
             self.config_network,
             debug_mode=True
             )

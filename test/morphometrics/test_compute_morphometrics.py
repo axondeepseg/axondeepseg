@@ -46,7 +46,7 @@ class TestCore(object):
     def test_get_pixelsize_returns_expected_value(self):
         expectedValue = self.pixelsizeValue
         pixelsizeFileName = self.test_folder_path / 'pixel_size_in_micrometer.txt'
-        actualValue = get_pixelsize(pixelsizeFileName)
+        actualValue = get_pixelsize(str(pixelsizeFileName))
 
         assert actualValue == expectedValue
 
@@ -56,7 +56,7 @@ class TestCore(object):
             random.choice(string.ascii_lowercase) for i in range(16))
 
         with pytest.raises(IOError):
-            get_pixelsize(nonExistingFile)
+            get_pixelsize(str(nonExistingFile))
 
     @pytest.mark.unit
     def test_get_pixelsize_throws_error_for_invalid_data_file(self):
@@ -67,12 +67,12 @@ class TestCore(object):
 
         with pytest.raises(ValueError):
 
-            get_pixelsize(tmpName)
+            get_pixelsize(str(tmpName))
 
     # --------------get_axon_morphometrics tests-------------- #
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_type(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, self.test_folder_path)
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
         assert isinstance(stats_array, np.ndarray)
 
     @pytest.mark.unit
@@ -86,7 +86,7 @@ class TestCore(object):
                         'orientation'
                         }
 
-        stats_array = get_axon_morphometrics(self.pred_axon, self.test_folder_path)
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
         for key in list(stats_array[0].keys()):
             assert key in expectedKeys
@@ -95,7 +95,7 @@ class TestCore(object):
     def test_get_axon_morphometrics_with_myelin_mask(self):
         stats_array = get_axon_morphometrics(
             self.pred_axon,
-            self.test_folder_path,
+            str(self.test_folder_path),
             im_myelin=self.pred_myelin
             )
         assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
@@ -141,7 +141,7 @@ class TestCore(object):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # Compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, path_pred.parent, im_myelin=pred_myelin)
+        stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin)
 
         for ii in range(0,9):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
@@ -163,7 +163,7 @@ class TestCore(object):
 
         stats_array = get_axon_morphometrics(
             pred_axon,
-            path_pred.parent,
+            str(path_pred.parent),
             im_myelin=unexpected_pred_myelin
             )
 
@@ -175,9 +175,9 @@ class TestCore(object):
     # --------------save and load _axon_morphometrics tests-------------- #
     @pytest.mark.unit
     def test_save_axon_morphometrics_creates_file_in_expected_location(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, self.test_folder_path)
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
-        save_axon_morphometrics(self.tmpDir, stats_array)
+        save_axon_morphometrics(str(self.tmpDir), stats_array)
 
         # Filename 'axonlist.npy' is hardcoded in `save_axon_morphometrics()`.
         expectedFilePath = self.tmpDir / 'axonlist.npy'
@@ -186,23 +186,23 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_save_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, self.test_folder_path)
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
         nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
         nonExistingFolder = Path(nonExistingFolder)
 
         with pytest.raises(IOError):
-            save_axon_morphometrics(nonExistingFolder, stats_array)
+            save_axon_morphometrics(str(nonExistingFolder), stats_array)
 
     @pytest.mark.unit
     def test_load_axon_morphometrics_returns_identical_var_as_was_saved(self):
-        original_stats_array = get_axon_morphometrics(self.pred_axon, self.test_folder_path)
+        original_stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
-        save_axon_morphometrics(self.tmpDir, original_stats_array)
+        save_axon_morphometrics(str(self.tmpDir), original_stats_array)
 
         # Load method only takes in a directory as an argument, expects that
         # 'axonlist.npy' will be in directory.
-        loaded_stats_array = load_axon_morphometrics(self.tmpDir)
+        loaded_stats_array = load_axon_morphometrics(str(self.tmpDir))
 
         assert np.array_equal(loaded_stats_array, original_stats_array)
 
@@ -213,7 +213,7 @@ class TestCore(object):
         nonExistingFolder = Path(nonExistingFolder)
 
         with pytest.raises(IOError):
-            load_axon_morphometrics(nonExistingFolder)
+            load_axon_morphometrics(str(nonExistingFolder))
 
     # --------------draw_axon_diameter tests-------------- #
     @pytest.mark.unit
@@ -222,7 +222,7 @@ class TestCore(object):
         path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
 
         result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
-        fig = draw_axon_diameter(img, path_prediction, self.pred_axon, self.pred_myelin)
+        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin)
         assert fig.axes
         fig.savefig(result_path)
 
@@ -237,7 +237,7 @@ class TestCore(object):
         aggregate_metrics = get_aggregate_morphometrics(
             self.pred_axon,
             self.pred_myelin,
-            self.test_folder_path
+            str(self.test_folder_path)
             )
 
         assert isinstance(aggregate_metrics, dict)
@@ -256,7 +256,7 @@ class TestCore(object):
         aggregate_metrics = get_aggregate_morphometrics(
             self.pred_axon,
             self.pred_myelin,
-            self.test_folder_path
+            str(self.test_folder_path)
             )
 
         for key in list(aggregate_metrics.keys()):
@@ -273,7 +273,7 @@ class TestCore(object):
 
         expectedFilePath = self.tmpDir / 'aggregate_morphometrics.txt'
 
-        write_aggregate_morphometrics(self.tmpDir, aggregate_metrics)
+        write_aggregate_morphometrics(str(self.tmpDir), aggregate_metrics)
 
         assert expectedFilePath.is_file()
 
@@ -289,4 +289,4 @@ class TestCore(object):
         nonExistingFolder = Path(nonExistingFolder)
 
         with pytest.raises(IOError):
-            write_aggregate_morphometrics(nonExistingFolder, aggregate_metrics)
+            write_aggregate_morphometrics(str(nonExistingFolder), aggregate_metrics)

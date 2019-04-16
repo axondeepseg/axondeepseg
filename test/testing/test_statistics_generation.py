@@ -64,11 +64,11 @@ class TestCore(object):
         path_images_folder = self.imagesPath
         resampled_resolution = 0.1
         metrics_single_wrapper(
-            path_model_folder,
-            path_images_folder,
+            str(path_model_folder),
+            str(path_images_folder),
             resampled_resolution,
             overlap_value=25,
-            statistics_filename=self.statsFilename,
+            statistics_filename=str(self.statsFilename),
             create_statistics_file=True,
             verbosity_level=2
             )
@@ -86,11 +86,11 @@ class TestCore(object):
         path_images_folder = self.imagesPath
         resampled_resolution = 0.1
         metrics_classic_wrapper(
-            path_model_folder,
-            path_images_folder,
+            str(path_model_folder),
+            str(path_images_folder),
             resampled_resolution,
             overlap_value=25,
-            statistics_filename=self.statsFilename,
+            statistics_filename=str(self.statsFilename),
             create_statistics_file=True,
             verbosity_level=2)
 
