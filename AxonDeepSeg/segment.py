@@ -7,398 +7,419 @@
 
 # Imports
 
-import AxonDeepSeg
-from AxonDeepSeg.apply_model import axon_segmentation
-import os, json, imageio, sys
-from tqdm import tqdm
-import pkg_resources
+import sys
+from pathlib import Path
+import os
+import json
 import argparse
 from argparse import RawTextHelpFormatter
+from tqdm import tqdm
+import pkg_resources
+
+import imageio
+
+import AxonDeepSeg
 import AxonDeepSeg.ads_utils
+from AxonDeepSeg.apply_model import axon_segmentation
+from AxonDeepSeg.ads_utils import convert_path
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model_v1"
 TEM_DEFAULT_MODEL_NAME = "default_TEM_model_v1"
 
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
+MODELS_PATH = Path(MODELS_PATH)
 
-default_SEM_path = os.path.join(MODELS_PATH,SEM_DEFAULT_MODEL_NAME)
-default_TEM_path = os.path.join(MODELS_PATH,TEM_DEFAULT_MODEL_NAME)
+default_SEM_path = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
+default_TEM_path = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
 default_overlap = 25
 
 # Definition of the functions
 
 def segment_image(path_testing_image, path_model,
-			      overlap_value, config, resolution_model,
-				  acquired_resolution = None, verbosity_level=0):
+                  overlap_value, config, resolution_model,
+                  acquired_resolution = None, verbosity_level=0):
 
-	'''
-	Segment the image located at the path_testing_image location.
-	:param path_testing_image: the path of the image to segment.
-	:param path_model: where to access the model
-	:param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
-	border effects but more time to perform the segmentation.
-	:param config: dict containing the configuration of the network
-	:param resolution_model: the resolution the model was trained on.
-	:param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
-	process.
-	:return: Nothing.
-	'''
+    '''
+    Segment the image located at the path_testing_image location.
+    :param path_testing_image: the path of the image to segment.
+    :param path_model: where to access the model
+    :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
+    border effects but more time to perform the segmentation.
+    :param config: dict containing the configuration of the network
+    :param resolution_model: the resolution the model was trained on.
+    :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
+    process.
+    :return: Nothing.
+    '''
 
-	if os.path.exists(path_testing_image):
+    # If string, convert to Path objects
+    path_testing_image = convert_path(path_testing_image)
+    path_model = convert_path(path_model)
 
-		# Extracting the image name and its folder path from the total path.
-		tmp_path = path_testing_image.split(os.sep)
-		acquisition_name = tmp_path[-1]
-		path_acquisition = '/'.join(tmp_path[:-1])
+    if path_testing_image.exists():
 
-		# Get type of model we are using
-		tmp_path, selected_model = os.path.split(path_model)
+        # Extracting the image name and its folder path from the total path.
+        path_parts = path_testing_image.parts
+        acquisition_name = Path(path_parts[-1])
+        path_acquisition = Path(*path_parts[:-1])
 
-		# Read image
-		img = imageio.imread(os.path.join(path_acquisition,acquisition_name))
+        # Get type of model we are using
+        selected_model = path_model.name
 
-		# Generate tmp file
-		fp = open(os.path.join(path_acquisition, '__tmp_segment__.png'), 'wb+')
+        # Read image
+        img = imageio.imread(str(path_testing_image))
 
-		img_name_original, file_extension = os.path.splitext(acquisition_name) 
+        # Generate tmp file
+        fp = open(path_acquisition / '__tmp_segment__.png', 'wb+')
 
-		if selected_model == "default_TEM_model_v1":
-			imageio.imwrite(fp,255-img, format='png')
-		else:
-			imageio.imwrite(fp,img, format='png')
+        img_name_original = acquisition_name.stem
 
-		tmp_path, tmp_name = os.path.split(fp.name)
-		acquisition_name = tmp_name
-		segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
+        if selected_model == "default_TEM_model_v1":
+            imageio.imwrite(fp,255-img, format='png')
+        else:
+            imageio.imwrite(fp, img, format='png')
 
-		# Performing the segmentation
+        acquisition_name = Path(fp.name).name
+        segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
-		axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
-						  path_model_folder=path_model, config_dict=config, ckpt_name='model',
-						  inference_batch_size=1, overlap_value=overlap_value,
-						  segmentations_filenames=segmented_image_name,
-						  resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
-						  acquired_resolution=acquired_resolution,
-						  prediction_proba_activate=False, write_mode=True)
+        # Performing the segmentation
 
-		if verbosity_level >= 1:
-			print(("Image {0} segmented.".format(path_testing_image)))
+        axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
+                          path_model_folder=path_model, config_dict=config, ckpt_name='model',
+                          inference_batch_size=1, overlap_value=overlap_value,
+                          segmentations_filenames=segmented_image_name,
+                          resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
+                          acquired_resolution=acquired_resolution,
+                          prediction_proba_activate=False, write_mode=True)
 
-		# Remove temporary file used for the segmentation
-		fp.close()
-		os.remove(os.path.join(path_acquisition, '__tmp_segment__.png'))
+        if verbosity_level >= 1:
+            print(("Image {0} segmented.".format(path_testing_image)))
 
-	else:
-		print(("The path {0} does not exist.".format(path_testing_image)))
+        # Remove temporary file used for the segmentation
+        fp.close()
+        (path_acquisition / '__tmp_segment__.png').unlink()
 
-	return None
+    else:
+        print(("The path {0} does not exist.".format(path_testing_image)))
+
+    return None
 
 def segment_folders(path_testing_images_folder, path_model,
-					overlap_value, config, resolution_model,
-					acquired_resolution = None,
-					verbosity_level=0):
-	'''
-	Segments the images contained in the image folders located in the path_testing_images_folder.
-	:param path_testing_images_folder: the folder where all image folders are located (the images to segment are located
-	in those image folders)
-	:param path_model: where to access the model.
-	:param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
-	border effects but more time to perform the segmentation.
-	:param config: dict containing the configuration of the network
-	:param resolution_model: the resolution the model was trained on.
-	:param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
-	process.
-	:return: Nothing.
-	'''
+                    overlap_value, config, resolution_model,
+                    acquired_resolution = None,
+                    verbosity_level=0):
+    '''
+    Segments the images contained in the image folders located in the path_testing_images_folder.
+    :param path_testing_images_folder: the folder where all image folders are located (the images to segment are located
+    in those image folders)
+    :param path_model: where to access the model.
+    :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
+    border effects but more time to perform the segmentation.
+    :param config: dict containing the configuration of the network
+    :param resolution_model: the resolution the model was trained on.
+    :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
+    process.
+    :return: Nothing.
+    '''
 
-	# Update list of images to segment by selecting only image files (not already segmented or not masks)
-	img_files = [file for file in os.listdir(path_testing_images_folder) if (file.endswith(('.png','.jpg','.jpeg','.tif','.tiff'))
-				 and (not file.endswith(('_seg-axonmyelin.png','_seg-axon.png','_seg-myelin.png','mask.png'))))]
+    # If string, convert to Path objects
+    path_testing_images_folder = convert_path(path_testing_images_folder)
+    path_model = convert_path(path_model)
 
-	# Pre-processing: convert to png if not already done and adapt to model contrast
-	for file_ in tqdm(img_files, desc="Segmentation..."):
-		print(os.path.join(path_testing_images_folder,file_))
-		try:
-			height, width, _ = imageio.imread(os.path.join(path_testing_images_folder,file_)).shape
-		except:
-			try:
-				height, width = imageio.imread(os.path.join(path_testing_images_folder,file_)).shape
-			except Exception as e:
-				raise e
+    # Update list of images to segment by selecting only image files (not already segmented or not masks)
+    img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
+                 and (not str(file).endswith(('_seg-axonmyelin.png','_seg-axon.png','_seg-myelin.png','mask.png')))]
 
-		image_size = [height, width]
-		minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
+    # Pre-processing: convert to png if not already done and adapt to model contrast
+    for file_ in tqdm(img_files, desc="Segmentation..."):
+        print(path_testing_images_folder / file_)
+        try:
+            height, width, _ = imageio.imread(str(path_testing_images_folder / file_)).shape
+        except:
+            try:
+                height, width = imageio.imread(str(path_testing_images_folder / file_)).shape
+            except Exception as e:
+                raise e
 
-		if acquired_resolution < minimum_resolution:
-			print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, acquired_resolution),
-				  "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
-				  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(acquired_resolution * min(image_size) / resolution_model)),
-				  "Image file location: {0}".format(os.path.join(file_,path_testing_images_folder))
-			)
+        image_size = [height, width]
+        minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
 
-			sys.exit(2)
+        if acquired_resolution < minimum_resolution:
+            print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, acquired_resolution),
+                  "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
+                  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(acquired_resolution * min(image_size) / resolution_model)),
+                  "Image file location: {0}".format(str(path_testing_images_folder / file_))
+            )
 
-		tmp_path, selected_model = os.path.split(path_model)
+            sys.exit(2)
 
-		# Read image for conversion
-		img = imageio.imread(os.path.join(path_testing_images_folder,file_))
+        selected_model = path_model.name
 
-		# Generate tmpfile for segmentation pipeline
-		fp = open(os.path.join(path_testing_images_folder, '__tmp_segment__.png'), 'wb+')
+        # Read image for conversion
+        img = imageio.imread(str(path_testing_images_folder / file_))
 
-		img_name_original, file_extension = os.path.splitext(file_)  
+        # Generate tmpfile for segmentation pipeline
+        fp = open(path_testing_images_folder / '__tmp_segment__.png', 'wb+')
 
-		if selected_model == "default_TEM_model_v1":
-			imageio.imwrite(fp,255-img, format='png')
-		else:
-			imageio.imwrite(fp,img, format='png')
+        img_name_original = file_.stem
 
-		tmp_path, tmp_name = os.path.split(fp.name)
-		acquisition_name = tmp_name
-		segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
+        if selected_model == "default_TEM_model_v1":
+            imageio.imwrite(fp,255-img, format='png')
+        else:
+            imageio.imwrite(fp,img, format='png')
 
-		axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
-							  path_model_folder=path_model, config_dict=config, ckpt_name='model',
-							  inference_batch_size=1, overlap_value=overlap_value,
-							  segmentations_filenames=[segmented_image_name],
-							  acquired_resolution=acquired_resolution,
-							  verbosity_level=verbosity_level,
-							  resampled_resolutions=resolution_model, prediction_proba_activate=False,
-							  write_mode=True)
+        acquisition_name = Path(fp.name).name
+        segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
-		if verbosity_level >= 1:
-			tqdm.write("Image {0} segmented.".format(os.path.join(path_testing_images_folder, file_)))
+        axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
+                              path_model_folder=path_model, config_dict=config, ckpt_name='model',
+                              inference_batch_size=1, overlap_value=overlap_value,
+                              segmentations_filenames=[segmented_image_name],
+                              acquired_resolution=acquired_resolution,
+                              verbosity_level=verbosity_level,
+                              resampled_resolutions=resolution_model, prediction_proba_activate=False,
+                              write_mode=True)
 
-		# Remove temporary file used for the segmentation
-		fp.close()
-		os.remove(os.path.join(path_testing_images_folder, '__tmp_segment__.png'))
+        if verbosity_level >= 1:
+            tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
-	return None
+        # Remove temporary file used for the segmentation
+        fp.close()
+        (path_testing_images_folder / '__tmp_segment__.png').unlink()
+
+    return None
 
 def generate_default_parameters(type_acquisition, new_path):
-	'''
-	Generates the parameters used for segmentation for the default model corresponding to the type_model acquisition.
-	:param type_model: String, the type of model to get the parameters from.
-	:param new_path: Path to the model to use.
-	:return: the config dictionary.
-	'''
-	# Building the path of the requested model if it exists and was supplied, else we load the default model.
-	if type_acquisition == 'SEM':
-		if (new_path is not None) and (os.path.exists(new_path)):
-			path_model = new_path
-		else:
-			path_model = os.path.join(MODELS_PATH, SEM_DEFAULT_MODEL_NAME)
-	elif type_acquisition == 'TEM':
-		if (new_path is not None) and (os.path.exists(new_path)):
-			path_model = new_path
-		else:
-			path_model = os.path.join(MODELS_PATH, TEM_DEFAULT_MODEL_NAME)
+    '''
+    Generates the parameters used for segmentation for the default model corresponding to the type_model acquisition.
+    :param type_model: String, the type of model to get the parameters from.
+    :param new_path: Path to the model to use.
+    :return: the config dictionary.
+    '''
+    
+    # If string, convert to Path objects
+    new_path = convert_path(new_path)
 
-	path_config_file = os.path.join(path_model, 'config_network.json')
-	config = generate_config_dict(path_config_file)
+    # Building the path of the requested model if it exists and was supplied, else we load the default model.
+    if type_acquisition == 'SEM':
+        if (new_path is not None) and new_path.exists():
+            path_model = new_path
+        else:
+            path_model = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
+    elif type_acquisition == 'TEM':
+        if (new_path is not None) and new_path.exists():
+            path_model = new_path
+        else:
+            path_model = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
 
-	return path_model, config
+    path_config_file = path_model / 'config_network.json'
+    config = generate_config_dict(path_config_file)
+
+    return path_model, config
 
 def generate_config_dict(path_to_config_file):
-	'''
-	Generates the dictionary version of the configuration file from the path where it is located.
+    '''
+    Generates the dictionary version of the configuration file from the path where it is located.
 
-	:param path_to_config: relative path where the file config_network.json is located.
-	:return: dict containing the configuration of the network, or None if no configuration file was found at the
-	mentioned path.
-	'''
+    :param path_to_config: relative path where the file config_network.json is located.
+    :return: dict containing the configuration of the network, or None if no configuration file was found at the
+    mentioned path.
+    '''
 
-	try:
-		with open(path_to_config_file, 'r') as fd:
-			config_network = json.loads(fd.read())
+    # If string, convert to Path objects
+    path_to_config_file = convert_path(path_to_config_file)
 
-	except:
-		raise ValueError("No configuration file available at this path.")
+    try:
+        with open(path_to_config_file, 'r') as fd:
+            config_network = json.loads(fd.read())
 
-	return config_network
+    except:
+        raise ValueError("No configuration file available at this path.")
+
+    return config_network
 
 def generate_resolution(type_acquisition, model_input_size):
-	'''
-	Generates the resolution to use related to the trained modeL.
-	:param type_acquisition: String, "SEM" or "TEM"
-	:param model_input_size: String or Int, the size of the input.
-	:return: Float, the resolution of the model.
-	'''
+    '''
+    Generates the resolution to use related to the trained modeL.
+    :param type_acquisition: String, "SEM" or "TEM"
+    :param model_input_size: String or Int, the size of the input.
+    :return: Float, the resolution of the model.
+    '''
 
-	dict_size = {
-		"SEM":{
-			"512":0.1,
-			"256":0.2
-		},
-		"TEM":{
-			"512":0.01
-		}
-	}
+    dict_size = {
+        "SEM":{
+            "512":0.1,
+            "256":0.2
+        },
+        "TEM":{
+            "512":0.01
+        }
+    }
 
-	return dict_size[str(type_acquisition)][str(model_input_size)]
+    return dict_size[str(type_acquisition)][str(model_input_size)]
 
 # Main loop
 
 def main(argv=None):
 
-	'''
-	Main loop.
-	:return: Exit code.
-		0: Success
-		2: Invalid argument value
-		3: Missing value or file
-	'''
-	print(('AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)))
-	ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    '''
+    Main loop.
+    :return: Exit code.
+        0: Success
+        2: Invalid argument value
+        3: Missing value or file
+    '''
+    print(('AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)))
+    ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
-	requiredName = ap.add_argument_group('required arguments')
+    requiredName = ap.add_argument_group('required arguments')
 
-	# Setting the arguments of the segmentation
-	requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
-																						'SEM: scanning electron microscopy samples. \n'+
-																						'TEM: transmission electron microscopy samples. ')
-	requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
-																				'where the image(s) to segment is/are located.')
+    # Setting the arguments of the segmentation
+    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
+                                                                                        'SEM: scanning electron microscopy samples. \n'+
+                                                                                        'TEM: transmission electron microscopy samples. ')
+    requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
+                                                                                'where the image(s) to segment is/are located.')
 
-	ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
-														  'The default SEM model path is: \n'+default_SEM_path+'\n'+
-														  'The default TEM model path is: \n'+default_TEM_path+'\n')
-	ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
-															  'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
-															  'file needs to be added to the image folder path. The pixel size \n'+
-															  'in that file will be used for the segmentation.',
-															  default=None)
-	ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
-															'0 (default) : Displays the progress bar for the segmentation. \n'+
-															'1: Also displays the path of the image(s) being segmented. \n'+
-															'2: Also displays the information about the prediction step \n'+ 
-															'   for the segmentation of current sample. \n'+
-															'3: Also displays the patch number being processed in the current sample.',
-															default=0)
-	ap.add_argument('-o', '--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
-															'Higher values of overlap can improve the segmentation at patch borders, \n'+
-															'but also increase the segmentation time. \n'+
-															'Default value: '+str(default_overlap)+'\n'+
-															'Recommended range of values: [10-100]. \n',
-															default=25)
-	ap._action_groups.reverse()
+    ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
+                                                          'The default SEM model path is: \n'+str(default_SEM_path)+'\n'+
+                                                          'The default TEM model path is: \n'+str(default_TEM_path)+'\n')
+    ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
+                                                              'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
+                                                              'file needs to be added to the image folder path. The pixel size \n'+
+                                                              'in that file will be used for the segmentation.',
+                                                              default=None)
+    ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
+                                                            '0 (default) : Displays the progress bar for the segmentation. \n'+
+                                                            '1: Also displays the path of the image(s) being segmented. \n'+
+                                                            '2: Also displays the information about the prediction step \n'+
+                                                            '   for the segmentation of current sample. \n'+
+                                                            '3: Also displays the patch number being processed in the current sample.',
+                                                            default=0)
+    ap.add_argument('-o', '--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
+                                                            'Higher values of overlap can improve the segmentation at patch borders, \n'+
+                                                            'but also increase the segmentation time. \n'+
+                                                            'Default value: '+str(default_overlap)+'\n'+
+                                                            'Recommended range of values: [10-100]. \n',
+                                                            default=25)
+    ap._action_groups.reverse()
 
-	# Processing the arguments
-	args = vars(ap.parse_args(argv))
-	type_ = str(args["type"])
-	verbosity_level = int(args["verbose"])
-	overlap_value = int(args["overlap"])
-	if args["sizepixel"] is not None:
-		psm = float(args["sizepixel"])
-	else:
-		psm = None
-	path_target_list = args["imgpath"]
-	new_path = args["model"]
+    # Processing the arguments
+    args = vars(ap.parse_args(argv))
+    type_ = str(args["type"])
+    verbosity_level = int(args["verbose"])
+    overlap_value = int(args["overlap"])
+    if args["sizepixel"] is not None:
+        psm = float(args["sizepixel"])
+    else:
+        psm = None
+    path_target_list = [Path(p) for p in args["imgpath"]]
+    new_path = Path(args["model"]) if args["model"] else None 
 
-	# Preparing the arguments to axon_segmentation function
-	path_model, config = generate_default_parameters(type_, new_path)
-	resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
+    # Preparing the arguments to axon_segmentation function
+    path_model, config = generate_default_parameters(type_, new_path)
+    resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
 
-	# Tuple of valid file extensions
-	validExtensions = (
-						".jpeg",
-						".jpg",
-						".tif",
-						".tiff",
-						".png"
-						)
+    # Tuple of valid file extensions
+    validExtensions = (
+                        ".jpeg",
+                        ".jpg",
+                        ".tif",
+                        ".tiff",
+                        ".png"
+                        )
 
-	# Going through all paths passed into arguments
-	for current_path_target in path_target_list:
+    # Going through all paths passed into arguments
+    for current_path_target in path_target_list:
 
-		if not os.path.isdir(current_path_target):
+        if not current_path_target.is_dir():
 
-			if current_path_target.lower().endswith(validExtensions):
-				
-				# Handle cases if no resolution is provided on the CLI
-				if psm == None:
-					
-					# Check if a pixel size file exists, if so read it.
-					if os.path.exists(os.path.join(os.path.dirname(current_path_target), 'pixel_size_in_micrometer.txt')):
+            if current_path_target.suffix.lower() in validExtensions:
 
-						resolution_file = open(os.path.join(os.path.dirname(current_path_target), 'pixel_size_in_micrometer.txt'), 'r')
+                # Handle cases if no resolution is provided on the CLI
+                if psm == None:
 
-						psm = float(resolution_file.read())
+                    # Check if a pixel size file exists, if so read it.
+                    if (current_path_target.parent / 'pixel_size_in_micrometer.txt').exists():
+
+                        resolution_file = open(current_path_target.parent / 'pixel_size_in_micrometer.txt', 'r')
+
+                        psm = float(resolution_file.read())
 
 
-					else:
+                    else:
 
-						print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-									  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-									  "containing the pixel size value."
-						)
-						sys.exit(3)
+                        print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+                                      "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                                      "containing the pixel size value."
+                        )
+                        sys.exit(3)
 
-				# Check that image size is large enough for given resolution to reach minimum patch size after resizing.
-				
-				try:
-					height, width, _ = imageio.imread(current_path_target).shape
-				except:
-					try:
-						height, width = imageio.imread(current_path_target).shape
-					except Exception as e:
-						raise e
+                # Check that image size is large enough for given resolution to reach minimum patch size after resizing.
 
-				image_size = [height, width]
-				minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
+                try:
+                    height, width, _ = imageio.imread(str(current_path_target)).shape
+                except:
+                    try:
+                        height, width = imageio.imread(str(current_path_target)).shape
+                    except Exception as e:
+                        raise e
 
-				if psm < minimum_resolution:
-					print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, psm),
-					      "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
-						  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(psm * min(image_size) / resolution_model)),
-						  "Image file location: {0}".format(current_path_target)
-					)
+                image_size = [height, width]
+                minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
 
-					sys.exit(2)
+                if psm < minimum_resolution:
+                    print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, psm),
+                          "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
+                          "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(psm * min(image_size) / resolution_model)),
+                          "Image file location: {0}".format(current_path_target)
+                    )
 
-				# Performing the segmentation over the image
-				segment_image(current_path_target, path_model, overlap_value, config,
-							resolution_model,
-							acquired_resolution=psm,
-							verbosity_level=verbosity_level)
+                    sys.exit(2)
 
-				print("Segmentation finished.")
+                # Performing the segmentation over the image
+                segment_image(current_path_target, path_model, overlap_value, config,
+                            resolution_model,
+                            acquired_resolution=psm,
+                            verbosity_level=verbosity_level)
 
-			else:
-				print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
-				break
+                print("Segmentation finished.")
 
-		else:
+            else:
+                print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
+                break
 
-			# Handle cases if no resolution is provided on the CLI
-			if psm == None:
+        else:
 
-				# Check if a pixel size file exists, if so read it.
-				if os.path.exists(os.path.join(current_path_target, 'pixel_size_in_micrometer.txt')):
+            # Handle cases if no resolution is provided on the CLI
+            if psm == None:
 
-					resolution_file = open(os.path.join(current_path_target, 'pixel_size_in_micrometer.txt'), 'r')
+                # Check if a pixel size file exists, if so read it.
+                if (current_path_target / 'pixel_size_in_micrometer.txt').exists():
 
-					psm = float(resolution_file.read())
+                    resolution_file = open(current_path_target / 'pixel_size_in_micrometer.txt', 'r')
 
-				else:
+                    psm = float(resolution_file.read())
 
-					print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-								  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-								  "containing the pixel size value."
-					)
-					sys.exit(3)
+                else:
 
-			# Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
-			segment_folders(current_path_target, path_model, overlap_value, config,
-						resolution_model, 
-							acquired_resolution=psm,
-							verbosity_level=verbosity_level)
+                    print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+                                  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                                  "containing the pixel size value."
+                    )
+                    sys.exit(3)
 
-			print("Segmentation finished.")
+            # Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
+            segment_folders(current_path_target, path_model, overlap_value, config,
+                        resolution_model,
+                            acquired_resolution=psm,
+                            verbosity_level=verbosity_level)
 
-	sys.exit(0)
+            print("Segmentation finished.")
+
+    sys.exit(0)
 
 # Calling the script
 if __name__ == '__main__':
-	main()
+    main()

@@ -1,7 +1,7 @@
 # coding: utf-8
 
-import os
 import sys
+from pathlib import Path
 import pickle
 
 # Scientific modules imports
@@ -17,6 +17,7 @@ from matplotlib.figure import Figure
 
 # AxonDeepSeg imports
 import AxonDeepSeg.ads_utils
+from AxonDeepSeg.ads_utils import convert_path
 from ..testing.segmentation_scoring import score_analysis, dice
 
 
@@ -33,6 +34,9 @@ def visualize_training(path_model, iteration_start_for_viz=0):
     accuracy and loss evolution from this initial model and then stacks the
     evolution of the model.
     """
+
+    # If string, convert to Path objects
+    path_model = convert_path(path_model)
 
     def _create_figure_helper(data_evolution):
         fig = Figure()
@@ -80,6 +84,9 @@ def visualize_segmentation(path):
     if there is MyelinSeg.jpg in the folder, myelin and image, myelin and axon
     segmentated, myelin and groundtruth are represented
     """
+    # If string, convert to Path objects
+    path = convert_path(path)
+    
     figs = []
 
     def _create_fig_helper(overlayed_img, fig_title):
@@ -97,10 +104,11 @@ def visualize_segmentation(path):
         ax.imshow(overlayed_img, cmap="hsv", alpha=0.7)
         return fig
 
-    path_img = path + "/image.png"
+    path_img = path / "image.png"
     mask = False
+    cur_dir_items = [item.name for item in path]
 
-    if "results.pkl" not in os.listdir(path):
+    if "results.pkl" not in cur_dir_items:
         print("results not present")
 
     file = open(path + "/results.pkl", "r")
@@ -120,9 +128,9 @@ def visualize_segmentation(path):
     fig2 = _create_fig_helper(predict, title)
     figs.append(fig2)
 
-    if "mask.png" in os.listdir(path):
+    if "mask.png" in cur_dir_items:
         Mask = True
-        path_mask = path + "/mask.png"
+        path_mask = path / "mask.png"
         mask = preprocessing.binarize(
             imread(path_mask, flatten=False, mode="L"), threshold=125
         )
@@ -167,12 +175,12 @@ def visualize_segmentation(path):
         text = text + subtitle3 + subtitle3 + scores_2
         print(text)
 
-        file = open(path + "/Report_results.txt", "w")
+        file = open(path / "Report_results.txt", "w")
         file.write(text)
         file.close()
 
-    if "MyelinSeg.jpg" in os.listdir(path):
-        path_myelin = path + "/MyelinSeg.jpg"
+    if "MyelinSeg.jpg" in cur_dir_items:
+        path_myelin = path / "MyelinSeg.jpg"
         myelin = preprocessing.binarize(
             imread(path_myelin, flatten=False, mode="L"), threshold=125
         )
@@ -201,13 +209,19 @@ def retrieve_training_data(path_model, path_model_init=None):
         epochs of the performance of the model. Stacks the initial model if needed
     """
 
+    # If string, convert to Path objects
+    path_model = convert_path(path_model)
+
     file = open(
-        path_model + "/evolution.pkl", "rb"
+        path_model / "evolution.pkl", "rb"
     )  # training variables : loss, accuracy, epoch
     evolution = pickle.load(file)
 
     if path_model_init:
-        file_init = open(path_model_init + "/evolution.pkl", "rb")
+        # If string, convert to Path objects
+        path_model_init = convert_path(path_model_init)
+
+        file_init = open(path_model_init / "evolution.pkl", "rb")
         evolution_init = pickle.load(file_init)
         last_epoch = evolution_init["steps"][-1]
 
@@ -229,8 +243,11 @@ def retrieve_hyperparameters(path_model):
     :return: the dict containing the hyperparameters
     """
 
+    # If string, convert to Path objects
+    path_model = convert_path(path_model)
+
     file = open(
-        path_model + "/hyperparameters.pkl", "r"
+        path_model / "hyperparameters.pkl", "r"
     )  # training variables : loss, accuracy, epoch
     return pickle.load(file)
 
@@ -244,5 +261,5 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
     path_model = args["path_model"]
 
-    fig, evo = visualize_training(path_model)
+    fig = visualize_training(path_model)
     fig.savefig("./visualize_training_acc_vs_loss_evolution.png")

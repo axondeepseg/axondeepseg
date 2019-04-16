@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import os
+from pathlib import Path
 
 # Scientific modules imports
 import numpy as np
@@ -20,6 +20,11 @@ def launch_morphometrics_computation(path_img, path_prediction):
     :param path_prediction: path of the segmented image (output of AxonDeepSeg)
     :return: none.
     """
+    
+    # If string, convert to Path objects
+    path_img = convert_path(path_img)
+    path_prediction = convert_path(path_prediction)
+
     try:
         # Read image
         img = imageio.imread(path_img)
@@ -36,7 +41,7 @@ def launch_morphometrics_computation(path_img, path_prediction):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # Get folder path
-        path_folder, file_name = os.path.split(path_img)
+        path_folder = path_img.parent
 
         # Compute and save axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, path_folder)
