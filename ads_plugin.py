@@ -25,6 +25,8 @@ import math
 from scipy import ndimage as ndi
 from skimage import measure, morphology, feature
 
+import tempfile
+
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -102,7 +104,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         self.SetSizer(sizerH)
 
         # Initialize the variables that are used to track the active image
-        self.imageDirPath = None
+        self.pngImageName = []
+        self.imageDirPath = []
         self.mostRecentWatershedMaskName = None
 
         # Toggle off the X and Y canvas
@@ -112,6 +115,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Toggle off the cursor
         oopts.showCursor = False
+
+        # Create a temporary directory that will hold the NIfTI files
+        self.adsTempDir = tempfile.TemporaryDirectory()
 
     def onLoadPngButton(self, event):
         """
@@ -129,12 +135,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Check if the image format is valid
         if (inFile[-4:] != '.png') and (inFile[-4:] != '.tif'):
-            print('Invalid file extension')
+            self.showMessage('Invalid file extension')
             return
 
         # Store the directory path and image name for later use in the application of the prediction model
-        self.imageDirPath = os.path.dirname(inFile)
-        self.pngImageName = inFile[self.imageDirPath.__len__() + 1:]
+        self.imageDirPath.append(os.path.dirname(inFile))
+        self.pngImageName.append(inFile[os.path.dirname(inFile).__len__() + 1:])
 
         # Call the function that convert and loads the png or tif image
         self.loadPngImageFromPath(inFile)
@@ -155,7 +161,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Check if the image format is valid
         if (inFile[-4:] != '.png'):
-            print('Invalid file extension')
+            self.showMessage('Invalid file extension')
             return
         # Load the mask into FSLeyes
         if ('axon' in inFile) :
@@ -171,11 +177,24 @@ class ADScontrol(ctrlpanel.ControlPanel):
         selected in the combobox. The segmentation masks are then loaded into FSLeyes
         """
 
-        # Check if an image has been loaded
-        if self.imageDirPath is None:
-            print('Please load a PNG file')
+        # Get the image name and directory
+        imageOverlay = self.getVisibleImageOverlay()
+        if self.getVisibleImageOverlay() is None:
             return
 
+        nloadedImages = self.pngImageName.__len__()
+        imageName = None
+        imageDirectory = None
+        for i in range(nloadedImages):
+            if imageOverlay.name == (self.pngImageName[i])[:-4]:
+                imageName = self.pngImageName[i]
+                imageDirectory = self.imageDirPath[i]
+
+        if (imageName is None) or (imageDirectory is None):
+            self.showMessage("Couldn't find the path to the loaded image")
+            return
+
+        # Get the selected model
         selectedModel = self.modelCombobox.GetStringSelection()
 
 
@@ -196,11 +215,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
             modelPath = os.path.join(modelPath, 'models', 'default_' + selectedModel + '_model_v1')
 
         else:
-            print('Please select a model')
+            self.showMessage('Please select a model')
             return
 
         # Check if the pixel size txt file exist in the imageDirPath
-        pixelSizeExists = os.path.isfile(self.imageDirPath + '/pixel_size_in_micrometer.txt')
+        pixelSizeExists = os.path.isfile(imageDirectory + '/pixel_size_in_micrometer.txt')
 
         # if it doesn't exist, ask the user to input the pixel size and create the .txt file
         if pixelSizeExists is False:
@@ -209,7 +228,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     return
 
                 pixelSizeStr = textEntry.GetValue()
-            textFile = open(self.imageDirPath + '/pixel_size_in_micrometer.txt', 'w')
+            textFile = open(imageDirectory + '/pixel_size_in_micrometer.txt', 'w')
             textFile.write(pixelSizeStr)
             textFile.close()
 
@@ -218,14 +237,14 @@ class ADScontrol(ctrlpanel.ControlPanel):
         with open(model_configfile, 'r') as fd:
             config_network = json.loads(fd.read())
 
-        prediction = axon_segmentation([self.imageDirPath], [self.pngImageName], modelPath,
+        prediction = axon_segmentation([imageDirectory], [imageName], modelPath,
                                        config_network, verbosity_level=3)
         # The axon_segmentation function creates the segmentation masks and stores them as PNG files in the same folder
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axonMaskPath = self.imageDirPath + '/AxonDeepSeg_seg-axon.png'
-        myelinMaskPath = self.imageDirPath + '/AxonDeepSeg_seg-myelin.png'
+        axonMaskPath = imageDirectory + '/AxonDeepSeg_seg-axon.png'
+        myelinMaskPath = imageDirectory + '/AxonDeepSeg_seg-myelin.png'
         self.loadPngImageFromPath(axonMaskPath, isMask=True, colormap='blue')
         self.loadPngImageFromPath(myelinMaskPath, isMask=True, colormap='red')
 
@@ -264,7 +283,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Make sure the masks have the same size
         if (myelinArray.shape != axonArray.shape):
-            print('invalid visible masks dimensions')
+            self.showMessage('invalid visible masks dimensions')
             return
 
         # Save the arrays as PNG files
@@ -295,7 +314,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Make sure the masks have the same size
         if (myelinArray.shape != axonArray.shape):
-            print('invalid visible masks dimensions')
+            self.showMessage('invalid visible masks dimensions')
             return
 
         # If a watershed mask already exists, remove it.
@@ -309,7 +328,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Save the watershed mask as a png then load it as an overlay
         watershedImageArray = np.flipud(np.rot90(watershedData, k=3, axes=(0, 1)))
         watershedImage = Image.fromarray(watershedImageArray)
-        fileName = self.imageDirPath + '/watershed_mask.png'
+        fileName = self.adsTempDir.name + '/watershed_mask.png'
         watershedImage.save(fileName)
         watershedMaskOverlay = self.loadPngImageFromPath(fileName, addToOverlayList=False)
         watershedMaskOverlay[:, :, 0] = watershedData
@@ -340,7 +359,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Make sure the masks have the same size
         if (myelinArray.shape != axonArray.shape):
-            print('invalid visible masks dimensions')
+            self.showMessage('invalid visible masks dimensions')
             return
 
         # Get the centroid indexes
@@ -458,7 +477,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             img_png2D = img_png[:, :]
 
         else:
-            print("Invalid image dimensions")
+            self.showMessage("Invalid image dimensions")
             return
 
         if isMask is True:
@@ -468,8 +487,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Note: PIL and NiBabel use different axis conventions, so some array manipulation has to be done.
         img_NIfTI = nib.Nifti1Image(np.flipud(np.rot90(img_png2D, k=3, axes=(0, 1))), np.eye(4))
 
-        # Save the NIfTI image
-        outFile = imagePath[:-3] + 'nii.gz'
+        # Save the NIfTI image in a temporary directory
+        img_name = os.path.basename(imagePath)
+        outFile = self.adsTempDir.name + '/' + img_name[:-3] + 'nii.gz'
         nib.save(img_NIfTI, outFile, )
 
         # Load the NIfTI image as an overlay
@@ -500,10 +520,37 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
     def getVisibleImageOverlay(self):
         """
-        Work in progress
-        :return:
+        This function is used to find the active microscopy image. This image should be visible and should NOT have the
+        following keywords in its name : axon, myelin, Myelin, watershed, Watershed.
+        :return: The visible microscopy image
+        :rtype: overlay
         """
         visibleOverlayList = self.getVisibleOverlays()
+        imageOverlay = None
+        nFoundOverlays = 0
+
+        if visibleOverlayList.__len__() is 0:
+            self.showMessage('No overlays are displayed')
+            return None
+
+        if visibleOverlayList.__len__() is 1:
+            return visibleOverlayList[0]
+
+        for anOverlay in visibleOverlayList:
+            if ('axon' not in anOverlay.name) and ('myelin' not in anOverlay.name) and\
+                    ('Myelin' not in anOverlay.name) and ('watershed' not in anOverlay.name) and\
+                    ('Watershed' not in anOverlay.name):
+                nFoundOverlays = nFoundOverlays + 1
+                imageOverlay = anOverlay
+
+        if nFoundOverlays > 1:
+            self.showMessage('More than one microscopy image has been found')
+            return None
+        if nFoundOverlays is 0:
+            self.showMessage('No visible microscopy image has been found')
+            return None
+
+        return imageOverlay
 
     def getVisibleAxonOverlay(self):
         """
@@ -515,11 +562,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axonOverlay = None
         nFoundOverlays = 0
 
-        if visibleOverlayList.__len__() > 3:
-            print('Too many overlays are displayed')
-            return None
         if visibleOverlayList.__len__() is 0:
-            print('No overlays are displayed')
+            self.showMessage('No overlays are displayed')
             return None
 
         for anOverlay in visibleOverlayList:
@@ -528,10 +572,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 axonOverlay = anOverlay
 
         if nFoundOverlays > 1:
-            print('More than one axon mask has been found')
+            self.showMessage('More than one axon mask has been found')
             return None
         if nFoundOverlays is 0:
-            print('No visible axon mask has been found')
+            self.showMessage('No visible axon mask has been found')
             return None
 
         return axonOverlay
@@ -546,11 +590,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelinOverlay = None
         nFoundOverlays = 0
 
-        if visibleOverlayList.__len__() > 3:
-            print('Too many overlays are displayed')
-            return None
         if visibleOverlayList.__len__() is 0:
-            print('No overlays are displayed')
+            self.showMessage('No overlays are displayed')
             return None
 
         for anOverlay in visibleOverlayList:
@@ -559,13 +600,24 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 myelinOverlay = anOverlay
 
         if nFoundOverlays > 1:
-            print('More than one myelin mask has been found')
+            self.showMessage('More than one myelin mask has been found')
             return None
         if nFoundOverlays is 0:
-            print('No visible myelin mask has been found')
+            self.showMessage('No visible myelin mask has been found')
             return None
 
         return myelinOverlay
+
+    def showMessage(self, message, caption='Error'):
+        """
+        This function is used to show a popup message on the FSLeyes interface.
+        :param message: The message to be displayed.
+        :type message: String
+        :param caption: (Optional) The caption of the message box.
+        :type caption: String
+        """
+        with wx.MessageDialog(self, message, caption=caption, style=wx.OK | wx.CENTRE, pos=wx.DefaultPosition) as msg:
+            msg.ShowModal()
 
     def getCitation(self):
         """
