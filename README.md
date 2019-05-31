@@ -29,7 +29,7 @@ If you experience issues during installation and/or use of AxonDeepSeg, you can 
 **Applications**
 
 * [Tabarin et al. *Deep learning segmentation (AxonDeepSeg) to generate axonal-property map from ex vivo human optic chiasm using light microscopy.* ISMRM 2019](https://www.ismrm.org/19/program_files/DP23.htm)
-* [Lousada et al. *Characterization of cortico-striatal myelination in the context of pathological Repetitive Behaviors.*  International Basal Ganglia Society (IBAGS) 2019](Lousada, E., Boudreau, M., Perone, C, Cohen-Ada, J., Nait-Oumesmar, B., Schreiweis, C., Burguière, E. (2019) Characterization of cortico-striatal myelination in the context of pathological Repetitive Behaviors.  International Basal Ganglia Society (IBAGS), 129)
+* [Lousada et al. *Characterization of cortico-striatal myelination in the context of pathological Repetitive Behaviors.*  International Basal Ganglia Society (IBAGS) 2019](http://www.ibags2019.com/key4register/images/client/863/files/Abstractbook1405.pdf)
 * [Duval et al. *Axons morphometry in the human spinal cord.* NeuroImage 2019](https://www.sciencedirect.com/science/article/pii/S1053811918320044)
 
 **Reviews**
