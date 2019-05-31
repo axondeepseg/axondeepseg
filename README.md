@@ -18,6 +18,22 @@ For more information, see the [documentation website](http://axondeepseg.readthe
 
 If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues). We will reply to you as soon as possible.
 
+
+## References
+
+**AxonDeepS
+* [Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data* Montreal Artificial Intelligence and Neuroscience 2]()
+* [Zaimi et al. *AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks.* Scientific Reports 2018](https://www.nature.com/articles/s41598-018-22181-4)
+
+**Applications**
+
+* [Tabarin et al. *Deep learning segmentation (AxonDeepSeg) to generate axonal-property map from ex vivo human optic chiasm using light microscopy.* ISMRM 2019](https://www.ismrm.org/19/program_files/DP23.htm)
+* [Duval et al. *Axons morphometry in the human spinal cord.* NeuroImage 2019](https://www.sciencedirect.com/science/article/pii/S1053811918320044)
+
+**Reviews**
+
+* [Riordon et al. *Deep learning with microfluidics for biotechnology.* Trends in Biotechnology 2019](https://www.sciencedirect.com/science/article/pii/S0167779918302452)
+
 ## Citation
 
 If you use this work in your research, please cite it as follows:
