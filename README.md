@@ -23,12 +23,12 @@ If you experience issues during installation and/or use of AxonDeepSeg, you can 
 
 **AxonDeepSeg**
 
-* Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data.* Montreal Artificial Intelligence and Neuroscience 2018 - \[[source code](https://github.com/neuropoly/deep-active-learning)\]
+* Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data.* Montreal Artificial Intelligence and Neuroscience 2018 - \[[**source code**](https://github.com/neuropoly/deep-active-learning)\]
 * [Zaimi et al. *AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks.* Scientific Reports 2018](https://www.nature.com/articles/s41598-018-22181-4)
 
 **Applications**
 
-* [Tabarin et al. *Deep learning segmentation (AxonDeepSeg) to generate axonal-property map from ex vivo human optic chiasm using light microscopy.* ISMRM 2019](https://www.ismrm.org/19/program_files/DP23.htm)
+* [Tabarin et al. *Deep learning segmentation (AxonDeepSeg) to generate axonal-property map from ex vivo human optic chiasm using light microscopy.* ISMRM 2019](https://www.ismrm.org/19/program_files/DP23.htm) - \[[**source code**](https://github.com/thibaulttabarin/UnAxSeg)\]
 * [Lousada et al. *Characterization of cortico-striatal myelination in the context of pathological Repetitive Behaviors.*  International Basal Ganglia Society (IBAGS) 2019](http://www.ibags2019.com/key4register/images/client/863/files/Abstractbook1405.pdf)
 * [Duval et al. *Axons morphometry in the human spinal cord.* NeuroImage 2019](https://www.sciencedirect.com/science/article/pii/S1053811918320044)
 
