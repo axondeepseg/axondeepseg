@@ -126,11 +126,11 @@ To install Miniconda, run the following commands in your terminal:::
     cd ~
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
     bash ~/miniconda.sh -b -p $HOME/miniconda
-    echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bash_profile
-    source ~/.bash_profile
+    echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
+    source ~/.bashrc
 
 .. NOTE ::
-   If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try substituting ``~/.bash_profile`` with ``~/.bashrc``, or ask your sysadmin which startup script you are using.
+   If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try adding the line `source ~/.bashrc` to your ``~/.bash_profile`` file. `See here<http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ for more details.
 
 macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,9 +142,6 @@ To install Miniconda, run the following commands in your terminal:::
     bash ~/miniconda.sh -b -p $HOME/miniconda
     echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bash_profile
     source ~/.bash_profile
-
-.. NOTE ::
-   If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try substituting ``~/.bash_profile`` with ``~/.bashrc``, or ask your sysadmin which startup script you are using.
 
 Windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
