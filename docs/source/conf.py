@@ -14,11 +14,11 @@
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
-# documentation root, use Path().resolve() to make it absolute, like shown here.
+# documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-from pathlib import Path
+import os
 import sys
-sys.path.insert(0, Path('../..').resolve())
+sys.path.insert(0, os.path.abspath('../..'))
 
 import AxonDeepSeg
 

@@ -129,6 +129,9 @@ To install Miniconda, run the following commands in your terminal:::
     echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
     source ~/.bashrc
 
+.. NOTE ::
+   If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try adding the line ``source ~/.bashrc`` to your ``~/.bash_profile`` file. `See here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ for more details.
+
 macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
