@@ -226,6 +226,81 @@ You can install the latest stable release of AxonDeepSeg using ``pip`` with the 
 
     pip install axondeepseg
 
+
+Graphical User Interface (optional) (beta)
+-------------------------------------------------------------------------------
+
+A GUI for AxonDeepSeg is currently in developpment. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. It allows the use of some of AxonDeepSeg's tools without having to write scripts or commands on a terminal. It also provides tools for manual segmentation and correction.
+
+Since this feature is still in development, the GUI has to be installed by cloning a specific branch of the AxonDeepSeg project and installing it using a virtual environment. If you encounter a problem when installing or using the GUI, you can report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
+FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
+Here are the instructions to install the GUI:
+
+macOS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create a new virtual environment, then clone and install the FSLeyes_integration branch ::
+
+           conda create -n FSL_ADS_test python=3.6
+           conda activate FSL_ADS_test
+           git clone --single-branch --branch FSLeyes_integration https://github.com/neuropoly/axondeepseg.git
+           cd axondeepseg
+           pip install -e .
+
+Make sure your know where the cloned repository is located on your machine
+
+Install FSLeyes using conda-forge ::
+
+           conda install -c conda-forge fsleyes
+           
+Launch FSLeyes ::
+
+           fsleyes
+           
+On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (found in the cloned repository)``
+``Install permanently --> yes.``
+
+The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
+
+Linux (tested on ubuntu)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create a new virtual environment, then clone and install the FSLeyes_integration branch ::
+
+           conda create -n FSL_ADS_test python=3.6
+           conda activate FSL_ADS_test
+           git clone --single-branch --branch FSLeyes_integration https://github.com/neuropoly/axondeepseg.git
+           cd axondeepseg
+           pip install -e .
+
+Make sure your know where the cloned repository is located on your machine.
+
+Install the C/C++ required to use wxPython ::
+
+           sudo apt-get install build-essential
+           sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
+           sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev
+           
+Install wxPython using conda ::
+
+           conda install -c anaconda wxpython
+           
+Install FSLeyes using pip ::
+
+           pip install fsleyes
+           
+Launch FSLeyes ::
+
+           fsleyes
+
+On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (found in the cloned repository)``
+``Install permanently --> yes.``
+
+The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
+
+Known issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. The GUI is unable to load large images. The exact maximum dimensions can varry depending on your graphics card. In our testing, we couldn't load images with a side larger than 2048 pixels.
+2. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
+
 Testing the installation
 -------------------------------------------------------------------------------
 .. WARNING ::
@@ -432,16 +507,6 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 
 * Manually correct the axon mask (as explained in Option 1).
 * Use the `AxonSeg <https://github.com/neuropoly/axonseg>`_ software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the `as_tutorial guideline <https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m>`_.
-
-**Installing FSLeyes**
- 
-* Install the FSLeyes_integration branch of AxonDeepSeg inside a conda environment
-* Install Wxpython using conda install -c anaconda wxpython
-* Install FSLeyes using pip install fsleyes
-* Launch FSLeyes using the command fsleyes
-* Go to file > load plugin > select ads_plugin.py > yes
-* view > ADScontrol (there might be an error if the script can't find the logo)
-* Manualy arrange the panel
 
 Citation
 ===============================================================================
