@@ -232,6 +232,9 @@ Graphical User Interface (optional) (beta)
 
 A GUI for AxonDeepSeg is currently in developpment. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. It allows the use of some of AxonDeepSeg's tools without having to write scripts or commands on a terminal. It also provides tools for manual segmentation and correction.
 
+.. image:: GUI_image.png
+
+
 Since this feature is still in development, the GUI has to be installed by cloning a specific branch of the AxonDeepSeg project and installing it using a virtual environment. If you encounter a problem when installing or using the GUI, you can report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
 FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
 Here are the instructions to install the GUI:
