@@ -276,7 +276,7 @@ Create a new virtual environment, then clone and install the FSLeyes_integration
 
 Make sure your know where the cloned repository is located on your machine.
 
-Install the C/C++ required to use wxPython ::
+Install the C/C++ compilers required to use wxPython ::
 
            sudo apt-get install build-essential
            sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
