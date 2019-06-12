@@ -5,7 +5,7 @@ from skimage import transform
 from skimage.filters import gaussian
 import numpy as np
 import random
-from .patch_extraction import extract_patch
+from AxonDeepSeg.data_management.patch_extraction import extract_patch
 import AxonDeepSeg.ads_utils
 
 #######################################################################################################################

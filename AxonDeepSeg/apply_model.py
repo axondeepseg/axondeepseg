@@ -10,9 +10,9 @@ from AxonDeepSeg.network_construction import *
 import AxonDeepSeg.ads_utils
 from AxonDeepSeg.ads_utils import convert_path
 
-from .visualization.get_masks import get_masks
-from .patch_management_tools import im2patches_overlap, patches2im_overlap
-from .config_tools import update_config, default_configuration
+from AxonDeepSeg.visualization.get_masks import get_masks
+from AxonDeepSeg.patch_management_tools import im2patches_overlap, patches2im_overlap
+from AxonDeepSeg.config_tools import update_config, default_configuration
 
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict, ckpt_name='model',
                   inference_batch_size=1, overlap_value=25, resampled_resolutions=[0.1],
