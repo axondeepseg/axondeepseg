@@ -7,8 +7,8 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2' # Get rid of Tensorflow warnings.
 import tensorflow as tf
 import pickle
-from .data_management.input_data import input_data
-from .config_tools import generate_config
+from AxonDeepSeg.data_management.input_data import input_data
+from AxonDeepSeg.config_tools import generate_config
 import AxonDeepSeg.ads_utils
 
 

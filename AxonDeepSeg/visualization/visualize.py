@@ -18,7 +18,7 @@ from matplotlib.figure import Figure
 # AxonDeepSeg imports
 import AxonDeepSeg.ads_utils
 from AxonDeepSeg.ads_utils import convert_path
-from ..testing.segmentation_scoring import score_analysis, dice
+from AxonDeepSeg.testing.segmentation_scoring import score_analysis, dice
 
 
 def visualize_training(path_model, iteration_start_for_viz=0):
