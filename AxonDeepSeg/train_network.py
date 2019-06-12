@@ -13,8 +13,8 @@ from AxonDeepSeg.train_network_tools import *
 import AxonDeepSeg.ads_utils
 from AxonDeepSeg.ads_utils import convert_path
 
-from .data_management.input_data import input_data
-from .config_tools import generate_config
+from AxonDeepSeg.data_management.input_data import input_data
+from AxonDeepSeg.config_tools import generate_config
 
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
