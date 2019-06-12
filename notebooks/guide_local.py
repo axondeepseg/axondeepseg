@@ -3,7 +3,7 @@
 # guide
 
 import json
-import os
+from pathlib import Path
 
 # Description du fichier config :
 # network_learning_rate : float : No idea, but certainly linked to the back propagation ? Default : 0.0005.
@@ -52,24 +52,12 @@ config = {
     'network_weighted_cost': weighted_cost
 }
 
-
-# Edit and read the config
-"""if not os.path.exists(repname):
-    os.makedirs(repname)
-
-with open(repname+filename, 'w+') as f:
-    json.dump(config, f, indent=2)
-
-with open(repname+filename, 'r') as fd:
-    config_network = json.loads(fd.read())"""
-
 # training
-path_training = '../'+trainingset
-path_model = '../models/test'
-path_model_init = '../models/test'
+path_training = Path('..') / trainingset
+path_model = Path('..') / 'models/test'
 
-if not os.path.exists(path_model):
-    os.makedirs(path_model)
+if not path_model.exists():
+    path_model.mkdir(parents=True)
 
    
 with open(path_model+filename, 'w') as f:

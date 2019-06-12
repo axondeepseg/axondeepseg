@@ -17,6 +17,7 @@ Version [2.2dev] - XXXX-XX-XX
 - Handle exception for images smaller than minimum patch size after resizing
 - Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
 - Remove `matplotlib.pyplot` from source code and refactor to full OO plotting
+- Standardize path management to `pathlib` library
 
 
 Version [2.1] - 2018-09-25
@@ -127,6 +128,9 @@ To install Miniconda, run the following commands in your terminal:::
     bash ~/miniconda.sh -b -p $HOME/miniconda
     echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
     source ~/.bashrc
+
+.. NOTE ::
+   If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try adding the line ``source ~/.bashrc`` to your ``~/.bash_profile`` file. `See here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ for more details.
 
 macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
