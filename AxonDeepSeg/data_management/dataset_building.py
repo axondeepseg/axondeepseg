@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 import AxonDeepSeg.ads_utils
 from AxonDeepSeg.data_management.input_data import labellize_mask_2d
-from .patch_extraction import extract_patch
+from AxonDeepSeg.data_management.patch_extraction import extract_patch
 from AxonDeepSeg.ads_utils import convert_path
 
 def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.2, 0.8],
