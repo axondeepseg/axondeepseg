@@ -67,7 +67,7 @@ def im2patches_overlap(img, overlap_value=25, scw=512):
     L_patches = []
     for e in L_pos:
         patch = img[e[0]:e[0] + scw, e[1]:e[1] + scw]
-        L_patches.append(apply_legacy_preprocess(patch))
+        L_patches.append(patch)
 
     return [img, L_patches, L_pos]
 
