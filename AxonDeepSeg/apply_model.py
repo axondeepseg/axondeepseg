@@ -9,7 +9,7 @@ from skimage.transform import rescale, resize
 import tensorflow as tf
 import AxonDeepSeg.ads_utils
 from AxonDeepSeg.ads_utils import convert_path
-import matplotlib.pyplot as plt
+
 
 from AxonDeepSeg.network_construction import *
 
@@ -21,7 +21,6 @@ from AxonDeepSeg.config_tools import update_config, default_configuration
 # Keras import
 
 from keras import backend as K
-import cv2
 
 
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict, ckpt_name='model',
@@ -76,28 +75,18 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     if verbosity_level >= 2:
         print("Graph construction ...")
 
-    # TF Relacement##########
-    """
-    x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size))
-    """
-    #######################
 
-    # Keras Replacement
+
 
     x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size, 1))
 
     model = uconv_net(config_dict, bn_updated_decay=None, verbose=True)  # inference
     pred = model.output
-    # pred = tf.reshape(output,[tf.shape(output)[0], patch_size * patch_size, n_classes])
 
-    ####################
 
-    # TF Replacement####################
-    """
-    pred = uconv_net(x, config_dict, phase=False, verbose=False)  # Inference
-    """
 
-    ##################################
+
+
 
     saver = tf.train.Saver()  # Load previous model
 
@@ -504,7 +493,6 @@ def perform_batch_inference(model, tf_session, tf_prediction_op, tf_input, batch
     :param prediction_proba_activate: Boolean, whether to compute the probability maps or not.
     :return: List of segmentation of the patches, and optionally list of the probabilty maps for each patch.
     """
-    # Keras
 
     batch_x = np.expand_dims(batch_x, axis=3)
     batch_x = np.concatenate((batch_x, batch_x, batch_x), axis=3)
@@ -512,8 +500,7 @@ def perform_batch_inference(model, tf_session, tf_prediction_op, tf_input, batch
     p = model.predict(batch_x)
 
     """
-    p = tf_session.run(tf_prediction_op, feed_dict={
-        tf_input: batch_x})  # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes)."""
+          # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes)."""
     Mask = np.argmax(p, axis=3)  # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
 
     batch_predictions_list = [np.squeeze(e) for e in np.split(Mask, size_batch, axis=0)]
