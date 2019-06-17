@@ -3,31 +3,7 @@ import numpy as np
 from skimage import exposure
 import AxonDeepSeg.ads_utils
 
-def apply_legacy_preprocess(patch):
-    """
-    Apply legacy preprocessing (histogram equalization + normalization per patch).
-    :param patch: The patch (just an image) to preprocess.
-    :return: Preprocessed patch.
-    """
 
-    patch = exposure.equalize_hist(patch)
-    patch = (patch - np.mean(patch)) / np.std(patch)
-
-    return patch
-
-def apply_preprocess(patch, dataset_mean, dataset_variance):
-    """
-    Apply preprocessing (histogram equalization + normalization over all patches from the dataset).
-    :param patch: The patch (just an image) to preprocess.
-    :param dataset_mean: Float, the mean of the dataset, per pixel, over all patches.
-    :param dataset_variance: Float, the variance of the dataset, per pixel, over all patches.
-    :return: Preprocessed patch.
-    """
-
-    patch = exposure.equalize_hist(patch)
-    patch = (patch - dataset_mean) / dataset_variance
-
-    return patch
 
 
 def im2patches_overlap(img, overlap_value=25, scw=512):

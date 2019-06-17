@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 from AxonDeepSeg.network_construction import *
-from AxonDeepSeg.input_data import *
+from AxonDeepSeg.data_management.input_data import *
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg.config_tools import generate_config
 
