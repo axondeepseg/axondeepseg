@@ -47,9 +47,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ############################################## VARIABLES INITIALIZATION ###########################################
     ###################################################################################################################
 
-    # If string, convert to Path objects
-    path_trainingset = convert_path(path_trainingset)
-    path_model = convert_path(path_model)
+
 
     # Results and Models
     if not path_model.exists():
@@ -60,8 +58,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     dropout = config["dropout"]
     weighted_cost = config["weighted_cost-activate"]
     batch_size_training = config["batch_size"]
-    batch_size = 8
-    epochs = 333
+    batch_size = config["batch_size"]
+    epochs = 5
     batch_norm_decay = config["batch_norm_decay_starting_decay"]
 
     image_size = config["trainingset_patchsize"]
@@ -139,7 +137,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     ########################### Tensorboard for Visualization ###########
     # Name = "SEM_3c_dataset-{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
-    tensorboard = TensorBoard(log_dir=path_model)
+    tensorboard = TensorBoard(log_dir=str(path_model))
 
     ########################## Training Unet Model ###########
 

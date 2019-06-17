@@ -144,7 +144,6 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
 
     for i in range(depth):
         # Upsampling
-        print("Upsampling")
         net = UpSampling2D((2, 2))(net)
 
         # Convolution

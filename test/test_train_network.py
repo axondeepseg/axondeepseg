@@ -134,12 +134,9 @@ class TestCore(object):
         expectedFiles = [
             "checkpoint",
             "config_network.json",
-            "evolution_stats.pkl",
-            "evolution.pkl",
             "model.ckpt.data-00000-of-00001",
             "model.ckpt.index",
-            "model.ckpt.meta",
-            "report.txt"
+            "model.ckpt.meta"
             ]
 
         existingFiles = [f.name for f in self.modelPath.iterdir()]
