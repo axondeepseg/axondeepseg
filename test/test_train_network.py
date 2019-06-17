@@ -3,8 +3,9 @@
 import json
 from pathlib import Path
 import shutil
-import tensorflow as tf
-from shutil import copy
+
+import keras.backend.tensorflow_backend as K
+
 
 import pytest
 
@@ -14,8 +15,8 @@ from AxonDeepSeg.train_network import train_model
 class TestCore(object):
     def setup(self):
         # reset the tensorflow graph for new training
-        tf.reset_default_graph()
 
+        K.clear_session()
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
 

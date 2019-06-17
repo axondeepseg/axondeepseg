@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
-import os
+
 from pathlib import Path
 
 
 from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.input_data import *
-
-from AxonDeepSeg.train_network_tools import *
-
 from AxonDeepSeg.ads_utils import convert_path
-
-
 from AxonDeepSeg.config_tools import generate_config
 
-import keras as K
+import keras
 
 from keras.models import *
 from keras.preprocessing.image import ImageDataGenerator
@@ -21,6 +16,11 @@ from keras.callbacks import *
 
 # Keras import
 from keras.losses import categorical_crossentropy
+import keras.backend.tensorflow_backend as K
+
+
+K.set_session
+import tensorflow as tf
 
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
@@ -144,7 +144,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # Adam Optimizer for Unet
     adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
-    # Compile the model with Categorical Cross Entropy loss and
+    # Compile the model with Categorical Cross Entropy loss and Adam Optimizer
     model.compile(optimizer=adam, loss="categorical_crossentropy",
                   metrics=["accuracy", dice_axon, dice_myelin, dice_coef])
 
@@ -165,6 +165,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     # Save the checkpoint in the /models/path_model folder
     filepath_loss = str(path_model) + "/ADS-best_loss.hdf5"
+    print(filepath_loss)
 
     # Keep only a single checkpoint, the best over test loss.
     checkpoint_loss = ModelCheckpoint(filepath_loss,
@@ -173,8 +174,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                       save_best_only=True,
                                       mode='min')
 
-    ########################## Use Checkpoints to save best Acuuracy and Loss ###########
 
+
+    ########################## Use Checkpoints to save best Acuuracy and Loss ###########
     model.fit_generator(train_generator, validation_data=(valid_generator), steps_per_epoch=train_steps,
                         validation_steps=valid_steps,
                         epochs=epochs, callbacks=[tensorboard, checkpoint_loss, checkpoint_acc])
@@ -182,6 +184,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ########################## Save the model after Training ###########
 
     model.save(str(path_model) + '/model.hdf5')
+
 
     # Add ops to save and restore all the variables.
     saver = tf.train.Saver()
@@ -193,6 +196,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     sess = K.get_session()
     # Save the model to be used by TF framework
     save_path = saver.save(sess, str(path_model) + "/model.ckpt")
+    print(save_path)
 
 
 # Defining the Loss and  Performance Metrics
