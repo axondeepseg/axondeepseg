@@ -4,7 +4,7 @@
   "batch_norm_decay_decay_activate": true, 
   "learning_rate_decay_activate": true, 
   "learning_rate_decay_rate": 0.99,
- "learning_rate_decay_type": "polynomial", 
+  "learning_rate_decay_type": "polynomial", 
   "batch_norm_decay_ending_decay": 0.9, 
   "depth": 4, 
   "weighted_cost-activate": true, 
