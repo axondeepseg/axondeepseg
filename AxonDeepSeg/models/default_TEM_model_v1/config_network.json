@@ -21,10 +21,11 @@
     0, 
     0.2, 
     0.8
-  ], 
+  ],
+  "epochs": 2500,
   "trainingset_patchsize": 512, 
   "learning_rate": 0.001, 
-  "downsampling": "convolution", 
+ "downsampling": "convolution",
   "batch_size": 8, 
   "da-type": "all", 
   "da-2-random_rotation-activate": false, 

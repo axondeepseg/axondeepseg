@@ -50,6 +50,7 @@ class TestCore(object):
             "trainingset_patchsize": 256,
             "trainingset": "SEM_3c_256",
             "batch_size": 2,
+            "epochs":2,
             "save_epoch_freq": 1,
 
             # Network architecture parameters:

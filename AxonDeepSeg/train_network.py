@@ -59,7 +59,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     weighted_cost = config["weighted_cost-activate"]
     batch_size_training = config["batch_size"]
     batch_size = config["batch_size"]
-    epochs = 5
+    epochs = config["epochs"]
     batch_norm_decay = config["batch_norm_decay_starting_decay"]
 
     image_size = config["trainingset_patchsize"]
@@ -69,6 +69,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     # Training and Validation Path
     path_training_set = str(path_trainingset) + "/Train"
     path_validation_set = str(path_trainingset) + "/Validation"
+
 
     # List of Training Ids
     no_train_images = int(len(os.listdir(path_training_set)) / 2)
