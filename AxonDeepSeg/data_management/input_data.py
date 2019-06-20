@@ -17,56 +17,17 @@ class DataGen(keras.utils.Sequence):
         ## Path
         image_path = os.path.join(self.path, 'image_' + id_name) + ".png"
         mask_path = os.path.join(self.path, 'mask_' + id_name) + ".png"
-        # all_masks = os.listdir(mask_path)
 
         ## Reading Image
         image = cv2.imread(image_path)
 
-        # -----PreProcessing --------
-        # image = exposure.equalize_hist(image) #histogram equalization
-        # image = (image - np.mean(image))/np.std(image) #data whitening
-        # ---------------------------
-        # image = np.reshape(image, (self.image_size, self.image_size,1))
-
-        # -----PreProcessing --------
+        # -----Mask PreProcessing --------
         mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
         mask = descritize_mask(mask, self.thresh_indices)
         # ---------------------------
-
-        # print(mask.shape)
-        # mask = np.reshape(mask, (self.image_size, self.image_size,3))
-        # mask = np.zeros((self.image_size, self.image_size, 1))
-        """
-        ## Reading Masks
-        for name in all_masks:
-            _mask_path = mask_path + name
-            _mask_image = cv2.imread(_mask_path, -1)
-            _mask_image = cv2.resize(_mask_image, (self.image_size, self.image_size)) #128x128
-            _mask_image = np.expand_dims(_mask_image, axis=-1)
-            mask = np.maximum(mask, _mask_image)
-        """
-        ## Normalizaing
-        # image = image/255.0
-        # mask = mask/255.0
-        # image = image.reshape((512* 512, 3))
-        # mask  = mask.reshape((512*512, 3))
-
         return (image, mask)
 
     def __getitem__(self, index):
-
-        """
-        data_gen_args = dict(vertical_flip=True)
-        image_datagen = ImageDataGenerator(**data_gen_args)
-        mask_datagen = ImageDataGenerator(**data_gen_args)
-
-        seed = 2018
-
-
-        image_generator = image_datagen.flow(self.__load__(id_name)[0], seed=seed, batch_size= batch_size, shuffle=True)
-        mask_generator = mask_datagen.flow(self.__load__(id_name)[1], seed=seed, batch_size= batch_size, shuffle=True)
-
-        """
 
         if (index + 1) * self.batch_size > len(self.ids):
             self.batch_size = len(self.ids) - index * self.batch_size

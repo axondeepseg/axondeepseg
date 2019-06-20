@@ -75,17 +75,10 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     if verbosity_level >= 2:
         print("Graph construction ...")
 
-
-
-
     x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size, 1))
 
     model = uconv_net(config_dict, bn_updated_decay=None, verbose=True)  # inference
     pred = model.output
-
-
-
-
 
 
     saver = tf.train.Saver()  # Load previous model
@@ -97,12 +90,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     # Launch the session (this part takes time). All images will be processed by loading the session just once.
 
     sess = tf.Session(config=config_gpu)
-
-    # Keras Replacement###########
-
     K.set_session(sess)
-
-    ##############################
 
     model_previous_path = path_model_folder.joinpath(ckpt_name).with_suffix('.ckpt')
     saver.restore(sess, str(model_previous_path))
@@ -182,12 +170,6 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
     ########### STEP 4: Reconstruction of the segmented patches into segmentations of acquisitions and
     # resampling to the original size
-
-    # Keras Segmentation
-    """
-    for i in range(len(prediction
-
-    """
 
     if prediction_proba_activate:
 
@@ -499,8 +481,6 @@ def perform_batch_inference(model, tf_session, tf_prediction_op, tf_input, batch
 
     p = model.predict(batch_x)
 
-    """
-          # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes)."""
     Mask = np.argmax(p, axis=3)  # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
 
     batch_predictions_list = [np.squeeze(e) for e in np.split(Mask, size_batch, axis=0)]

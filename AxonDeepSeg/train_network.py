@@ -110,11 +110,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     image_datagen = ImageDataGenerator(**data_gen_args)
     mask_datagen = ImageDataGenerator(**data_gen_args)
 
-    seed = 2018
-
     # Image and Mask Data Generator
-    image_generator_train = image_datagen.flow(image_train_gen, y=None, seed=seed, batch_size=batch_size, shuffle=True)
-    mask_generator_train = mask_datagen.flow(mask_train_gen, y=None, seed=seed, batch_size=batch_size, shuffle=True)
+    image_generator_train = image_datagen.flow(image_train_gen, y=None,  batch_size=batch_size, shuffle=True)
+    mask_generator_train = mask_datagen.flow(mask_train_gen, y=None,  batch_size=batch_size, shuffle=True)
 
     # Just zip the two generators to get a generator that provides augmented images and masks at the same time
     train_generator = zip(image_generator_train, mask_generator_train)
@@ -124,11 +122,10 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     image_datagen = ImageDataGenerator(**data_gen_args)
     mask_datagen = ImageDataGenerator(**data_gen_args)
 
-    seed = 2018
 
-    image_generator_valid = image_datagen.flow(x=image_valid_gen, y=None, seed=seed, batch_size=batch_size,
+    image_generator_valid = image_datagen.flow(x=image_valid_gen, y=None,  batch_size=batch_size,
                                                shuffle=False)
-    mask_generator_valid = mask_datagen.flow(x=mask_valid_gen, y=None, seed=seed, batch_size=batch_size, shuffle=False)
+    mask_generator_valid = mask_datagen.flow(x=mask_valid_gen, y=None,  batch_size=batch_size, shuffle=False)
 
     # Just zip the two generators to get a generator that provides augmented images and masks at the same time
     valid_generator = zip(image_generator_valid, mask_generator_valid)
