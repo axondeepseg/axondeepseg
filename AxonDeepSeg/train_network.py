@@ -152,17 +152,17 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ########################## Use Checkpoints to save best Acuuracy and Loss ###########
 
     # Save the checkpoint in the /models/path_model folder
-    filepath_acc = str(path_model) + "/ADS-best_acc.hdf5"
+    filepath_acc = str(path_model) + "/best_acc_model.ckpt"
 
     # Keep only a single checkpoint, the best over test accuracy.
     checkpoint_acc = ModelCheckpoint(filepath_acc,
                                      monitor='val_acc',
                                      verbose=0,
                                      save_best_only=True,
-                                     mode='max')
+                                     mode='max', period = 5)
 
     # Save the checkpoint in the /models/path_model folder
-    filepath_loss = str(path_model) + "/ADS-best_loss.hdf5"
+    filepath_loss = str(path_model) + "/best_loss_model.ckpt"
     print(filepath_loss)
 
     # Keep only a single checkpoint, the best over test loss.
@@ -170,7 +170,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
                                       monitor='val_loss',
                                       verbose=0,
                                       save_best_only=True,
-                                      mode='min')
+                                      mode='min', period = 5)
 
 
 
