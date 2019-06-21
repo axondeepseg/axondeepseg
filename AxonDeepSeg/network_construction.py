@@ -22,7 +22,7 @@ def conv_relu(x, filters, kernel_size, strides, name, activation='relu', kernel_
 
         net = Dropout(1 - keep_prob)(net)
 
-        return net
+    return net
 
 
 def downconv(x, filters, name, kernel_size=5, strides=2, activation='relu', kernel_initializer='glorot_normal',
@@ -41,7 +41,7 @@ def downconv(x, filters, name, kernel_size=5, strides=2, activation='relu', kern
                 net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, activation=activation,
                              kernel_initializer=kernel_initializer, padding='same')(x)
 
-        return net
+    return net
 
 
 # ------------------------ NETWORK STRUCTURE ------------------------ #
@@ -95,18 +95,18 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
                 print(('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number]))
                 print(('Size:', size_of_convolutions_per_layer[i][conv_number]))"""
 
-            net = conv_relu( filters=features_per_convolution[i][conv_number][1],
+            net = conv_relu(net, filters=features_per_convolution[i][conv_number][1],
                             kernel_size=size_of_convolutions_per_layer[i][conv_number], strides=1,
                             activation='relu', kernel_initializer='glorot_normal', activate_bn=activate_bn,
-                            bn_decay=bn_decay,keep_prob=dropout, name='cconv-d' + str(i) + '-c' + str(conv_number), x = net)
+                            bn_decay=bn_decay,keep_prob=dropout, name='cconv-d' + str(i) + '-c' + str(conv_number))
 
         relu_results.append(net)  # We keep them for the upconvolutions
 
         if downsampling == 'convolution':
 
-            net = downconv( filters=features_per_convolution[i][conv_number][1], kernel_size=5, strides=2,
+            net = downconv(net, filters=features_per_convolution[i][conv_number][1], kernel_size=5, strides=2,
                            activation='relu', kernel_initializer='glorot_normal', activate_bn=activate_bn,
-                           bn_decay=bn_decay, name='downconv-d' + str(i), x = net)
+                           bn_decay=bn_decay, name='downconv-d' + str(i))
 
         else:
 
@@ -123,9 +123,9 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
         net = UpSampling2D((2, 2))(net)
 
         # Convolution
-        net = conv_relu( filters=features_per_convolution[depth - i - 1][-1][1], kernel_size=2, strides=1,
+        net = conv_relu(net, filters=features_per_convolution[depth - i - 1][-1][1], kernel_size=2, strides=1,
                         activation='relu', kernel_initializer='glorot_normal', activate_bn=activate_bn,
-                        bn_decay=bn_decay, keep_prob=dropout, name='upconv-d' + str(depth - i - 1), x = net)
+                        bn_decay=bn_decay, keep_prob=dropout, name='upconv-d' + str(depth - i - 1))
 
         data_temp_size.append(data_temp_size[-1] * 2)
 
@@ -134,10 +134,10 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
 
         # Classic convolutions
         for conv_number in range(number_of_convolutions_per_layer[depth - i - 1]):
-            net = conv_relu(filters=features_per_convolution[depth - i - 1][conv_number][1],
+            net = conv_relu(net, filters=features_per_convolution[depth - i - 1][conv_number][1],
                             kernel_size=size_of_convolutions_per_layer[depth - i - 1][conv_number], strides=1,
                             activation='relu', kernel_initializer='glorot_normal', activate_bn=activate_bn,
-                            bn_decay=bn_decay,keep_prob=dropout, name='econv-d' + str(depth - i - 1) + '-c' + str(conv_number), x = net)
+                            bn_decay=bn_decay,keep_prob=dropout, name='econv-d' + str(depth - i - 1) + '-c' + str(conv_number))
 
     net = Conv2D(filters=n_classes, kernel_size=1, strides=1, name='finalconv', padding='same', activation="softmax")(net)
 

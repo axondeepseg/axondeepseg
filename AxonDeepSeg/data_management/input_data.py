@@ -29,9 +29,6 @@ class DataGen(keras.utils.Sequence):
 
     def __getitem__(self, index):
 
-        if (index + 1) * self.batch_size > len(self.ids):
-            self.batch_size = len(self.ids) - index * self.batch_size
-
         files_batch = self.ids[index * self.batch_size: (index + 1) * self.batch_size]
 
         image = []
@@ -50,8 +47,7 @@ class DataGen(keras.utils.Sequence):
     def on_epoch_end(self):
         pass
 
-    def __len__(self):
-        return int(np.ceil(len(self.ids) / float(self.batch_size)))
+
 
 
 def labellize_mask_2d(patch, thresh_indices=[0, 0.2, 0.8]):

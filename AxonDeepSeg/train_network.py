@@ -57,10 +57,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     learning_rate = config["learning_rate"]
     batch_size = config["batch_size"]
     epochs = config["epochs"]
-
     image_size = config["trainingset_patchsize"]
     thresh_indices = config["thresholds"]
-    n_classes = config["n_classes"]
+
 
     # Training and Validation Path
     path_training_set = str(path_trainingset) + "/Train"
@@ -132,12 +131,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     ########################### Tensorboard for Visualization ###########
     # Name = "SEM_3c_dataset-{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
-    tensorboard = TensorBoard(log_dir=str(path_model) )
+    tensorboard = TensorBoard(log_dir=str(path_model))
 
     ########################## Training Unet Model ###########
 
     # Adam Optimizer for Unet
-    adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    adam = keras.optimizers.Adam(lr=learning_rate)
 
     # Compile the model with Categorical Cross Entropy loss and Adam Optimizer
     model.compile(optimizer=adam, loss="categorical_crossentropy",
