@@ -55,12 +55,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     # Translating useful variables from the config file.
     learning_rate = config["learning_rate"]
-    dropout = config["dropout"]
-    weighted_cost = config["weighted_cost-activate"]
-    batch_size_training = config["batch_size"]
     batch_size = config["batch_size"]
     epochs = config["epochs"]
-    batch_norm_decay = config["batch_norm_decay_starting_decay"]
 
     image_size = config["trainingset_patchsize"]
     thresh_indices = config["thresholds"]
@@ -136,7 +132,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     ########################### Tensorboard for Visualization ###########
     # Name = "SEM_3c_dataset-{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
-    tensorboard = TensorBoard(log_dir=str(path_model))
+    tensorboard = TensorBoard(log_dir=str(path_model) )
 
     ########################## Training Unet Model ###########
 
