@@ -1,42 +1,47 @@
-
 from keras.layers import *
 from keras.models import *
 
+import tensorflow as tf
 
 
-
-def conv_relu(x, filters, kernel_size, strides, activation='relu', kernel_initializer='glorot_normal', activate_bn=True,
+def conv_relu(x, filters, kernel_size, strides, name, activation='relu', kernel_initializer='glorot_normal',
+              activate_bn=True,
               bn_decay=0.999, keep_prob=1.0):
-    if activate_bn == True:
+    with tf.name_scope(name):
+        with tf.name_scope("convolution"):
+            if activate_bn == True:
 
-        net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same', activation=activation,
-                     kernel_initializer=kernel_initializer)(x)
-        net = BatchNormalization(axis=3, momentum=1 - bn_decay)(net)
+                net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same', use_bias=False,
+                             kernel_initializer=kernel_initializer)(x)
+                net = BatchNormalization(axis=3, momentum=1 - bn_decay)(net)
+                net = Activation(activation)(net)
 
-    else:
-        net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, activation=activation,
-                     kernel_initializer=kernel_initializer, padding='same')(net)
+            else:
+                net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, activation=activation,
+                             kernel_initializer=kernel_initializer, padding='same')(x)
 
-    net = Dropout(rate=1 - keep_prob)(net)
+        net = Dropout(1 - keep_prob)(net)
 
-    return net
+        return net
 
 
-def downconv(x, filters, kernel_size=5, strides=2, activation='relu', kernel_initializer='glorot_normal',
+def downconv(x, filters, name, kernel_size=5, strides=2, activation='relu', kernel_initializer='glorot_normal',
              activate_bn=True, bn_decay=0.999):
-    if activate_bn == True:
+    with tf.name_scope(name):
+        with tf.name_scope("convolution"):
+            if activate_bn == True:
 
-        net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same', activation=activation,
-                     kernel_initializer=kernel_initializer)(x)
-        net = BatchNormalization(axis=3, momentum=1 - bn_decay)(net)
+                net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same', use_bias=False,
+                             kernel_initializer=kernel_initializer)(x)
+                net = BatchNormalization(axis=3, momentum=1 - bn_decay)(net)
+                net = Activation(activation)(net)
 
-    else:
+            else:
 
-        net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, activation=activation,
-                     kernel_initializer=kernel_initializer, padding='same')(net)
+                net = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, activation=activation,
+                             kernel_initializer=kernel_initializer, padding='same')(x)
 
-    return net
-
+        return net
 
 
 # ------------------------ NETWORK STRUCTURE ------------------------ #
@@ -78,10 +83,7 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
     ######################### CONTRACTION PHASE ########################
     ####################################################################
 
-
     X = Input((image_size, image_size, 3))
-
-    net = X
 
 
     for i in range(depth):
@@ -93,24 +95,25 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
                 print(('Layer: ', i, ' Conv: ', conv_number, 'Features: ', features_per_convolution[i][conv_number]))
                 print(('Size:', size_of_convolutions_per_layer[i][conv_number]))"""
 
-            net = conv_relu(net, filters=features_per_convolution[i][conv_number][1],
+            net = conv_relu( filters=features_per_convolution[i][conv_number][1],
                             kernel_size=size_of_convolutions_per_layer[i][conv_number], strides=1,
-                            activation='relu', kernel_initializer='glorot_normal', activate_bn=True, bn_decay=0.999,
-                            keep_prob=1.0)
+                            activation='relu', kernel_initializer='glorot_normal', activate_bn=activate_bn,
+                            bn_decay=bn_decay,
+                            keep_prob=dropout, name='cconv-d' + str(i) + '-c' + str(conv_number), x = net)
 
         relu_results.append(net)  # We keep them for the upconvolutions
 
         if downsampling == 'convolution':
 
-            net = downconv(net, filters=features_per_convolution[i][conv_number][1], kernel_size=5, strides=2,
-                           activation='relu', kernel_initializer='glorot_normal', activate_bn=True, bn_decay=0.999)
+            net = downconv( filters=features_per_convolution[i][conv_number][1], kernel_size=5, strides=2,
+                           activation='relu', kernel_initializer='glorot_normal', activate_bn=activate_bn,
+                           bn_decay=bn_decay, name='downconv-d' + str(i), x = net)
 
         else:
 
             net = MaxPooling2D((2, 2), padding='valid', strides=2, name='downmp-d' + str(i))(net)
 
         data_temp_size.append(data_temp_size[-1] // 2)
-
 
     ####################################################################
     ########################## EXPANSION PHASE #########################
@@ -122,8 +125,9 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
 
         # Convolution
         net = conv_relu(net, filters=features_per_convolution[depth - i - 1][-1][1], kernel_size=2, strides=1,
-                        activation='relu', kernel_initializer='glorot_normal', activate_bn=True, bn_decay=0.999,
-                        keep_prob=1.0)
+                        activation='relu', kernel_initializer='glorot_normal', activate_bn=activate_bn,
+                        bn_decay=bn_decay,
+                        keep_prob=dropout, name='upconv-d' + str(depth - i - 1))
 
         data_temp_size.append(data_temp_size[-1] * 2)
 
@@ -134,16 +138,16 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
         for conv_number in range(number_of_convolutions_per_layer[depth - i - 1]):
             net = conv_relu(net, filters=features_per_convolution[depth - i - 1][conv_number][1],
                             kernel_size=size_of_convolutions_per_layer[depth - i - 1][conv_number], strides=1,
-                            activation='relu', kernel_initializer='glorot_normal', activate_bn=True, bn_decay=0.999,
-                            keep_prob=1.0)
-
-
+                            activation='relu', kernel_initializer='glorot_normal', activate_bn=activate_bn,
+                            bn_decay=bn_decay,
+                            keep_prob=dropout, name='econv-d' + str(depth - i - 1) + '-c' + str(conv_number))
 
     net = Conv2D(filters=n_classes, kernel_size=1, strides=1, name='finalconv', padding='same', activation="softmax")(net)
 
     model = Model(inputs=X, outputs=net)
 
     return model
+
 
 
 
