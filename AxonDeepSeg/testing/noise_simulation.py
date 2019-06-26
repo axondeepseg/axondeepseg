@@ -2,7 +2,6 @@
 
 import numpy as np
 from skimage import io
-from scipy.misc import imread, imsave
 import os
 import imageio
 import json
@@ -11,7 +10,7 @@ from skimage.filters import gaussian
 
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.testing.segmentation_scoring import *
-from scipy.misc import imread, imsave
+from imageio import imread, imsave
 import AxonDeepSeg.ads_utils
 
 

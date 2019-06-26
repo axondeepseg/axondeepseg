@@ -7,7 +7,7 @@ import functools
 # Scientific modules import
 import random
 import numpy as np
-from scipy.misc import imread
+from imageio import imread
 from scipy import ndimage
 from skimage import exposure
 
@@ -305,7 +305,7 @@ class input_data:
 
         # Loading the image using 8-bit pixels (0-255)
         filename = str(type_) + '_%s.png' % i
-        return imread(self.path / filename, flatten=False, mode='L')
+        return imread(self.path / filename, as_gray=False, pilmode='L')
 
     def prepare_image_mask(self):
         """

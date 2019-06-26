@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from skimage import io
-from scipy.misc import imread, imsave
+from imageio import imread, imsave
 import imageio
 
 # AxonDeepSeg modules import

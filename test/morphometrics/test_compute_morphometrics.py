@@ -6,7 +6,7 @@ import string
 import random
 import shutil
 import numpy as np
-from scipy.misc import imread as scipy_imread  # to avoid confusion with mpl.pyplot.imread
+from imageio import imread as imageio_imread  # to avoid confusion with mpl.pyplot.imread
 import pytest
 
 
@@ -28,9 +28,9 @@ class TestCore(object):
         self.pixelsizeValue = 0.07   # For current demo data.
 
         pred_axon_path = self.test_folder_path / 'AxonDeepSeg_seg-axon.png'
-        self.pred_axon = scipy_imread(pred_axon_path, flatten=True)
+        self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
         pred_myelin_path = self.test_folder_path / 'AxonDeepSeg_seg-myelin.png'
-        self.pred_myelin = scipy_imread(pred_myelin_path, flatten=True)
+        self.pred_myelin = imageio_imread(pred_myelin_path, as_gray=True)
 
         self.tmpDir = self.fullPath / '__tmp__'
         if not self.tmpDir.exists():
@@ -136,7 +136,7 @@ class TestCore(object):
         myelin_thickness_sim = (axon_diam_sim / 2) * (1/gratio_sim - 1)
 
         # Read paths and compute axon/myelin masks
-        pred = scipy_imread(path_pred)
+        pred = imageio_imread(path_pred)
         pred_axon = pred > 200
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
@@ -157,7 +157,7 @@ class TestCore(object):
             'SimulatedAxons.png'
             )
 
-        prediction = scipy_imread(path_pred, flatten=True)
+        prediction = imageio_imread(path_pred, as_gray=True)
         pred_axon = prediction > 200
         unexpected_pred_myelin = np.zeros(prediction.shape)
 
@@ -218,7 +218,7 @@ class TestCore(object):
     # --------------draw_axon_diameter tests-------------- #
     @pytest.mark.unit
     def test_draw_axon_diameter_creates_file_in_expected_location(self):
-        img = scipy_imread(self.test_folder_path / 'image.png')
+        img = imageio_imread(self.test_folder_path / 'image.png')
         path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
 
         result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'

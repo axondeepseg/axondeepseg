@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 import pickle
 from AxonDeepSeg.apply_model import axon_segmentation
-from scipy.misc import imread
+from imageio import imread
 from prettytable import PrettyTable
 from sklearn.metrics import accuracy_score, log_loss
 from AxonDeepSeg.testing.segmentation_scoring import pw_dice
@@ -226,7 +226,7 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
                 current_network_output = outputs_network[i]
 
                 # Reading the images and processing them
-                mask_raw = imread(image_folder / 'mask.png', flatten=True, mode='L')
+                mask_raw = imread(image_folder / 'mask.png', as_gray=True, pilmode='L')
                 mask = labellize(mask_raw)
 
                 # We infer the name of the different files
