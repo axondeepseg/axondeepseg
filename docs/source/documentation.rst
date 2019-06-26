@@ -257,13 +257,7 @@ Make sure your know where the cloned repository is located on your machine
 
 Install FSLeyes using conda-forge ::
 
-           conda install -c conda-forge fsleyes
-           
-Conda-forge installed a version of SciPy that is incompatible with the latest version of AxonDeepSeg.
-Another version of SciPy must be installed using these commands:  ::
-
-           conda uninstall scipy
-           conda install -c anaconda scipy==1.1.0
+           conda install -c conda-forge fsleyes==0.29.0
 
 Launch FSLeyes ::
 
@@ -298,7 +292,7 @@ Install wxPython using conda ::
            
 Install FSLeyes using pip ::
 
-           pip install fsleyes
+           pip install fsleyes==0.29.0
            
 Launch FSLeyes ::
 
