@@ -45,13 +45,14 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # This sizer will contain the buttons
         sizer_h = wx.BoxSizer(wx.VERTICAL)
 
-
         # Add the logo to the control panel
         ADS_logo = self.get_logo()
         sizer_h.Add(ADS_logo, flag=wx.SHAPED, proportion=1)
 
         # Add the citation to the control panel
-        citation_box = wx.TextCtrl(self, value=self.get_citation(), size=(100, 50), style=wx.TE_MULTILINE)
+        citation_box = wx.TextCtrl(
+            self, value=self.get_citation(), size=(100, 50), style=wx.TE_MULTILINE
+        )
         sizer_h.Add(citation_box, flag=wx.SHAPED, proportion=1)
 
         # Add the image loading button
@@ -63,41 +64,62 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Add the mask loading button
         load_mask_button = wx.Button(self, label="Load existing mask")
         load_mask_button.Bind(wx.EVT_BUTTON, self.on_load_mask_button)
-        load_mask_button.SetToolTip(wx.ToolTip("Loads an existing axon or myelin mask into FSLeyes"))
+        load_mask_button.SetToolTip(
+            wx.ToolTip("Loads an existing axon or myelin mask into FSLeyes")
+        )
         sizer_h.Add(load_mask_button, flag=wx.SHAPED, proportion=1)
 
         # Add the save Segmentation button
         save_segmentation_button = wx.Button(self, label="Save segmentation")
         save_segmentation_button.Bind(wx.EVT_BUTTON, self.on_save_segmentation_button)
-        save_segmentation_button.SetToolTip(wx.ToolTip("Saves the axon and myelin masks in the selected folder"))
+        save_segmentation_button.SetToolTip(
+            wx.ToolTip("Saves the axon and myelin masks in the selected folder")
+        )
         sizer_h.Add(save_segmentation_button, flag=wx.SHAPED, proportion=1)
 
         # Add the model choice combobox
-        self.model_choices = ['SEM', 'TEM', 'other']
-        self.model_combobox = wx.ComboBox(self, choices=self.model_choices, size=(100, 20), value='Select the modality')
-        self.model_combobox.SetToolTip(wx.ToolTip("Select the modality used to acquire the image"))
+        self.model_choices = ["SEM", "TEM", "other"]
+        self.model_combobox = wx.ComboBox(
+            self,
+            choices=self.model_choices,
+            size=(100, 20),
+            value="Select the modality",
+        )
+        self.model_combobox.SetToolTip(
+            wx.ToolTip("Select the modality used to acquire the image")
+        )
         sizer_h.Add(self.model_combobox, flag=wx.SHAPED, proportion=1)
 
         # Add the button that applies the prediction model
-        apply_model_button = wx.Button(self, label='Apply ADS prediction model')
+        apply_model_button = wx.Button(self, label="Apply ADS prediction model")
         apply_model_button.Bind(wx.EVT_BUTTON, self.on_apply_model_button)
-        apply_model_button.SetToolTip(wx.ToolTip("Applies the prediction model and displays the masks"))
+        apply_model_button.SetToolTip(
+            wx.ToolTip("Applies the prediction model and displays the masks")
+        )
         sizer_h.Add(apply_model_button, flag=wx.SHAPED, proportion=1)
 
         # Add the button that runs the watershed algorithm
-        run_watershed_button = wx.Button(self, label='Run Watershed')
+        run_watershed_button = wx.Button(self, label="Run Watershed")
         run_watershed_button.Bind(wx.EVT_BUTTON, self.on_run_watershed_button)
-        run_watershed_button.SetToolTip(wx.ToolTip("Uses a watershed algorithm to find the different axon+myelin"
-                                                  "objects. This is used to see if where are connections"
-                                                  " between two axon+myelin objects."))
+        run_watershed_button.SetToolTip(
+            wx.ToolTip(
+                "Uses a watershed algorithm to find the different axon+myelin"
+                "objects. This is used to see if where are connections"
+                " between two axon+myelin objects."
+            )
+        )
         sizer_h.Add(run_watershed_button, flag=wx.SHAPED, proportion=1)
 
         # Add the fill axon tool
-        fill_axons_button = wx.Button(self, label='Fill axons')
+        fill_axons_button = wx.Button(self, label="Fill axons")
         fill_axons_button.Bind(wx.EVT_BUTTON, self.on_fill_axons_button)
-        fill_axons_button.SetToolTip(wx.ToolTip("Automatically fills the axons inside myelin objects."
-                                               " THE MYELIN OBJECTS NEED TO BE CLOSED AND SEPARATED FROM EACH "
-                                               "OTHER (THEY MUST NOT TOUCH) FOR THIS TOOL TO WORK CORRECTLY."))
+        fill_axons_button.SetToolTip(
+            wx.ToolTip(
+                "Automatically fills the axons inside myelin objects."
+                " THE MYELIN OBJECTS NEED TO BE CLOSED AND SEPARATED FROM EACH "
+                "OTHER (THEY MUST NOT TOUCH) FOR THIS TOOL TO WORK CORRECTLY."
+            )
+        )
         sizer_h.Add(fill_axons_button, flag=wx.SHAPED, proportion=1)
 
         # Set the sizer of the control panel
@@ -125,22 +147,25 @@ class ADScontrol(ctrlpanel.ControlPanel):
         image, convert it into a NIfTI and load it into FSLeyes.
         """
         # Ask the user which file he wants to convert
-        with wx.FileDialog(self, "select Image file",
-                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
+        with wx.FileDialog(
+            self, "select Image file", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
+        ) as file_dialog:
 
-            if file_dialog.ShowModal() == wx.ID_CANCEL:  # The user cancelled the operation
+            if (
+                file_dialog.ShowModal() == wx.ID_CANCEL
+            ):  # The user cancelled the operation
                 return
 
             in_file = file_dialog.GetPath()
 
         # Check if the image format is valid
-        if (in_file[-4:] != '.png') and (in_file[-4:] != '.tif'):
-            self.show_message('Invalid file extension')
+        if (in_file[-4:] != ".png") and (in_file[-4:] != ".tif"):
+            self.show_message("Invalid file extension")
             return
 
         # Store the directory path and image name for later use in the application of the prediction model
         self.image_dir_path.append(os.path.dirname(in_file))
-        self.png_image_name.append(in_file[os.path.dirname(in_file).__len__() + 1:])
+        self.png_image_name.append(in_file[os.path.dirname(in_file).__len__() + 1 :])
 
         # Call the function that convert and loads the png or tif image
         self.load_png_image_from_path(in_file)
@@ -151,23 +176,26 @@ class ADScontrol(ctrlpanel.ControlPanel):
         PNG mask, convert it into a NIfTI and load it into FSLeyes.
         """
         # Ask the user to select the mask image
-        with wx.FileDialog(self, "select mask .png file",
-                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
+        with wx.FileDialog(
+            self, "select mask .png file", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
+        ) as file_dialog:
 
-            if file_dialog.ShowModal() == wx.ID_CANCEL:  # The user cancelled the operation
+            if (
+                file_dialog.ShowModal() == wx.ID_CANCEL
+            ):  # The user cancelled the operation
                 return
 
             in_file = file_dialog.GetPath()
 
         # Check if the image format is valid
-        if (in_file[-4:] != '.png'):
-            self.show_message('Invalid file extension')
+        if in_file[-4:] != ".png":
+            self.show_message("Invalid file extension")
             return
         # Load the mask into FSLeyes
-        if ('axon' in in_file) :
-            self.load_png_image_from_path(in_file, is_mask=True, colormap='blue')
-        elif ('myelin' in in_file) or ('Myelin' in in_file):
-            self.load_png_image_from_path(in_file, is_mask=True, colormap='red')
+        if "axon" in in_file:
+            self.load_png_image_from_path(in_file, is_mask=True, colormap="blue")
+        elif ("myelin" in in_file) or ("Myelin" in in_file):
+            self.load_png_image_from_path(in_file, is_mask=True, colormap="red")
         else:
             self.load_png_image_from_path(in_file, is_mask=True)
 
@@ -197,58 +225,71 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Get the selected model
         selected_model = self.model_combobox.GetStringSelection()
 
-
         # Get the path of the selected model
-        if selected_model == 'other':
+        if selected_model == "other":
             # Ask the user where the model is located
-            with wx.DirDialog(self, "select the directory in which the model is located", defaultPath="",
-                              style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST) as file_dialog:
+            with wx.DirDialog(
+                self,
+                "select the directory in which the model is located",
+                defaultPath="",
+                style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
+            ) as file_dialog:
 
-                if file_dialog.ShowModal() == wx.ID_CANCEL:  # The user cancelled the operation
+                if (
+                    file_dialog.ShowModal() == wx.ID_CANCEL
+                ):  # The user cancelled the operation
                     return
 
             model_path = file_dialog.GetPath()
 
-
-        elif (selected_model == 'SEM') or (selected_model == 'TEM'):
+        elif (selected_model == "SEM") or (selected_model == "TEM"):
             model_path = os.path.dirname(AxonDeepSeg.__file__)
-            model_path = os.path.join(model_path, 'models', 'default_' + selected_model + '_model_v1')
+            model_path = os.path.join(
+                model_path, "models", "default_" + selected_model + "_model_v1"
+            )
 
         else:
-            self.show_message('Please select a model')
+            self.show_message("Please select a model")
             return
 
         # Check if the pixel size txt file exist in the imageDirPath
-        pixel_size_exists = os.path.isfile(image_directory + '/pixel_size_in_micrometer.txt')
+        pixel_size_exists = os.path.isfile(
+            image_directory + "/pixel_size_in_micrometer.txt"
+        )
 
         # if it doesn't exist, ask the user to input the pixel size and create the .txt file
         if pixel_size_exists is False:
-            with wx.TextEntryDialog(self, "Enter the pixel size in micrometer", value="0.07") as text_entry:
+            with wx.TextEntryDialog(
+                self, "Enter the pixel size in micrometer", value="0.07"
+            ) as text_entry:
                 if text_entry.ShowModal() == wx.ID_CANCEL:
                     return
 
                 pixel_size_str = text_entry.GetValue()
-            text_file = open(image_directory + '/pixel_size_in_micrometer.txt', 'w')
+            text_file = open(image_directory + "/pixel_size_in_micrometer.txt", "w")
             text_file.write(pixel_size_str)
             text_file.close()
 
         # Load model configs and apply prediction
-        model_configfile = os.path.join(model_path, 'config_network.json')
-        with open(model_configfile, 'r') as fd:
+        model_configfile = os.path.join(model_path, "config_network.json")
+        with open(model_configfile, "r") as fd:
             config_network = json.loads(fd.read())
 
-        prediction = axon_segmentation([image_directory], [image_name], model_path,
-                                       config_network, verbosity_level=3)
+        prediction = axon_segmentation(
+            [image_directory],
+            [image_name],
+            model_path,
+            config_network,
+            verbosity_level=3,
+        )
         # The axon_segmentation function creates the segmentation masks and stores them as PNG files in the same folder
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axon_mask_path = image_directory + '/AxonDeepSeg_seg-axon.png'
-        myelin_mask_path = image_directory + '/AxonDeepSeg_seg-myelin.png'
-        self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap='blue')
-        self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap='red')
-
-
+        axon_mask_path = image_directory + "/AxonDeepSeg_seg-axon.png"
+        myelin_mask_path = image_directory + "/AxonDeepSeg_seg-myelin.png"
+        self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
+        self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
 
     def on_save_segmentation_button(self, event):
         """
@@ -264,8 +305,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return
 
         # Ask the user where to save the segmentation
-        with wx.DirDialog(self, "select the directory in which the segmentation will be save", defaultPath="",
-                          style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST) as file_dialog:
+        with wx.DirDialog(
+            self,
+            "select the directory in which the segmentation will be save",
+            defaultPath="",
+            style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
+        ) as file_dialog:
 
             if file_dialog.ShowModal() == wx.ID_CANCEL:
                 return
@@ -276,30 +321,35 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Note: since PIL uses a different convention for the X and Y coordinates, some array manipulation has to be
         # done.
 
-        myelin_array = np.array(myelin_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8)
+        myelin_array = np.array(
+            myelin_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
+        )
         myelin_array = np.flipud(np.rot90(myelin_array, k=3, axes=(0, 1)))
-        axon_array = np.array(axon_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8)
+        axon_array = np.array(
+            axon_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
+        )
         axon_array = np.flipud(np.rot90(axon_array, k=3, axes=(0, 1)))
 
         # Make sure the masks have the same size
-        if (myelin_array.shape != axon_array.shape):
-            self.show_message('invalid visible masks dimensions')
+        if myelin_array.shape != axon_array.shape:
+            self.show_message("invalid visible masks dimensions")
             return
 
         # Save the arrays as PNG files
-        myelin_and_axon_image = Image.fromarray((myelin_array // 2 + axon_array).astype(np.uint8))
-        myelin_and_axon_image.save(save_dir + '/ADS_seg.png')
+        myelin_and_axon_image = Image.fromarray(
+            (myelin_array // 2 + axon_array).astype(np.uint8)
+        )
+        myelin_and_axon_image.save(save_dir + "/ADS_seg.png")
         myelin_image = Image.fromarray(myelin_array)
-        myelin_image.save(save_dir + '/ADS_seg-myelin.png')
+        myelin_image.save(save_dir + "/ADS_seg-myelin.png")
         axon_image = Image.fromarray(axon_array)
-        axon_image.save(save_dir + '/ADS_seg-axon.png')
+        axon_image.save(save_dir + "/ADS_seg-axon.png")
 
     def on_run_watershed_button(self, event):
         """
         This function is called then the user presses on the runWatershed button. This creates a watershed mask that is
         used to locate where are the connections between the axon-myelin objects.
         """
-
 
         # Find the visible myelin and axon masks
         axon_mask_overlay = self.get_visible_axon_overlay()
@@ -313,14 +363,15 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_array = myelin_mask_overlay[:, :, 0]
 
         # Make sure the masks have the same size
-        if (myelin_array.shape != axon_array.shape):
-            self.show_message('invalid visible masks dimensions')
+        if myelin_array.shape != axon_array.shape:
+            self.show_message("invalid visible masks dimensions")
             return
 
         # If a watershed mask already exists, remove it.
         for an_overlay in self.overlayList:
-            if (self.most_recent_watershed_mask_name is not None) and\
-                    (an_overlay.name == self.most_recent_watershed_mask_name):
+            if (self.most_recent_watershed_mask_name is not None) and (
+                an_overlay.name == self.most_recent_watershed_mask_name
+            ):
                 self.overlayList.remove(an_overlay)
 
         # Compute the watershed mask
@@ -329,18 +380,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Save the watershed mask as a png then load it as an overlay
         watershed_image_array = np.flipud(np.rot90(watershed_data, k=3, axes=(0, 1)))
         watershed_image = Image.fromarray(watershed_image_array)
-        file_name = self.ads_temp_dir.name + '/watershed_mask.png'
+        file_name = self.ads_temp_dir.name + "/watershed_mask.png"
         watershed_image.save(file_name)
-        wantershed_mask_overlay = self.load_png_image_from_path(file_name, add_to_overlayList=False)
+        wantershed_mask_overlay = self.load_png_image_from_path(
+            file_name, add_to_overlayList=False
+        )
         wantershed_mask_overlay[:, :, 0] = watershed_data
         self.overlayList.append(wantershed_mask_overlay)
 
         # Apply a "random" colour mapping to the watershed mask
         opts = self.displayCtx.getOpts(wantershed_mask_overlay)
-        opts.cmap = 'random'
+        opts.cmap = "random"
 
-        self.most_recent_watershed_mask_name = 'watershed_mask'
-
+        self.most_recent_watershed_mask_name = "watershed_mask"
 
     def on_fill_axons_button(self, event):
         """
@@ -359,27 +411,33 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_array = myelin_mask_overlay[:, :, 0]
 
         # Make sure the masks have the same size
-        if (myelin_array.shape != axon_array.shape):
-            self.show_message('invalid visible masks dimensions')
+        if myelin_array.shape != axon_array.shape:
+            self.show_message("invalid visible masks dimensions")
             return
 
         # Get the centroid indexes
         centroid_index_map = self.get_myelin_centroids(myelin_array)
 
-
         # Create an image with the myelinMask and floodfill at the coordinates of the centroids
         # Note: The floodfill algorithm only works on PNG images. Thus, the mask must be colorized before applying
         # the floodfill. Then, the array corresponding to the floodfilled color can be extracted.
         myelin_image = Image.fromarray(myelin_array * 255)
-        myelin_image = ImageOps.colorize(myelin_image, (0, 0, 0, 255), (255, 255, 255, 255))
+        myelin_image = ImageOps.colorize(
+            myelin_image, (0, 0, 0, 255), (255, 255, 255, 255)
+        )
         for i in range(len(centroid_index_map[0])):
-            ImageDraw.floodfill(myelin_image, xy=(centroid_index_map[1][i], centroid_index_map[0][i]),
-                                value=(127, 127, 127, 255))
+            ImageDraw.floodfill(
+                myelin_image,
+                xy=(centroid_index_map[1][i], centroid_index_map[0][i]),
+                value=(127, 127, 127, 255),
+            )
 
         # Extract the axon_array and update the axon mask overlay
-        axon_extracted_array = np.array(myelin_image.convert('LA'))
+        axon_extracted_array = np.array(myelin_image.convert("LA"))
         axon_extracted_array = axon_extracted_array[:, :, 0]
-        axon_extracted_array = np.equal(axon_extracted_array, 127 * np.ones_like(axon_extracted_array))
+        axon_extracted_array = np.equal(
+            axon_extracted_array, 127 * np.ones_like(axon_extracted_array)
+        )
         axon_extracted_array = axon_extracted_array.astype(np.uint8)
 
         axon_mask_overlay[:, :, :] = axon_extracted_array
@@ -396,8 +454,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
         im_myelin_label = measure.label(im_myelin)
         # Find the centroids of the myelin objects
         myelin_objects = measure.regionprops(im_myelin_label)
-        ind_centroid = ([int(props.centroid[0]) for props in myelin_objects],
-                        [int(props.centroid[1]) for props in myelin_objects])
+        ind_centroid = (
+            [int(props.centroid[0]) for props in myelin_objects],
+            [int(props.centroid[1]) for props in myelin_objects],
+        )
         return ind_centroid
 
     def get_watershed_segmentation(self, im_axon, im_myelin, return_centroids=False):
@@ -431,23 +491,29 @@ class ADScontrol(ctrlpanel.ControlPanel):
             # local_maxi = feature.peak_local_max(distance, indices=False, footprint=np.ones((31, 31)), labels=axonmyelin)
 
             # Get axon centroid as int (not float) to be used as index
-            ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
-                            [int(props.centroid[1]) for props in axon_objects])
+            ind_centroid = (
+                [int(props.centroid[0]) for props in axon_objects],
+                [int(props.centroid[1]) for props in axon_objects],
+            )
 
             # Create an image with axon centroids, which value corresponds to the value of the axon object
-            im_centroid = np.zeros_like(im_axon, dtype='uint16')
+            im_centroid = np.zeros_like(im_axon, dtype="uint16")
             for i in range(len(ind_centroid[0])):
                 # Note: The value "i" corresponds to the label number of im_axon_label
                 im_centroid[ind_centroid[0][i], ind_centroid[1][i]] = i + 1
 
             # Watershed segmentation of axonmyelin using distance map
-            im_axonmyelin_label = morphology.watershed(-distance, im_centroid, mask=im_axonmyelin)
+            im_axonmyelin_label = morphology.watershed(
+                -distance, im_centroid, mask=im_axonmyelin
+            )
             if return_centroids is True:
                 return im_axonmyelin_label, ind_centroid
             else:
                 return im_axonmyelin_label
 
-    def load_png_image_from_path(self, image_path, is_mask=False, add_to_overlayList=True, colormap='greyscale'):
+    def load_png_image_from_path(
+        self, image_path, is_mask=False, add_to_overlayList=True, colormap="greyscale"
+    ):
         """
         This function converts a 2D image into a NIfTI image and loads it as an overlay.
         The parameter add_to_overlayList allows to display the overlay into FSLeyes.
@@ -467,7 +533,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
 
         # Open the 2D image
-        img_png = np.asarray(Image.open(image_path).convert('LA'))
+        img_png = np.asarray(Image.open(image_path).convert("LA"))
 
         # Extract the image data as a 2D NumPy array
         if np.size(img_png.shape) == 3:
@@ -485,15 +551,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Convert image data into a NIfTI image
         # Note: PIL and NiBabel use different axis conventions, so some array manipulation has to be done.
-        img_NIfTI = nib.Nifti1Image(np.flipud(np.rot90(img_png2D, k=3, axes=(0, 1))), np.eye(4))
+        img_NIfTI = nib.Nifti1Image(
+            np.flipud(np.rot90(img_png2D, k=3, axes=(0, 1))), np.eye(4)
+        )
 
         # Save the NIfTI image in a temporary directory
         img_name = os.path.basename(image_path)
-        out_file = self.ads_temp_dir.name + '/' + img_name[:-3] + 'nii.gz'
-        nib.save(img_NIfTI, out_file, )
+        out_file = self.ads_temp_dir.name + "/" + img_name[:-3] + "nii.gz"
+        nib.save(img_NIfTI, out_file)
 
         # Load the NIfTI image as an overlay
-        img_overlay = ovLoad.loadOverlays(paths=[out_file], inmem=True, blocking=True)[0]
+        img_overlay = ovLoad.loadOverlays(paths=[out_file], inmem=True, blocking=True)[
+            0
+        ]
 
         # Display the overlay
         if add_to_overlayList is True:
@@ -530,24 +600,28 @@ class ADScontrol(ctrlpanel.ControlPanel):
         n_found_overlays = 0
 
         if visible_overlay_list.__len__() is 0:
-            self.show_message('No overlays are displayed')
+            self.show_message("No overlays are displayed")
             return None
 
         if visible_overlay_list.__len__() is 1:
             return visible_overlay_list[0]
 
         for an_overlay in visible_overlay_list:
-            if ('axon' not in an_overlay.name) and ('myelin' not in an_overlay.name) and\
-                    ('Myelin' not in an_overlay.name) and ('watershed' not in an_overlay.name) and\
-                    ('Watershed' not in an_overlay.name):
+            if (
+                ("axon" not in an_overlay.name)
+                and ("myelin" not in an_overlay.name)
+                and ("Myelin" not in an_overlay.name)
+                and ("watershed" not in an_overlay.name)
+                and ("Watershed" not in an_overlay.name)
+            ):
                 n_found_overlays = n_found_overlays + 1
                 image_overlay = an_overlay
 
         if n_found_overlays > 1:
-            self.show_message('More than one microscopy image has been found')
+            self.show_message("More than one microscopy image has been found")
             return None
         if n_found_overlays is 0:
-            self.show_message('No visible microscopy image has been found')
+            self.show_message("No visible microscopy image has been found")
             return None
 
         return image_overlay
@@ -563,19 +637,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
         n_found_overlays = 0
 
         if visible_overlay_list.__len__() is 0:
-            self.show_message('No overlays are displayed')
+            self.show_message("No overlays are displayed")
             return None
 
         for an_overlay in visible_overlay_list:
-            if ('axon' in an_overlay.name):
+            if "axon" in an_overlay.name:
                 n_found_overlays = n_found_overlays + 1
                 axon_overlay = an_overlay
 
         if n_found_overlays > 1:
-            self.show_message('More than one axon mask has been found')
+            self.show_message("More than one axon mask has been found")
             return None
         if n_found_overlays is 0:
-            self.show_message('No visible axon mask has been found')
+            self.show_message("No visible axon mask has been found")
             return None
 
         return axon_overlay
@@ -591,24 +665,24 @@ class ADScontrol(ctrlpanel.ControlPanel):
         n_found_overlays = 0
 
         if visible_overlay_list.__len__() is 0:
-            self.show_message('No overlays are displayed')
+            self.show_message("No overlays are displayed")
             return None
 
         for an_overlay in visible_overlay_list:
-            if ('myelin' in an_overlay.name) or ('Myelin' in an_overlay.name):
+            if ("myelin" in an_overlay.name) or ("Myelin" in an_overlay.name):
                 n_found_overlays = n_found_overlays + 1
                 myelin_overlay = an_overlay
 
         if n_found_overlays > 1:
-            self.show_message('More than one myelin mask has been found')
+            self.show_message("More than one myelin mask has been found")
             return None
         if n_found_overlays is 0:
-            self.show_message('No visible myelin mask has been found')
+            self.show_message("No visible myelin mask has been found")
             return None
 
         return myelin_overlay
 
-    def show_message(self, message, caption='Error'):
+    def show_message(self, message, caption="Error"):
         """
         This function is used to show a popup message on the FSLeyes interface.
         :param message: The message to be displayed.
@@ -616,7 +690,13 @@ class ADScontrol(ctrlpanel.ControlPanel):
         :param caption: (Optional) The caption of the message box.
         :type caption: String
         """
-        with wx.MessageDialog(self, message, caption=caption, style=wx.OK | wx.CENTRE, pos=wx.DefaultPosition) as msg:
+        with wx.MessageDialog(
+            self,
+            message,
+            caption=caption,
+            style=wx.OK | wx.CENTRE,
+            pos=wx.DefaultPosition,
+        ) as msg:
             msg.ShowModal()
 
     def get_citation(self):
@@ -626,12 +706,14 @@ class ADScontrol(ctrlpanel.ControlPanel):
         :rtype: string
         """
 
-        return ('If you use this work in your research, please cite it as follows: \n'
-                'Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). '
-                'AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional '
-                'neural networks. Scientific Reports, 8(1), 3816. '
-                'Link to paper: https://doi.org/10.1038/s41598-018-22181-4. \n'
-                'Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)')
+        return (
+            "If you use this work in your research, please cite it as follows: \n"
+            "Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). "
+            "AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional "
+            "neural networks. Scientific Reports, 8(1), 3816. "
+            "Link to paper: https://doi.org/10.1038/s41598-018-22181-4. \n"
+            "Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)"
+        )
 
     def get_logo(self):
         """
@@ -642,13 +724,13 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[0]
 
-        logo_file = ads_path / 'logo_ads-alpha.png'
+        logo_file = ads_path / "logo_ads-alpha.png"
 
-        png = wx.Image(str(logo_file),
-                       wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        png = wx.Image(str(logo_file), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         png.SetSize((png.GetWidth() // 15, png.GetHeight() // 15))
-        logo_image = wx.StaticBitmap(self, -1, png, wx.DefaultPosition,
-                                    (png.GetWidth(), png.GetHeight()))
+        logo_image = wx.StaticBitmap(
+            self, -1, png, wx.DefaultPosition, (png.GetWidth(), png.GetHeight())
+        )
         return logo_image
 
     @staticmethod
@@ -657,6 +739,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         I am not sure what this method does.
         """
         from fsleyes.views.orthopanel import OrthoPanel
+
         return [OrthoPanel]
 
     @staticmethod
@@ -664,7 +747,4 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         This method makes the control panel appear on the left of the FSLeyes window.
         """
-        return {
-            'location': wx.LEFT,
-        }
-    
+        return {"location": wx.LEFT}
