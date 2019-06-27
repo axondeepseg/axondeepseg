@@ -269,7 +269,8 @@ By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
 using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
 and install the GPU version of it::
 
-    pip install tensorflow-gpu
+    pip uninstall tensorflow
+    pip install tensorflow-gpu==1.3.0
 
 .. WARNING ::
    Because we recommend the use of version 1.3.0 of Tensorflow GPU, the CUDA version on your system should be 8.0.
