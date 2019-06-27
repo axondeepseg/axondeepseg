@@ -1,7 +1,6 @@
 import keras
 import cv2
 import numpy as np
-import os
 
 
 class DataGen(keras.utils.Sequence):
@@ -30,9 +29,8 @@ class DataGen(keras.utils.Sequence):
         '''
 
         ## Path
-        image_path = self.path + 'image_' + id_name + ".png"
-        mask_path = self.path + 'mask_' + id_name + ".png"
-
+        image_path = self.path + '/image_' + id_name + ".png"
+        mask_path = self.path + '/mask_' + id_name + ".png"
         ## Reading Image
         image = cv2.imread(image_path)
 
