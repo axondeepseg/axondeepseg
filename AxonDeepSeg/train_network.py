@@ -184,7 +184,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     saver = tf.train.Saver()
 
     # Save Model in ckpt format
-    custom_objects = {'dice_axon': dice_axon, 'dice_myelin': dice_myelin, 'dice_coef': dice_coef}
+    custom_objects = {'dice_axon': dice_axon, 'dice_myelin': dice_myelin}
     model = load_model(str(path_model) + "/model.hdf5", custom_objects=custom_objects)
 
     sess = K.get_session()

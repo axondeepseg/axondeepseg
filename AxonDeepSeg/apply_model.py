@@ -18,8 +18,7 @@ from AxonDeepSeg.visualization.get_masks import get_masks
 from AxonDeepSeg.patch_management_tools import im2patches_overlap, patches2im_overlap
 from AxonDeepSeg.config_tools import update_config, default_configuration
 
-# Keras import
-
+#Keras import
 from keras import backend as K
 
 
