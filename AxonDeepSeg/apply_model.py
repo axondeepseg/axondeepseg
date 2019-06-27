@@ -239,7 +239,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 
     # Generating the patch to acquisitions and loading the acquisitions resolutions.
     path_acquisitions = [path_acquisitions_folders[i] / e for i, e in enumerate(acquisitions_filenames)]
-    print(path_acquisitions)
+
     # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
     if acquired_resolution == None:
         if (path_acquisitions_folders[0] / 'pixel_size_in_micrometer.txt').exists():
