@@ -136,7 +136,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ########################## Training Unet Model ###########
 
     # Adam Optimizer for Unet
-    adam = keras.optimizers.Adam(lr=learning_rate)
+    adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
     # Compile the model with Categorical Cross Entropy loss and Adam Optimizer
     model.compile(optimizer=adam, loss="categorical_crossentropy",

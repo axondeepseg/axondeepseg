@@ -26,12 +26,12 @@ class DataGen(keras.utils.Sequence):
     def __load__(self, id_name):
         '''
           Loads images and masks
-          :param ids_name: String, id name of a particular image/mask..
+          :param ids_name: String, id name of a particular image/mask.
         '''
 
         ## Path
-        image_path = os.path.join(self.path, 'image_' + id_name) + ".png"
-        mask_path = os.path.join(self.path, 'mask_' + id_name) + ".png"
+        image_path = self.path + 'image_' + id_name + ".png"
+        mask_path = self.path + 'mask_' + id_name + ".png"
 
         ## Reading Image
         image = cv2.imread(image_path)
