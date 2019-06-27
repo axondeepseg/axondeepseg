@@ -144,11 +144,3 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
     model = Model(inputs=X, outputs=net)
 
     return model
-
-
-
-
-
-
-
-
