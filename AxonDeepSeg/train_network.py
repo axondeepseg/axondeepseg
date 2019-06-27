@@ -140,7 +140,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     # Compile the model with Categorical Cross Entropy loss and Adam Optimizer
     model.compile(optimizer=adam, loss="categorical_crossentropy",
-                  metrics=["accuracy", dice_axon, dice_myelin, dice_coef])
+                  metrics=["accuracy", dice_axon, dice_myelin])
 
     train_steps = len(train_ids) // batch_size
     valid_steps = len(valid_ids) // batch_size
@@ -159,7 +159,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     # Save the checkpoint in the /models/path_model folder
     filepath_loss = str(path_model) + "/best_loss_model.ckpt"
-    print(filepath_loss)
+
 
     # Keep only a single checkpoint, the best over test loss.
     checkpoint_loss = ModelCheckpoint(filepath_loss,
@@ -190,18 +190,19 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     sess = K.get_session()
     # Save the model to be used by TF framework
     save_path = saver.save(sess, str(path_model) + "/model.ckpt")
-    print(save_path)
+
 
 
 # Defining the Loss and  Performance Metrics
-def dice_coef(y_true, y_pred, smooth=1e-3):
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-    intersection = K.sum(y_true_f * y_pred_f)
-    return K.mean((2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth))
-
 
 def dice_myelin(y_true, y_pred, smooth=1e-3):
+    """
+    Computes the pixel-wise dice myelin coefficient from the prediction tensor outputted by the network.
+    :param y_pred: Tensor, the prediction outputted by the network. Shape (N,H,W,C).
+    :param y_true: Tensor, the gold standard we work with. Shape (N,H,W,C).
+    :return:  dice myelin coefficient for the current batch.
+    """
+
     y_true_f = K.flatten(y_true[..., 1])
     y_pred_f = K.flatten(y_pred[..., 1])
     intersection = K.sum(y_true_f * y_pred_f)
@@ -209,21 +210,18 @@ def dice_myelin(y_true, y_pred, smooth=1e-3):
 
 
 def dice_axon(y_true, y_pred, smooth=1e-3):
+    """
+    Computes the pixel-wise dice myelin coefficient from the prediction tensor outputted by the network.
+    :param y_pred: Tensor, the prediction outputed by the network. Shape (N,H,W,C).
+    :param y_true: Tensor, the gold standard we work with. Shape (N,H,W,C).
+    :return: dice axon coefficient for the current batch.
+    """
+
     y_true_f = K.flatten(y_true[..., 2])
     y_pred_f = K.flatten(y_pred[..., 2])
     intersection = K.sum(y_true_f * y_pred_f)
     return K.mean((2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth))
 
-
-def loss(y_true, y_pred):
-    loss = 0.2 * categorical_crossentropy(y_true, y_pred) + \
-           0.4 * dice_coef_loss(y_true[..., 1], y_pred[..., 1]) + \
-           0.4 * dice_coef_loss(y_true[..., 2], y_pred[..., 2])
-    return loss
-
-
-def dice_coef_loss(y_true, y_pred):
-    return 1 - dice_coef(y_true, y_pred)
 
 
 # To Call the training in the terminal

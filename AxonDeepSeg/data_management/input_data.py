@@ -5,7 +5,17 @@ import os
 
 
 class DataGen(keras.utils.Sequence):
+    '''Generates data for Keras'''
     def __init__(self, ids, path, batch_size=8, image_size=512, thresh_indices=[0, 0.2, 0.8]):
+        '''
+          Initalization for the DataGen class
+          :param ids: List of strings, ids of all the images/masks in the training set.
+          :param batch_size: Int, the batch size used for training.
+          :param image_size: Int, input image size.
+          :param image_size: Int, input image size.
+          :return: the original image, a list of patches, and their positions.
+        '''
+
         self.ids = ids
         self.path = path
         self.batch_size = batch_size
@@ -14,6 +24,11 @@ class DataGen(keras.utils.Sequence):
         self.thresh_indices = thresh_indices
 
     def __load__(self, id_name):
+        '''
+          Loads images and masks
+          :param ids_name: String, id name of a particular image/mask..
+        '''
+
         ## Path
         image_path = os.path.join(self.path, 'image_' + id_name) + ".png"
         mask_path = os.path.join(self.path, 'mask_' + id_name) + ".png"
@@ -28,7 +43,10 @@ class DataGen(keras.utils.Sequence):
         return (image, mask)
 
     def __getitem__(self, index):
-
+        '''
+          Generates a batch of  images/masks
+          :param ids_name: String, id name of a particular image/mask..
+        '''
         files_batch = self.ids[index * self.batch_size: (index + 1) * self.batch_size]
 
         image = []
@@ -72,6 +90,12 @@ def labellize_mask_2d(patch, thresh_indices=[0, 0.2, 0.8]):
 
 
 def descritize_mask(mask, thresh_indices):
+    '''
+        Process a mask with 8 bit pixels ([0-255]) such that it get discretizes into 3 different channels ( background, myelin, axon) .
+
+        Returns mask composed of 3 different channels ( background, myelin, axon )
+    '''
+
     # Discretization of the mask
     mask = labellize_mask_2d(mask, thresh_indices)  # mask intensity float between 0-1
 

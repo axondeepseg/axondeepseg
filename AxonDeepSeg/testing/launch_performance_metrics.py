@@ -1,7 +1,5 @@
-import numpy as np
-from scipy.misc import imread
 
-import AxonDeepSeg.ads_utils
+from scipy.misc import imread
 from AxonDeepSeg.testing.segmentation_scoring import *
 
 def launch_performance_metrics(path_prediction, path_groundtruth):
