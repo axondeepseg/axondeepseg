@@ -9,7 +9,7 @@ from pathlib import Path
 from AxonDeepSeg.testing.segmentation_scoring import *
 from AxonDeepSeg.apply_model import axon_segmentation
 from scipy.misc import imread
-
+import AxonDeepSeg.ads_utils
 
 def integrity_test():
 

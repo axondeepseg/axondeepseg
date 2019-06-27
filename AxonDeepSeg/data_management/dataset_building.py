@@ -5,7 +5,7 @@ from skimage.transform import rescale
 import numpy as np
 from tqdm import tqdm
 
-
+import AxonDeepSeg.ads_utils
 from AxonDeepSeg.data_management.input_data import labellize_mask_2d
 from AxonDeepSeg.data_management.patch_extraction import extract_patch
 from AxonDeepSeg.ads_utils import convert_path

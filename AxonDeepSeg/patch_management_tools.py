@@ -1,6 +1,6 @@
 # Gathers functions used for patch management, including preprocessing.
 import numpy as np
-
+import AxonDeepSeg.ads_utils
 
 
 def im2patches_overlap(img, overlap_value=25, scw=512):

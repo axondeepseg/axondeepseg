@@ -5,7 +5,7 @@
 import sys
 import os
 import json
-
+import AxonDeepSeg.ads_utils
 
 
 def compute_training(configfile, path_trainingset, path_model, path_model_init = None, gpu_per = 1.0):

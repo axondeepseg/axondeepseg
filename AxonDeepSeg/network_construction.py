@@ -2,7 +2,7 @@ from keras.layers import *
 from keras.models import *
 
 import tensorflow as tf
-
+import AxonDeepSeg.ads_utils
 
 def conv_relu(x, filters, kernel_size, strides, name, activation='relu', kernel_initializer='glorot_normal',
               activate_bn=True,

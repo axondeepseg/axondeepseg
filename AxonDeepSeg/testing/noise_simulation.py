@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from AxonDeepSeg.testing.segmentation_scoring import *
-
+import AxonDeepSeg.ads_utils
 
 def add_additive_gaussian_noise(img,mu=0,sigma=10):
 	'''
