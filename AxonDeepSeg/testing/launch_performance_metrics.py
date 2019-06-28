@@ -1,8 +1,8 @@
 import numpy as np
 from imageio import imread
 
-import AxonDeepSeg.ads_utils
 from AxonDeepSeg.testing.segmentation_scoring import *
+import AxonDeepSeg.ads_utils
 
 def launch_performance_metrics(path_prediction, path_groundtruth):
     """

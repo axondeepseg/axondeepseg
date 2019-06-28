@@ -1,6 +1,5 @@
-import random
-import numpy as np
 import AxonDeepSeg.ads_utils
+
 
 
 def extract_patch(patch, size):

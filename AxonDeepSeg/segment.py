@@ -9,7 +9,7 @@
 
 import sys
 from pathlib import Path
-import os
+
 import json
 import argparse
 from argparse import RawTextHelpFormatter

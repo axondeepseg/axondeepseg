@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
 import json
-from tqdm import tqdm
-
-import AxonDeepSeg.ads_utils
 from AxonDeepSeg.apply_model import axon_segmentation
+import AxonDeepSeg.ads_utils
 
 # FILE TO UPDATE
 

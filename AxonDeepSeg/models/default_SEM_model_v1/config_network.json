@@ -13,7 +13,8 @@
       1.1, 
       1, 
       1.3
-    ], 
+    ],
+  "epochs": 333,
   "weighted_cost-boundaries_sigma": 2, 
   "weighted_cost-boundaries_activate": false,
   "batch_norm_activate": true, 
