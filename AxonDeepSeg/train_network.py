@@ -63,8 +63,8 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
 
     # Training and Validation Path
-    path_training_set = str(path_trainingset) + "/Train"
-    path_validation_set = str(path_trainingset) + "/Validation"
+    path_training_set = path_trainingset / "Train"
+    path_validation_set = path_trainingset / "Validation"
 
 
     # List of Training Ids

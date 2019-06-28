@@ -2,6 +2,7 @@ import keras
 import cv2
 import numpy as np
 import AxonDeepSeg.ads_utils
+from AxonDeepSeg.ads_utils import convert_path
 
 class DataGen(keras.utils.Sequence):
     '''Generates data for Keras'''
@@ -14,6 +15,9 @@ class DataGen(keras.utils.Sequence):
           :param image_size: Int, input image size.
           :return: the original image, a list of patches, and their positions.
         '''
+
+        # If string, convert to Path objects
+        path = convert_path(path)
 
         self.ids = ids
         self.path = path
@@ -29,13 +33,13 @@ class DataGen(keras.utils.Sequence):
         '''
 
         ## Path
-        image_path = self.path + '/image_' + id_name + ".png"
-        mask_path = self.path + '/mask_' + id_name + ".png"
+        image_path = self.path / ('image_' + id_name + ".png")
+        mask_path = self.path / ('mask_' + id_name + ".png")
         ## Reading Image
-        image = cv2.imread(image_path)
+        image = cv2.imread(str(image_path))
 
         # -----Mask PreProcessing --------
-        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+        mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
         mask = descritize_mask(mask, self.thresh_indices)
         # ---------------------------
         return (image, mask)
