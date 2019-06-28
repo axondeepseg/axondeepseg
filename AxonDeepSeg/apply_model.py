@@ -6,13 +6,21 @@ import imageio
 from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
 
-from AxonDeepSeg.network_construction import *
+import tensorflow as tf
 import AxonDeepSeg.ads_utils
 from AxonDeepSeg.ads_utils import convert_path
+
+
+from AxonDeepSeg.network_construction import *
+
 
 from AxonDeepSeg.visualization.get_masks import get_masks
 from AxonDeepSeg.patch_management_tools import im2patches_overlap, patches2im_overlap
 from AxonDeepSeg.config_tools import update_config, default_configuration
+
+#Keras import
+from keras import backend as K
+
 
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict, ckpt_name='model',
                   inference_batch_size=1, overlap_value=25, resampled_resolutions=[0.1],
@@ -65,8 +73,13 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     # Construction of the graph
     if verbosity_level >= 2:
         print("Graph construction ...")
-    x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size))
-    pred = uconv_net(x, config_dict, phase=False, verbose=False)  # Inference
+
+    x = tf.placeholder(tf.float32, shape=(None, patch_size, patch_size, 1))
+
+    model = uconv_net(config_dict, bn_updated_decay=None, verbose=True)  # inference
+    pred = model.output
+
+
     saver = tf.train.Saver()  # Load previous model
 
     # We limit the amount of GPU for inference
@@ -74,7 +87,10 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     config_gpu.gpu_options.per_process_gpu_memory_fraction = gpu_per
 
     # Launch the session (this part takes time). All images will be processed by loading the session just once.
+
     sess = tf.Session(config=config_gpu)
+    K.set_session(sess)
+
     model_previous_path = path_model_folder.joinpath(ckpt_name).with_suffix('.ckpt')
     saver.restore(sess, str(model_previous_path))
 
@@ -93,14 +109,15 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
     for i in range(it):
 
         if verbosity_level >= 3:
-            print(('processing patch %s of %s' % (i+1, it)))
+            print(('processing patch %s of %s' % (i + 1, it)))
 
-        batch_x = np.asarray(L_data[i * inference_batch_size:(i + 1) * inference_batch_size])
+        batch_x = np.array(L_data[i * inference_batch_size:(i + 1) * inference_batch_size], dtype=np.uint8)
+
         if prediction_proba_activate:
 
             # First we perform inference on the input.
             current_batch_prediction, current_batch_prediction_proba = perform_batch_inference(
-                sess, pred, x, batch_x, inference_batch_size, patch_size,
+                model, sess, pred, x, batch_x, inference_batch_size, patch_size,
                 n_classes, prediction_proba_activate=prediction_proba_activate)
 
             # Update of the predictions lists.
@@ -108,7 +125,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
             predictions_proba_list.extend(current_batch_prediction_proba)
 
         else:
-            current_batch_prediction = perform_batch_inference(sess, pred, x, batch_x, inference_batch_size,
+            current_batch_prediction = perform_batch_inference(model, sess, pred, x, batch_x, inference_batch_size,
                                                                patch_size, n_classes,
                                                                prediction_proba_activate=prediction_proba_activate)
             # Update of the predictions lists.
@@ -118,23 +135,26 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
     if rem != 0:
 
-        if verbosity_level>=4:
+        if verbosity_level >= 4:
             print('processing last patch')
 
         batch_x = np.asarray(L_data[it * inference_batch_size:])
+
         if prediction_proba_activate:
 
             # First we perform inference on the input.
-            current_batch_prediction, current_batch_prediction_proba = perform_batch_inference(
-                sess, pred, batch_x, rem, patch_size,
-                n_classes, prediction_proba_activate=prediction_proba_activate)
+            current_batch_prediction, current_batch_prediction_proba = perform_batch_inference(model,
+                                                                                               sess, pred, batch_x, rem,
+                                                                                               patch_size,
+                                                                                               n_classes,
+                                                                                               prediction_proba_activate=prediction_proba_activate)
 
             # Update of the predictions lists.
             predictions_list.extend(current_batch_prediction)
             predictions_proba_list.extend(current_batch_prediction_proba)
 
         else:
-            current_batch_prediction = perform_batch_inference(sess, pred, batch_x, rem,
+            current_batch_prediction = perform_batch_inference(model, sess, pred, batch_x, rem,
                                                                patch_size, n_classes,
                                                                prediction_proba_activate=prediction_proba_activate)
             # Update of the predictions lists.
@@ -149,7 +169,6 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
     ########### STEP 4: Reconstruction of the segmented patches into segmentations of acquisitions and
     # resampling to the original size
-
 
     if prediction_proba_activate:
 
@@ -172,7 +191,6 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
         return predictions
 
-
         #######################################################################################################################
 
 
@@ -181,7 +199,6 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
                       segmentations_filenames=['AxonDeepSeg.png'], inference_batch_size=1,
                       overlap_value=25, resampled_resolutions=0.1, acquired_resolution=None,
                       prediction_proba_activate=False, write_mode=True, gpu_per=1.0, verbosity_level=0):
-
     """
     Wrapper performing the segmentation of all the requested acquisitions and generates (if requested) the segmentation
     images.
@@ -227,7 +244,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     if acquired_resolution == None:
         if (path_acquisitions_folders[0] / 'pixel_size_in_micrometer.txt').exists():
             resolutions_files = [open(path_acquisition_folder / 'pixel_size_in_micrometer.txt', 'r')
-                                for path_acquisition_folder in path_acquisitions_folders]
+                                 for path_acquisition_folder in path_acquisitions_folders]
             acquisitions_resolutions = [float(file_.read()) for file_ in resolutions_files]
         else:
             exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
@@ -237,7 +254,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
 
     # If resolution is specified as input argument, use it
     else:
-        acquisitions_resolutions = [acquired_resolution]*len(path_acquisitions_folders)
+        acquisitions_resolutions = [acquired_resolution] * len(path_acquisitions_folders)
 
     # Ensuring that the config file is valid
     config_dict = update_config(default_configuration(), config_dict)
@@ -246,7 +263,8 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     if prediction_proba_activate:
         prediction, prediction_proba = apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder,
                                                      config_dict, ckpt_name=ckpt_name,
-                                                     inference_batch_size=inference_batch_size, overlap_value=overlap_value,
+                                                     inference_batch_size=inference_batch_size,
+                                                     overlap_value=overlap_value,
                                                      resampled_resolutions=resampled_resolutions,
                                                      prediction_proba_activate=prediction_proba_activate,
                                                      gpu_per=gpu_per, verbosity_level=verbosity_level)
@@ -343,7 +361,6 @@ def prepare_patches(resampled_acquisitions, patch_size, overlap_value=25):
     :return: List of 512x512 patches ready to be fed to the network.
     """
 
-
     # Handle case when image is too small after resampling to target resolution of the model
     # test_patch=resampled_acquisitions[0]
 
@@ -355,10 +372,6 @@ def prepare_patches(resampled_acquisitions, patch_size, overlap_value=25):
 
     # if (height<=512) or (width<=512)
     # print " *** Image size error. The software requires an image input with size of at least 512x512 pixels in the target resolution of the model. *** "
-
-
-
-
 
     L_data, L_positions, L_n_patches = [], [], []
 
@@ -376,8 +389,7 @@ def prepare_patches(resampled_acquisitions, patch_size, overlap_value=25):
 
 def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_original_acquisitions_shapes,
                               overlap_value, n_classes,
-                              predictions_proba_list = None, prediction_proba_activate=False, verbose_mode=0):
-
+                              predictions_proba_list=None, prediction_proba_activate=False, verbose_mode=0):
     """
     Gathers the segmented patches into lists corresponding to each acquisition, stitches them and resamples them.
     :param predictions_list: List of all segmented patches.
@@ -397,7 +409,7 @@ def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_orig
     L_predictions_proba = []
     L_n_patches_cum = np.cumsum([0] + L_n_patches)
 
-    if verbose_mode>=2:
+    if verbose_mode >= 2:
         print("Resampling predictions to their original size...")
 
     # Gathering segmented patches belonging to the same acquisition
@@ -428,7 +440,6 @@ def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_orig
         predictions_proba = []
 
         for i, prediction_proba_list in enumerate(L_predictions_proba):
-
             # We generate the predict proba matrix
             tmp = np.split(np.stack(prediction_proba_list, axis=0), n_classes, axis=-1)
             predictions_proba_list = [list(map(np.squeeze, np.split(e, L_n_patches[i], axis=0))) for e in
@@ -440,7 +451,8 @@ def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_orig
                                          enumerate(predictions_proba_list)]  # for each class, we have a list of patches
 
             # Stacking in order to have juste one image with a depth of 3, one for each class
-            prediction_proba = np.stack([resize(e, L_original_acquisitions_shapes[i]) for e in prediction_proba_stitched], axis=-1)
+            prediction_proba = np.stack(
+                [resize(e, L_original_acquisitions_shapes[i]) for e in prediction_proba_stitched], axis=-1)
             predictions_proba.append(prediction_proba)
 
         return predictions, predictions_proba
@@ -449,8 +461,7 @@ def process_segmented_patches(predictions_list, L_n_patches, L_positions, L_orig
         return predictions
 
 
-
-def perform_batch_inference(tf_session, tf_prediction_op, tf_input, batch_x, size_batch, input_size, n_classes,
+def perform_batch_inference(model, tf_session, tf_prediction_op, tf_input, batch_x, size_batch, input_size, n_classes,
                             prediction_proba_activate=False):
     """
     Performs the segmentation of all the patches in the batch.
@@ -464,10 +475,13 @@ def perform_batch_inference(tf_session, tf_prediction_op, tf_input, batch_x, siz
     :return: List of segmentation of the patches, and optionally list of the probabilty maps for each patch.
     """
 
-    p = tf_session.run(tf_prediction_op, feed_dict={
-        tf_input: batch_x})  # here we get the predictions under prob format (float, between 0 and 1, shape = (bs, size_image*size_image, n_classes).
-    Mask = np.argmax(p, axis=2)
-    Mask = Mask.reshape(size_batch, input_size, input_size)  # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
+    batch_x = np.expand_dims(batch_x, axis=3)
+    batch_x = np.concatenate((batch_x, batch_x, batch_x), axis=3)
+
+    p = model.predict(batch_x)
+
+    Mask = np.argmax(p, axis=3)  # Now Mask is a 256*256 mask with Mask[i,j] = pixel_class
+
     batch_predictions_list = [np.squeeze(e) for e in np.split(Mask, size_batch, axis=0)]
 
     if prediction_proba_activate:
@@ -481,4 +495,6 @@ def perform_batch_inference(tf_session, tf_prediction_op, tf_input, batch_x, siz
 
     else:
         return batch_predictions_list
+
+
 

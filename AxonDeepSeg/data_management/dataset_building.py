@@ -1,4 +1,4 @@
-from pathlib import Path
+
 
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
