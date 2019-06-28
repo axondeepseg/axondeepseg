@@ -270,11 +270,11 @@ using your GPU, you need to uninstall the TensorFlow from your virtual environme
 and install the GPU version of it::
 
     pip uninstall tensorflow
-    pip install tensorflow-gpu==1.3.0
+    pip install tensorflow-gpu==1.13.0
 
 .. WARNING ::
-   Because we recommend the use of version 1.3.0 of Tensorflow GPU, the CUDA version on your system should be 8.0.
-   CUDA 9.0+ is not compatible with Tensorflow 1.3.0. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
+   Because we recommend the use of version 1.13.0 of Tensorflow GPU, the CUDA version on your system should be 10.0.
+   CUDA version less than 10 is not compatible with Tensorflow 1.13.0. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
 
 Existing models
 ===============================================================================
