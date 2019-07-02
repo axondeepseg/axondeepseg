@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import AxonDeepSeg.ads_utils
 
+from AxonDeepSeg.ads_utils import convert_path
+
 class DataGen(keras.utils.Sequence):
     '''Generates data for Keras'''
     def __init__(self, ids, path, augmentations, batch_size=8, image_size=512, thresh_indices=[0, 0.2, 0.8]):
@@ -14,6 +16,11 @@ class DataGen(keras.utils.Sequence):
           :param image_size: Int, input image size.
           :return: the original image, a list of patches, and their positions.
         '''
+
+
+        # If string, convert to Path objects
+        path = convert_path(path)
+
 
         self.ids = ids
         self.path = path
@@ -30,13 +37,13 @@ class DataGen(keras.utils.Sequence):
         '''
 
         ## Path
-        image_path = self.path + '/image_' + id_name + ".png"
-        mask_path = self.path + '/mask_' + id_name + ".png"
+        image_path = self.path / ('image_' + id_name + ".png")
+        mask_path = self.path / ('mask_' + id_name + ".png")
         ## Reading Image
-        image = cv2.imread(image_path)
+        image = cv2.imread(str(image_path))
 
         # -----Mask PreProcessing --------
-        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+        mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
         mask = descritize_mask(mask, self.thresh_indices)
         # ---------------------------
         return (image, mask)
@@ -101,7 +108,6 @@ def labellize_mask_2d(patch, thresh_indices=[0, 0.2, 0.8]):
 def descritize_mask(mask, thresh_indices):
     '''
         Process a mask with 8 bit pixels ([0-255]) such that it get discretizes into 3 different channels ( background, myelin, axon) .
-
         Returns mask composed of 3 different channels ( background, myelin, axon )
     '''
 
