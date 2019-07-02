@@ -5,7 +5,7 @@ import AxonDeepSeg.ads_utils
 
 class DataGen(keras.utils.Sequence):
     '''Generates data for Keras'''
-    def __init__(self, ids, path, batch_size=8, image_size=512, thresh_indices=[0, 0.2, 0.8]):
+    def __init__(self, ids, path, augmentations, batch_size=8, image_size=512, thresh_indices=[0, 0.2, 0.8]):
         '''
           Initalization for the DataGen class
           :param ids: List of strings, ids of all the images/masks in the training set.
@@ -21,6 +21,7 @@ class DataGen(keras.utils.Sequence):
         self.image_size = image_size
         self.on_epoch_end()
         self.thresh_indices = thresh_indices
+        self.augment = augmentations
 
     def __load__(self, id_name):
         '''
@@ -55,14 +56,24 @@ class DataGen(keras.utils.Sequence):
             image.append(_img)
             mask.append(_mask)
 
-        image = np.array(image)
-        mask = np.array(mask)
+        images = np.array(image)
+        masks  = np.array(mask)
 
-        return (image, mask)
+        image_aug = []
+        mask_aug = []
+        for x, y in zip(images, masks):
+            aug = self.augment(image= x, mask = y)
+            image_aug.append(aug["image"])
+            mask_aug.append(aug["mask"])
+        image_aug = np.array(image_aug)
+        mask_aug  = np.array(mask_aug)
+        return (image_aug, mask_aug)
 
     def on_epoch_end(self):
         pass
 
+    def __len__(self):
+        return int(np.ceil(len(self.ids)/float(self.batch_size)))
 
 
 

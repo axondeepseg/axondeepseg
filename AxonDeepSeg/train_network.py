@@ -12,17 +12,15 @@ import AxonDeepSeg.ads_utils
 import keras
 
 from keras.models import *
-from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import *
 
 # Keras import
-from keras.losses import categorical_crossentropy
 import keras.backend.tensorflow_backend as K
-
 
 K.set_session
 import tensorflow as tf
-
+from albumentations import *
+import random
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
                 save_trainable=True, gpu=None, debug_mode=False, gpu_per=1.0):
@@ -75,59 +73,88 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     no_valid_images = int(len(os.listdir(path_validation_set)) / 2)
     valid_ids = [str(i) for i in range(no_valid_images)]
 
-    # Loading the Training images and masks in batch
-    train_gen = DataGen(train_ids, path_training_set, batch_size=no_train_images, image_size=image_size,
-                        thresh_indices=thresh_indices)
-    image_train_gen, mask_train_gen = train_gen.__getitem__(0)
 
-    # Loading the Validation images and masks in batch
-    valid_gen = DataGen(valid_ids, path_validation_set, batch_size=no_valid_images, image_size=image_size,
-                        thresh_indices=thresh_indices)
-    image_valid_gen, mask_valid_gen = valid_gen.__getitem__(0)
 
     ###################################################################################################################
     ############################################# DATA AUGMENTATION ##################################################
     ###################################################################################################################
 
-    # Data dictionary to feed into image generator
-    data_gen_args = dict(horizontal_flip=True,
-                         # flipping()[1],
-                         vertical_flip=True,
-                         # preprocessing_function = elastic
-                         # flipping()[0],
-                         # rotation_range = random_rotation()[0],
-                         # width_shift_range = shifting(patch_size, n_classes)[1],
-                         # height_shift_range = shifting(patch_size, n_classes) [0],
-                         # fill_mode = "constant",
-                         # cval = 0
-                         )
+    shifting = config["da-0-shifting-activate"],
+    rescaling = config["da-1-rescaling-activate"]
+    rotation = config["da-2-random_rotation-activate"]
+    elastic = config["da-3-elastic-activate"]
+    flipping = config["da-4-flipping-activate"]
+    gaussian_blur = config["da-5-noise_addition-activate"]
 
-    #####################Training###################
-    image_datagen = ImageDataGenerator(**data_gen_args)
-    mask_datagen = ImageDataGenerator(**data_gen_args)
+    p_shift = p_rescale = p_rotate = p_elastic = p_flip = p_blur = 0
+    if shifting:
+        p_shift = 0.5
+    if rotation:
+        p_rotate = 0.5
+    if flipping:
+        p_flip = 0.5
+    if gaussian_blur:
+        p_blur = 0.5
+    if elastic:
+        p_elastic = 0.5
 
-    seed = 2018
+    #####Data Augmentation parameters#####
 
-    # Image and Mask Data Generator
-    image_generator_train = image_datagen.flow(image_train_gen, y=None, seed = seed,  batch_size=batch_size, shuffle=True)
-    mask_generator_train = mask_datagen.flow(mask_train_gen, y=None, seed = seed, batch_size=batch_size, shuffle=True)
+    #Elastic transform parameters
+    alpha_max = 9
+    sigma = 3
+    alpha = random.choice(list(range(1, alpha_max)))
 
-    # Just zip the two generators to get a generator that provides augmented images and masks at the same time
-    train_generator = zip(image_generator_train, mask_generator_train)
+    #Random rotation parameters
+    low_bound = 5
+    high_bound = 89
 
-    ###########################Validation###########
-    data_gen_args = dict()
-    image_datagen = ImageDataGenerator(**data_gen_args)
-    mask_datagen = ImageDataGenerator(**data_gen_args)
+    #Shifting parameters
+    percentage_max = 0.1
+    size_shift = int(percentage_max*image_size)
+    low_limit = 0
+    high_limit = (2*size_shift-1) / image_size
 
 
-    image_generator_valid = image_datagen.flow(x=image_valid_gen, y=None,  batch_size=batch_size, seed = seed, shuffle=False)
-    mask_generator_valid = mask_datagen.flow(x=mask_valid_gen, y=None,  batch_size=batch_size, seed = seed, shuffle=False)
+    ######################################
 
-    # Just zip the two generators to get a generator that provides augmented images and masks at the same time
-    valid_generator = zip(image_generator_valid, mask_generator_valid)
+
+    AUGMENTATIONS_TRAIN = Compose([
+
+    Flip(p = p_flip),
+
+    ShiftScaleRotate(
+        shift_limit=(low_limit, high_limit) , scale_limit=(0,0),
+        rotate_limit=(0,0), border_mode=cv2.BORDER_REFLECT_101, p = p_shift),
+
+    ElasticTransform(alpha= alpha, sigma= sigma, p = p_elastic, alpha_affine = alpha),
+
+    GaussianBlur(p = p_blur),
+
+    Rotate(limit=(low_bound, high_bound), border_mode=cv2.BORDER_REFLECT_101, p = p_rotate)
+
+    ])
+
+
+    AUGMENTATIONS_TEST = Compose([ ])
+
+
+    ###################################################################################################################
+
+
+
+   # Loading the Training images and masks in batch
+    train_generator = DataGen(train_ids, path_training_set, batch_size= batch_size, image_size=image_size,
+                        thresh_indices=thresh_indices, augmentations = AUGMENTATIONS_TRAIN )
+
+
+    # Loading the Validation images and masks in batch
+    valid_generator = DataGen(valid_ids, path_validation_set, batch_size= batch_size, image_size=image_size,
+                        thresh_indices=thresh_indices, augmentations = AUGMENTATIONS_TEST)
+
 
     ########################### Initalizing U-Net Model ###########
+
     model = uconv_net(config, bn_updated_decay=None, verbose=True)
 
     ########################### Tensorboard for Visualization ###########
