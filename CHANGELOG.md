@@ -12,7 +12,7 @@ All notable changes to the AxonDeepSeg project will be documented in this file.
 - Remove `matplotlib.pyplot` from source code and refactor it to full OO plotting
 - Standardize path management to `pathlib` library
 - Shifted AxonDeepSeg from TensorFlow to Keras framework.
-- Upgrade CUDA to 10.0 and tensorflow to 1.13.1.
+- Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 
 ## [2.1] - 2018-09-25
 

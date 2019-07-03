@@ -13,12 +13,13 @@ Version [2.2dev] - XXXX-XX-XX
 
 **Changed:**
 
+- Shifted AxonDeepSeg from TensorFlow to Keras framework.
+- Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 - Resolve image rescale warnings
 - Handle exception for images smaller than minimum patch size after resizing
 - Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
 - Remove `matplotlib.pyplot` from source code and refactor to full OO plotting
 - Standardize path management to `pathlib` library
-- Shifted AxonDeepSeg from TensorFlow to Keras framework.
 
 
 Version [2.1] - 2018-09-25
