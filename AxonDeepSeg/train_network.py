@@ -84,7 +84,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     rotation = config["da-2-random_rotation-activate"]
     elastic = config["da-3-elastic-activate"]
     flipping = config["da-4-flipping-activate"]
-    gaussian_blur = config["da-5-noise_addition-activate"]
+    gaussian_blur = config["da-5-gaussian_blur-activate"]
 
     p_shift = p_rescale = p_rotate = p_elastic = p_flip = p_blur = 0
     if shifting:
