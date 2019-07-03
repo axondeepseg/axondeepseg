@@ -258,7 +258,7 @@ Make sure your know where the cloned repository is located on your machine
 
 Install FSLeyes using conda-forge ::
 
-           conda install -c conda-forge fsleyes==0.29.0
+           conda install -c conda-forge fsleyes==0.30.0
 
 Launch FSLeyes ::
 
@@ -293,7 +293,7 @@ Install wxPython using conda ::
            
 Install FSLeyes using pip ::
 
-           pip install fsleyes==0.29.0
+           pip install fsleyes==0.30.0
            
 Launch FSLeyes ::
 
@@ -306,8 +306,7 @@ The plugin is now installed. From now on, you can access the plugin on the FSLey
 
 Known issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1. The GUI is unable to load large images. The exact maximum dimensions can varry depending on your graphics card. In our testing, we couldn't load images with a side larger than 2048 pixels.
-2. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
+1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
 
 Testing the installation
 -------------------------------------------------------------------------------
