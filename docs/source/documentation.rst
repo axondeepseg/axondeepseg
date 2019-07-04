@@ -13,12 +13,13 @@ Version [2.2dev] - XXXX-XX-XX
 
 **Changed:**
 
+- Shifted AxonDeepSeg from TensorFlow to Keras framework.
+- Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 - Resolve image rescale warnings
 - Handle exception for images smaller than minimum patch size after resizing
 - Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
 - Remove `matplotlib.pyplot` from source code and refactor to full OO plotting
 - Standardize path management to `pathlib` library
-- Shifted AxonDeepSeg from TensorFlow to Keras framework.
 
 
 Version [2.1] - 2018-09-25
@@ -270,11 +271,11 @@ using your GPU, you need to uninstall the TensorFlow from your virtual environme
 and install the GPU version of it::
 
     pip uninstall tensorflow
-    pip install tensorflow-gpu==1.3.0
+    pip install tensorflow-gpu==1.13.1
 
 .. WARNING ::
-   Because we recommend the use of version 1.3.0 of Tensorflow GPU, the CUDA version on your system should be 8.0.
-   CUDA 9.0+ is not compatible with Tensorflow 1.3.0. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
+   Because we recommend the use of version 1.13.1 of Tensorflow GPU, the CUDA version on your system should be 10.0.
+   CUDA version less than 10 is not compatible with Tensorflow 1.13.1. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
 
 Existing models
 ===============================================================================
