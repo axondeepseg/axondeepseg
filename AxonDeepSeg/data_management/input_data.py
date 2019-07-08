@@ -14,11 +14,12 @@ class DataGen(keras.utils.Sequence):
           :param batch_size: Int, the batch size used for training.
           :param image_size: Int, input image size.
           :param image_size: Int, input image size.
+          :param augmentations: Compose object, a set of data augmentation operations to be applied.
           :return: the original image, a list of patches, and their positions.
         '''
 
 
-        # If string, convert to Path objects
+        # If string, convert to Path object
         path = convert_path(path)
 
 

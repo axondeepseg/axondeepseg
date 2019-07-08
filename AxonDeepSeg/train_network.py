@@ -87,6 +87,9 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     gaussian_blur = config["da-5-gaussian_blur-activate"]
 
     p_shift = p_rescale = p_rotate = p_elastic = p_flip = p_blur = 0
+    #If the key values of augmentation are set to True then their respective probability are set to 0.5 else to 0. Probalility(p) suggests a certainity of applying data augmentation operations (shift, rotate, blur, elastic, flip) to an image.
+
+    # Probability value of 0.5 is chosen so that the original as well augmented image are taken into account while training the model.
     if shifting:
         p_shift = 0.5
     if rotation:
@@ -97,6 +100,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
         p_blur = 0.5
     if elastic:
         p_elastic = 0.5
+
 
     #####Data Augmentation parameters#####
 
@@ -121,16 +125,19 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
 
     AUGMENTATIONS_TRAIN = Compose([
 
+    #Randomy flips an image either horizontally, vertically or both.
     Flip(p = p_flip),
 
-    ShiftScaleRotate(
-        shift_limit=(low_limit, high_limit) , scale_limit=(0,0),
-        rotate_limit=(0,0), border_mode=cv2.BORDER_REFLECT_101, p = p_shift),
+    #Randomly rotates an image between low limit and high limit.
+    ShiftScaleRotate(shift_limit=(low_limit, high_limit) , scale_limit=(0,0),rotate_limit=(0,0), border_mode=cv2.BORDER_REFLECT_101, p = p_shift),
 
+    #Randomly applies elastic transformation on the image.
     ElasticTransform(alpha= alpha, sigma= sigma, p = p_elastic, alpha_affine = alpha),
 
+    #Blurs an image using gaussian kernal.
     GaussianBlur(p = p_blur),
 
+    #Randomly rotates the image between low bound and high bound.
     Rotate(limit=(low_bound, high_bound), border_mode=cv2.BORDER_REFLECT_101, p = p_rotate)
 
     ])
@@ -158,7 +165,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     model = uconv_net(config, bn_updated_decay=None, verbose=True)
 
     ########################### Tensorboard for Visualization ###########
-    # Name = "SEM_3c_dataset-{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
     tensorboard = TensorBoard(log_dir=str(path_model))
 
     ########################## Training Unet Model ###########
