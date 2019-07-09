@@ -138,6 +138,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Toggle off the cursor
         oopts.showCursor = False
 
+        # Toggle off the radiological orientation
+        self.displayCtx.radioOrientation = False
+
         # Create a temporary directory that will hold the NIfTI files
         self.ads_temp_dir = tempfile.TemporaryDirectory()
 
@@ -324,11 +327,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_array = np.array(
             myelin_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
         )
-        myelin_array = np.flipud(np.rot90(myelin_array, k=3, axes=(0, 1)))
+        myelin_array = np.rot90(myelin_array, k=3, axes=(1, 0))
         axon_array = np.array(
             axon_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
         )
-        axon_array = np.flipud(np.rot90(axon_array, k=3, axes=(0, 1)))
+        axon_array = np.rot90(axon_array, k=3, axes=(1, 0))
 
         # Make sure the masks have the same size
         if myelin_array.shape != axon_array.shape:
@@ -378,7 +381,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         watershed_data = self.get_watershed_segmentation(axon_array, myelin_array)
 
         # Save the watershed mask as a png then load it as an overlay
-        watershed_image_array = np.flipud(np.rot90(watershed_data, k=3, axes=(0, 1)))
+        watershed_image_array = np.rot90(watershed_data, k=3, axes=(1, 0))
         watershed_image = Image.fromarray(watershed_image_array)
         file_name = self.ads_temp_dir.name + "/watershed_mask.png"
         watershed_image.save(file_name)
@@ -552,7 +555,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Convert image data into a NIfTI image
         # Note: PIL and NiBabel use different axis conventions, so some array manipulation has to be done.
         img_NIfTI = nib.Nifti1Image(
-            np.flipud(np.rot90(img_png2D, k=3, axes=(0, 1))), np.eye(4)
+            np.rot90(img_png2D, k=1, axes=(1, 0)), np.eye(4)
         )
 
         # Save the NIfTI image in a temporary directory
@@ -748,3 +751,4 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This method makes the control panel appear on the left of the FSLeyes window.
         """
         return {"location": wx.LEFT}
+
