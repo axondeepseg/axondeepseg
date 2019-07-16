@@ -194,7 +194,7 @@ class TestCore(object):
         with pytest.raises(IOError):
             save_axon_morphometrics(str(nonExistingFolder), stats_array)
 
-    @pytest.mark.unit
+    @pytest.mark.debug
     def test_load_axon_morphometrics_returns_identical_var_as_was_saved(self):
         original_stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
