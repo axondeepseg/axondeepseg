@@ -5,97 +5,6 @@ sheaths from microscopy images. It performs 3-class semantic segmentation using 
 
 AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechnique Montréal.
 
-Changelog
-===============================================================================
-
-Version [2.2dev] - XXXX-XX-XX
--------------------------------------------------------------------------------
-
-**Changed:**
-
-- Resolve image rescale warnings
-- Handle exception for images smaller than minimum patch size after resizing
-- Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
-- Remove `matplotlib.pyplot` from source code and refactor to full OO plotting
-- Standardize path management to `pathlib` library
-- Shifted AxonDeepSeg from TensorFlow to Keras framework.
-- Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
-- Require Python 3.6.x version at installation
-
-
-Version [2.1] - 2018-09-25
--------------------------------------------------------------------------------
-
-**Changed:**
-
-- Fixed bug that would crash when user inputed consent for Sentry tracking
-
-Version [2.0] - 2018-09-11
--------------------------------------------------------------------------------
-
-**Changed:**
-
-- Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
-- Minor changes to make ADS Windows-compatibile
-- Removed plot hold commands (deprecated)
-
-Version [1.1] - 2018-08-02
--------------------------------------------------------------------------------
-
-**Changed:**
-
-- Minor Mac OSX-related bug fix
-- Changed installation requirements to exact release versions
-
-Version [1.0] - 2018-08-02
--------------------------------------------------------------------------------
-
-Versions 1.x will remain Python 2.7-compatible
-
-Version [0.6] - 2018-08-01
--------------------------------------------------------------------------------
-
-(version 0.5 was skipped due to conflicting file on PyPI)
-
-**Added:**
-
-- Comprehensive testing suite
-- Bug tracking (Sentry)
-- Blue-red visualisation function for segmented masks
-
-**Changed:**
-
-- Dataset building and training notebook
-- Minor documentation improvements
-- Minor bug fixes
-
-Version [0.4.1] - 2018-05-16
--------------------------------------------------------------------------------
-
-**Added:**
-
-- GIMP procedure for ground truth labelling or segmentation correction added in the documentation.
-- Compatibility with tiff images.
-- Continuous integration with Travis is now supported.
-
-**Changed:**
-
-- The documentation website is now hosted on ReadTheDocs.
-- Updated documentation on the usage of AxonDeepSeg.
-- Change of axon and myelin masks filenames for better clarity.
-
-Version [0.3] - 2018-02-22
--------------------------------------------------------------------------------
-
-**Added:**
-
-- Compatibility for image inputs other than png
-- Pre-processing of input images is now done inside AxonDeepSeg
-
-**Changed:**
-
-- Help display when running AxonDeepSeg from terminal
-
 Installation
 ===============================================================================
 The following sections will help you install all the tools you need to run AxonDeepSeg.
@@ -446,6 +355,8 @@ Citation
 If you use this work in your research, please cite:
 
 Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`_.
+
+.. include:: ../../CHANGELOG.md
 
 Licensing
 ===============================================================================
