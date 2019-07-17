@@ -13,13 +13,14 @@ Version [2.2dev] - XXXX-XX-XX
 
 **Changed:**
 
-- Shifted AxonDeepSeg from TensorFlow to Keras framework.
-- Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 - Resolve image rescale warnings
 - Handle exception for images smaller than minimum patch size after resizing
 - Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
 - Remove `matplotlib.pyplot` from source code and refactor to full OO plotting
 - Standardize path management to `pathlib` library
+- Shifted AxonDeepSeg from TensorFlow to Keras framework.
+- Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
+- Require Python 3.6.x version at installation
 
 
 Version [2.1] - 2018-09-25
@@ -105,7 +106,7 @@ The following sections will help you install all the tools you need to run AxonD
 
 Miniconda
 -------------------------------------------------------------------------------
-Starting with versions 2.0+, AxonDeepSeg is only supported using Python 3.0. Although your system may already have
+Starting with versions 2.0+, AxonDeepSeg is only supported using Python 3.6.x. Although your system may already have
 a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
 virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
