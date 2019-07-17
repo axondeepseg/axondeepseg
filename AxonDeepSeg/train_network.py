@@ -129,7 +129,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     Flip(p = p_flip),
 
     #Randomly rotates an image between low limit and high limit.
-    ShiftScaleRotate(shift_limit=(low_limit, high_limit) , scale_limit=(0,0),rotate_limit=(0,0), border_mode=cv2.BORDER_REFLECT_101, p = p_shift),
+    ShiftScaleRotate(shift_limit=(low_limit, high_limit) , scale_limit=(0,0),rotate_limit=(0,0), border_mode=cv2.BORDER_REFLECT_101, p = p_shift, interpolation = cv2.INTER_NEAREST),
 
     #Randomly applies elastic transformation on the image.
     ElasticTransform(alpha= alpha, sigma= sigma, p = p_elastic, alpha_affine = alpha),
@@ -138,7 +138,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     GaussianBlur(p = p_blur),
 
     #Randomly rotates the image between low bound and high bound.
-    Rotate(limit=(low_bound, high_bound), border_mode=cv2.BORDER_REFLECT_101, p = p_rotate)
+    Rotate(limit=(low_bound, high_bound), border_mode=cv2.BORDER_REFLECT_101, p = p_rotate, interpolation = cv2.INTER_NEAREST)
 
     ])
 
