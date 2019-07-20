@@ -261,7 +261,7 @@ Make sure your know where the cloned repository is located on your machine
 
 Install FSLeyes using conda-forge ::
 
-           conda install -c conda-forge fsleyes==0.30.0
+           conda install -c conda-forge fsleyes==0.29.0
 
 Launch FSLeyes ::
 
@@ -296,7 +296,7 @@ Install wxPython using conda ::
            
 Install FSLeyes using pip ::
 
-           pip install fsleyes==0.30.0
+           pip install fsleyes==0.29.0
            
 Launch FSLeyes ::
 
