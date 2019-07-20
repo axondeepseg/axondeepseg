@@ -548,6 +548,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         else:
             self.show_message("Invalid image dimensions")
             return
+        
+        # Verify that the image is not too big for FSLeyes
+        if (img_png2D.shape[0] > 2048) or (img_png2D.shape[1] > 2048):
+            self.show_message("This image has at least one dimension larger than 2048 pixels. At the moment,"
+                              " FSLeyes can't load such images.")
+            return
 
         if is_mask is True:
             img_png2D = img_png2D // 255  # Segmentation masks should be binary
