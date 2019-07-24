@@ -173,8 +173,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
     # Compile the model with Categorical Cross Entropy loss and Adam Optimizer
-    model.compile(optimizer=adam, loss="categorical_crossentropy",
-                  metrics=["accuracy", dice_axon, dice_myelin])
+    model.compile(optimizer=adam, loss= dice_coef_loss,metrics=["accuracy", dice_axon, dice_myelin])
 
     train_steps = len(train_ids) // batch_size
     valid_steps = len(valid_ids) // batch_size
@@ -218,7 +217,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     saver = tf.train.Saver()
 
     # Save Model in ckpt format
-    custom_objects = {'dice_axon': dice_axon, 'dice_myelin': dice_myelin}
+    custom_objects = {'dice_axon': dice_axon, 'dice_myelin': dice_myelin, "dice_coef_loss" : dice_coef_loss}
     model = load_model(str(path_model) + "/model.hdf5", custom_objects=custom_objects)
 
     sess = K.get_session()
@@ -256,7 +255,14 @@ def dice_axon(y_true, y_pred, smooth=1e-3):
     intersection = K.sum(y_true_f * y_pred_f)
     return K.mean((2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth))
 
+def dice_coef(y_true, y_pred, smooth=1e-3):
+   y_true_f = K.flatten(y_true)
+   y_pred_f = K.flatten(y_pred)
+   intersection = K.sum(y_true_f * y_pred_f)
+   return K.mean((2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth))
 
+def dice_coef_loss(y_true, y_pred):
+   return 1 - dice_coef(y_true, y_pred)
 
 # To Call the training in the terminal
 
