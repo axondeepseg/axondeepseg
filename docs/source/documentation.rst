@@ -5,94 +5,6 @@ sheaths from microscopy images. It performs 3-class semantic segmentation using 
 
 AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechnique Montréal.
 
-Changelog
-===============================================================================
-
-Version [2.2dev] - XXXX-XX-XX
--------------------------------------------------------------------------------
-
-**Changed:**
-
-- Resolve image rescale warnings
-- Handle exception for images smaller than minimum patch size after resizing
-- Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
-- Remove `matplotlib.pyplot` from source code and refactor to full OO plotting
-- Standardize path management to `pathlib` library
-
-
-Version [2.1] - 2018-09-25
--------------------------------------------------------------------------------
-
-**Changed:**
-
-- Fixed bug that would crash when user inputed consent for Sentry tracking
-
-Version [2.0] - 2018-09-11
--------------------------------------------------------------------------------
-
-**Changed:**
-
-- Upgraded ADS for Python 3.6-compatibility (no longer supporting Python 2.7)
-- Minor changes to make ADS Windows-compatibile
-- Removed plot hold commands (deprecated)
-
-Version [1.1] - 2018-08-02
--------------------------------------------------------------------------------
-
-**Changed:**
-
-- Minor Mac OSX-related bug fix
-- Changed installation requirements to exact release versions
-
-Version [1.0] - 2018-08-02
--------------------------------------------------------------------------------
-
-Versions 1.x will remain Python 2.7-compatible
-
-Version [0.6] - 2018-08-01
--------------------------------------------------------------------------------
-
-(version 0.5 was skipped due to conflicting file on PyPI)
-
-**Added:**
-
-- Comprehensive testing suite
-- Bug tracking (Sentry)
-- Blue-red visualisation function for segmented masks
-
-**Changed:**
-
-- Dataset building and training notebook
-- Minor documentation improvements
-- Minor bug fixes
-
-Version [0.4.1] - 2018-05-16
--------------------------------------------------------------------------------
-
-**Added:**
-
-- GIMP procedure for ground truth labelling or segmentation correction added in the documentation.
-- Compatibility with tiff images.
-- Continuous integration with Travis is now supported.
-
-**Changed:**
-
-- The documentation website is now hosted on ReadTheDocs.
-- Updated documentation on the usage of AxonDeepSeg.
-- Change of axon and myelin masks filenames for better clarity.
-
-Version [0.3] - 2018-02-22
--------------------------------------------------------------------------------
-
-**Added:**
-
-- Compatibility for image inputs other than png
-- Pre-processing of input images is now done inside AxonDeepSeg
-
-**Changed:**
-
-- Help display when running AxonDeepSeg from terminal
-
 Installation
 ===============================================================================
 The following sections will help you install all the tools you need to run AxonDeepSeg.
@@ -103,7 +15,7 @@ The following sections will help you install all the tools you need to run AxonD
 
 Miniconda
 -------------------------------------------------------------------------------
-Starting with versions 2.0+, AxonDeepSeg is only supported using Python 3.0. Although your system may already have
+Starting with versions 2.0+, AxonDeepSeg is only supported using Python 3.6.x. Although your system may already have
 a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
 virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
@@ -269,11 +181,11 @@ using your GPU, you need to uninstall the TensorFlow from your virtual environme
 and install the GPU version of it::
 
     pip uninstall tensorflow
-    pip install tensorflow-gpu==1.3.0
+    pip install tensorflow-gpu==1.13.1
 
 .. WARNING ::
-   Because we recommend the use of version 1.3.0 of Tensorflow GPU, the CUDA version on your system should be 8.0.
-   CUDA 9.0+ is not compatible with Tensorflow 1.3.0. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
+   Because we recommend the use of version 1.13.1 of Tensorflow GPU, the CUDA version on your system should be 10.0.
+   CUDA version less than 10 is not compatible with Tensorflow 1.13.1. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
 
 Existing models
 ===============================================================================
@@ -443,6 +355,8 @@ Citation
 If you use this work in your research, please cite:
 
 Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`_.
+
+.. include:: ../../CHANGELOG.md
 
 Licensing
 ===============================================================================

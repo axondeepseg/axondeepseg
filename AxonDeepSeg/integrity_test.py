@@ -7,9 +7,8 @@
 import json
 from pathlib import Path
 from AxonDeepSeg.testing.segmentation_scoring import *
-from time import time
 from AxonDeepSeg.apply_model import axon_segmentation
-from scipy.misc import imread, imsave
+from scipy.misc import imread
 import AxonDeepSeg.ads_utils
 
 def integrity_test():

@@ -253,7 +253,7 @@ def load_axon_morphometrics(path_folder):
     path_folder = convert_path(path_folder)
 
     try:
-        stats_array = np.load(str(path_folder / 'axonlist.npy'))
+        stats_array = np.load(str(path_folder / 'axonlist.npy'), allow_pickle=True)
     except IOError as e:
         print(("\nError: Could not load file \"{0}\" in "
                "directory \"{1}\".\n".format('axonlist.npy', path_folder)))

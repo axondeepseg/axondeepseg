@@ -3,8 +3,9 @@
 import json
 from pathlib import Path
 import shutil
-import tensorflow as tf
-from shutil import copy
+
+import keras.backend.tensorflow_backend as K
+
 
 import pytest
 
@@ -14,8 +15,8 @@ from AxonDeepSeg.train_network import train_model
 class TestCore(object):
     def setup(self):
         # reset the tensorflow graph for new training
-        tf.reset_default_graph()
 
+        K.clear_session()
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
 
@@ -49,6 +50,7 @@ class TestCore(object):
             "trainingset_patchsize": 256,
             "trainingset": "SEM_3c_256",
             "batch_size": 2,
+            "epochs":2,
             "save_epoch_freq": 1,
 
             # Network architecture parameters:
@@ -86,7 +88,7 @@ class TestCore(object):
             # Data augmentation parameters:
             "da-type": "all",
             "da-2-random_rotation-activate": False,
-            "da-5-noise_addition-activate": False,
+            "da-5-gaussian_blur-activate": False,
             "da-3-elastic-activate": True,
             "da-0-shifting-activate": True,
             "da-4-flipping-activate": True,
@@ -134,12 +136,9 @@ class TestCore(object):
         expectedFiles = [
             "checkpoint",
             "config_network.json",
-            "evolution_stats.pkl",
-            "evolution.pkl",
             "model.ckpt.data-00000-of-00001",
             "model.ckpt.index",
-            "model.ckpt.meta",
-            "report.txt"
+            "model.ckpt.meta"
             ]
 
         existingFiles = [f.name for f in self.modelPath.iterdir()]
