@@ -1,10 +1,12 @@
 # coding: utf-8
 
 import json
-import os
+from pathlib import Path
 import shutil
-import tensorflow as tf
-from shutil import copy
+
+import keras.backend.tensorflow_backend as K
+
+
 import pytest
 
 from AxonDeepSeg.train_network import train_model
@@ -13,42 +15,42 @@ from AxonDeepSeg.train_network import train_model
 class TestCore(object):
     def setup(self):
         # reset the tensorflow graph for new training
-        tf.reset_default_graph()
 
-        self.fullPath = os.path.dirname(os.path.abspath(__file__))
+        K.clear_session()
+        # Get the directory where this current file is saved
+        self.fullPath = Path(__file__).resolve().parent
 
-        self.modelPath = os.path.join(
-            self.fullPath,
-            '__test_files__',
-            '__test_training_files__',
+        self.modelPath = (
+            self.fullPath /
+            '__test_files__' /
+            '__test_training_files__' /
             'Model'
             )
 
-        self.configPath = os.path.join(
-            self.fullPath,
-            '__test_files__',
-            '__test_training_files__',
-            'Model',
+        self.configPath = (
+            self.fullPath /
+            '__test_files__' /
+            '__test_training_files__' /
+            'Model' /
             'config_network.json'
             )
 
-        self.trainingPath = os.path.join(
-            self.fullPath,
-            '__test_files__',
+        self.trainingPath = (
+            self.fullPath /
+            '__test_files__' /
             '__test_training_files__'
             )
 
-        if not os.path.exists(self.modelPath):
-            os.makedirs(self.modelPath)
+        self.modelPath.mkdir(parents=True, exist_ok=True)
 
         self.config = {
-
             # General parameters:
             "n_classes": 3,
             "thresholds": [0, 0.2, 0.8],
             "trainingset_patchsize": 256,
             "trainingset": "SEM_3c_256",
             "batch_size": 2,
+            "epochs":2,
             "save_epoch_freq": 1,
 
             # Network architecture parameters:
@@ -86,34 +88,32 @@ class TestCore(object):
             # Data augmentation parameters:
             "da-type": "all",
             "da-2-random_rotation-activate": False,
-            "da-5-noise_addition-activate": False,
+            "da-5-gaussian_blur-activate": False,
             "da-3-elastic-activate": True,
             "da-0-shifting-activate": True,
             "da-4-flipping-activate": True,
             "da-1-rescaling-activate": False
         }
 
-        if os.path.exists(self.configPath):
-            with open(self.configPath, 'r') as fd:
-                self.config_network = json.loads(fd.read())
-        else:   # There is no config file for the moment
+        if not self.configPath.exists():
             with open(self.configPath, 'w') as f:
                 json.dump(self.config, f, indent=2)
-            with open(self.configPath, 'r') as fd:
-                self.config_network = json.loads(fd.read())
+
+        with open(self.configPath, 'r') as fd:
+            self.config_network = json.loads(fd.read())
 
     @classmethod
     def teardown_class(cls):
-        fullPath = os.path.dirname(os.path.abspath(__file__))
+        fullPath = Path(__file__).resolve().parent
 
-        modelPath = os.path.join(
-            fullPath,
-            '__test_files__',
-            '__test_training_files__',
+        modelPath = (
+            fullPath /
+            '__test_files__' /
+            '__test_training_files__' /
             'Model'
             )
 
-        if os.path.exists(modelPath) and os.path.isdir(modelPath):
+        if modelPath.is_dir():
             try:
                 shutil.rmtree(modelPath)
             except OSError:
@@ -127,8 +127,8 @@ class TestCore(object):
         # itself.
 
         train_model(
-            self.trainingPath,
-            self.modelPath,
+            str(self.trainingPath),
+            str(self.modelPath),
             self.config_network,
             debug_mode=True
             )
@@ -136,15 +136,12 @@ class TestCore(object):
         expectedFiles = [
             "checkpoint",
             "config_network.json",
-            "evolution_stats.pkl",
-            "evolution.pkl",
             "model.ckpt.data-00000-of-00001",
             "model.ckpt.index",
-            "model.ckpt.meta",
-            "report.txt"
+            "model.ckpt.meta"
             ]
 
-        existingFiles = os.listdir(self.modelPath)
+        existingFiles = [f.name for f in self.modelPath.iterdir()]
 
         for fileName in expectedFiles:
             assert fileName in existingFiles

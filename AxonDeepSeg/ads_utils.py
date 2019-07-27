@@ -1,14 +1,21 @@
+"""
+AxonDeepSeg utilities module.
+"""
+
 import os
 import sys
+from pathlib import Path
 import configparser
 from distutils.util import strtobool
-import raven
-from tqdm import tqdm
+import cgi
 import tempfile
 import zipfile
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util import Retry
+from tqdm import tqdm
+import raven
+
 
 DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
@@ -69,7 +76,7 @@ raven.transport.threaded.AsyncWorker.main_thread_terminated = _main_thread_termi
 def config_setup():
 
     config_path = get_config_path()
-    
+
     if 'pytest' in sys.modules:
         bugTracking = bool(0)
     else:
@@ -88,7 +95,7 @@ def config_setup():
 
     config = configparser.ConfigParser()
     config['Global'] = {
-        'bugTracking': bugTracking,
+        'bugTracking': bugTracking
     }
 
     with open(config_path, 'w') as configFile:
@@ -100,10 +107,8 @@ def get_config_path():
     """Get the full path of the AxonDeepSeg configuration file.
     :return: String with the full path to the ADS config file.
     """
-    return os.path.join(
-                    os.path.expanduser("~"),
-                    DEFAULT_CONFIGFILE
-                    )
+    return Path.home() / DEFAULT_CONFIGFILE
+
 
 def read_config():
     """Read the system configuration file.
@@ -112,11 +117,11 @@ def read_config():
 
     config_path = get_config_path()
 
-    if not os.path.exists(config_path):
+    if not config_path.exists():
         raise IOError("Could not find configuration file.")
 
     config = configparser.ConfigParser()
-    config.read(config_path)
+    config.read(str(config_path))
 
     return config
 
@@ -128,7 +133,7 @@ def init_ads():
 
     config_path = get_config_path()
 
-    if not os.path.isfile(config_path):
+    if not config_path.is_file():
         config_setup()
     else:
         pass
@@ -152,7 +157,7 @@ def init_error_client(bugTracking):
                         processors=(
                             'raven.processors.RemoveStackLocalsProcessor',
                             'raven.processors.SanitizePasswordsProcessor')
-                            )
+                        )
 
             traceback_to_server(client)
 
@@ -172,11 +177,10 @@ def traceback_to_server(client):
 
     sys.excepthook = excepthook
 
-def download_data(url_data, zip_filename):
+def download_data(url_data):
     """ Downloads and extracts zip files from the web.
     :return: 0 - Success, 1 - Encountered an exception.
     """
-
     # Download
     try:
         print('Trying URL: %s' % url_data)
@@ -184,30 +188,67 @@ def download_data(url_data, zip_filename):
         session = requests.Session()
         session.mount('https://', HTTPAdapter(max_retries=retry))
         response = session.get(url_data, stream=True)
-        tmp_path = os.path.join(tempfile.mkdtemp(), zip_filename)
-        with open(tmp_path, 'wb') as tmp_file:
-            total = int(response.headers.get('content-length', 1))
-            tqdm_bar = tqdm(total=total, unit='B', unit_scale=True, desc="Downloading", ascii=True)
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    tmp_file.write(chunk)
-                    dl_chunk = len(chunk)
-                    tqdm_bar.update(dl_chunk)
-            tqdm_bar.close()
+
+        if "Content-Disposition" in response.headers:
+            _, content = cgi.parse_header(response.headers['Content-Disposition'])
+            zip_filename = content["filename"]
+        else:
+            print("Unexpected: link doesn't provide a filename")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir) / zip_filename
+            with open(tmp_path, 'wb') as tmp_file:
+                total = int(response.headers.get('content-length', 1))
+                tqdm_bar = tqdm(total=total, unit='B', unit_scale=True, desc="Downloading", ascii=True)
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        tmp_file.write(chunk)
+                        dl_chunk = len(chunk)
+                        tqdm_bar.update(dl_chunk)
+                tqdm_bar.close()
+            # Unzip
+            print("Unzip...")
+            try:
+                zf = zipfile.ZipFile(str(tmp_path))
+                zf.extractall(".")
+            except (zipfile.BadZipfile):
+                print('ERROR: ZIP package corrupted. Please try downloading again.')
+                return 1
+            print("--> Folder created: " + str(Path.cwd() / Path(zip_filename).stem))
     except Exception as e:
         print("ERROR: %s" % e)
         return 1
-
-    # Unzip
-    print("Unzip...")
-    try:
-        zf = zipfile.ZipFile(tmp_path)
-        zf.extractall(".")
-    except (zipfile.BadZipfile):
-        print('ERROR: ZIP package corrupted. Please try downloading again.')
-        return 1
-    print("--> Folder created: " + os.path.join(os.path.abspath(os.curdir), zip_filename.strip(".zip")))
     return 0
+
+def convert_path(object_path):
+    """ Convert path
+    Convert path or list of paths to Path() objects.
+    If None type, returns None.
+
+    :param object_path: string, Path() object, None, or a list of these.
+    :return: Path() object, None, or a list of these.
+    """
+    if isinstance(object_path, list):
+        path_list = []
+        for path_iter in object_path:
+            if isinstance(path_iter, Path):
+                path_list.append(path_iter)
+            elif isinstance(path_iter, str):
+                path_list.append(Path(path_iter))
+            elif path_iter == None:
+                path_list.append(None)
+            else:
+                raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
+        return path_list
+    else:
+        if isinstance(object_path, Path):
+            return object_path
+        elif isinstance(object_path, str):
+            return Path(object_path)
+        elif object_path == None:
+            return None
+        else:
+            raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
 
 # Call init_ads() automatically when module is imported
 init_ads()

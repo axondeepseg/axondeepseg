@@ -1,5 +1,4 @@
 # Can ignore specific files
-.DS_Store
 AxonDeepSeg\.egg-info/
 
 AxonDeepSeg/.adsconfig
@@ -34,3 +33,8 @@ AxonDeepSeg/data_test/AxonDeepSeg*
 # Python-related temp files
 .coverage
 .pytest_cache/
+.ipynb_checkpoints/
+
+# OS-related files/folders
+__MACOSX/
+.DS_Store

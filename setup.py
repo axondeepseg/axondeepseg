@@ -5,6 +5,7 @@ from os import path
 import AxonDeepSeg
 
 
+# Get the directory where this current file is saved
 here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
@@ -17,6 +18,7 @@ with open(req_path, "r") as f:
 
 setup(
     name='AxonDeepSeg',
+    python_requires='>=3.6, <3.7',
     version=AxonDeepSeg.__version__,
     description='Python tool for automatic axon and myelin segmentation',
     long_description=long_description,

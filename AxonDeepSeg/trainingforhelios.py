@@ -2,15 +2,16 @@
 
 # Script to place in the same folder as train_network.py
 
+import sys
+import os
 import json
-import os, sys
 import AxonDeepSeg.ads_utils
 
 
 def compute_training(configfile, path_trainingset, path_model, path_model_init = None, gpu_per = 1.0):
 
     os.chdir(sys.path[0]) # Necessary to fix the directory we are working in
-    with open(os.path.join(path_model, configfile), 'r') as fd:
+    with open(path_model / configfile, 'r') as fd:
         config_network = json.loads(fd.read())
 
     #if not os.path.exists(path_model): # Already created before. But can be useful if we want to create models with date of launch.

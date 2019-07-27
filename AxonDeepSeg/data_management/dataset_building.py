@@ -1,12 +1,14 @@
-import os
+
+
 from scipy.misc import imread, imsave
 from skimage.transform import rescale
-from AxonDeepSeg.data_management.input_data import labellize_mask_2d
 import numpy as np
-from .patch_extraction import extract_patch
 from tqdm import tqdm
-import AxonDeepSeg.ads_utils
 
+import AxonDeepSeg.ads_utils
+from AxonDeepSeg.data_management.input_data import labellize_mask_2d
+from AxonDeepSeg.data_management.patch_extraction import extract_patch
+from AxonDeepSeg.ads_utils import convert_path
 
 def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.2, 0.8],
                        patch_size=512, resampling_resolution=0.1):
@@ -23,28 +25,34 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
     :return: Nothing.
     """
 
+    # If string, convert to Path objects
+    path_raw_data = convert_path(path_raw_data)
+    path_patched_data = convert_path(path_patched_data)
+
     # First we define where we are going to store the patched data and we create the directory if it does not exist.
-    if not os.path.exists(path_patched_data):
-        os.makedirs(path_patched_data)
-        
+    if not path_patched_data.exists():
+        path_patched_data.mkdir(parents=True)
+
     # Loop over each raw image folder
-    for img_folder in tqdm(os.listdir(path_raw_data)):
-        path_img_folder = os.path.join(path_raw_data, img_folder)
-        if os.path.isdir(path_img_folder):
+    img_folder_names = [im.name for im in path_raw_data.iterdir()]
+    for img_folder in tqdm(img_folder_names):
+        path_img_folder = path_raw_data / img_folder
+        if path_img_folder.is_dir():
 
             # We are now in the image folder.
-            file = open(path_img_folder+'/pixel_size_in_micrometer.txt', 'r')
+            file = open(path_img_folder / 'pixel_size_in_micrometer.txt', 'r')
             pixel_size = float(file.read())
             resample_coeff = float(pixel_size) / resampling_resolution # Used to set the resolution to the general_pixel_size
-            
+
             # We go through every file in the image folder
-            for data in os.listdir(path_img_folder):
+            data_names = [d.name for d in path_img_folder.iterdir()]
+            for data in data_names:
                 if 'image' in data: # If it's the raw image.
-                    img = imread(os.path.join(path_img_folder, data), flatten=False, mode='L')
+                    img = imread(path_img_folder / data, flatten=False, mode='L')
                     img = rescale(img, resample_coeff, preserve_range=True, mode='constant').astype(int)
-                  
+
                 elif 'mask.png' in data:
-                    mask_init = imread(os.path.join(path_img_folder, data), flatten=False, mode='L')
+                    mask_init = imread(path_img_folder / data, flatten=False, mode='L')
                     mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant')
 
                     # Set the mask values to the classes' values
@@ -53,15 +61,15 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
             to_extract = [img, mask]
             patches = extract_patch(to_extract, patch_size)
             # The patch extraction is done, now we put the new patches in the corresponding folders
-            
+
             # We create it if it does not exist
-            path_patched_folder = os.path.join(path_patched_data,img_folder)
-            if not os.path.exists(path_patched_folder):
-                os.makedirs(path_patched_folder)
-            
+            path_patched_folder = path_patched_data / img_folder
+            if not path_patched_folder.exists():
+                path_patched_folder.mkdir(parents=True)
+
             for j, patch in enumerate(patches):
-                imsave(os.path.join(path_patched_folder,'image_%s.png'%j), patch[0],'png')
-                imsave(os.path.join(path_patched_folder,'mask_%s.png'%j), patch[1],'png')
+                imsave(path_patched_folder.joinpath('image_%s.png'%j), patch[0],'png')
+                imsave(path_patched_folder.joinpath('mask_%s.png'%j), patch[1],'png')
 
 def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None):
     """
@@ -74,12 +82,16 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
     :return: None.
     """
 
+    # If string, convert to Path objects
+    path_patched_data = convert_path(path_patched_data)
+    path_dataset = convert_path(path_dataset)
+
     # Using the randomseed fed so that given a fixed input, the generation of the datasets is always the same.
     np.random.seed(random_seed)
 
     # First we define where we are going to store the patched data
-    if not os.path.exists(path_dataset):
-        os.makedirs(path_dataset)  
+    if not path_dataset.exists():
+        path_dataset.mkdir(parents=True)
 
     # First case: there is only one type of acquisition to use.
     if type_ == 'unique':
@@ -87,103 +99,104 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
         i = 0 # Total patches index
 
         # We loop through all folders containing patches
-        for patches_folder in tqdm(os.listdir(path_patched_data)):
+        patches_folder_names = [f for f in path_patched_data.iterdir()]
+        for patches_folder in tqdm(patches_folder_names):
 
-            path_patches_folder = os.path.join(path_patched_data, patches_folder)
-            if os.path.isdir(path_patches_folder):
+            path_patches_folder = path_patched_data / patches_folder.name
+            if path_patches_folder.is_dir():
 
                 # We are now in the patches folder
                 L_img, L_mask = [], []
-                for data in os.listdir(path_patches_folder):
+                filenames = [f for f in path_patches_folder.iterdir()]
+                for data in filenames:
+                    root, index = data.stem.split('_')
 
-                    data_name = data[:-4].split('_')
+                    if 'image' in data.name:
+                        img = imread(path_patches_folder / data.name, flatten=True, mode='L')
+                        L_img.append((img, int(index)))
 
-                    if 'image' in data:
-
-                        img = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
-                        L_img.append((img, int(data_name[-1])))
-
-                    elif 'mask' in data:
-
-                        mask = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
-                        L_mask.append((mask, int(data_name[-1])))
+                    elif 'mask' in data.name:
+                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
                 L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
 
                 # Saving the images in the new folder
                 for img,k in L_img_sorted:
-                    imsave(os.path.join(path_dataset,'image_%s.png'%i), img, 'png')
-                    imsave(os.path.join(path_dataset,'mask_%s.png'%i), L_mask_sorted[k][0], 'png')
+                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
+                    imsave(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0], 'png')
                     i = i+1 # Using the global i here.
 
     # Else we are using different types of acquisitions. It's important to have them separated in a SEM folder
     # and in a TEM folder.
     elif type_ == 'mixed':
-
-        i = 0
-
         # We determine which acquisition type we are going to upsample (understand : take the same images multiple times)
-        SEM_patches_folder = os.path.join(path_patched_data,'SEM')
-        TEM_patches_folder = os.path.join(path_patched_data,'TEM')
+        SEM_patches_folder = path_patched_data / 'SEM'
+        TEM_patches_folder = path_patched_data / 'TEM'
 
         minority_patches_folder, len_minority, majority_patches_folder, len_majority = find_minority_type(
             SEM_patches_folder, TEM_patches_folder)
 
         # First we move all patches from the majority acquisition type to the new dataset
-        for patches_folder in tqdm(os.listdir(majority_patches_folder)):
+        foldernames = [folder.name for folder in majority_patches_folder.iterdir()]
+        i = 0
+        for patches_folder in tqdm(foldernames):
 
-            path_patches_folder = os.path.join(majority_patches_folder, patches_folder)
-            if os.path.isdir(path_patches_folder):
+            path_patches_folder = majority_patches_folder / patches_folder
+            if path_patches_folder.is_dir():
                 # We are now in the patches folder
                 L_img, L_mask = [], []
-                for data in os.listdir(path_patches_folder):
+                filenames = [f for f in path_patches_folder.iterdir()]
+                for data in path_patches_folder.iterdir():
+                    root, index = data.stem.split('_')
 
-                    data_name = data[:-4].split('_')
-                    if 'image' in data:
-                        img = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
-                        L_img.append((img, int(data_name[-1])))
+                    if 'image' in data.name:
+                        img = imread(path_patches_folder / data, flatten=True, mode='L')
+                        L_img.append((img, int(index)))
 
-                    elif 'mask' in data:
-                        mask = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
-                        L_mask.append((mask, int(data_name[-1])))
+                    elif 'mask' in data.name:
+                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        L_mask.append((mask, int(index)))
                 # Now we sort the patches to be sure we get them in the right order
                 L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
 
                 # Saving the images in the new folder
                 for img,k in L_img_sorted:
-                    imsave(os.path.join(path_dataset,'image_%s.png'%i), img, 'png')
-                    imsave(os.path.join(path_dataset,'mask_%s.png'%i), L_mask_sorted[k][0], 'png')
+                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
+                    imsave(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0], 'png')
                     i = i+1
         # Then we stratify - oversample the minority acquisition to the new dataset
-        
+
         # We determine the ratio to take
         ratio_oversampling = float(len_majority)/len_minority
 
         # We go through each image folder in the minorty patches
-        for patches_folder in tqdm(os.listdir(minority_patches_folder)):
+        foldernames = [folder.name for folder in minority_patches_folder.iterdir()]
+        for patches_folder in tqdm(foldernames):
 
-            path_patches_folder = os.path.join(minority_patches_folder, patches_folder)
-            if os.path.isdir(path_patches_folder):
+            path_patches_folder = minority_patches_folder / patches_folder
+            if path_patches_folder.is_dir():
 
                 # We are now in the patches folder
-                n_img = np.floor(len(os.listdir(path_patches_folder)[:])/2)
-                
                 # We load every image
-                for data in os.listdir(path_patches_folder):
-                    data_name = data[:-4].split('_')
-                    if 'image' in data:
-                        img = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
-                        L_img.append((img, int(data_name[-1])))
+                filenames = [f for f in path_patches_folder.iterdir()]
+                n_img = np.floor(len(filenames)/2)
 
-                    elif 'mask' in data:
-                        mask = imread(os.path.join(path_patches_folder, data), flatten=True, mode='L')
-                        L_mask.append((mask, int(data_name[-1])))
-                        
+                for data in filenames:
+                    root, index = data.stem.split('_')
+                    if 'image' in data.name:
+                        img = imread(path_patches_folder / data, flatten=True, mode='L')
+                        L_img.append((img, int(index)))
+
+                    elif 'mask' in data.name:
+                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        L_mask.append((mask, int(index)))
+
                 # Now we sort the patches to be sure we get them in the right order
                 L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
                 L_merged_sorted = np.asarray([L_img_sorted[j] + L_mask_sorted[j] for j in range(len(L_img_sorted))])
-                
+
                 # We create a new array composed of enough elements so that the two types of acquisitions are balanced
                 # (oversampling)
                 L_elements_to_save = L_merged_sorted[np.random.choice(
@@ -193,9 +206,9 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 for j in range(L_elements_to_save.shape[0]):
                     img = L_elements_to_save[j][0]
                     mask = L_elements_to_save[j][2]
-                    imsave(os.path.join(path_dataset,'image_%s.png'%i), img, 'png')
-                    imsave(os.path.join(path_dataset,'mask_%s.png'%i), mask, 'png')
-                    i = i+1            
+                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
+                    imsave(path_dataset.joinpath('mask_%s.png'%i), mask, 'png')
+                    i = i+1
 
 
 def sort_list_files(list_patches, list_masks):
@@ -207,7 +220,7 @@ def sort_list_files(list_patches, list_masks):
     """
 
     return sorted(list_patches, key=lambda x: int(x[1])), sorted(list_masks, key=lambda x: int(x[1]))
-    
+
 
 def find_minority_type(SEM_patches_folder, TEM_patches_folder):
     """
@@ -218,8 +231,8 @@ def find_minority_type(SEM_patches_folder, TEM_patches_folder):
     the path to the majority path folder and the number of patches in this folder.
     """
 
-    SEM_len = sum([len(files) for r, d, files in os.walk(SEM_patches_folder)])
-    TEM_len = sum([len(files) for r, d, files in os.walk(TEM_patches_folder)])
+    SEM_len = len([f for f in SEM_patches_folder.rglob("*") if f.is_file()])
+    TEM_len = len([f for f in TEM_patches_folder.rglob("*") if f.is_file()])
 
     if SEM_len < TEM_len:
         minority_patches_folder = SEM_patches_folder

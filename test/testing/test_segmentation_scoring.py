@@ -1,39 +1,33 @@
 # coding: utf-8
 
-import pytest
 import os
+from pathlib import Path
 import numpy as np
 from scipy.misc import imread
 import pandas as pd
+
+import pytest
+
 from AxonDeepSeg.testing.segmentation_scoring import *
 
 
 class TestCore(object):
     def setup(self):
-        self.fullPath = os.path.dirname(os.path.abspath(__file__))
-
+        # Get the directory where this current file is saved
+        self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
-        self.testPath = os.path.split(self.fullPath)[0]
+        self.testPath = self.fullPath.parent
 
-        self.folderPath = os.path.join(
-            self.testPath,
-            '__test_files__',
-            '__test_demo_files__'
-            )
+        self.folderPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.img = imread(
-            os.path.join(self.folderPath, 'image.png'),
-            flatten=True
-            )
+        self.img = imread(self.folderPath / 'image.png', flatten=True)
 
-        self.groundtruth = imread(
-            os.path.join(self.folderPath, 'mask.png'),
-            flatten=True
-            )
+        self.groundtruth = imread(self.folderPath / 'mask.png',flatten=True)
 
         self.prediction = imread(
-            os.path.join(self.folderPath, 'AxonDeepSeg_seg-axonmyelin.png'),
-            flatten=True)
+            self.folderPath / 'AxonDeepSeg_seg-axonmyelin.png',
+            flatten=True
+            )
 
     def teardown(self):
         pass
@@ -64,13 +58,24 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_score_analysis_runs_successfully_with_visualization_on(self):
-
-        assert score_analysis(
-            self.img,
-            self.groundtruth,
-            self.prediction,
-            visualization=True
-            )
+        saved_dir = Path.cwd()
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.chdir(tmpdir)
+            # Test function
+            assert score_analysis(
+                self.img,
+                self.groundtruth,
+                self.prediction,
+                visualization=True
+                )
+            # Test success of visualisation
+            pred_path = Path(tmpdir) / "prediction.png"
+            gt_path = Path(tmpdir) /  "ground_truth.png"
+            assert pred_path.is_file()
+            assert gt_path.is_file()
+        # Go back to previous dir
+        os.chdir(saved_dir)
 
     # --------------dice tests-------------- #
     @pytest.mark.unit

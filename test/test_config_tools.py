@@ -1,9 +1,11 @@
 # coding: utf-8
 
-import pytest
 import json
-import os
+from pathlib import Path
 import shutil
+
+import pytest
+
 from AxonDeepSeg.config_tools import *
 
 
@@ -62,16 +64,17 @@ class TestCore(object):
             }
 
         # Create temp folder
-        self.fullPath = os.path.dirname(os.path.abspath(__file__))
-        self.tmpPath = os.path.join(self.fullPath, '__tmp__')
-        if not os.path.exists(self.tmpPath):
-            os.makedirs(self.tmpPath)
+        # Get the directory where this current file is saved
+        self.fullPath = Path(__file__).resolve().parent
+        self.tmpPath = self.fullPath / '__tmp__'
+        if not self.tmpPath.exists():
+            self.tmpPath.mkdir()
 
     @classmethod
     def teardown_class(cls):
-        fullPath = os.path.dirname(os.path.abspath(__file__))
-        tmpPath = os.path.join(fullPath, '__tmp__')
-        if os.path.exists(tmpPath):
+        fullPath = Path(__file__).resolve().parent
+        tmpPath = fullPath / '__tmp__'
+        if tmpPath.exists():
             shutil.rmtree(tmpPath)
         pass
 
@@ -99,23 +102,20 @@ class TestCore(object):
     @pytest.mark.unit
     def test_generate_config_with_config_path(self):
         # Create temp config file
-        fullPath = os.path.dirname(os.path.abspath(__file__))
-        configPath = os.path.join(self.tmpPath, 'config_network.json')
+        configPath = self.tmpPath / 'config_network.json'
 
-        if os.path.exists(configPath):
-            os.remove(configPath)
-            with open(configPath, 'w') as f:
-                json.dump(self.config, f, indent=2)
-        else:   # There is no config file for the moment
-            with open(configPath, 'w') as f:
-                json.dump(self.config, f, indent=2)
+        if configPath.exists() :
+            configPath.unlink()
 
-        generatedConfig = generate_config(config_path=configPath)
+        with open(configPath, 'w') as f:
+            json.dump(self.config, f, indent=2)
+
+        generatedConfig = generate_config(config_path=str(configPath))
         assert generatedConfig != generate_config()
         assert validate_config(generatedConfig)
 
-        if os.path.exists(configPath):
-            os.remove(configPath)
+        if configPath.exists():
+            configPath.unlink()
 
     @pytest.mark.unit
     def test_generate_config_with_config_path_and_invalid_config(self):
@@ -123,10 +123,10 @@ class TestCore(object):
             "1nval1d_k3y": 0
         }
 
-        configPath = os.path.join(self.tmpPath, 'config_network.json')
+        configPath = self.tmpPath / 'config_network.json'
 
-        if os.path.exists(configPath):
-            os.remove(configPath)
+        if configPath.exists():
+            configPath.unlink()
             with open(configPath, 'w') as f:
                 json.dump(invalidConfig, f, indent=2)
         else:   # There is no config file for the moment
@@ -134,10 +134,10 @@ class TestCore(object):
                 json.dump(invalidConfig, f, indent=2)
 
         with pytest.raises(ValueError):
-            generatedConfig = generate_config(config_path=configPath)
+            generatedConfig = generate_config(config_path=str(configPath))
 
-        if os.path.exists(configPath):
-            os.remove(configPath)
+        if configPath.exists():
+            configPath.unlink()
 
     # --------------grid_config tests-------------- #
     @pytest.mark.unit

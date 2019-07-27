@@ -1,24 +1,25 @@
 # coding: utf-8
 
-import pytest
-import os
+from pathlib import Path
 import numpy as np
 from scipy.misc import imread
+
+import pytest
 
 from AxonDeepSeg.visualization.visualize import *
 
 
 class TestCore(object):
     def setup(self):
-        self.fullPath = os.path.dirname(os.path.abspath(__file__))
-
+        # Get the directory where this current file is saved
+        self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
-        self.testPath = os.path.split(self.fullPath)[0]
+        self.testPath = self.fullPath.parent
 
-        self.pathModel = os.path.join(
-            self.testPath,
-            '__test_files__',
-            '__test_model__',
+        self.pathModel = (
+            self.testPath /
+            '__test_files__' /
+            '__test_model__' /
             'Model'
             )
 
@@ -29,4 +30,4 @@ class TestCore(object):
     @pytest.mark.unit
     def test_visualize_training_runs_successfully(self):
 
-        assert visualize_training(self.pathModel)
+        assert visualize_training(str(self.pathModel))
