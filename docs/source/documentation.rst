@@ -153,20 +153,13 @@ A GUI for AxonDeepSeg is currently in developpment. This GUI is a plugin for the
 
 Since this feature is still in development, the GUI has to be installed by cloning a specific branch of the AxonDeepSeg project and installing it using a virtual environment. If you encounter a problem when installing or using the GUI, you can report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
 FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
+
+In order to install the GUI, the latest version of AxonDeepSeg must be  `clonned via gitHub <https://axondeepseg.readthedocs.io/en/latest/documentation.html#latest-version-development>`_ and installed using a conda environment. The location of the cloned repository must also be known.
+
 Here are the instructions to install the GUI:
 
 macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Create a new virtual environment, then clone and install the FSLeyes_integration branch ::
-
-           conda create -n FSL_ADS_test python=3.6
-           conda activate FSL_ADS_test
-           git clone --single-branch --branch FSLeyes_integration https://github.com/neuropoly/axondeepseg.git
-           cd axondeepseg
-           pip install -e .
-
-Make sure your know where the cloned repository is located on your machine
-
 Install FSLeyes using conda-forge ::
 
            conda install -c conda-forge fsleyes==0.29.0
@@ -182,16 +175,6 @@ The plugin is now installed. From now on, you can access the plugin on the FSLey
 
 Linux (tested on ubuntu)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Create a new virtual environment, then clone and install the FSLeyes_integration branch ::
-
-           conda create -n FSL_ADS_test python=3.6
-           conda activate FSL_ADS_test
-           git clone --single-branch --branch FSLeyes_integration https://github.com/neuropoly/axondeepseg.git
-           cd axondeepseg
-           pip install -e .
-
-Make sure your know where the cloned repository is located on your machine.
-
 Install the C/C++ compilers required to use wxPython ::
 
            sudo apt-get install build-essential
@@ -218,6 +201,7 @@ The plugin is now installed. From now on, you can access the plugin on the FSLey
 Known issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
+2. There is currently a limitation which does not allow large images to be loaded into FSLeyes. On conventional hardware, images that have a dimention larger than 2048 pixels cannot be loaded. This issue should be fixed in an upcoming version of FSLeyes.
 
 Testing the installation
 -------------------------------------------------------------------------------
