@@ -303,6 +303,9 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 * `performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/performance_metrics.ipynb>`_: 
     Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.
 
+* `noise_simulation.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/noise_simulation.ipynb>`_: 
+    Notebook that simulates various noise/brightness/contrast effects on a given microscopy image in order to assess the robustness of AxonDeepSeg.
+
 * `morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/morphometrics_extraction.ipynb>`_: 
     Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, ...), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, ...), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.
 
@@ -383,4 +386,4 @@ SOFTWARE.
 Contributors
 ===============================================================================
 
-Pierre-Louis Antonsanti, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Christian Perone, Maxime Wabartha, Aldo Zaimi, Vasudev Sharma.
+Pierre-Louis Antonsanti, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Christian Perone, Maxime Wabartha, Aldo Zaimi.
