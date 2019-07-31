@@ -37,7 +37,8 @@
       "3_elastic": true, 
       "0_shifting": true, 
       "4_flipping": true, 
-      "1_rescaling": true
+      "1_rescaling": true,
+      "6_reflection_border": true
     }
   }, 
   "network_n_classes": 3, 

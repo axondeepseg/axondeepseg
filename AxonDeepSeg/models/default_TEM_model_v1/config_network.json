@@ -34,6 +34,7 @@
   "da-0-shifting-activate": true,
   "da-4-flipping-activate": true, 
   "da-1-rescaling-activate": true,
+  "da-6-refection_border-activate": true,
   "n_classes": 3, 
   "batch_norm_decay_starting_decay": 0.7, 
   "trainingset": "TEM_3c_512", 

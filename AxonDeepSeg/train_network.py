@@ -85,6 +85,12 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     elastic = config["da-3-elastic-activate"]
     flipping = config["da-4-flipping-activate"]
     gaussian_blur = config["da-5-gaussian_blur-activate"]
+    reflection_border = config["da-6-reflection_border-activate"] #Config parameter to determine whether relection or constant(value = 0) is used for border pixel values while performing augmentation operations such as rotation, rescaling and shifting.
+
+    if reflection_border:
+        border_mode = cv2.BORDER_REFLECT_101
+    else:
+        border_mode = cv2.BORDER_CONSTANT
 
     p_shift = p_rescale = p_rotate = p_elastic = p_flip = p_blur = 0
     #If the key values of augmentation are set to True then their respective probability are set to 0.5 else to 0. Probalility(p) suggests a certainity of applying data augmentation operations (shift, rotate, blur, elastic, flip) to an image.
@@ -129,7 +135,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     Flip(p = p_flip),
 
     #Randomly rotates an image between low limit and high limit.
-    ShiftScaleRotate(shift_limit=(low_limit, high_limit) , scale_limit=(0,0),rotate_limit=(0,0), border_mode=cv2.BORDER_REFLECT_101, p = p_shift, interpolation = cv2.INTER_NEAREST),
+    ShiftScaleRotate(shift_limit=(low_limit, high_limit) , scale_limit=(0,0),rotate_limit=(0,0), border_mode=border_mode, p = p_shift, interpolation = cv2.INTER_NEAREST),
 
     #Randomly applies elastic transformation on the image.
     ElasticTransform(alpha= alpha, sigma= sigma, p = p_elastic, alpha_affine = alpha),
@@ -138,7 +144,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     GaussianBlur(p = p_blur),
 
     #Randomly rotates the image between low bound and high bound.
-    Rotate(limit=(low_bound, high_bound), border_mode=cv2.BORDER_REFLECT_101, p = p_rotate, interpolation = cv2.INTER_NEAREST)
+    Rotate(limit=(low_bound, high_bound), border_mode=border_mode, p = p_rotate, interpolation = cv2.INTER_NEAREST)
 
     ])
 
