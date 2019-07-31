@@ -154,7 +154,7 @@ A GUI for AxonDeepSeg is currently in developpment. This GUI is a plugin for the
 Since this feature is still in development, the GUI has to be installed by cloning a specific branch of the AxonDeepSeg project and installing it using a virtual environment. If you encounter a problem when installing or using the GUI, you can report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
 FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
 
-In order to install the GUI, the latest version of AxonDeepSeg must be  `clonned via gitHub <https://axondeepseg.readthedocs.io/en/latest/documentation.html#latest-version-development>`_ and installed using a conda environment. The location of the cloned repository must also be known.
+In order to install the GUI, the latest version of AxonDeepSeg must be  `cloned via gitHub <https://axondeepseg.readthedocs.io/en/latest/documentation.html#latest-version-development>`_ and installed using a conda environment. The location of the cloned repository must also be known.
 
 Here are the instructions to install the GUI:
 
