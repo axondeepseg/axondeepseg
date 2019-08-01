@@ -4,7 +4,7 @@ from pathlib import Path
 import imageio
 import numpy as np
 import os
-
+import scipy as sp
 import pytest
 
 from AxonDeepSeg.visualization.get_masks import *
