@@ -8,7 +8,6 @@ import shutil
 import numpy as np
 from scipy.misc import imread as scipy_imread  # to avoid confusion with mpl.pyplot.imread
 import pytest
-import os
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 

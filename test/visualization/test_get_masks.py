@@ -3,6 +3,7 @@
 from pathlib import Path
 import imageio
 import numpy as np
+import os
 
 import pytest
 
