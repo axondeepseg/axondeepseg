@@ -1,7 +1,6 @@
 import keras
-import cv2
 import numpy as np
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
 
 class DataGen(keras.utils.Sequence):
@@ -36,10 +35,10 @@ class DataGen(keras.utils.Sequence):
         image_path = self.path / ('image_' + id_name + ".png")
         mask_path = self.path / ('mask_' + id_name + ".png")
         ## Reading Image
-        image = cv2.imread(str(image_path))
+        image = ads.imread(str(image_path))
 
         # -----Mask PreProcessing --------
-        mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+        mask = ads.imread(str(mask_path))
         mask = descritize_mask(mask, self.thresh_indices)
         # ---------------------------
         return (image, mask)

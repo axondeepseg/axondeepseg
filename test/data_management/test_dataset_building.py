@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import imageio
 from pathlib import Path
 import shutil
 import pytest

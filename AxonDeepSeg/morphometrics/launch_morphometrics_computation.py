@@ -4,11 +4,10 @@ from pathlib import Path
 
 # Scientific modules imports
 import numpy as np
-import imageio
 
 # AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 
 
 def launch_morphometrics_computation(path_img, path_prediction):
@@ -27,10 +26,10 @@ def launch_morphometrics_computation(path_img, path_prediction):
 
     try:
         # Read image
-        img = imageio.imread(path_img)
+        img = ads.imread(path_img)
 
         # Read prediction
-        pred = imageio.imread(path_prediction)
+        pred = ads.imread(path_prediction)
     except (IOError, OSError) as e:
         print(("launch_morphometrics_computation: " + str(e)))
         raise
