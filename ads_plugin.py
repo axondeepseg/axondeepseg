@@ -222,7 +222,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 image_directory = self.image_dir_path[i]
 
         if (image_name is None) or (image_directory is None):
-            self.show_message("Couldn't find the path to the loaded image")
+            self.show_message(
+                "Couldn't find the path to the loaded image. "
+                "Please use the plugin's image loader to import the image you wish to segment. "
+            )
             return
 
         # Get the selected model
@@ -548,12 +551,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         else:
             self.show_message("Invalid image dimensions")
             return
-        
-        # Verify that the image is not too big for FSLeyes
-        if (img_png2D.shape[0] > 2048) or (img_png2D.shape[1] > 2048):
-            self.show_message("This image has at least one dimension larger than 2048 pixels. At the moment,"
-                              " FSLeyes can't load such images.")
-            return
 
         if is_mask is True:
             img_png2D = img_png2D // 255  # Segmentation masks should be binary
@@ -757,4 +754,3 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This method makes the control panel appear on the left of the FSLeyes window.
         """
         return {"location": wx.LEFT}
-
