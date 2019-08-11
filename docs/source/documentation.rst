@@ -162,7 +162,7 @@ macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Install FSLeyes using conda-forge ::
 
-           conda install -c conda-forge fsleyes==0.29.0
+           conda install -c conda-forge fsleyes==0.30.1
 
 Launch FSLeyes ::
 
@@ -187,7 +187,7 @@ Install wxPython using conda ::
            
 Install FSLeyes using pip ::
 
-           pip install fsleyes==0.29.0
+           pip install fsleyes==0.30.1
            
 Launch FSLeyes ::
 
@@ -201,7 +201,6 @@ The plugin is now installed. From now on, you can access the plugin on the FSLey
 Known issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
-2. There is currently a limitation which does not allow large images to be loaded into FSLeyes. On conventional hardware, images that have a dimention larger than 2048 pixels cannot be loaded. This issue should be fixed in an upcoming version of FSLeyes.
 
 Testing the installation
 -------------------------------------------------------------------------------
