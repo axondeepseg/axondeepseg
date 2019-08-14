@@ -5,7 +5,10 @@ Version [2.2dev] - XXXX-XX-XX
 -------------------------------------------------------------------------------
 
 **Changed:**
-
+- Refractored data augmentation to use `Albumentation` library.
+- Cleaned jupyter notebooks and reduced from 13 notebooks to 4.
+- Switched to `Dice Loss` from `Categorical Cross Entropy` as loss function.
+- Updated SEM and TEM models for better performance.
 - Shifted AxonDeepSeg from TensorFlow to Keras framework.
 - Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 - Resolve image rescale warnings
