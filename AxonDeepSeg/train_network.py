@@ -84,7 +84,11 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     rotation = config["da-2-random_rotation-activate"]
     elastic = config["da-3-elastic-activate"]
     flipping = config["da-4-flipping-activate"]
-    gaussian_blur = config["da-5-gaussian_blur-activate"]
+    if "da-5-gaussian_blur-activate" in config:
+      gaussian_blur = config["da-5-gaussian_blur-activate"]
+    elif "da-5-noise_addition-activate" in config:
+    # Preserved for retrocompatibility with old configs
+      gaussian_blur = config["da-5-noise_addition-activate"]
     reflection_border = config["da-6-reflection_border-activate"] #Config parameter to determine whether relection or constant(value = 0) is used for border pixel values while performing augmentation operations such as rotation, rescaling and shifting.
 
     if reflection_border:
