@@ -19,6 +19,7 @@ from pathlib import Path
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
+from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 
 import math
@@ -65,7 +66,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         load_mask_button = wx.Button(self, label="Load existing mask")
         load_mask_button.Bind(wx.EVT_BUTTON, self.on_load_mask_button)
         load_mask_button.SetToolTip(
-            wx.ToolTip("Loads an existing axon or myelin mask into FSLeyes")
+            wx.ToolTip(
+                "Loads an existing axon or myelin mask into FSLeyes. "
+                "Please make sure the axon mask contains 'axon' in its name and "
+                "the myelin mask contains 'myelin' in its name. "
+                "The image must only contain 2 values: 0 for background and 255 for the region of interest."
+            )
         )
         sizer_h.Add(load_mask_button, flag=wx.SHAPED, proportion=1)
 
@@ -208,6 +214,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         selected in the combobox. The segmentation masks are then loaded into FSLeyes
         """
 
+        # Declare the default resolution of the model
+        resolution = 0.1
+
         # Get the image name and directory
         image_overlay = self.get_visible_image_overlay()
         if self.get_visible_image_overlay() is None:
@@ -227,6 +236,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 "Please use the plugin's image loader to import the image you wish to segment. "
             )
             return
+
+        image_path = image_directory + '/' + image_name
+        image_name_no_extension = os.path.splitext(image_name)[0]
 
         # Get the selected model
         selected_model = self.model_combobox.GetStringSelection()
@@ -258,12 +270,16 @@ class ADScontrol(ctrlpanel.ControlPanel):
             self.show_message("Please select a model")
             return
 
+        # If the TEM model is selected, modify the resolution
+        if selected_model == "TEM":
+            resolution = 0.01
+
         # Check if the pixel size txt file exist in the imageDirPath
         pixel_size_exists = os.path.isfile(
             image_directory + "/pixel_size_in_micrometer.txt"
         )
 
-        # if it doesn't exist, ask the user to input the pixel size and create the .txt file
+        # if it doesn't exist, ask the user to input the pixel size
         if pixel_size_exists is False:
             with wx.TextEntryDialog(
                 self, "Enter the pixel size in micrometer", value="0.07"
@@ -272,28 +288,34 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     return
 
                 pixel_size_str = text_entry.GetValue()
-            text_file = open(image_directory + "/pixel_size_in_micrometer.txt", "w")
-            text_file.write(pixel_size_str)
-            text_file.close()
+            pixel_size_float = float(pixel_size_str)
+
+        else:  # read the pixel size
+            resolution_file = open(image_directory + "/pixel_size_in_micrometer.txt", 'r')
+            pixel_size_float = float(resolution_file.read())
+
 
         # Load model configs and apply prediction
         model_configfile = os.path.join(model_path, "config_network.json")
         with open(model_configfile, "r") as fd:
             config_network = json.loads(fd.read())
 
-        prediction = axon_segmentation(
-            [image_directory],
-            [image_name],
-            model_path,
-            config_network,
-            verbosity_level=3,
-        )
+        segment_image(
+                      image_path,
+                      model_path,
+                      25,
+                      config_network,
+                      resolution,
+                      acquired_resolution=pixel_size_float,
+                      verbosity_level=3
+                      )
+
         # The axon_segmentation function creates the segmentation masks and stores them as PNG files in the same folder
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axon_mask_path = image_directory + "/AxonDeepSeg_seg-axon.png"
-        myelin_mask_path = image_directory + "/AxonDeepSeg_seg-myelin.png"
+        axon_mask_path = image_directory + "/" + image_name_no_extension + "_seg-axon.png"
+        myelin_mask_path = image_directory + "/" + image_name_no_extension + "_seg-myelin.png"
         self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
         self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
 
