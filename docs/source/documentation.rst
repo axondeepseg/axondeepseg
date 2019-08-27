@@ -144,6 +144,36 @@ instruction above::
         git pull
         pip install -e .
 
+
+Testing the installation
+-------------------------------------------------------------------------------
+.. WARNING ::
+   Ensure that the virtual environment is activated.
+
+Quick test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To test if the software was installed correctly, you can launch a quick integrity test by running the following command on the terminal::
+
+    axondeepseg_test
+
+This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal::
+
+    * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
+
+Comprehensive test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. NOTE ::
+   This feature is not available if you installed AxonDeepSeg using ``pip``.
+
+To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
+
+    cd axondeepseg
+    py.test --cov AxonDeepSeg/ --cov-report term-missing
+
+If all tests pass, AxonDeepSeg was installed succesfully.
+
+
 Graphical User Interface (GUI) (optional)
 -------------------------------------------------------------------------------
 
@@ -191,42 +221,17 @@ Launch FSLeyes ::
 
            fsleyes
 
-On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (found in the cloned repository)``
-``Install permanently --> yes.``
+In FSLeyes, do the following:
+- Click on ``file -> load plugin``
+- Select ``ads_plugin.py`` (found in AxonDeepSeg folder)
+- When asked ``Install permanently`` click on ``yes``.
 
-The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
+From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
 
 Known issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
 
-Testing the installation
--------------------------------------------------------------------------------
-.. WARNING ::
-   Ensure that the virtual environment is activated.
-
-Quick test
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To test if the software was installed correctly, you can launch a quick integrity test by running the following command on the terminal::
-
-    axondeepseg_test
-
-This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal::
-
-    * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
-
-Comprehensive test
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. NOTE ::
-   This feature is not available if you installed AxonDeepSeg using ``pip``.
-
-To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
-
-    cd axondeepseg
-    py.test --cov AxonDeepSeg/ --cov-report term-missing
-
-If all tests pass, AxonDeepSeg was installed succesfully.
 
 GPU-compatible installation
 --------------------------------------------------------------------------------
