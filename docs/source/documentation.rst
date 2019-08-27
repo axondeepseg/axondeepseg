@@ -3,7 +3,8 @@ Introduction
 AxonDeepSeg is an open-source software using deep learning and aiming at automatically segmenting axons and myelin
 sheaths from microscopy images. It performs 3-class semantic segmentation using a convolutional neural network.
 
-AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechnique Montréal.
+AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University of Montreal, Canada.
+
 
 Installation
 ===============================================================================
@@ -107,17 +108,24 @@ AxonDeepSeg
 .. WARNING ::
    Ensure that the virtual environment is activated before you begin your installation.
 
-Latest version (development)
+Stable release
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
+
+    pip install axondeepseg
+
+
+Development version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To install the latest version of AxonDeepSeg (development), we recommend that you clone the AxonDeepSeg repository 
-if you have ``git`` installed on your system::
+To install the development version of AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
+have ``git`` installed on your system)::
 
     git clone https://github.com/neuropoly/axondeepseg.git
 
-Otherwise, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
+If you don't have ``git``, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
 
-Then, in your terminal window, go to the AxonDeepSeg folder and install the 
+Then, in your Terminal, go to the AxonDeepSeg folder and install the 
 AxonDeepSeg package. The following ``cd`` command assumes that you followed the ``git clone``
 instruction above::
 
@@ -136,33 +144,23 @@ instruction above::
         git pull
         pip install -e .
 
-Stable release
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
-
-    pip install axondeepseg
-
-
-Graphical User Interface (optional) (beta)
+Graphical User Interface (GUI) (optional)
 -------------------------------------------------------------------------------
 
-A GUI for AxonDeepSeg is currently in developpment. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. It allows the use of some of AxonDeepSeg's tools without having to write scripts or commands on a terminal. It also provides tools for manual segmentation and correction.
+AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if need to).
 
 .. image:: _static/GUI_image.png
 
-
-Since this feature is still in development, the GUI has to be installed by cloning a specific branch of the AxonDeepSeg project and installing it using a virtual environment. If you encounter a problem when installing or using the GUI, you can report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
+To install the GUI, you need to install AxonDeepSeg via Github (see instructions above). If you encounter a problem when installing or using the GUI, please report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
 FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
 
-In order to install the GUI, the latest version of AxonDeepSeg must be  `cloned via gitHub <https://axondeepseg.readthedocs.io/en/latest/documentation.html#latest-version-development>`_ and installed using a conda environment. The location of the cloned repository must also be known.
-
-Here are the instructions to install the GUI:
+Once AxonDeepSeg is installed, remain in the virtual environment and follow the OS-specific instructions to install the GUI:
 
 macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Install FSLeyes using conda-forge ::
 
-           conda install -c conda-forge fsleyes==0.30.1
+           yes | conda install -c conda-forge fsleyes==0.30.1
 
 Launch FSLeyes ::
 
@@ -183,7 +181,7 @@ Install the C/C++ compilers required to use wxPython ::
            
 Install wxPython using conda ::
 
-           conda install -c anaconda wxpython
+           yes | conda install -c anaconda wxpython
            
 Install FSLeyes using pip ::
 
