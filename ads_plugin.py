@@ -5,6 +5,7 @@ Author : Stoyan I. Asenov
 """
 
 import wx
+import wx.lib.agw.hyperlink as hl
 
 import fsleyes.controls.controlpanel as ctrlpanel
 import fsleyes.actions.loadoverlay as ovLoad
@@ -56,6 +57,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         sizer_h.Add(citation_box, flag=wx.SHAPED, proportion=1)
 
+        # Add a hyperlink to the documentation
+        hyper = hl.HyperLinkCtrl(
+            self, -1, label="Need help? Read the documentation", URL="https://axondeepseg.readthedocs.io/en/latest/"
+        )
+        sizer_h.Add(hyper, flag=wx.SHAPED, proportion=1)
+
         # Add the image loading button
         load_png_button = wx.Button(self, label="Load PNG or TIF file")
         load_png_button.Bind(wx.EVT_BUTTON, self.on_load_png_button)
@@ -74,14 +81,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
             )
         )
         sizer_h.Add(load_mask_button, flag=wx.SHAPED, proportion=1)
-
-        # Add the save Segmentation button
-        save_segmentation_button = wx.Button(self, label="Save segmentation")
-        save_segmentation_button.Bind(wx.EVT_BUTTON, self.on_save_segmentation_button)
-        save_segmentation_button.SetToolTip(
-            wx.ToolTip("Saves the axon and myelin masks in the selected folder")
-        )
-        sizer_h.Add(save_segmentation_button, flag=wx.SHAPED, proportion=1)
 
         # Add the model choice combobox
         self.model_choices = ["SEM", "TEM", "other"]
@@ -104,17 +103,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         sizer_h.Add(apply_model_button, flag=wx.SHAPED, proportion=1)
 
-        # Add the button that runs the watershed algorithm
-        run_watershed_button = wx.Button(self, label="Run Watershed")
-        run_watershed_button.Bind(wx.EVT_BUTTON, self.on_run_watershed_button)
-        run_watershed_button.SetToolTip(
-            wx.ToolTip(
-                "Uses a watershed algorithm to find the different axon+myelin"
-                "objects. This is used to see if where are connections"
-                " between two axon+myelin objects."
-            )
-        )
-        sizer_h.Add(run_watershed_button, flag=wx.SHAPED, proportion=1)
+        # The Watershed button's purpose isn't clear. It is unavailable for now.
+
+        # # Add the button that runs the watershed algorithm
+        # run_watershed_button = wx.Button(self, label="Run Watershed")
+        # run_watershed_button.Bind(wx.EVT_BUTTON, self.on_run_watershed_button)
+        # run_watershed_button.SetToolTip(
+        #     wx.ToolTip(
+        #         "Uses a watershed algorithm to find the different axon+myelin"
+        #         "objects. This is used to see if where are connections"
+        #         " between two axon+myelin objects."
+        #     )
+        # )
+        # sizer_h.Add(run_watershed_button, flag=wx.SHAPED, proportion=1)
 
         # Add the fill axon tool
         fill_axons_button = wx.Button(self, label="Fill axons")
@@ -127,6 +128,14 @@ class ADScontrol(ctrlpanel.ControlPanel):
             )
         )
         sizer_h.Add(fill_axons_button, flag=wx.SHAPED, proportion=1)
+
+        # Add the save Segmentation button
+        save_segmentation_button = wx.Button(self, label="Save segmentation")
+        save_segmentation_button.Bind(wx.EVT_BUTTON, self.on_save_segmentation_button)
+        save_segmentation_button.SetToolTip(
+            wx.ToolTip("Saves the axon and myelin masks in the selected folder")
+        )
+        sizer_h.Add(save_segmentation_button, flag=wx.SHAPED, proportion=1)
 
         # Set the sizer of the control panel
         self.SetSizer(sizer_h)
@@ -752,10 +761,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[0]
 
-        logo_file = ads_path / "logo_ads-alpha.png"
+        logo_file = ads_path / "logo_ads-alpha_small.png"
 
         png = wx.Image(str(logo_file), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        png.SetSize((png.GetWidth() // 15, png.GetHeight() // 15))
+        png.SetSize((png.GetWidth(), png.GetHeight()))
         logo_image = wx.StaticBitmap(
             self, -1, png, wx.DefaultPosition, (png.GetWidth(), png.GetHeight())
         )
