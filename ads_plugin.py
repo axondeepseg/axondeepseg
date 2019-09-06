@@ -28,7 +28,11 @@ from scipy import ndimage as ndi
 from skimage import measure, morphology, feature
 
 import tempfile
+import openpyxl
+import pandas as pd
+import imageio
 
+from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -136,6 +140,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
             wx.ToolTip("Saves the axon and myelin masks in the selected folder")
         )
         sizer_h.Add(save_segmentation_button, flag=wx.SHAPED, proportion=1)
+
+        # Add compute morphometrics button
+        compute_morphometrics_button = wx.Button(self, label="Compute morphometrics") 
+        compute_morphometrics_button.Bind(wx.EVT_BUTTON, self.on_compute_morphometrics_button) 
+        compute_morphometrics_button.SetToolTip(wx.ToolTip("Calculates and saves the morphometrics to an excel and csv file.")) 
+        sizer_h.Add(compute_morphometrics_button, flag=wx.SHAPED, proportion=1)
 
         # Set the sizer of the control panel
         self.SetSizer(sizer_h)
@@ -327,6 +337,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_mask_path = image_directory + "/" + image_name_no_extension + "_seg-myelin.png"
         self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
         self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
+        self.pixel_size_float = pixel_size_float
+
+        return self
 
     def on_save_segmentation_button(self, event):
         """
@@ -496,6 +509,111 @@ class ADScontrol(ctrlpanel.ControlPanel):
             [int(props.centroid[1]) for props in myelin_objects],
         )
         return ind_centroid
+
+    def on_compute_morphometrics_button(self, event):
+        """
+        Compute morphometrics and save them to an Excel file.
+        """
+
+        # Get pixel size
+
+        try:
+            pixel_size = self.pixel_size_float
+        except:
+            with wx.TextEntryDialog(
+                self, "Enter the pixel size in micrometer", value="0.07"
+            ) as text_entry:
+                if text_entry.ShowModal() == wx.ID_CANCEL:
+                    return
+
+                pixel_size_str = text_entry.GetValue()
+            pixel_size = float(pixel_size_str)
+
+        # Find the visible myelin and axon masks
+        axon_mask_overlay = self.get_visible_axon_overlay()
+        myelin_mask_overlay = self.get_visible_myelin_overlay()
+
+        if (axon_mask_overlay is None) or (myelin_mask_overlay is None):
+            return
+
+        # store the data of the masks in variables as numpy arrays.
+        # Note: since PIL uses a different convention for the X and Y coordinates, some array manipulation has to be
+        # done.
+
+        myelin_array = np.array(
+            myelin_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
+        )
+        myelin_array = np.rot90(myelin_array, k=3, axes=(1, 0))
+        axon_array = np.array(
+            axon_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
+        )
+        axon_array = np.rot90(axon_array, k=3, axes=(1, 0))
+
+        # Make sure the masks have the same size
+        if myelin_array.shape != axon_array.shape:
+            self.show_message("invalid visible masks dimensions")
+            return
+
+        # Save the arrays as PNG files
+        pred = (myelin_array // 2 + axon_array).astype(np.uint8)
+
+        pred_axon = pred > 200
+        pred_myelin = np.logical_and(pred >= 50, pred <= 200)
+
+        x = np.array([], dtype=[
+                                ('x0', 'f4'),
+                                ('y0', 'f4'),
+                                ('gratio','f4'),
+                                ('axon_area','f4'),
+                                ('myelin_area','f4'),
+                                ('axon_diam','f4'),
+                                ('myelin_thickness','f4'),
+                                ('axonmyelin_area','f4'),
+                                ('solidity','f4'),
+                                ('eccentricity','f4'),
+                                ('orientation','f4')
+                            ]
+                    )
+
+        # Compute statistics
+        stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=pixel_size)
+
+        for stats in stats_array:
+
+            x = np.append(x,
+                np.array(
+                    [(
+                    stats['x0'],
+                    stats['y0'],
+                    stats['gratio'],
+                    stats['axon_area'],
+                    stats['myelin_area'],
+                    stats['axon_diam'],
+                    stats['myelin_thickness'],
+                    stats['axonmyelin_area'],
+                    stats['solidity'],
+                    stats['eccentricity'],
+                    stats['orientation']
+                    )],
+                    dtype=x.dtype)
+                )
+
+        with wx.FileDialog(self, "Save morphometrics file", wildcard="Excel files (*.xlsx)|*.xlsx",
+                       style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return     # the user changed their mind
+
+            # save the current contents in the file
+            pathname = fileDialog.GetPath()
+            try:
+                # Export to excel
+                pd.DataFrame(x).to_excel(pathname)
+
+            except IOError:
+                wx.LogError("Cannot save current data in file '%s'." % pathname)
+
+        return
 
     def get_watershed_segmentation(self, im_axon, im_myelin, return_centroids=False):
         """
