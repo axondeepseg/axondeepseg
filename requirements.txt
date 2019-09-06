@@ -20,3 +20,4 @@ Keras==2.2.4
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.0
 opencv-contrib-python==4.1.0.25
+openpyxl==2.6.3

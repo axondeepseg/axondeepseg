@@ -45,7 +45,7 @@ def get_pixelsize(path_pixelsize_file):
         return pixelsize
 
 
-def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
+def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
@@ -54,11 +54,14 @@ def get_axon_morphometrics(im_axon, path_folder, im_myelin=None):
     :param im_myelin: Array: myelin binary mask, output of axondeepseg
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
-    
-    # If string, convert to Path objects
-    path_folder = convert_path(path_folder)
+    if path_folder is not None:
+        # If string, convert to Path objects
+        path_folder = convert_path(path_folder)
 
-    pixelsize = get_pixelsize(path_folder / 'pixel_size_in_micrometer.txt')
+        pixelsize = get_pixelsize(path_folder / 'pixel_size_in_micrometer.txt')
+
+    if (pixel_size  is not None) and (path_folder is None ):
+        pixelsize = pixel_size
 
     stats_array = np.empty(0)
     # Label each axon object
