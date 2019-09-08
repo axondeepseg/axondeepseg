@@ -175,6 +175,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Check the version
         self.verrify_version()
 
+
     def on_load_png_button(self, event):
         """
         This function is called when the user presses on the Load Png button. It allows the user to select a PNG or TIF
@@ -457,21 +458,14 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This function is called when the fillAxon button is pressed by the user. It uses a flood fill algorithm to fill
         the inside of the myelin objects with the axon mask
         """
-        # Find the visible myelin and axon masks
-        axon_mask_overlay = self.get_visible_axon_overlay()
+        # Find the visible myelin mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
 
         if myelin_mask_overlay is None:
             return
 
         # Extract the data from the overlays
-        axon_array = axon_mask_overlay[:, :, 0]
         myelin_array = myelin_mask_overlay[:, :, 0]
-
-        # Make sure the masks have the same size
-        if myelin_array.shape != axon_array.shape:
-            self.show_message("invalid visible masks dimensions")
-            return
 
         # Get the centroid indexes
         centroid_index_map = self.get_myelin_centroids(myelin_array)
@@ -499,7 +493,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_extracted_array = axon_extracted_array.astype(np.uint8)
 
         axon_corr_array = 255 * np.rot90(axon_extracted_array, k=3, axes=(1, 0))
-        file_name = self.ads_temp_dir.name + "/" + axon_mask_overlay.name + "-corr.png"
+        file_name = self.ads_temp_dir.name + "/" + myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png"
         axon_corr_image = Image.fromarray(axon_corr_array)
         axon_corr_image.save(file_name)
         self.load_png_image_from_path(file_name, is_mask=True, colormap="blue")
