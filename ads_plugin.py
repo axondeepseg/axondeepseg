@@ -1,4 +1,6 @@
 """
+Version : 0.2.1
+
 This is an FSLeyes plugin script that integrates AxonDeepSeg tools into FSLeyes.
 
 Author : Stoyan I. Asenov
@@ -46,6 +48,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         :param ortho: This is used to access the ortho ops in order to turn off the X and Y canvas as well as the cursor
         """
         ctrlpanel.ControlPanel.__init__(self, ortho, *args, **kwargs)
+        self.version = "Version : 0.2.1"
 
         # Add a sizer to the control panel
         # This sizer will contain the buttons
@@ -168,6 +171,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Create a temporary directory that will hold the NIfTI files
         self.ads_temp_dir = tempfile.TemporaryDirectory()
+
+        # Check the version
+        self.verrify_version()
 
     def on_load_png_button(self, event):
         """
@@ -348,7 +354,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
 
         # Find the visible myelin and axon masks
-        axon_mask_overlay = self.get_visible_axon_overlay()
+        axon_mask_overlay = self.get_corrected_axon_overlay()
+        if axon_mask_overlay is None:
+            axon_mask_overlay = self.get_visible_axon_overlay()
         myelin_mask_overlay = self.get_visible_myelin_overlay()
 
         if (axon_mask_overlay is None) or (myelin_mask_overlay is None):
@@ -453,7 +461,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_mask_overlay = self.get_visible_axon_overlay()
         myelin_mask_overlay = self.get_visible_myelin_overlay()
 
-        if (axon_mask_overlay is None) or (myelin_mask_overlay is None):
+        if myelin_mask_overlay is None:
             return
 
         # Extract the data from the overlays
@@ -482,7 +490,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 value=(127, 127, 127, 255),
             )
 
-        # Extract the axon_array and update the axon mask overlay
+        # Extract the axon_mask overlay and load a new overlay with the corrected axon mask
         axon_extracted_array = np.array(myelin_image.convert("LA"))
         axon_extracted_array = axon_extracted_array[:, :, 0]
         axon_extracted_array = np.equal(
@@ -490,7 +498,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         axon_extracted_array = axon_extracted_array.astype(np.uint8)
 
-        axon_mask_overlay[:, :, :] = axon_extracted_array
+        axon_corr_array = 255 * np.rot90(axon_extracted_array, k=3, axes=(1, 0))
+        file_name = self.ads_temp_dir.name + "/" + axon_mask_overlay.name + "-corr.png"
+        axon_corr_image = Image.fromarray(axon_corr_array)
+        axon_corr_image.save(file_name)
+        self.load_png_image_from_path(file_name, is_mask=True, colormap="blue")
 
     def get_myelin_centroids(self, im_myelin):
         """
@@ -530,7 +542,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
             pixel_size = float(pixel_size_str)
 
         # Find the visible myelin and axon masks
-        axon_mask_overlay = self.get_visible_axon_overlay()
+        axon_mask_overlay = self.get_corrected_axon_overlay()
+        if axon_mask_overlay is None:
+            axon_mask_overlay = self.get_visible_axon_overlay()
         myelin_mask_overlay = self.get_visible_myelin_overlay()
 
         if (axon_mask_overlay is None) or (myelin_mask_overlay is None):
@@ -763,11 +777,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         for an_overlay in visible_overlay_list:
             if (
-                ("axon" not in an_overlay.name)
-                and ("myelin" not in an_overlay.name)
-                and ("Myelin" not in an_overlay.name)
-                and ("watershed" not in an_overlay.name)
+                ("watershed" not in an_overlay.name)
                 and ("Watershed" not in an_overlay.name)
+                and (not an_overlay.name.endswith("-myelin"))
+                and (not an_overlay.name.endswith("-Myelin"))
+                and (not an_overlay.name.endswith("-Axon"))
+                and (not an_overlay.name.endswith("-axon"))
             ):
                 n_found_overlays = n_found_overlays + 1
                 image_overlay = an_overlay
@@ -796,7 +811,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if "axon" in an_overlay.name:
+            if (an_overlay.name.endswith("-axon")) or (an_overlay.name.endswith("-Axon")):
                 n_found_overlays = n_found_overlays + 1
                 axon_overlay = an_overlay
 
@@ -805,6 +820,33 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
         if n_found_overlays is 0:
             self.show_message("No visible axon mask has been found")
+            return None
+
+        return axon_overlay
+
+    def get_corrected_axon_overlay(self):
+        """
+        This method finds a the visible corrected axon overlay if it exists
+        :return: The visible corrected axon overlay
+        :rtype overlay
+        """
+        visible_overlay_list = self.get_visible_overlays()
+        axon_overlay = None
+        n_found_overlays = 0
+
+        if visible_overlay_list.__len__() is 0:
+            self.show_message("No overlays are displayed")
+            return None
+
+        for an_overlay in visible_overlay_list:
+            if (an_overlay.name.endswith("-axon-corr")) or (an_overlay.name.endswith("-Axon-corr")):
+                n_found_overlays = n_found_overlays + 1
+                axon_overlay = an_overlay
+
+        if n_found_overlays > 1:
+            self.show_message("More than one corrected axon mask has been found")
+            return None
+        if n_found_overlays is 0:
             return None
 
         return axon_overlay
@@ -824,7 +866,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if ("myelin" in an_overlay.name) or ("Myelin" in an_overlay.name):
+            if (an_overlay.name.endswith("-myelin")) or (an_overlay.name.endswith("-Myelin")):
                 n_found_overlays = n_found_overlays + 1
                 myelin_overlay = an_overlay
 
@@ -853,6 +895,36 @@ class ADScontrol(ctrlpanel.ControlPanel):
             pos=wx.DefaultPosition,
         ) as msg:
             msg.ShowModal()
+
+    def verrify_version(self):
+        """
+        This function checks if the plugin version is the same as the one in the AxonDeepSeg directory
+        """
+        ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[0]
+        plugin_path_parts = ads_path.parts[:-1]
+        plugin_path = str(Path(*plugin_path_parts))
+        plugin_file = plugin_path + "/ads_plugin.py"
+
+        # Check if the plugin file exists
+        plugin_file_exists = os.path.isfile(plugin_file)
+
+        if plugin_file_exists is False:
+            return
+
+        # Check the version of the plugin
+        with open(plugin_file) as plugin_file_reader:
+            plugin_file_lines = plugin_file_reader.readlines()
+
+        plugin_file_lines = [x.strip() for x in plugin_file_lines]
+
+        version = plugin_file_lines[1]
+        if not (self.version == version):
+            message = (
+                "It looks like you downloaded a new version of the plugin. To apply the update, go to "
+                "file -> load plugin -> ads_plugin.py"
+            )
+            self.show_message(message, "Warning")
+        return
 
     def get_citation(self):
         """
