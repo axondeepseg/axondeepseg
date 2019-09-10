@@ -1,6 +1,4 @@
 """
-Version : 0.2.1
-
 This is an FSLeyes plugin script that integrates AxonDeepSeg tools into FSLeyes.
 
 Author : Stoyan I. Asenov
@@ -36,6 +34,8 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
+VERSION = "0.2.2"
+
 class ADScontrol(ctrlpanel.ControlPanel):
     """
     This class is the object corresponding to the AxonDeepSeg control panel.
@@ -48,7 +48,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         :param ortho: This is used to access the ortho ops in order to turn off the X and Y canvas as well as the cursor
         """
         ctrlpanel.ControlPanel.__init__(self, ortho, *args, **kwargs)
-        self.version = "Version : 0.2.1"
 
         # Add a sizer to the control panel
         # This sizer will contain the buttons
@@ -910,12 +909,21 @@ class ADScontrol(ctrlpanel.ControlPanel):
             plugin_file_lines = plugin_file_reader.readlines()
 
         plugin_file_lines = [x.strip() for x in plugin_file_lines]
+        version_line = 'VERSION = "' + VERSION + '"'
+        plugin_is_up_to_date = True
+        version_found = False
 
-        version = plugin_file_lines[1]
-        if not (self.version == version):
+        for lines in plugin_file_lines:
+            if (lines.startswith("VERSION = ")):
+                version_found = True
+                if not (lines == version_line):
+                    plugin_is_up_to_date = False
+
+        if (version_found is False) or (plugin_is_up_to_date is False):
             message = (
-                "It looks like you downloaded a new version of the plugin. To apply the update, go to "
-                "file -> load plugin -> ads_plugin.py"
+                "A more recent version of the AxonDeepSeg plugin was found in your AxonDeepSeg installation folder. "
+                "You will need to replace the current FSLeyes plugin which the new one. "
+                "To proceed, go to: file -> load plugin -> ads_plugin.py. Then, restart FSLeyes."
             )
             self.show_message(message, "Warning")
         return
