@@ -179,7 +179,7 @@ def traceback_to_server(client):
 
 def download_data(url_data):
     """ Downloads and extracts zip files from the web.
-    :return: 0 - Success, 1 - Encountered an exception.
+    :return: 1 - Success, 0 - Encountered an exception.
     """
     # Download
     try:
@@ -213,12 +213,12 @@ def download_data(url_data):
                 zf.extractall(".")
             except (zipfile.BadZipfile):
                 print('ERROR: ZIP package corrupted. Please try downloading again.')
-                return 1
+                return 0
             print("--> Folder created: " + str(Path.cwd() / Path(zip_filename).stem))
     except Exception as e:
         print("ERROR: %s" % e)
-        return 1
-    return 0
+        return 0
+    return 1
 
 def convert_path(object_path):
     """ Convert path
