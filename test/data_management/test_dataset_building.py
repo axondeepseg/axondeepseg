@@ -97,22 +97,46 @@ class TestCore(object):
         img_folder_names = [im.name for im in self.patchPath16b.iterdir()]
         for img_folder in tqdm(img_folder_names):
             path_img_folder = self.patchPath16b / img_folder
+
             if path_img_folder.is_dir():
                 # We go through every file in the image folder
                 data_names = [d.name for d in path_img_folder.iterdir()]
                 for data in data_names:
-                        # Skip the mask files
-                        if 'mask' not in data:
-                            print(data)
-                            img = imageio.imread(path_img_folder / data)
-                            img_bins = np.bincount(np.ndarray.flatten(img))
-                            
-                            # Assert that not more than 50% of the pixels are the minimum value
-                            assert img_bins[0]/sum(img_bins) < 0.5
+                    # Skip the mask files
+                    if 'mask' not in data:
+                        print(data)
+                        img = imageio.imread(path_img_folder / data)
+                        img_bins = np.bincount(np.ndarray.flatten(img))
+                    
+                        # Assert that not more than 50% of the pixels are the minimum value
+                        assert img_bins[0]/sum(img_bins) < 0.5
 
-                            # Assert that not more than 50% of the pixels are the maximum value
-                            assert img_bins[-1]/sum(img_bins) < 0.5
+                        # Assert that not more than 50% of the pixels are the maximum value
+                        assert img_bins[-1]/sum(img_bins) < 0.5
 
+    @pytest.mark.unit
+    def test_raw_img_to_patches_creates_masks_with_expected_number_of_unique_values(self):
+        if self.patchPath.is_dir():
+            shutil.rmtree(self.patchPath)
+
+        raw_img_to_patches(str(self.rawPath), str(self.patchPath))
+
+        
+        img_folder_names = [im.name for im in self.patchPath.iterdir()]
+        for img_folder in tqdm(img_folder_names):
+            path_img_folder = self.patchPath / img_folder
+            if path_img_folder.is_dir():
+                # We go through every file in the image folder
+                data_names = [d.name for d in path_img_folder.iterdir()]
+                for data in data_names:
+
+                    if 'mask' in data:
+                        mask = imageio.imread(path_img_folder / data)
+                        
+                        image_properties = get_image_unique_vals_properties(mask)
+
+                        assert image_properties['num_uniques'] == 3
+                        assert np.array_equal(image_properties['unique_values'], [0, 128, 255])
 
     # --------------patched_to_dataset tests-------------- #
     @pytest.mark.unit

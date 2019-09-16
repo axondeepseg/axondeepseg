@@ -52,6 +52,7 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
 
                 elif 'mask' in data:
                     mask_init = ads.imread(path_img_folder / data)
+
                     mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant', order=0)
 
                     # Set the mask values to the classes' values
