@@ -74,7 +74,7 @@ def get_image_unique_vals_properties(image):
     """
     if not isinstance(image, np.ndarray):
         try:
-            image = imageio.imread(image)
+            image = ads.imread(image)
         except:
             raise IOError('AxonDeepSeg.get_image_unique_vals_properties: Error '
                           'reading image. Function arg must be either an '
