@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 import pytest
 from AxonDeepSeg.data_management.dataset_building import *
-
+from AxonDeepSeg.visualization.get_masks import *
 
 class TestCore(object):
     def setup(self):
@@ -76,6 +76,31 @@ class TestCore(object):
         path_to_data2 = self.patchPath / 'data2'
         assert(path_to_data2.is_dir())
         assert len([item for item in path_to_data2.iterdir()]) == 24
+
+    @pytest.mark.unit
+    def test_raw_img_to_patches_creates_masks_with_expected_number_of_unique_values(self):
+        if self.patchPath.is_dir():
+            shutil.rmtree(self.patchPath)
+
+        raw_img_to_patches(str(self.rawPath), str(self.patchPath))
+
+        assert self.patchPath.is_dir()
+        
+        img_folder_names = [im.name for im in self.patchPath.iterdir()]
+        for img_folder in tqdm(img_folder_names):
+            path_img_folder = self.patchPath / img_folder
+            if path_img_folder.is_dir():
+                # We go through every file in the image folder
+                data_names = [d.name for d in path_img_folder.iterdir()]
+                for data in data_names:
+                        # Skip the mask files
+                        if 'mask' in data:
+                            mask = imageio.imread(path_img_folder / data)
+                            
+                            image_properties = get_image_unique_vals_properties(mask)
+
+                            assert image_properties['num_uniques'] == 3
+                            assert np.array_equal(image_properties['unique_values'], [0, 128, 255])
 
     # --------------patched_to_dataset tests-------------- #
     @pytest.mark.unit
