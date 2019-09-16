@@ -48,11 +48,11 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
             data_names = [d.name for d in path_img_folder.iterdir()]
             for data in data_names:
                 if 'image' in data: # If it's the raw image.
-                    img = imread(path_img_folder / data, as_gray=False, pilmode='L')
+                    img = imread(path_img_folder / data, as_gray=True, pilmode='L')
                     img = rescale(img, resample_coeff, preserve_range=True, mode='constant').astype(int)
 
                 elif 'mask.png' in data:
-                    mask_init = imread(path_img_folder / data, flatten=False, mode='L')
+                    mask_init = imread(path_img_folder / data, as_gray=True, pilmode='L')
                     mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant', order=0)
 
                     # Set the mask values to the classes' values
