@@ -159,8 +159,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
             # Update of the predictions lists.
             predictions_list.extend(current_batch_prediction)
 
-    # End of the inference step. Closing Tensorflow.
-    sess.close()
+    # End of the inference step.
     tf.reset_default_graph()
 
     # Now we have to transform the list of predictions in list of lists,
@@ -474,8 +473,7 @@ def perform_batch_inference(model, tf_session, tf_prediction_op, tf_input, batch
     :return: List of segmentation of the patches, and optionally list of the probabilty maps for each patch.
     """
 
-    batch_x = np.expand_dims(batch_x, axis=3)
-    batch_x = np.concatenate((batch_x, batch_x, batch_x), axis=3)
+    batch_x = np.reshape(batch_x,(size_batch, input_size, input_size, 1))
 
     p = model.predict(batch_x)
 
