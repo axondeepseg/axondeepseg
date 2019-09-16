@@ -159,8 +159,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
             # Update of the predictions lists.
             predictions_list.extend(current_batch_prediction)
 
-    # End of the inference step. Closing Tensorflow.
-    sess.close()
+    # End of the inference step.
     tf.reset_default_graph()
 
     # Now we have to transform the list of predictions in list of lists,
