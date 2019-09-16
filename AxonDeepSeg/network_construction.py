@@ -83,8 +83,9 @@ def uconv_net(training_config, bn_updated_decay=None, verbose=True):
     ######################### CONTRACTION PHASE ########################
     ####################################################################
 
-    X = Input((image_size, image_size, 3))
+    X = Input((image_size, image_size, 1))
     net = X
+
 
     for i in range(depth):
 
