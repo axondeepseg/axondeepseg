@@ -1,4 +1,8 @@
 from setuptools import setup, find_packages
+from setuptools.command.develop import develop
+from setuptools.command.install import install
+from subprocess import check_call
+
 from codecs import open
 from os import path
 
@@ -16,6 +20,20 @@ with open(req_path, "r") as f:
     install_reqs = f.read().strip()
     install_reqs = install_reqs.split("\n")
 
+
+class PostDevelopCommand(develop):
+    """Post-installation for development mode."""
+    def run(self):
+        check_call("axondeepseg_models")
+        develop.run(self)
+
+class PostInstallCommand(install):
+    """Post-installation for installation mode."""
+    def run(self):
+        check_call("axondeepseg_models")
+        install.run(self)
+
+
 setup(
     name='AxonDeepSeg',
     python_requires='>=3.6, <3.7',
@@ -31,6 +49,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.6',
     ],
+
     keywords='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     install_requires=install_reqs,
@@ -50,4 +69,9 @@ setup(
            'axondeepseg_models = AxonDeepSeg.models.download_model:main', 'axondeepseg = AxonDeepSeg.segment:main','axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test'
         ],
     },
+    cmdclass={
+        'develop': PostDevelopCommand,
+        'install': PostInstallCommand,
+    },
+
 )
