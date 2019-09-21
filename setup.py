@@ -21,12 +21,13 @@ with open(req_path, "r") as f:
     install_reqs = install_reqs.split("\n")
 
 
-class PostInstallCommand(install):
+class PostDevelopCommand(develop):
     """Post-installation for installation mode."""
     def run(self):
 
+        develop.run(self)
         check_call("axondeepseg_models")
-        install.run(self)
+
 
 
 setup(
@@ -65,7 +66,7 @@ setup(
         ],
     },
     cmdclass={
-        'install': PostInstallCommand,
+        'develop': PostDevelopCommand,
     },
 
 )
