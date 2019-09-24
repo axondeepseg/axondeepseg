@@ -34,7 +34,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
