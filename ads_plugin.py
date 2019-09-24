@@ -193,7 +193,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
             in_file = file_dialog.GetPath()
 
         # Check if the image format is valid
-        if (in_file[-4:] != ".png") and (in_file[-4:] != ".tif"):
+        image_extension = os.path.splitext(in_file)[1]
+        valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
+        if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
 
@@ -222,9 +224,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
             in_file = file_dialog.GetPath()
 
         # Check if the image format is valid
-        if in_file[-4:] != ".png":
+        image_extension = os.path.splitext(in_file)[1]
+        valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
+        if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
+        
         # Load the mask into FSLeyes
         if "axon" in in_file:
             self.load_png_image_from_path(in_file, is_mask=True, colormap="blue")
