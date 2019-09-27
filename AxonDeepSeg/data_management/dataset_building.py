@@ -53,7 +53,7 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
 
                 elif 'mask.png' in data:
                     mask_init = imread(path_img_folder / data, flatten=False, mode='L')
-                    mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant')
+                    mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant', order=0)
 
                     # Set the mask values to the classes' values
                     mask = labellize_mask_2d(mask, thresh_indices)  # shape (size, size), values float 0.0-1.0

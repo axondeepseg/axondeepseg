@@ -40,8 +40,9 @@ class DataGen(keras.utils.Sequence):
         ## Path
         image_path = self.path / ('image_' + id_name + ".png")
         mask_path = self.path / ('mask_' + id_name + ".png")
-        ## Reading Image
-        image = cv2.imread(str(image_path))
+        # Reading Image
+        image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
+        image = np.reshape(image, (self.image_size, self.image_size, 1))
 
         # -----Mask PreProcessing --------
         mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)

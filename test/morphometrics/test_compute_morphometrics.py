@@ -9,7 +9,6 @@ import numpy as np
 from scipy.misc import imread as scipy_imread  # to avoid confusion with mpl.pyplot.imread
 import pytest
 
-
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
 
@@ -194,7 +193,7 @@ class TestCore(object):
         with pytest.raises(IOError):
             save_axon_morphometrics(str(nonExistingFolder), stats_array)
 
-    @pytest.mark.debug
+    @pytest.mark.unit
     def test_load_axon_morphometrics_returns_identical_var_as_was_saved(self):
         original_stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
