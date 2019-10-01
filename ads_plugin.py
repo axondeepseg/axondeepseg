@@ -34,7 +34,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -229,7 +229,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
-        
+
         # Load the mask into FSLeyes
         if "axon" in in_file:
             self.load_png_image_from_path(in_file, is_mask=True, colormap="blue")
@@ -383,15 +383,18 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # store the data of the masks in variables as numpy arrays.
         # Note: since PIL uses a different convention for the X and Y coordinates, some array manipulation has to be
         # done.
+        # Note 2 : The image array loaded in FSLeyes is flipped. We need to flip it back
 
         myelin_array = np.array(
             myelin_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
         )
-        myelin_array = np.rot90(myelin_array, k=3, axes=(1, 0))
+        myelin_array = np.flipud(myelin_array)
+        myelin_array = np.rot90(myelin_array, k=1, axes=(1, 0))
         axon_array = np.array(
             axon_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
         )
-        axon_array = np.rot90(axon_array, k=3, axes=(1, 0))
+        axon_array = np.flipud(axon_array)
+        axon_array = np.rot90(axon_array, k=1, axes=(1, 0))
 
         # Make sure the masks have the same size
         if myelin_array.shape != axon_array.shape:
@@ -551,15 +554,18 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # store the data of the masks in variables as numpy arrays.
         # Note: since PIL uses a different convention for the X and Y coordinates, some array manipulation has to be
         # done.
+        # Note 2 : The image array loaded in FSLeyes is flipped. We need to flip it back
 
         myelin_array = np.array(
             myelin_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
         )
-        myelin_array = np.rot90(myelin_array, k=3, axes=(1, 0))
+        myelin_array = np.flipud(myelin_array)
+        myelin_array = np.rot90(myelin_array, k=1, axes=(1, 0))
         axon_array = np.array(
             axon_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
         )
-        axon_array = np.rot90(axon_array, k=3, axes=(1, 0))
+        axon_array = np.flipud(axon_array)
+        axon_array = np.rot90(axon_array, k=1, axes=(1, 0))
 
         # Make sure the masks have the same size
         if myelin_array.shape != axon_array.shape:
@@ -715,6 +721,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         if is_mask is True:
             img_png2D = img_png2D // 255  # Segmentation masks should be binary
+
+        # Flip the image on the Y axis so that the morphometrics file shows the right coordinates
+        img_png2D = np.flipud(img_png2D)
 
         # Convert image data into a NIfTI image
         # Note: PIL and NiBabel use different axis conventions, so some array manipulation has to be done.
