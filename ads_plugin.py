@@ -34,7 +34,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -465,17 +465,21 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This function is called when the fillAxon button is pressed by the user. It uses a flood fill algorithm to fill
         the inside of the myelin objects with the axon mask
         """
-        # Find the visible myelin mask
+        # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
+        axon_mask_overlay = self.get_visible_axon_overlay()
 
         if myelin_mask_overlay is None:
+            return
+        if axon_mask_overlay is None:
             return
 
         # Extract the data from the overlays
         myelin_array = myelin_mask_overlay[:, :, 0]
+        axon_array = axon_mask_overlay[:, :, 0]
 
         # Get the centroid indexes
-        centroid_index_map = self.get_myelin_centroids(myelin_array)
+        centroid_index_map = self.get_myelin_centroids(axon_array)
 
         # Create an image with the myelinMask and floodfill at the coordinates of the centroids
         # Note: The floodfill algorithm only works on PNG images. Thus, the mask must be colorized before applying
@@ -499,7 +503,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         axon_extracted_array = axon_extracted_array.astype(np.uint8)
 
-        axon_corr_array = 255 * np.rot90(axon_extracted_array, k=3, axes=(1, 0))
+        axon_corr_array = np.flipud(axon_extracted_array)
+        axon_corr_array = 255 * np.rot90(axon_corr_array, k=1, axes=(1, 0))
         file_name = self.ads_temp_dir.name + "/" + myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png"
         axon_corr_image = Image.fromarray(axon_corr_array)
         axon_corr_image.save(file_name)
