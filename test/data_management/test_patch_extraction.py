@@ -2,7 +2,7 @@
 
 import pytest
 import numpy as np
-from scipy.misc import imread
+from imageio import imread
 from AxonDeepSeg.data_management.patch_extraction import extract_patch
 
 

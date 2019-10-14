@@ -8,7 +8,7 @@ import pickle
 import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
-from scipy.misc import imread
+from imageio import imread
 from tabulate import tabulate
 
 # Graphs and plots imports
@@ -116,7 +116,7 @@ def visualize_segmentation(path):
 
     prediction_mrf = res["prediction_mrf"]
     prediction = res["prediction"]
-    image_init = imread(path_img, flatten=False, mode="L")
+    image_init = imread(path_img, as_gray=False, pilmode="L")
     predict = np.ma.masked_where(prediction == 0, prediction)
     predict_mrf = np.ma.masked_where(prediction_mrf == 0, prediction_mrf)
 
@@ -132,7 +132,7 @@ def visualize_segmentation(path):
         Mask = True
         path_mask = path / "mask.png"
         mask = preprocessing.binarize(
-            imread(path_mask, flatten=False, mode="L"), threshold=125
+            imread(path_mask, as_gray=False, pilmode="L"), threshold=125
         )
 
         acc = accuracy_score(prediction.reshape(-1, 1), mask.reshape(-1, 1))
@@ -182,7 +182,7 @@ def visualize_segmentation(path):
     if "MyelinSeg.jpg" in cur_dir_items:
         path_myelin = path / "MyelinSeg.jpg"
         myelin = preprocessing.binarize(
-            imread(path_myelin, flatten=False, mode="L"), threshold=125
+            imread(path_myelin, as_gray=False, pilmode="L"), threshold=125
         )
         myelin = np.ma.masked_where(myelin == 0, myelin)
 

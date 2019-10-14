@@ -4,7 +4,7 @@ from pathlib import Path
 import imageio
 import numpy as np
 import os
-import scipy as sp
+from skimage.transform import resize
 import pytest
 
 from AxonDeepSeg.visualization.get_masks import *
@@ -104,7 +104,7 @@ class TestCore(object):
 
 
         # Resizing image with interpolation will add values to the image.
-        resized_image = sp.misc.imresize(loaded_image, size=200 , interp='bilinear')
+        resized_image = resize(loaded_image, (100, 100), order=1)
 
         resized_image_properties = get_image_unique_vals_properties(resized_image)
 
