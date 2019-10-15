@@ -69,12 +69,14 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         sizer_h.Add(hyper, flag=wx.SHAPED, proportion=1)
 
+
         # Define the color of button labels
         button_label_color = (0, 0, 0)
 
         # Add the image loading button
         load_png_button = wx.Button(self, label="Load PNG or TIF file")
         load_png_button.SetForegroundColour(button_label_color)
+
         load_png_button.Bind(wx.EVT_BUTTON, self.on_load_png_button)
         load_png_button.SetToolTip(wx.ToolTip("Loads a .png or .tif file into FSLeyes"))
         sizer_h.Add(load_png_button, flag=wx.SHAPED, proportion=1)
@@ -82,6 +84,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Add the mask loading button
         load_mask_button = wx.Button(self, label="Load existing mask")
         load_mask_button.SetForegroundColour(button_label_color)
+
         load_mask_button.Bind(wx.EVT_BUTTON, self.on_load_mask_button)
         load_mask_button.SetToolTip(
             wx.ToolTip(
@@ -101,7 +104,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
             size=(100, 20),
             value="Select the modality",
         )
+
         self.model_combobox.SetForegroundColour(button_label_color)
+
         self.model_combobox.SetToolTip(
             wx.ToolTip("Select the modality used to acquire the image")
         )
@@ -109,7 +114,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Add the button that applies the prediction model
         apply_model_button = wx.Button(self, label="Apply ADS prediction model")
+
         apply_model_button.SetForegroundColour(button_label_color)
+
         apply_model_button.Bind(wx.EVT_BUTTON, self.on_apply_model_button)
         apply_model_button.SetToolTip(
             wx.ToolTip("Applies the prediction model and displays the masks")
@@ -132,7 +139,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Add the fill axon tool
         fill_axons_button = wx.Button(self, label="Fill axons")
+
         fill_axons_button.SetForegroundColour(button_label_color)
+
         fill_axons_button.Bind(wx.EVT_BUTTON, self.on_fill_axons_button)
         fill_axons_button.SetToolTip(
             wx.ToolTip(
@@ -145,7 +154,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Add the save Segmentation button
         save_segmentation_button = wx.Button(self, label="Save segmentation")
+
         save_segmentation_button.SetForegroundColour(button_label_color)
+
         save_segmentation_button.Bind(wx.EVT_BUTTON, self.on_save_segmentation_button)
         save_segmentation_button.SetToolTip(
             wx.ToolTip("Saves the axon and myelin masks in the selected folder")
@@ -153,9 +164,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         sizer_h.Add(save_segmentation_button, flag=wx.SHAPED, proportion=1)
 
         # Add compute morphometrics button
+
         compute_morphometrics_button = wx.Button(self, label="Compute morphometrics")
         compute_morphometrics_button.SetForegroundColour(button_label_color)
         compute_morphometrics_button.Bind(wx.EVT_BUTTON, self.on_compute_morphometrics_button)
+
         compute_morphometrics_button.SetToolTip(wx.ToolTip("Calculates and saves the morphometrics to an excel and csv file.")) 
         sizer_h.Add(compute_morphometrics_button, flag=wx.SHAPED, proportion=1)
 
@@ -177,6 +190,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Toggle off the radiological orientation
         self.displayCtx.radioOrientation = False
+
 
         # Invert the Y display
         self.frame.viewPanels[0].frame.viewPanels[0].getZCanvas().opts.invertY = True
