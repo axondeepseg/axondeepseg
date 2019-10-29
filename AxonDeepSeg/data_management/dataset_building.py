@@ -116,7 +116,7 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        mask = imread(path_patches_folder / data.name, flatten=True, mode='L')
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
