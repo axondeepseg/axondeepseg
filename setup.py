@@ -1,12 +1,11 @@
 from setuptools import setup, find_packages
-from setuptools.command.develop import develop
-from subprocess import check_call
-
+import atexit
+from setuptools.command.install import install
 from codecs import open
 from os import path
 
 import AxonDeepSeg
-
+from AxonDeepSeg.ads_utils import download_data
 
 # Get the directory where this current file is saved
 here = path.abspath(path.dirname(__file__))
@@ -19,15 +18,22 @@ with open(req_path, "r") as f:
     install_reqs = f.read().strip()
     install_reqs = install_reqs.split("\n")
 
+def _post_install():
+    url_TEM_model = "https://osf.io/2hcfv/?action=download"  # URL of TEM model hosted on OSF storage
+    url_SEM_model = "https://osf.io/rdqgb/?action=download"  # URL of SEM model hosted on OSF storage
 
-class PostDevelopCommand(develop):
-    """Post-installation for installation mode."""
-    def run(self):
-
-        develop.run(self)
-        check_call("axondeepseg_models")
+    if (not download_data(url_TEM_model) and not download_data(url_SEM_model)) ==1:
+        print('Data downloaded and unzipped succesfully.')
+    else:
+        print('ERROR: Data was not succesfully downloaded and unzipped- please check your link and filename and try again.')
 
 
+
+class new_install(install):
+    def __init__(self, *args, **kwargs):
+
+        atexit.register(_post_install)
+        super(new_install, self).__init__(*args, **kwargs)
 
 setup(
     name='AxonDeepSeg',
@@ -61,11 +67,11 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-           'axondeepseg_models = AxonDeepSeg.models.download_model:main', 'axondeepseg = AxonDeepSeg.segment:main','axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test'
+            'axondeepseg = AxonDeepSeg.segment:main','axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test'
         ],
     },
     cmdclass={
-        'develop': PostDevelopCommand,
+        'install': new_install,
     },
 
 )
