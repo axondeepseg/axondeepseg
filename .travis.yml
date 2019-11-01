@@ -7,7 +7,8 @@ python:
 # command to install dependencies
 install:
   - echo "Installation of the repository"
-  - pip install -e .
+  - pip install .
+  - axondeepseg_models
   - pip install python-coveralls  # Add me to install python-coveralls
 # command to run tests
 script:
