@@ -3,7 +3,7 @@
 from pathlib import Path
 import imageio
 
-from scipy.misc import imread, imsave
+from imageio import imread, imsave
 from skimage.transform import rescale, resize
 
 import tensorflow as tf
@@ -333,7 +333,7 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
     original_acquisitions, resampled_acquisitions, original_acquisitions_shapes = [], [], []
 
     for path_img in path_acquisitions:
-        original_acquisitions.append(imread(path_img, flatten=False, mode='L'))
+        original_acquisitions.append(imread(path_img, as_gray=False, pilmode='L'))
         original_acquisitions_shapes.append(original_acquisitions[-1].shape)
 
     # Resampling acquisitions to the target resolution

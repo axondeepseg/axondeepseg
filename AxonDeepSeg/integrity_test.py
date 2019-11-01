@@ -8,7 +8,9 @@ import json
 from pathlib import Path
 from AxonDeepSeg.testing.segmentation_scoring import *
 from AxonDeepSeg.apply_model import axon_segmentation
-from scipy.misc import imread
+
+from imageio import imread, imsave
+
 import AxonDeepSeg.ads_utils
 
 def integrity_test():
@@ -39,8 +41,8 @@ def integrity_test():
         prediction = axon_segmentation([path_testing], ["image.png"], path_model, config_network, prediction_proba_activate=True, verbosity_level=4)
 
         # Read the ground truth mask and the obtained segmentation mask
-        mask = imread(path_testing / 'mask.png', flatten=True)
-        pred = imread(path_testing / 'AxonDeepSeg.png', flatten=True)
+        mask = imread(path_testing / 'mask.png', as_gray=True)
+        pred = imread(path_testing / 'AxonDeepSeg.png', as_gray=True)
 
         # Generate separate axon and myelin masks of the segmentation output
         print('Generating axon and myelin segmentation masks and saving.')

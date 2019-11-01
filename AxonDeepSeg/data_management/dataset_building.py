@@ -1,6 +1,6 @@
 
 
-from scipy.misc import imread, imsave
+from imageio import imread, imsave
 from skimage.transform import rescale
 import numpy as np
 from tqdm import tqdm
@@ -48,11 +48,11 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
             data_names = [d.name for d in path_img_folder.iterdir()]
             for data in data_names:
                 if 'image' in data: # If it's the raw image.
-                    img = imread(path_img_folder / data, flatten=False, mode='L')
+                    img = imread(path_img_folder / data, as_gray=True, pilmode='L')
                     img = rescale(img, resample_coeff, preserve_range=True, mode='constant').astype(int)
 
                 elif 'mask.png' in data:
-                    mask_init = imread(path_img_folder / data, flatten=False, mode='L')
+                    mask_init = imread(path_img_folder / data, as_gray=True, pilmode='L')
                     mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant', order=0)
 
                     # Set the mask values to the classes' values
@@ -112,11 +112,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data.name, flatten=True, mode='L')
+                        img = imread(path_patches_folder / data.name, as_gray=True, pilmode='L')
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data.name, flatten=True, mode='L')
+                        mask = imread(path_patches_folder / data.name, as_gray=True, pilmode='L')
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
@@ -152,11 +152,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data, flatten=True, mode='L')
+                        img = imread(path_patches_folder / data, as_gray=True, pilmode='L')
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        mask = imread(path_patches_folder / data, as_gray=True, pilmode='L')
                         L_mask.append((mask, int(index)))
                 # Now we sort the patches to be sure we get them in the right order
                 L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
@@ -186,11 +186,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 for data in filenames:
                     root, index = data.stem.split('_')
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data, flatten=True, mode='L')
+                        img = imread(path_patches_folder / data, as_gray=True, pilmode='L')
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        mask = imread(path_patches_folder / data, as_gray=True, pilmode='L')
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
