@@ -7,7 +7,7 @@ python:
 # command to install dependencies
 install:
   - echo "Installation of the repository"
-  - pip install .
+  - pip install -e .
   - pip install python-coveralls  # Add me to install python-coveralls
 # command to run tests
 script:
