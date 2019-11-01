@@ -7,9 +7,7 @@ python:
 # command to install dependencies
 install:
   - echo "Installation of the repository"
-  - pip install yes
-  - pip install -r requirements.txt
-  - yes | pip install -e .
+  - pip install .
   - pip install python-coveralls  # Add me to install python-coveralls
 # command to run tests
 script:

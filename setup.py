@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
-from codecs import open
-from os import path,system
+from subprocess import check_call
 
-from AxonDeepSeg.ads_utils import download_data
+from codecs import open
+from os import path
+
 import AxonDeepSeg
 
 
@@ -20,19 +21,11 @@ with open(req_path, "r") as f:
 
 
 class PostDevelopCommand(develop):
-    """Post-installation for development mode."""
+    """Post-installation for installation mode."""
     def run(self):
 
         develop.run(self)
-
-        # Download Models from OSF storage
-        url_TEM_model = "https://osf.io/2hcfv/?action=download"  # URL of TEM model hosted on OSF storage
-        url_SEM_model = "https://osf.io/rdqgb/?action=download"  # URL of SEM model hosted on OSF storage
-        if (not download_data(url_TEM_model) and not download_data(url_SEM_model)) == 1:
-            print('Data downloaded and unzipped succesfully.')
-        else:
-            print('ERROR: Data was not succesfully downloaded and unzipped- please check your link and filename and try again.')
-        system("mv default* AxonDeepSeg/models/") # Migrate models from current directory to models directory
+        check_call("axondeepseg_models")
 
 
 
@@ -68,7 +61,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'axondeepseg = AxonDeepSeg.segment:main','axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test'
+           'axondeepseg_models = AxonDeepSeg.models.download_model:main', 'axondeepseg = AxonDeepSeg.segment:main','axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test'
         ],
     },
     cmdclass={
