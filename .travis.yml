@@ -6,9 +6,10 @@ python:
 
 # command to install dependencies
 install:
+  - pip install yes
   - echo "Installation of the repository"
   - pip install .
-  - axondeepseg_models
+  - yes | axondeepseg_models
   - pip install python-coveralls  # Add me to install python-coveralls
 # command to run tests
 script:
