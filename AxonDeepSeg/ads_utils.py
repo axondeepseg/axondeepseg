@@ -84,9 +84,7 @@ def config_setup():
                "is using a report system to automatically receive crash reports "
                "and errors from users. These reports are anonymous.")
 
-        bugTracking = strtobool(
-            input("Do you agree to help us improve ADS? [y]es/[n]o:")
-            )
+        bugTracking = True
 
     if bugTracking:
         print(("Note: you can opt out of Sentry reporting by changing the "
