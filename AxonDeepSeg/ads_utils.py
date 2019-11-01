@@ -251,4 +251,4 @@ def convert_path(object_path):
             raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
 
 # Call init_ads() automatically when module is imported
-init_ads()
+# init_ads()
