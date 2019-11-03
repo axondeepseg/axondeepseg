@@ -22,6 +22,7 @@ import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
+from AxonDeepSeg import postprocessing
 
 import math
 from scipy import ndimage as ndi
@@ -34,7 +35,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.6"
+VERSION = "0.2.7"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -69,14 +70,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         sizer_h.Add(hyper, flag=wx.SHAPED, proportion=1)
 
-
         # Define the color of button labels
         button_label_color = (0, 0, 0)
 
         # Add the image loading button
         load_png_button = wx.Button(self, label="Load PNG or TIF file")
         load_png_button.SetForegroundColour(button_label_color)
-
         load_png_button.Bind(wx.EVT_BUTTON, self.on_load_png_button)
         load_png_button.SetToolTip(wx.ToolTip("Loads a .png or .tif file into FSLeyes"))
         sizer_h.Add(load_png_button, flag=wx.SHAPED, proportion=1)
@@ -84,7 +83,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Add the mask loading button
         load_mask_button = wx.Button(self, label="Load existing mask")
         load_mask_button.SetForegroundColour(button_label_color)
-
         load_mask_button.Bind(wx.EVT_BUTTON, self.on_load_mask_button)
         load_mask_button.SetToolTip(
             wx.ToolTip(
@@ -104,9 +102,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             size=(100, 20),
             value="Select the modality",
         )
-
         self.model_combobox.SetForegroundColour(button_label_color)
-
         self.model_combobox.SetToolTip(
             wx.ToolTip("Select the modality used to acquire the image")
         )
@@ -114,9 +110,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Add the button that applies the prediction model
         apply_model_button = wx.Button(self, label="Apply ADS prediction model")
-
         apply_model_button.SetForegroundColour(button_label_color)
-
         apply_model_button.Bind(wx.EVT_BUTTON, self.on_apply_model_button)
         apply_model_button.SetToolTip(
             wx.ToolTip("Applies the prediction model and displays the masks")
@@ -139,9 +133,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Add the fill axon tool
         fill_axons_button = wx.Button(self, label="Fill axons")
-
         fill_axons_button.SetForegroundColour(button_label_color)
-
         fill_axons_button.Bind(wx.EVT_BUTTON, self.on_fill_axons_button)
         fill_axons_button.SetToolTip(
             wx.ToolTip(
@@ -154,9 +146,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Add the save Segmentation button
         save_segmentation_button = wx.Button(self, label="Save segmentation")
-
         save_segmentation_button.SetForegroundColour(button_label_color)
-
         save_segmentation_button.Bind(wx.EVT_BUTTON, self.on_save_segmentation_button)
         save_segmentation_button.SetToolTip(
             wx.ToolTip("Saves the axon and myelin masks in the selected folder")
@@ -164,11 +154,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         sizer_h.Add(save_segmentation_button, flag=wx.SHAPED, proportion=1)
 
         # Add compute morphometrics button
-
         compute_morphometrics_button = wx.Button(self, label="Compute morphometrics")
         compute_morphometrics_button.SetForegroundColour(button_label_color)
         compute_morphometrics_button.Bind(wx.EVT_BUTTON, self.on_compute_morphometrics_button)
-
         compute_morphometrics_button.SetToolTip(wx.ToolTip("Calculates and saves the morphometrics to an excel and csv file.")) 
         sizer_h.Add(compute_morphometrics_button, flag=wx.SHAPED, proportion=1)
 
@@ -190,7 +178,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Toggle off the radiological orientation
         self.displayCtx.radioOrientation = False
-
 
         # Invert the Y display
         self.frame.viewPanels[0].frame.viewPanels[0].getZCanvas().opts.invertY = True
@@ -237,6 +224,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         This function is called when the user presses on the loadMask button. It allows the user to select an existing
         PNG mask, convert it into a NIfTI and load it into FSLeyes.
+        The mask needs to contain an axon + myelin mask. The Axons should have an intensity > 200. The myelin should
+        have an intensity between 100 and 200. The data should be in uint8.
         """
         # Ask the user to select the mask image
         with wx.FileDialog(
@@ -257,13 +246,41 @@ class ADScontrol(ctrlpanel.ControlPanel):
             self.show_message("Invalid file extension")
             return
 
-        # Load the mask into FSLeyes
-        if "axon" in in_file:
-            self.load_png_image_from_path(in_file, is_mask=True, colormap="blue")
-        elif ("myelin" in in_file) or ("Myelin" in in_file):
-            self.load_png_image_from_path(in_file, is_mask=True, colormap="red")
+        # Get the image data
+        img_png = np.asarray(Image.open(in_file).convert("LA"))
+
+        # Extract the image data as a 2D NumPy array
+        if np.size(img_png.shape) == 3:
+            img_png2D = img_png[:, :, 0]
+
+        elif np.size(img_png.shape) == 2:
+            img_png2D = img_png[:, :]
+
         else:
-            self.load_png_image_from_path(in_file, is_mask=True)
+            self.show_message("Invalid image dimensions")
+            return
+
+        image_name = os.path.basename(in_file)
+        image_name = image_name.split(image_extension)[0]
+
+        # Extract the Axon mask
+        axon_mask = img_png2D > 200
+        axon_mask = 255*np.array(axon_mask, dtype=np.uint8)
+
+        # Extract the Myelin mask
+        myelin_mask = (img_png2D > 100) & (img_png2D < 200)
+        myelin_mask = 255*np.array(myelin_mask, dtype=np.uint8)
+
+        # Load the masks into FSLeyes
+        axon_image = Image.fromarray(axon_mask)
+        axon_outfile = self.ads_temp_dir.name + "/" + image_name + "-axon.png"
+        axon_image.save(axon_outfile)
+        self.load_png_image_from_path(axon_outfile, is_mask=True, colormap="blue")
+
+        myelin_image = Image.fromarray(myelin_mask)
+        myelin_outfile = self.ads_temp_dir.name + "/" + image_name + "-myelin.png"
+        myelin_image.save(myelin_outfile)
+        self.load_png_image_from_path(myelin_outfile, is_mask=True, colormap="red")
 
     def on_apply_model_button(self, event):
         """
@@ -505,30 +522,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_array = myelin_mask_overlay[:, :, 0]
         axon_array = axon_mask_overlay[:, :, 0]
 
-        # Get the centroid indexes
-        centroid_index_map = self.get_myelin_centroids(axon_array)
-
-        # Create an image with the myelinMask and floodfill at the coordinates of the centroids
-        # Note: The floodfill algorithm only works on PNG images. Thus, the mask must be colorized before applying
-        # the floodfill. Then, the array corresponding to the floodfilled color can be extracted.
-        myelin_image = Image.fromarray(myelin_array * 255)
-        myelin_image = ImageOps.colorize(
-            myelin_image, (0, 0, 0, 255), (255, 255, 255, 255)
-        )
-        for i in range(len(centroid_index_map[0])):
-            ImageDraw.floodfill(
-                myelin_image,
-                xy=(centroid_index_map[1][i], centroid_index_map[0][i]),
-                value=(127, 127, 127, 255),
-            )
-
-        # Extract the axon_mask overlay and load a new overlay with the corrected axon mask
-        axon_extracted_array = np.array(myelin_image.convert("LA"))
-        axon_extracted_array = axon_extracted_array[:, :, 0]
-        axon_extracted_array = np.equal(
-            axon_extracted_array, 127 * np.ones_like(axon_extracted_array)
-        )
-        axon_extracted_array = axon_extracted_array.astype(np.uint8)
+        # Perform the floodfill operation
+        axon_extracted_array = postprocessing.floodfill_axons(axon_array, myelin_array)
 
         axon_corr_array = np.flipud(axon_extracted_array)
         axon_corr_array = 255 * np.rot90(axon_corr_array, k=1, axes=(1, 0))
@@ -536,24 +531,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_corr_image = Image.fromarray(axon_corr_array)
         axon_corr_image.save(file_name)
         self.load_png_image_from_path(file_name, is_mask=True, colormap="blue")
-
-    def get_myelin_centroids(self, im_myelin):
-        """
-        This function is used to find the centroids of the myelin mask
-        :param im_myelin: the binary mask corresponding to the myelin
-        :type im_myelin: ndarray
-        :return: a list containing the coordinates of the centroid of every myelin object
-        :rtype: list of int
-        """
-        # Label each myelin object
-        im_myelin_label = measure.label(im_myelin)
-        # Find the centroids of the myelin objects
-        myelin_objects = measure.regionprops(im_myelin_label)
-        ind_centroid = (
-            [int(props.centroid[0]) for props in myelin_objects],
-            [int(props.centroid[1]) for props in myelin_objects],
-        )
-        return ind_centroid
 
     def on_compute_morphometrics_button(self, event):
         """
