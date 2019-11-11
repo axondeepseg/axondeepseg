@@ -3,6 +3,7 @@
 from pathlib import Path
 import imageio
 
+
 from skimage.transform import rescale, resize
 
 import tensorflow as tf
@@ -332,6 +333,7 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
     original_acquisitions, resampled_acquisitions, original_acquisitions_shapes = [], [], []
 
     for path_img in path_acquisitions:
+
         original_acquisitions.append(ads.imread(path_img))
         original_acquisitions_shapes.append(original_acquisitions[-1].shape)
 

@@ -3,7 +3,8 @@ Introduction
 AxonDeepSeg is an open-source software using deep learning and aiming at automatically segmenting axons and myelin
 sheaths from microscopy images. It performs 3-class semantic segmentation using a convolutional neural network.
 
-AxonDeepSeg was developed by NeuroPoly, the neuroimagery laboratory of Polytechnique Montréal.
+AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University of Montreal, Canada.
+
 
 Installation
 ===============================================================================
@@ -107,17 +108,24 @@ AxonDeepSeg
 .. WARNING ::
    Ensure that the virtual environment is activated before you begin your installation.
 
-Latest version (development)
+Stable release
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
+
+    pip install axondeepseg
+
+
+Development version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To install the latest version of AxonDeepSeg (development), we recommend that you clone the AxonDeepSeg repository 
-if you have ``git`` installed on your system::
+To install the development version of AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
+have ``git`` installed on your system)::
 
     git clone https://github.com/neuropoly/axondeepseg.git
 
-Otherwise, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
+If you don't have ``git``, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
 
-Then, in your terminal window, go to the AxonDeepSeg folder and install the 
+Then, in your Terminal, go to the AxonDeepSeg folder and install the 
 AxonDeepSeg package. The following ``cd`` command assumes that you followed the ``git clone``
 instruction above::
 
@@ -136,11 +144,6 @@ instruction above::
         git pull
         pip install -e .
 
-Stable release
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
-
-    pip install axondeepseg
 
 Testing the installation
 -------------------------------------------------------------------------------
@@ -169,6 +172,66 @@ To run the entire testing suite (more code coverage), go to your AxonDeepSeg pro
     py.test --cov AxonDeepSeg/ --cov-report term-missing
 
 If all tests pass, AxonDeepSeg was installed succesfully.
+
+
+Graphical User Interface (GUI) (optional)
+-------------------------------------------------------------------------------
+
+AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if need to).
+
+.. image:: _static/GUI_image.png
+
+To install the GUI, you need to install AxonDeepSeg via Github (see instructions above). If you encounter a problem when installing or using the GUI, please report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
+FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
+
+Once AxonDeepSeg is installed, remain in the virtual environment and follow the OS-specific instructions to install the GUI:
+
+macOS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Install FSLeyes using conda-forge ::
+
+           yes | conda install -c conda-forge fsleyes>=0.30.1
+
+Launch FSLeyes ::
+
+           fsleyes
+           
+On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (found in the cloned repository)``
+``Install permanently --> yes.``
+
+The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
+
+Linux (tested on ubuntu)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Install the C/C++ compilers required to use wxPython ::
+
+           sudo apt-get install build-essential
+           sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
+           sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev
+           
+Install wxPython using conda ::
+
+           yes | conda install -c anaconda wxpython
+           
+Install FSLeyes using pip ::
+
+           pip install fsleyes>=0.30.1
+           
+Launch FSLeyes ::
+
+           fsleyes
+
+In FSLeyes, do the following:
+- Click on ``file -> load plugin``
+- Select ``ads_plugin.py`` (found in AxonDeepSeg folder)
+- When asked ``Install permanently`` click on ``yes``.
+
+From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
+
+Known issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
+
 
 GPU-compatible installation
 --------------------------------------------------------------------------------

@@ -1,6 +1,11 @@
 import keras
 import numpy as np
 import AxonDeepSeg.ads_utils as ads
+
+from scipy import ndimage
+from skimage import exposure
+
+import AxonDeepSeg.ads_utils
 from AxonDeepSeg.ads_utils import convert_path
 
 class DataGen(keras.utils.Sequence):
@@ -94,7 +99,7 @@ def labellize_mask_2d(patch, thresh_indices=[0, 0.2, 0.8]):
 def descritize_mask(mask, thresh_indices):
     '''
         Process a mask with 8 bit pixels ([0-255]) such that it get discretizes into 3 different channels ( background, myelin, axon) .
-
+        
         Returns mask composed of 3 different channels ( background, myelin, axon )
     '''
 

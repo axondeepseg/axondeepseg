@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 import numpy as np
-from scipy.misc import imread
+from imageio import imread
 import pandas as pd
 
 import pytest
@@ -20,13 +20,13 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.img = imread(self.folderPath / 'image.png', flatten=True)
+        self.img = imread(self.folderPath / 'image.png', as_gray=True)
 
-        self.groundtruth = imread(self.folderPath / 'mask.png',flatten=True)
+        self.groundtruth = imread(self.folderPath / 'mask.png', as_gray=True)
 
         self.prediction = imread(
             self.folderPath / 'AxonDeepSeg_seg-axonmyelin.png',
-            flatten=True
+            as_gray=True
             )
 
     def teardown(self):
@@ -41,7 +41,7 @@ class TestCore(object):
         [sensitivity, precision, diffusion] = score_analysis(self.img, gtAxon, predAxon)
 
         # Note that if imageio.imread(imagefile) was used instead of scipy's
-        # imread with flatten = true, the scores would be 0 (from experience)
+        # imread with as_gray = true, the scores would be 0 (from experience)
         assert sensitivity != 0.0
         assert precision != 0.0
         assert diffusion != 0.0

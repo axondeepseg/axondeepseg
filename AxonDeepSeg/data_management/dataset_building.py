@@ -1,5 +1,6 @@
 
 
+
 from skimage.transform import rescale
 import numpy as np
 from tqdm import tqdm
@@ -47,12 +48,12 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
             data_names = [d.name for d in path_img_folder.iterdir()]
             for data in data_names:
                 if 'image' in data: # If it's the raw image.
+
                     img = ads.imread(path_img_folder / data)
                     img = rescale(img, resample_coeff, preserve_range=True, mode='constant').astype(int)
 
                 elif 'mask' in data:
                     mask_init = ads.imread(path_img_folder / data)
-
                     mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant', order=0)
 
                     # Set the mask values to the classes' values

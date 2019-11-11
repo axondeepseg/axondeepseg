@@ -115,6 +115,7 @@ def visualize_segmentation(path):
 
     prediction_mrf = res["prediction_mrf"]
     prediction = res["prediction"]
+
     image_init = ads.imread(path_img)
     predict = np.ma.masked_where(prediction == 0, prediction)
     predict_mrf = np.ma.masked_where(prediction_mrf == 0, prediction_mrf)

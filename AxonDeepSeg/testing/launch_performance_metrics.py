@@ -1,3 +1,5 @@
+import numpy as np
+from imageio import imread
 
 from AxonDeepSeg.testing.segmentation_scoring import *
 import AxonDeepSeg.ads_utils as ads
@@ -10,6 +12,7 @@ def launch_performance_metrics(path_prediction, path_groundtruth):
     """
 
     # Read segmentation image and get axon/myelin masks
+
     pred = ads.imread(path_prediction)
     pred_axon = pred > 200
     pred_myelin = np.logical_and(pred >= 50, pred <= 200)
