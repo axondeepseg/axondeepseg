@@ -16,10 +16,8 @@ from argparse import RawTextHelpFormatter
 from tqdm import tqdm
 import pkg_resources
 
-import imageio
-
 import AxonDeepSeg
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import convert_path
 
@@ -68,7 +66,7 @@ def segment_image(path_testing_image, path_model,
         selected_model = path_model.name
 
         # Read image
-        img = imageio.imread(str(path_testing_image))
+        img = ads.imread(str(path_testing_image))
 
         # Generate tmp file
         fp = open(path_acquisition / '__tmp_segment__.png', 'wb+')
@@ -76,9 +74,9 @@ def segment_image(path_testing_image, path_model,
         img_name_original = acquisition_name.stem
 
         if selected_model == "default_TEM_model_v1":
-            imageio.imwrite(fp,255-img, format='png')
+            ads.imwrite(fp,255-img, format='png')
         else:
-            imageio.imwrite(fp, img, format='png')
+            ads.imwrite(fp, img, format='png')
 
         acquisition_name = Path(fp.name).name
         segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
@@ -135,10 +133,10 @@ def segment_folders(path_testing_images_folder, path_model,
     for file_ in tqdm(img_files, desc="Segmentation..."):
         print(path_testing_images_folder / file_)
         try:
-            height, width, _ = imageio.imread(str(path_testing_images_folder / file_)).shape
+            height, width, _ = ads.imread(str(path_testing_images_folder / file_)).shape
         except:
             try:
-                height, width = imageio.imread(str(path_testing_images_folder / file_)).shape
+                height, width = ads.imread(str(path_testing_images_folder / file_)).shape
             except Exception as e:
                 raise e
 
@@ -157,7 +155,7 @@ def segment_folders(path_testing_images_folder, path_model,
         selected_model = path_model.name
 
         # Read image for conversion
-        img = imageio.imread(str(path_testing_images_folder / file_))
+        img = ads.imread(str(path_testing_images_folder / file_))
 
         # Generate tmpfile for segmentation pipeline
         fp = open(path_testing_images_folder / '__tmp_segment__.png', 'wb+')
@@ -165,9 +163,9 @@ def segment_folders(path_testing_images_folder, path_model,
         img_name_original = file_.stem
 
         if selected_model == "default_TEM_model_v1":
-            imageio.imwrite(fp,255-img, format='png')
+            ads.imwrite(fp,255-img, format='png')
         else:
-            imageio.imwrite(fp,img, format='png')
+            ads.imwrite(fp,img, format='png')
 
         acquisition_name = Path(fp.name).name
         segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
@@ -359,10 +357,10 @@ def main(argv=None):
                 # Check that image size is large enough for given resolution to reach minimum patch size after resizing.
 
                 try:
-                    height, width, _ = imageio.imread(str(current_path_target)).shape
+                    height, width, _ = ads.imread(str(current_path_target)).shape
                 except:
                     try:
-                        height, width = imageio.imread(str(current_path_target)).shape
+                        height, width = ads.imread(str(current_path_target)).shape
                     except Exception as e:
                         raise e
 
