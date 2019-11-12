@@ -15,7 +15,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util import Retry
 from tqdm import tqdm
 import raven
-
+import imageio
 
 DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
@@ -249,6 +249,26 @@ def convert_path(object_path):
             return None
         else:
             raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
+
+def imread(filename, bitdepth=8):
+    """ Read image and convert it to desired bitdepth without truncation.
+    """
+    if 'tif' in str(filename):
+        raw_img = imageio.imread(filename, format='tiff-pil')
+        if len(raw_img.shape) > 2:
+            raw_img = imageio.imread(filename, format='tiff-pil', as_gray=True)
+    else:
+        raw_img = imageio.imread(filename)
+        if len(raw_img.shape) > 2:
+            raw_img = imageio.imread(filename, as_gray=True)
+
+    img = imageio.core.image_as_uint(raw_img, bitdepth=bitdepth)
+    return img
+
+def imwrite(filename, img, format='png'):
+    """ Write image.
+    """
+    imageio.imwrite(filename, img, format=format)
 
 # Call init_ads() automatically when module is imported
 init_ads()
