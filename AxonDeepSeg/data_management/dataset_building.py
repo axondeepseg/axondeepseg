@@ -1,11 +1,11 @@
 
 
-from imageio import imread, imsave
+
 from skimage.transform import rescale
 import numpy as np
 from tqdm import tqdm
 
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.data_management.input_data import labellize_mask_2d
 from AxonDeepSeg.data_management.patch_extraction import extract_patch
 from AxonDeepSeg.ads_utils import convert_path
@@ -48,11 +48,12 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
             data_names = [d.name for d in path_img_folder.iterdir()]
             for data in data_names:
                 if 'image' in data: # If it's the raw image.
-                    img = imread(path_img_folder / data, as_gray=True, pilmode='L')
+
+                    img = ads.imread(path_img_folder / data)
                     img = rescale(img, resample_coeff, preserve_range=True, mode='constant').astype(int)
 
-                elif 'mask.png' in data:
-                    mask_init = imread(path_img_folder / data, as_gray=True, pilmode='L')
+                elif 'mask' in data:
+                    mask_init = ads.imread(path_img_folder / data)
                     mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant', order=0)
 
                     # Set the mask values to the classes' values
@@ -68,8 +69,8 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
                 path_patched_folder.mkdir(parents=True)
 
             for j, patch in enumerate(patches):
-                imsave(path_patched_folder.joinpath('image_%s.png'%j), patch[0],'png')
-                imsave(path_patched_folder.joinpath('mask_%s.png'%j), patch[1],'png')
+                ads.imwrite(path_patched_folder.joinpath('image_%s.png'%j), patch[0])
+                ads.imwrite(path_patched_folder.joinpath('mask_%s.png'%j), patch[1])
 
 def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None):
     """
@@ -112,11 +113,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data.name, as_gray=True, pilmode='L')
+                        img = ads.imread(path_patches_folder / data)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, as_gray=True, pilmode='L')
+                        mask = ads.imread(path_patches_folder / data)
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
@@ -124,8 +125,8 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
 
                 # Saving the images in the new folder
                 for img,k in L_img_sorted:
-                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
-                    imsave(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0], 'png')
+                    ads.imwrite(path_dataset.joinpath('image_%s.png'%i), img)
+                    ads.imwrite(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0])
                     i = i+1 # Using the global i here.
 
     # Else we are using different types of acquisitions. It's important to have them separated in a SEM folder
@@ -152,19 +153,19 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data, as_gray=True, pilmode='L')
+                        img = ads.imread(path_patches_folder / data)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, as_gray=True, pilmode='L')
+                        mask = ads.imread(path_patches_folder / data)
                         L_mask.append((mask, int(index)))
                 # Now we sort the patches to be sure we get them in the right order
                 L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
 
                 # Saving the images in the new folder
                 for img,k in L_img_sorted:
-                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
-                    imsave(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0], 'png')
+                    ads.imwrite(path_dataset.joinpath('image_%s.png'%i), img)
+                    ads.imwrite(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0])
                     i = i+1
         # Then we stratify - oversample the minority acquisition to the new dataset
 
@@ -186,11 +187,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 for data in filenames:
                     root, index = data.stem.split('_')
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data, as_gray=True, pilmode='L')
+                        img = ads.imread(path_patches_folder / data)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, as_gray=True, pilmode='L')
+                        mask = ads.imread(path_patches_folder / data)
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
@@ -206,8 +207,8 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 for j in range(L_elements_to_save.shape[0]):
                     img = L_elements_to_save[j][0]
                     mask = L_elements_to_save[j][2]
-                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
-                    imsave(path_dataset.joinpath('mask_%s.png'%i), mask, 'png')
+                    ads.imwrite(path_dataset.joinpath('image_%s.png'%i), img)
+                    ads.imwrite(path_dataset.joinpath('mask_%s.png'%i), mask)
                     i = i+1
 
 

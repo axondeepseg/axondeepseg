@@ -3,11 +3,11 @@
 from pathlib import Path
 import imageio
 
-from imageio import imread, imsave
+
 from skimage.transform import rescale, resize
 
 import tensorflow as tf
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
 
 
@@ -288,7 +288,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
             for j in range(n_classes):
                 mask[pred == j] = paint_vals[j]
             # Then we save the image
-            imsave(path_acquisitions_folders[i] / segmentations_filenames[i], mask, 'png')
+            ads.imwrite(path_acquisitions_folders[i] / segmentations_filenames[i], mask, 'png')
 
             axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] / segmentations_filenames[i])
 
@@ -333,7 +333,8 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
     original_acquisitions, resampled_acquisitions, original_acquisitions_shapes = [], [], []
 
     for path_img in path_acquisitions:
-        original_acquisitions.append(imread(path_img, as_gray=False, pilmode='L'))
+
+        original_acquisitions.append(ads.imread(path_img))
         original_acquisitions_shapes.append(original_acquisitions[-1].shape)
 
     # Resampling acquisitions to the target resolution
