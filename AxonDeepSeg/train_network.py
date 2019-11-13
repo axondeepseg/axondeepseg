@@ -21,6 +21,7 @@ K.set_session
 import tensorflow as tf
 from albumentations import *
 import random
+import cv2
 
 def train_model(path_trainingset, path_model, config, path_model_init=None,
                 save_trainable=True, gpu=None, debug_mode=False, gpu_per=1.0):
