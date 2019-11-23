@@ -6,7 +6,6 @@ import configparser as cp
 from pathlib import Path
 import json
 import collections
-import numpy as np
 import time
 import copy
 import AxonDeepSeg.ads_utils
