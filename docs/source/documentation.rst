@@ -155,7 +155,7 @@ Quick test
 
 To test if the software was installed correctly, you can launch a quick integrity test by running the following command on the terminal::
 
-    axondeepseg_test
+    ads_test
 
 This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal::
 
@@ -270,7 +270,7 @@ You can test AxonDeepSeg by downloading the test data available `here <https://o
 Syntax
 -------------------------------------------------------------------------------
 
-The script to launch is called **axondeepseg**. It takes several arguments:
+The script to launch is called **ads**. It takes several arguments:
 
 
 **Required arguments:**
@@ -302,31 +302,31 @@ The script to launch is called **axondeepseg**. It takes several arguments:
                     Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 25. Recommended range of values: [10-100]. 
 
 .. NOTE ::
-   You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
+   You can get the detailed description of all the arguments of the **ads** command at any time by using the **-h** argument:
    ::
 
-        axondeepseg -h
+        ads -h
 
 Segment a single image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image **'77.png'** of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07
+    ads -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07
 
 The script will use the explicitely specified size argument (here, 0.07) for the segmentation. If no pixel size is provided in the arguments, it will automatically read the image resolution encoded in the file **'pixel_size_in_micrometer.txt'** if that file exists in the folder containing the image to segment.
 The segmented acquisition will be saved in the same folder as the acquisition image, with the suffix **'_seg-axonmyelin.png'**, in *png* format, along with the binary axon and myelin segmentation masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). In our example, the following output files will be generated: **'77_seg-axonmyelin.png'**, **'77_seg-axon.png'** and **'77_seg-myelin.png'**.
 
 To segment the same image by using the **'pixel_size_in_micrometer.txt'** file in the folder (i.e. not specifying the pixel size as argument in the command), use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png
+    ads -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png
 
 Segment multiple images of the same resolution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image 1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image 1_sem/ -s 0.07
+    ads -t SEM -i test_segmentation/test_sem_image/image 1_sem/ -s 0.07
 
 To segment multiple images of the same folder and of the same resolution by using the **'pixel_size_in_micrometer.txt'** file in the folder (i.e. not specifying the pixel size as argument in the command), use the following folder structure::
 
@@ -340,14 +340,14 @@ To segment multiple images of the same folder and of the same resolution by usin
 
 Then, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image 1_sem/
+    ads -t SEM -i test_segmentation/test_sem_image/image 1_sem/
 
 Segment images from multiple folders
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image 1_sem/'** and **'test_sem_image/image 2_sem/'** of the test dataset, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image 1_sem/ test_segmentation/test_sem_image/image 2_sem/
+    ads -t SEM -i test_segmentation/test_sem_image/image 1_sem/ test_segmentation/test_sem_image/image 2_sem/
 
 Jupyter notebooks
 -------------------------------------------------------------------------------
