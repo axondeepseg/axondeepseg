@@ -23,7 +23,7 @@ If you experience issues during installation and/or use of AxonDeepSeg, you can 
 
 **AxonDeepSeg**
 
-* Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data.* Montreal Artificial Intelligence and Neuroscience 2018 - \[[**source code**](https://github.com/neuropoly/deep-active-learning)\]
+* [Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data.* Montreal Artificial Intelligence and Neuroscience 2019](https://arxiv.org/abs/1907.05143) - \[[**source code**](https://github.com/neuropoly/deep-active-learning)\]
 * [Zaimi et al. *AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks.* Scientific Reports 2018](https://www.nature.com/articles/s41598-018-22181-4)
 
 **Applications**
