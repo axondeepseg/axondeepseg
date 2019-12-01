@@ -1,4 +1,8 @@
+import numpy as np
 
-singe_mask_file_intensity = 255
-axon_intensity = 255
-myelin_intensity = 127
+intensity = {
+    'binary': np.iinfo(np.uint8).max,
+    'axon': np.iinfo(np.uint8).max,
+    'myelin': np.iinfo(np.uint8).max // 2,
+    'background': np.iinfo(np.uint8).min
+}
