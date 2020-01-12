@@ -35,7 +35,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.9"
+VERSION = "0.2.10"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -95,10 +95,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         sizer_h.Add(load_mask_button, flag=wx.SHAPED, proportion=1)
 
         # Add the model choice combobox
-        self.model_choices = ["SEM", "TEM", "other"]
         self.model_combobox = wx.ComboBox(
             self,
-            choices=self.model_choices,
+            choices=self.get_existing_models_list(),
             size=(100, 20),
             value="Select the modality",
         )
@@ -318,34 +317,15 @@ class ADScontrol(ctrlpanel.ControlPanel):
         selected_model = self.model_combobox.GetStringSelection()
 
         # Get the path of the selected model
-        if selected_model == "other":
-            # Ask the user where the model is located
-            with wx.DirDialog(
-                self,
-                "select the directory in which the model is located",
-                defaultPath="",
-                style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
-            ) as file_dialog:
-
-                if (
-                    file_dialog.ShowModal() == wx.ID_CANCEL
-                ):  # The user cancelled the operation
-                    return
-
-            model_path = file_dialog.GetPath()
-
-        elif (selected_model == "SEM") or (selected_model == "TEM"):
+        if any(selected_model in models for models in self.get_existing_models_list()):
             model_path = os.path.dirname(AxonDeepSeg.__file__)
-            model_path = os.path.join(
-                model_path, "models", "default_" + selected_model + "_model_v1"
-            )
-
+            model_path = os.path.join(model_path, "models", selected_model)
         else:
             self.show_message("Please select a model")
             return
 
         # If the TEM model is selected, modify the resolution
-        if selected_model == "TEM":
+        if "TEM" in selected_model.upper():
             resolution = 0.01
 
         # Check if the pixel size txt file exist in the imageDirPath
@@ -894,6 +874,17 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         return myelin_overlay
+
+    def get_existing_models_list(self):
+        """
+        This method returns a list containing the name of the existing models located under AxonDeepSeg/models
+        :return: list containing the name of the existing models
+        :rtype: list of strings
+        """
+        ADS_path = os.path.dirname(AxonDeepSeg.__file__)
+        models_path = os.path.join(ADS_path, "models")
+        models_list = next(os.walk(models_path))[1]
+        return models_list
 
     def show_message(self, message, caption="Error"):
         """
