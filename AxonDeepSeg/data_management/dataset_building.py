@@ -113,7 +113,7 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = ads.imread(path_patches_folder / data)
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
