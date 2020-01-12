@@ -2,8 +2,8 @@ from AxonDeepSeg.ads_utils import download_data
 import shutil
 
 def main():
-    url_TEM_model = "https://osf.io/2hcfv/?action=download"  # URL of TEM model hosted on OSF storage
-    url_SEM_model = "https://osf.io/rdqgb/?action=download"  # URL of SEM model hosted on OSF storage
+    url_TEM_model = "https://osf.io/2hcfv/?action=download&version=2"  # URL of TEM model hosted on OSF storage with the appropriate versioning on OSF
+    url_SEM_model = "https://osf.io/rdqgb/?action=download&version=2"  # URL of SEM model hosted on OSF storage with the appropriate versioning on OSF
 
     if (not download_data(url_TEM_model) and not download_data(url_SEM_model)) ==1:
         print('Data downloaded and unzipped succesfully.')
