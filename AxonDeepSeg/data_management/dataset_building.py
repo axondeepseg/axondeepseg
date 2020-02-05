@@ -114,11 +114,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = ads.imread(path_patches_folder / data)
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = ads.imread(path_patches_folder / data)
+                        mask = ads.imread(path_patches_folder / data.name)
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
@@ -154,11 +154,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = ads.imread(path_patches_folder / data)
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = ads.imread(path_patches_folder / data)
+                        mask = ads.imread(path_patches_folder / data.name)
                         L_mask.append((mask, int(index)))
                 # Now we sort the patches to be sure we get them in the right order
                 L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
@@ -188,11 +188,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 for data in filenames:
                     root, index = data.stem.split('_')
                     if 'image' in data.name:
-                        img = ads.imread(path_patches_folder / data)
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = ads.imread(path_patches_folder / data)
+                        mask = ads.imread(path_patches_folder / data.name)
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
