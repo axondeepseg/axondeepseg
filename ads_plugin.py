@@ -22,7 +22,7 @@ import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
-from AxonDeepSeg import postprocessing, params
+from AxonDeepSeg import postprocessing, params, ads_utils
 
 import math
 from scipy import ndimage as ndi
@@ -35,7 +35,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.10"
+VERSION = "0.2.11"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -97,7 +97,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Add the model choice combobox
         self.model_combobox = wx.ComboBox(
             self,
-            choices=self.get_existing_models_list(),
+            choices=ads_utils.get_existing_models_list(),
             size=(100, 20),
             value="Select the modality",
         )
@@ -317,7 +317,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         selected_model = self.model_combobox.GetStringSelection()
 
         # Get the path of the selected model
-        if any(selected_model in models for models in self.get_existing_models_list()):
+        if any(selected_model in models for models in ads_utils.get_existing_models_list()):
             model_path = os.path.dirname(AxonDeepSeg.__file__)
             model_path = os.path.join(model_path, "models", selected_model)
         else:
@@ -874,17 +874,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         return myelin_overlay
-
-    def get_existing_models_list(self):
-        """
-        This method returns a list containing the name of the existing models located under AxonDeepSeg/models
-        :return: list containing the name of the existing models
-        :rtype: list of strings
-        """
-        ADS_path = os.path.dirname(AxonDeepSeg.__file__)
-        models_path = os.path.join(ADS_path, "models")
-        models_list = next(os.walk(models_path))[1]
-        return models_list
 
     def show_message(self, message, caption="Error"):
         """
