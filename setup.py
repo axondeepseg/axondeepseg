@@ -50,8 +50,8 @@ setup(
     install_requires=install_reqs,
     package_dir={'AxonDeepSeg': 'AxonDeepSeg'},
     package_data={
-        "AxonDeepSeg": ['models/default_SEM_model_v1/*',
-                        'models/default_TEM_model_v1/*',
+        "AxonDeepSeg": ['models/default_SEM_model/*',
+                        'models/default_TEM_model/*',
                         'data_test/*'],
     },
     extras_require={

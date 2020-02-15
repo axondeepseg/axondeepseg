@@ -337,7 +337,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         elif (selected_model == "SEM") or (selected_model == "TEM"):
             model_path = os.path.dirname(AxonDeepSeg.__file__)
             model_path = os.path.join(
-                model_path, "models", "default_" + selected_model + "_model_v1"
+                model_path, "models", "default_" + selected_model + "_model"
             )
 
         else:

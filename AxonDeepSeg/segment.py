@@ -22,8 +22,8 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import convert_path
 
 # Global variables
-SEM_DEFAULT_MODEL_NAME = "default_SEM_model_v1"
-TEM_DEFAULT_MODEL_NAME = "default_TEM_model_v1"
+SEM_DEFAULT_MODEL_NAME = "default_SEM_model"
+TEM_DEFAULT_MODEL_NAME = "default_TEM_model"
 
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
@@ -73,7 +73,7 @@ def segment_image(path_testing_image, path_model,
 
         img_name_original = acquisition_name.stem
 
-        if selected_model == "default_TEM_model_v1":
+        if selected_model == "default_TEM_model":
             ads.imwrite(fp,255-img, format='png')
         else:
             ads.imwrite(fp, img, format='png')
@@ -162,7 +162,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
         img_name_original = file_.stem
 
-        if selected_model == "default_TEM_model_v1":
+        if selected_model == "default_TEM_model":
             ads.imwrite(fp,255-img, format='png')
         else:
             ads.imwrite(fp,img, format='png')
