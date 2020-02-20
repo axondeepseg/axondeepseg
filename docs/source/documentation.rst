@@ -446,4 +446,4 @@ SOFTWARE.
 Contributors
 ===============================================================================
 
-Pierre-Louis Antonsanti, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Christian Perone, Maxime Wabartha, Aldo Zaimi, Vasudev Sharma.
+Pierre-Louis Antonsanti, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Christian Perone, Maxime Wabartha, Aldo Zaimi, Vasudev Sharma, Stoyan Asenov, Marie-Hélène Bourget.

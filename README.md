@@ -58,4 +58,4 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 ## Contributors
 
-Pierre-Louis Antonsanti, Stoyan Asenov, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Antoine Moevus, Christian Perone, Vasudev Sharma, Thibault Tabarin, Maxime Wabartha, Aldo Zaimi.
+Pierre-Louis Antonsanti, Stoyan Asenov, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Antoine Moevus, Christian Perone, Vasudev Sharma, Thibault Tabarin, Maxime Wabartha, Aldo Zaimi, Marie-Hélène Bourget.
