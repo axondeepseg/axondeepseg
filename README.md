@@ -18,8 +18,10 @@ For more information, see the [documentation website](http://axondeepseg.readthe
 
 If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues). We will reply to you as soon as possible.
 
-You may refer AxonDeepSeg [FSLeyes](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes) GUI plugin walk-through for correctly installation by watching the video below.
-                      [![Tutorial: AxonDeepSeg plugin for FSLeyes](https://i.imgur.com/k3gjwAP.png)](https://www.youtube.com/watch?v=dz2LqQ5LpIo)
+
+### FSLeyes plugin
+
+A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
 
 ## References
 
