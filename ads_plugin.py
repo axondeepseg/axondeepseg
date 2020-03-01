@@ -22,7 +22,7 @@ import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
-from AxonDeepSeg import postprocessing
+from AxonDeepSeg import postprocessing, params, ads_utils
 
 import math
 from scipy import ndimage as ndi
@@ -35,7 +35,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.7"
+VERSION = "0.2.11"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -95,10 +95,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         sizer_h.Add(load_mask_button, flag=wx.SHAPED, proportion=1)
 
         # Add the model choice combobox
-        self.model_choices = ["SEM", "TEM", "other"]
         self.model_combobox = wx.ComboBox(
             self,
-            choices=self.model_choices,
+            choices=ads_utils.get_existing_models_list(),
             size=(100, 20),
             value="Select the modality",
         )
@@ -265,11 +264,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Extract the Axon mask
         axon_mask = img_png2D > 200
-        axon_mask = 255*np.array(axon_mask, dtype=np.uint8)
+        axon_mask = params.intensity['binary'] * np.array(axon_mask, dtype=np.uint8)
 
         # Extract the Myelin mask
         myelin_mask = (img_png2D > 100) & (img_png2D < 200)
-        myelin_mask = 255*np.array(myelin_mask, dtype=np.uint8)
+        myelin_mask = params.intensity['binary'] * np.array(myelin_mask, dtype=np.uint8)
 
         # Load the masks into FSLeyes
         axon_image = Image.fromarray(axon_mask)
@@ -318,26 +317,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
         selected_model = self.model_combobox.GetStringSelection()
 
         # Get the path of the selected model
-        if selected_model == "other":
-            # Ask the user where the model is located
-            with wx.DirDialog(
-                self,
-                "select the directory in which the model is located",
-                defaultPath="",
-                style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
-            ) as file_dialog:
-
-                if (
-                    file_dialog.ShowModal() == wx.ID_CANCEL
-                ):  # The user cancelled the operation
-                    return
-
-            model_path = file_dialog.GetPath()
-
-        elif (selected_model == "SEM") or (selected_model == "TEM"):
+        if any(selected_model in models for models in ads_utils.get_existing_models_list()):
             model_path = os.path.dirname(AxonDeepSeg.__file__)
             model_path = os.path.join(
-                model_path, "models", "default_" + selected_model + "_model"
+                model_path, "models", selected_model
             )
 
         else:
@@ -345,7 +328,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return
 
         # If the TEM model is selected, modify the resolution
-        if selected_model == "TEM":
+        if "TEM" in selected_model.upper():
             resolution = 0.01
 
         # Check if the pixel size txt file exist in the imageDirPath
@@ -430,12 +413,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Note 2 : The image array loaded in FSLeyes is flipped. We need to flip it back
 
         myelin_array = np.array(
-            myelin_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
+            myelin_mask_overlay[:, :, 0] * params.intensity['binary'], copy=True, dtype=np.uint8
         )
         myelin_array = np.flipud(myelin_array)
         myelin_array = np.rot90(myelin_array, k=1, axes=(1, 0))
         axon_array = np.array(
-            axon_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
+            axon_mask_overlay[:, :, 0] * params.intensity['binary'], copy=True, dtype=np.uint8
         )
         axon_array = np.flipud(axon_array)
         axon_array = np.rot90(axon_array, k=1, axes=(1, 0))
@@ -526,7 +509,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_extracted_array = postprocessing.floodfill_axons(axon_array, myelin_array)
 
         axon_corr_array = np.flipud(axon_extracted_array)
-        axon_corr_array = 255 * np.rot90(axon_corr_array, k=1, axes=(1, 0))
+        axon_corr_array = params.intensity['binary'] * np.rot90(axon_corr_array, k=1, axes=(1, 0))
         file_name = self.ads_temp_dir.name + "/" + myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png"
         axon_corr_image = Image.fromarray(axon_corr_array)
         axon_corr_image.save(file_name)
@@ -566,12 +549,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Note 2 : The image array loaded in FSLeyes is flipped. We need to flip it back
 
         myelin_array = np.array(
-            myelin_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
+            myelin_mask_overlay[:, :, 0] * params.intensity['binary'], copy=True, dtype=np.uint8
         )
         myelin_array = np.flipud(myelin_array)
         myelin_array = np.rot90(myelin_array, k=1, axes=(1, 0))
         axon_array = np.array(
-            axon_mask_overlay[:, :, 0] * 255, copy=True, dtype=np.uint8
+            axon_mask_overlay[:, :, 0] * params.intensity['binary'], copy=True, dtype=np.uint8
         )
         axon_array = np.flipud(axon_array)
         axon_array = np.rot90(axon_array, k=1, axes=(1, 0))
@@ -729,7 +712,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return
 
         if is_mask is True:
-            img_png2D = img_png2D // 255  # Segmentation masks should be binary
+            img_png2D = img_png2D // params.intensity['binary']  # Segmentation masks should be binary
 
         # Flip the image on the Y axis so that the morphometrics file shows the right coordinates
         img_png2D = np.flipud(img_png2D)

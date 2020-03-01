@@ -269,6 +269,17 @@ def imwrite(filename, img, format='png'):
     """ Write image.
     """
     imageio.imwrite(filename, img, format=format)
+    
+def get_existing_models_list():
+    """
+    This method returns a list containing the name of the existing models located under AxonDeepSeg/models
+    :return: list containing the name of the existing models
+    :rtype: list of strings
+    """
+    ADS_path = os.path.dirname(os.path.realpath(__file__))
+    models_path = os.path.join(ADS_path, "models")
+    models_list = next(os.walk(models_path))[1]
+    return models_list
 
 # Call init_ads() automatically when module is imported
 # init_ads()
