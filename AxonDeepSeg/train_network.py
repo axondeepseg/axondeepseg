@@ -143,7 +143,7 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ShiftScaleRotate(shift_limit=(low_limit, high_limit) , scale_limit=(0,0),rotate_limit=(0,0), border_mode=border_mode, p = p_shift, interpolation = cv2.INTER_NEAREST),
 
     #Randomly applies elastic transformation on the image.
-    ElasticTransform(alpha= alpha, sigma= sigma, p = p_elastic, alpha_affine = alpha),
+    ElasticTransform(alpha= alpha, sigma= sigma, p = p_elastic, alpha_affine = alpha, interpolation = cv2.INTER_NEAREST),
 
     #Blurs an image using gaussian kernal.
     GaussianBlur(p = p_blur),
