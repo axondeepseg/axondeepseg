@@ -6,7 +6,7 @@ import shutil
 import pytest
 from AxonDeepSeg.data_management.dataset_building import *
 from AxonDeepSeg.visualization.get_masks import *
-
+from AxonDeepSeg.ads_utils import download_data
 
 class TestCore(object):
     def setup(self):
@@ -31,6 +31,9 @@ class TestCore(object):
         self.rawPath16b =   _create_new_test_folder('__test_16b_file__', 'raw')
         self.patchPath16b =   _create_new_test_folder('__test_16b_file__', 'patched')
 
+        self.downloaded_data = Path("./SEM_dataset")
+        self.data_split_path = Path("./SEM_split")
+
     @classmethod
     def teardown_class(cls):
         # Get the directory where this current file is saved
@@ -52,6 +55,9 @@ class TestCore(object):
 
         patchPath16b =   _create_new_test_folder('__test_16b_file__', 'patched')
 
+        downloaded_data = Path("./SEM_dataset")
+        data_split_path = Path("./SEM_split")
+
         if patchPath.is_dir():
             shutil.rmtree(patchPath)
  
@@ -66,6 +72,12 @@ class TestCore(object):
 
         if patchPath16b.is_dir():
             shutil.rmtree(patchPath16b)
+
+        if downloaded_data.is_dir():
+            shutil.rmtree(downloaded_data)
+
+        if data_split_path.is_dir():
+            shutil.rmtree(data_split_path)
 
     # --------------raw_img_to_patches tests-------------- #
     @pytest.mark.unit
@@ -168,3 +180,54 @@ class TestCore(object):
 
         # Dataset folder merges all the patch folders generated
         assert len([item for item in self.mixedDatasetPath.iterdir()]) == (12+24)*2
+
+    @pytest.mark.unit
+    def test_split_data_outputs_expected_number_of_folders(self):
+        url_example_data = "https://osf.io/vrdpe/?action=download"  # URL of example data hosted on OSF
+        file_data = "SEM_dataset.zip"
+
+        if not download_data(url_example_data)==0:
+            print('ERROR: Data was not succesfully downloaded and unzipped - please check your link and filename and try again.')
+        else:
+            print('Data downloaded and unzipped succesfully.')
+        
+        split_data(self.downloaded_data, self.data_split_path, seed=2019, split = [0.8, 0.2])
+
+        train_dir = self.data_split_path / "Train"
+        valid_dir = self.data_split_path / "Validation"
+
+        # get sorted list of train/validation directories
+        train_subdirs=sorted([x for x in train_dir.iterdir() if x.is_dir()])
+        valid_subdirs=sorted([x for x in valid_dir.iterdir() if x.is_dir()])
+
+        assert len(train_subdirs)==7
+        assert len(valid_subdirs)==2
+
+    @pytest.mark.unit
+    def test_split_data_throws_error_for_existing_folder(self):
+        url_example_data = "https://osf.io/vrdpe/?action=download"  # URL of example data hosted on OSF
+        file_data = "SEM_dataset.zip"
+
+        if not download_data(url_example_data)==0:
+            print('ERROR: Data was not succesfully downloaded and unzipped - please check your link and filename and try again.')
+        else:
+            print('Data downloaded and unzipped succesfully.')
+        
+        assert self.data_split_path.is_dir()
+        with pytest.raises(IOError):
+            split_data(self.downloaded_data, self.data_split_path, seed=2019, split = [0.8, 0.2])
+
+    @pytest.mark.unit
+    def test_split_data_works_with_override(self):
+        url_example_data = "https://osf.io/vrdpe/?action=download"  # URL of example data hosted on OSF
+        file_data = "SEM_dataset.zip"
+
+        if not download_data(url_example_data)==0:
+            print('ERROR: Data was not succesfully downloaded and unzipped - please check your link and filename and try again.')
+        else:
+            print('Data downloaded and unzipped succesfully.')
+        
+        assert self.data_split_path.is_dir()
+        split_data(self.downloaded_data, self.data_split_path, seed=2019, split = [0.8, 0.2], override=True)
+
+        assert self.data_split_path.is_dir()

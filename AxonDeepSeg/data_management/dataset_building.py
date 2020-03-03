@@ -4,6 +4,7 @@
 from skimage.transform import rescale
 import numpy as np
 from tqdm import tqdm
+import shutil
 
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.data_management.input_data import labellize_mask_2d
@@ -153,11 +154,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = ads.imread(path_patches_folder / data)
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = ads.imread(path_patches_folder / data)
+                        mask = ads.imread(path_patches_folder / data.name)
                         L_mask.append((mask, int(index)))
                 # Now we sort the patches to be sure we get them in the right order
                 L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
@@ -187,11 +188,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 for data in filenames:
                     root, index = data.stem.split('_')
                     if 'image' in data.name:
-                        img = ads.imread(path_patches_folder / data)
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = ads.imread(path_patches_folder / data)
+                        mask = ads.imread(path_patches_folder / data.name)
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
@@ -247,3 +248,50 @@ def find_minority_type(SEM_patches_folder, TEM_patches_folder):
         len_majority = SEM_len
 
     return minority_patches_folder, len_minority, majority_patches_folder, len_majority
+
+def split_data(raw_dir, out_dir, seed=2019, split = [0.8, 0.2], override=False):
+    """
+    Splits a dataset into training and validation folders. 
+    :param raw_dir: Raw dataset folder containing a set of subdirectories to be split.
+    :param out_dir: Output directory of splitted dataset
+    :param seed: Random number generator seed.
+    :param split: Split fractions ([Train, Validation]).
+    :param override: Bool. If out_dir exists and is True, the directory will be overwritten.
+    """
+    
+    # If string, convert to Path objects
+    raw_dir = convert_path(raw_dir)
+    out_dir = convert_path(out_dir)
+    
+    # Handle case if output dir already exists
+    if out_dir.is_dir():
+        if override == True:
+            shutil.rmtree(out_dir)
+        else:
+            raise IOError("Directory " + str(out_dir) + " already exist. Delete or change override option.")
+    
+    
+    # Get splits for Training and Validation
+    split_train = split[0]
+    split_valid = split[1]
+
+    # get sorted list of image directories
+    dirs=sorted([x for x in raw_dir.iterdir() if x.is_dir()])
+
+    # Create directories for splitted datasets
+    train_dir = out_dir / "Train"
+    train_dir.mkdir(parents=True, exist_ok=True)
+
+    valid_dir = out_dir / "Validation"
+    valid_dir.mkdir(parents=True, exist_ok=True)
+
+    # Randomly assign a number to each image folder for splitting
+    np.random.seed(seed=seed)
+    sorted_indices=np.random.choice(len(dirs), size=len(dirs), replace=False)
+
+    # Move the image dirs from the raw folder to the split folder
+    for index in sorted_indices[:round(len(sorted_indices)*split_train)]:
+        dirs[index].rename(train_dir / dirs[index].parts[1])
+
+    for index in sorted_indices[-round(len(sorted_indices)*split_valid):]:
+        dirs[index].rename(valid_dir / dirs[index].parts[1])
