@@ -6,7 +6,6 @@ python:
 
 # command to install dependencies
 install:
-  - pip install yes
   - echo "Installation of the repository"
   - pip install -e .
   - pip install python-coveralls  # Add me to install python-coveralls
