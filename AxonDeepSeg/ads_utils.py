@@ -282,4 +282,4 @@ def get_existing_models_list():
     return models_list
 
 # Call init_ads() automatically when module is imported
-# init_ads()
+init_ads()
