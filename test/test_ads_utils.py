@@ -69,7 +69,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_get_existing_models_list_returns_known_models(self):
-        known_models = ['default_TEM_model_v1', 'default_SEM_model_v1']
+        known_models = ['default_TEM_model', 'default_SEM_model']
 
         for model in known_models:
             assert model in get_existing_models_list()

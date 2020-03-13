@@ -1,11 +1,14 @@
 Changelog
 ===============================================================================
 
-Version [2.2dev] - XXXX-XX-XX
+Version [3.0] - 2020-03-13
 -------------------------------------------------------------------------------
 
 **Changed:**
-
+- Refractored data augmentation to use `Albumentation` library.
+- Cleaned jupyter notebooks and reduced from 13 notebooks to 5.
+- Switched to `Dice Loss` from `Categorical Cross Entropy` as loss function.
+- Updated SEM and TEM models for better performance.
 - Shifted AxonDeepSeg from TensorFlow to Keras framework.
 - Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 - Resolve image rescale warnings
@@ -16,8 +19,6 @@ Version [2.2dev] - XXXX-XX-XX
 - Shifted AxonDeepSeg from TensorFlow to Keras framework.
 - Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 – Add FSLeyes plugin
-
-
 
 Version [2.1] - 2018-09-25
 -------------------------------------------------------------------------------

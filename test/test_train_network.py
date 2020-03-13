@@ -92,7 +92,8 @@ class TestCore(object):
             "da-3-elastic-activate": True,
             "da-0-shifting-activate": True,
             "da-4-flipping-activate": True,
-            "da-1-rescaling-activate": False
+            "da-1-rescaling-activate": False,
+            "da-6-reflection_border-activate": True,
         }
 
         if not self.configPath.exists():

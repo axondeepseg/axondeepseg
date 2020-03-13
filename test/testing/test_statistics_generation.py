@@ -22,7 +22,7 @@ class TestCore(object):
             self.projectPath /
             'AxonDeepSeg' /
             'models' /
-            'default_SEM_model_v1'
+            'default_SEM_model'
             )
 
         self.imagesPath = (
@@ -46,7 +46,7 @@ class TestCore(object):
             projectPath /
             'AxonDeepSeg' /
             'models' /
-            'default_SEM_model_v1'
+            'default_SEM_model'
             )
 
         statsFilename = 'model_statistics_validation.json'

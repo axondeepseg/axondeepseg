@@ -462,7 +462,7 @@ def main():
     import argparse
     ap = argparse.ArgumentParser()
 
-    ap.add_argument("-m", "--model", required=False, default="../models/defaults/default_SEM_model_v1/")
+    ap.add_argument("-m", "--model", required=False, default="../models/defaults/default_SEM_model/")
     ap.add_argument("-d", "--data", required=False, default="../../data/baseline_validation/")
     ap.add_argument("-t", "--type", required=False, default="single")
     ap.add_argument("-r", "--resolution", required=False, default=0.1)

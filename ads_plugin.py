@@ -318,8 +318,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Get the path of the selected model
         if any(selected_model in models for models in ads_utils.get_existing_models_list()):
-            model_path = os.path.dirname(AxonDeepSeg.__file__)
-            model_path = os.path.join(model_path, "models", selected_model)
+            dir_path = os.path.dirname(AxonDeepSeg.__file__)
+            model_path = os.path.join(
+                dir_path, "models", selected_model
+            )
+
         else:
             self.show_message("Please select a model")
             return

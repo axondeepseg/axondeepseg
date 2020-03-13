@@ -1,19 +1,8 @@
 # -*- coding: utf-8 -*-
-
-from pathlib import Path
-import imageio
-
-
 from skimage.transform import rescale, resize
-
-import tensorflow as tf
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
-
-
 from AxonDeepSeg.network_construction import *
-
-
 from AxonDeepSeg.visualization.get_masks import get_masks
 from AxonDeepSeg.patch_management_tools import im2patches_overlap, patches2im_overlap
 from AxonDeepSeg.config_tools import update_config, default_configuration
