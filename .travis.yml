@@ -6,13 +6,12 @@ python:
 
 # command to install dependencies
 install:
-  - pip install yes
   - echo "Installation of the repository"
   - pip install -e .
   - pip install python-coveralls  # Add me to install python-coveralls
 # command to run tests
 script:
   - echo "Launch general integrity test"
-  - yes | py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
+  - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
 after_success:
   - coveralls
