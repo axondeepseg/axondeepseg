@@ -1,7 +1,7 @@
 Changelog
 ===============================================================================
 
-Version [2.2dev] - XXXX-XX-XX
+Version [3.0] - 2020-03-13
 -------------------------------------------------------------------------------
 
 **Changed:**
@@ -19,8 +19,6 @@ Version [2.2dev] - XXXX-XX-XX
 - Shifted AxonDeepSeg from TensorFlow to Keras framework.
 - Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 – Add FSLeyes plugin
-
-
 
 Version [2.1] - 2018-09-25
 -------------------------------------------------------------------------------
