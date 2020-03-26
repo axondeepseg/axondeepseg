@@ -5,6 +5,7 @@ Version [3.0] - 2020-03-13
 -------------------------------------------------------------------------------
 
 **Changed:**
+
 - Refractored data augmentation to use `Albumentation` library.
 - Cleaned jupyter notebooks and reduced from 13 notebooks to 5.
 - Switched to `Dice Loss` from `Categorical Cross Entropy` as loss function.
