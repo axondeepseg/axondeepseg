@@ -73,10 +73,7 @@ def segment_image(path_testing_image, path_model,
 
         img_name_original = acquisition_name.stem
 
-        if selected_model == "default_TEM_model":
-            ads.imwrite(fp,255-img, format='png')
-        else:
-            ads.imwrite(fp, img, format='png')
+        ads.imwrite(fp, img, format='png')
 
         acquisition_name = Path(fp.name).name
         segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
