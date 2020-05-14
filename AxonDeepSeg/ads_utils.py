@@ -279,6 +279,8 @@ def get_existing_models_list():
     ADS_path = os.path.dirname(os.path.realpath(__file__))
     models_path = os.path.join(ADS_path, "models")
     models_list = next(os.walk(models_path))[1]
+    if "__pycache__" in models_list:
+        models_list.remove("__pycache__")
     return models_list
 
 # Call init_ads() automatically when module is imported
