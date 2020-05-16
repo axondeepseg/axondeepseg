@@ -86,10 +86,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         load_mask_button.Bind(wx.EVT_BUTTON, self.on_load_mask_button)
         load_mask_button.SetToolTip(
             wx.ToolTip(
-                "Loads an existing axon or myelin mask into FSLeyes. "
-                "Please make sure the axon mask contains 'axon' in its name and "
-                "the myelin mask contains 'myelin' in its name. "
-                "The image must only contain 2 values: 0 for background and 255 for the region of interest."
+                "Loads an existing axonmyelin mask into FSLeyes. "
+                "The selected image should contain both the axon and myelin masks."
             )
         )
         sizer_h.Add(load_mask_button, flag=wx.SHAPED, proportion=1)
