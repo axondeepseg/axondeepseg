@@ -87,7 +87,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         load_mask_button.SetToolTip(
             wx.ToolTip(
                 "Loads an existing axonmyelin mask into FSLeyes. "
-                "The selected image should contain both the axon and myelin masks."
+                "The selected image should contain both the axon and myelin masks. "
+                "The regions on the image should have an intensity of 0 for the background, "
+                "127 for the myelin and 255 for the axons. "
             )
         )
         sizer_h.Add(load_mask_button, flag=wx.SHAPED, proportion=1)
@@ -307,7 +309,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             model_path = os.path.join(
                 dir_path, "models", selected_model
             )
-            
+
         else:
             self.show_message("Please select a model")
             return
