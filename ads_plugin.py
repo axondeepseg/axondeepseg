@@ -35,7 +35,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.11"
+VERSION = "0.2.12"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -86,10 +86,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
         load_mask_button.Bind(wx.EVT_BUTTON, self.on_load_mask_button)
         load_mask_button.SetToolTip(
             wx.ToolTip(
-                "Loads an existing axon or myelin mask into FSLeyes. "
-                "Please make sure the axon mask contains 'axon' in its name and "
-                "the myelin mask contains 'myelin' in its name. "
-                "The image must only contain 2 values: 0 for background and 255 for the region of interest."
+                "Loads an existing axonmyelin mask into FSLeyes. "
+                "The selected image should contain both the axon and myelin masks. "
+                "The regions on the image should have an intensity of 0 for the background, "
+                "127 for the myelin and 255 for the axons. "
             )
         )
         sizer_h.Add(load_mask_button, flag=wx.SHAPED, proportion=1)
@@ -246,18 +246,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return
 
         # Get the image data
-        img_png = np.asarray(Image.open(in_file).convert("LA"))
-
-        # Extract the image data as a 2D NumPy array
-        if np.size(img_png.shape) == 3:
-            img_png2D = img_png[:, :, 0]
-
-        elif np.size(img_png.shape) == 2:
-            img_png2D = img_png[:, :]
-
-        else:
-            self.show_message("Invalid image dimensions")
-            return
+        img_png2D = ads_utils.imread(in_file)
 
         image_name = os.path.basename(in_file)
         image_name = image_name.split(image_extension)[0]
@@ -271,14 +260,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_mask = params.intensity['binary'] * np.array(myelin_mask, dtype=np.uint8)
 
         # Load the masks into FSLeyes
-        axon_image = Image.fromarray(axon_mask)
         axon_outfile = self.ads_temp_dir.name + "/" + image_name + "-axon.png"
-        axon_image.save(axon_outfile)
+        ads_utils.imwrite(axon_outfile, axon_mask)
         self.load_png_image_from_path(axon_outfile, is_mask=True, colormap="blue")
 
-        myelin_image = Image.fromarray(myelin_mask)
         myelin_outfile = self.ads_temp_dir.name + "/" + image_name + "-myelin.png"
-        myelin_image.save(myelin_outfile)
+        ads_utils.imwrite(myelin_outfile, myelin_mask)
         self.load_png_image_from_path(myelin_outfile, is_mask=True, colormap="red")
 
     def on_apply_model_button(self, event):
@@ -429,14 +416,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return
 
         # Save the arrays as PNG files
-        myelin_and_axon_image = Image.fromarray(
-            (myelin_array // 2 + axon_array).astype(np.uint8)
-        )
-        myelin_and_axon_image.save(save_dir + "/ADS_seg.png")
-        myelin_image = Image.fromarray(myelin_array)
-        myelin_image.save(save_dir + "/ADS_seg-myelin.png")
-        axon_image = Image.fromarray(axon_array)
-        axon_image.save(save_dir + "/ADS_seg-axon.png")
+        myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
+        ads_utils.imwrite(filename=save_dir + "/ADS_seg.png", img=myelin_and_axon_array)
+        ads_utils.imwrite(filename=save_dir + "/ADS_seg-myelin.png", img=myelin_array)
+        ads_utils.imwrite(filename=save_dir + "/ADS_seg-axon.png", img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
@@ -511,8 +494,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_corr_array = np.flipud(axon_extracted_array)
         axon_corr_array = params.intensity['binary'] * np.rot90(axon_corr_array, k=1, axes=(1, 0))
         file_name = self.ads_temp_dir.name + "/" + myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png"
-        axon_corr_image = Image.fromarray(axon_corr_array)
-        axon_corr_image.save(file_name)
+        ads_utils.imwrite(filename=file_name, img=axon_corr_array)
         self.load_png_image_from_path(file_name, is_mask=True, colormap="blue")
 
     def on_compute_morphometrics_button(self, event):
@@ -698,18 +680,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
 
         # Open the 2D image
-        img_png = np.asarray(Image.open(image_path).convert("LA"))
-
-        # Extract the image data as a 2D NumPy array
-        if np.size(img_png.shape) == 3:
-            img_png2D = img_png[:, :, 0]
-
-        elif np.size(img_png.shape) == 2:
-            img_png2D = img_png[:, :]
-
-        else:
-            self.show_message("Invalid image dimensions")
-            return
+        img_png2D = ads_utils.imread(image_path)
 
         if is_mask is True:
             img_png2D = img_png2D // params.intensity['binary']  # Segmentation masks should be binary
