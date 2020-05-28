@@ -28,7 +28,7 @@ RUN apt-get update && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN git clone --single-branch -b dockerfile https://github.com/neuropoly/axondeepseg; \
+RUN git clone --single-branch -b docker https://github.com/neuropoly/axondeepseg; \
     cd axondeepseg;\
     pip install -e .;\
     chmod -R 777 $HOME/work/axondeepseg
