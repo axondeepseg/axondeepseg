@@ -31,8 +31,8 @@ RUN apt-get update && \
 RUN git clone --single-branch -b docker https://github.com/neuropoly/axondeepseg; \
     cd axondeepseg;\
     pip install -e .;\
-    chmod -R 777 $HOME/work/axondeepseg
+    chmod -R 777 $HOME/axondeepseg
 
-WORKDIR $HOME/work/axondeepseg
+WORKDIR $HOME/axondeepseg
 
 USER $NB_UID
