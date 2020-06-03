@@ -66,6 +66,8 @@ def train_model(
     epochs = config["epochs"]
     image_size = config["trainingset_patchsize"]
     thresh_indices = config["thresholds"]
+    checkpoint = config["checkpoint"]
+    checkpoint_period = config["checkpoint_period"]
 
     # Training and Validation Path
 
@@ -218,7 +220,7 @@ def train_model(
     train_steps = len(train_ids) // batch_size
     valid_steps = len(valid_ids) // batch_size
 
-    ########################## Use Checkpoints to save best Acuuracy and Loss ###########
+    ########################## Use Checkpoints to save best Accuracy and Loss ###########
 
     # Save the checkpoint in the /models/path_model folder
     filepath_acc = str(path_model) + "/best_acc_model.ckpt"
@@ -230,7 +232,7 @@ def train_model(
         verbose=0,
         save_best_only=True,
         mode="max",
-        period=5,
+        period=checkpoint_period,
     )
 
     # Save the checkpoint in the /models/path_model folder
@@ -243,10 +245,16 @@ def train_model(
         verbose=0,
         save_best_only=True,
         mode="min",
-        period=5,
+        period=checkpoint_period,
     )
 
-    ########################## Use Checkpoints to save best Acuuracy and Loss ###########
+    ########################## Training ###########
+    
+    if checkpoint == "loss":
+        model.load_weights(filepath_loss)
+    elif checkpoint == "accuracy":
+        model.load_weights(filepath_acc)
+
     model.fit_generator(
         train_generator,
         validation_data=(valid_generator),
