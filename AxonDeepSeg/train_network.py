@@ -66,8 +66,16 @@ def train_model(
     epochs = config["epochs"]
     image_size = config["trainingset_patchsize"]
     thresh_indices = config["thresholds"]
-    checkpoint = config["checkpoint"]
-    checkpoint_period = config["checkpoint_period"]
+    if "checkpoint" in config:
+        checkpoint = config["checkpoint"]
+    else:
+        # For retrocompatibility with old configs
+        checkpoint = None
+    if "checkpoint_period" in config:
+        checkpoint_period = config["checkpoint_period"]
+    else:
+        # For retrocompatibility with old configs
+        checkpoint_period = 5
 
     # Training and Validation Path
 
