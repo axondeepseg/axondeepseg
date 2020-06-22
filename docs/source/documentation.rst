@@ -190,7 +190,7 @@ macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Install FSLeyes using conda-forge ::
 
-           yes | conda install -c conda-forge fsleyes==0.30.1
+           yes | conda install -c conda-forge fsleyes=0.33.1
 
 Launch FSLeyes ::
 
@@ -215,7 +215,7 @@ Install wxPython using conda ::
            
 Install FSLeyes using conda-forge ::
 
-           yes | conda install -c conda-forge fsleyes==0.30.1
+           yes | conda install -c conda-forge fsleyes=0.33.1
            
 Launch FSLeyes ::
 
