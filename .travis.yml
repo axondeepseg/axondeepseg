@@ -6,6 +6,9 @@ python:
 
 # command to install dependencies
 install:
+  os:
+    - linux
+    - osx
   - echo "Installation of MiniConda"
   - cd ~
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh; fi
@@ -27,15 +30,9 @@ script:
 jobs:
   include:
     - stage: Basic install
-      os:
-        - linux
-        - osx
       script:
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
     - stage: FSLeyes install
-      os:
-        - linux
-        - osx
       script: 
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
