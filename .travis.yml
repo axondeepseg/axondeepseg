@@ -6,8 +6,7 @@ python:
 
 # command to install dependencies
 install:
-  - pwd
-  - ls
+
   - echo "Installation of MiniConda"
   - cd ~
   - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
@@ -17,10 +16,9 @@ install:
   - yes | conda create -n ads_venv python=3.7
   - conda activate ads_venv
   - echo "Installation of the repository"
+  - cd /home/travis/build/neuropoly/axondeepseg
   - pip install -e .
   - pip install python-coveralls  # Add me to install python-coveralls
-  - pwd
-  - ls
 # command to run tests
 script:
   - echo "Launch general integrity test"
