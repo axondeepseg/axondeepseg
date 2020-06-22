@@ -2,7 +2,6 @@
 install:
   - echo "Installation of MiniConda"
   - cd ~
-  - pwd
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh; fi
   - bash ~/miniconda.sh -b -p $HOME/miniconda
@@ -11,7 +10,7 @@ install:
   - yes | conda create -n ads_venv python=3.7
   - conda activate ads_venv
   - echo "Installation of the repository"
-  - cd /home/travis/build/neuropoly/axondeepseg
+  - cd ~/build/neuropoly/axondeepseg
   - pip install -e .
   - pip install python-coveralls  # Add me to install python-coveralls
   
