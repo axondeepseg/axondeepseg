@@ -12,7 +12,7 @@ install:
   - bash ~/miniconda.sh -b -p $HOME/miniconda
   - echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
   - source ~/.bashrc
-  - conda create -n ads_venv python=3.7
+  - yes | conda create -n ads_venv python=3.7
   - conda activate ads_venv
   - echo "Installation of the repository"
   - pip install -e .
