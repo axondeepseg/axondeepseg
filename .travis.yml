@@ -20,20 +20,20 @@ install:
   
 jobs:
   include:
-    - stage: Basic install (Linux)
+    - stage: Basic install
       os: linux
       script:
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: FSLeyes install (Linux)
+    - stage: FSLeyes install
       os: linux
       script: 
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: Basic install (OSX)
+    - stage: Basic install
       os: osx
       script:
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: FSLeyes install (OSX)
+    - stage: FSLeyes install
       os: osx
       script: 
         - yes | conda install -c conda-forge fsleyes=0.33.1
