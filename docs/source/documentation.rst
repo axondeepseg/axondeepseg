@@ -190,7 +190,7 @@ macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Install FSLeyes using conda-forge ::
 
-           yes | conda install -c conda-forge fsleyes>=0.30.1
+           yes | conda install -c conda-forge fsleyes=0.33.1
 
 Launch FSLeyes ::
 
@@ -213,9 +213,9 @@ Install wxPython using conda ::
 
            yes | conda install -c anaconda wxpython
            
-Install FSLeyes using pip ::
+Install FSLeyes using conda-forge ::
 
-           pip install fsleyes>=0.30.1
+           yes | conda install -c conda-forge fsleyes=0.33.1
            
 Launch FSLeyes ::
 
@@ -230,7 +230,7 @@ From now on, you can access the plugin on the FSLeyes interface by selecting ``S
 
 Known issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
+1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
 
 
 GPU-compatible installation
