@@ -1,5 +1,7 @@
 # command to install dependencies
 install:
+  - ls
+  - pwd
   - echo "Installation of MiniConda"
   - cd ~
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh; fi
