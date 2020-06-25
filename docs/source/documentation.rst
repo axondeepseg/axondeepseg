@@ -16,7 +16,7 @@ The following sections will help you install all the tools you need to run AxonD
 
 Miniconda
 -------------------------------------------------------------------------------
-Starting with versions 2.0+, AxonDeepSeg is only supported using Python 3.6.x. Although your system may already have
+Starting with versions 3.2+, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
 a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
 virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
@@ -29,7 +29,7 @@ In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it 
 
     conda search python
 
-If a list of available Python versions are displayed and versions >=3.6.0 are available, you may skip to the next section (Git).
+If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (Git).
 
 Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,11 +88,11 @@ virtual environment managers available, but the one we recommend and will use in
 guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. 
 We strongly recommend you create a virtual environment before you continue with your installation.
 
-To create a Python 3.6 virtual environment named "ads_venv", in a terminal window (macOS or Linux) 
+To create a Python 3.7 virtual environment named "ads_venv", in a terminal window (macOS or Linux) 
 or Anaconda Prompt (Windows) run the following command and answer "y" to the installation 
 instructions::
 
-    conda create -n ads_venv python=3.6
+    conda create -n ads_venv python=3.7
 
 Then, activate your virtual environment::
 
@@ -190,7 +190,7 @@ macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Install FSLeyes using conda-forge ::
 
-           yes | conda install -c conda-forge fsleyes>=0.30.1
+           yes | conda install -c conda-forge fsleyes=0.33.1
 
 Launch FSLeyes ::
 
@@ -213,9 +213,9 @@ Install wxPython using conda ::
 
            yes | conda install -c anaconda wxpython
            
-Install FSLeyes using pip ::
+Install FSLeyes using conda-forge ::
 
-           pip install fsleyes>=0.30.1
+           yes | conda install -c conda-forge fsleyes=0.33.1
            
 Launch FSLeyes ::
 
@@ -230,7 +230,7 @@ From now on, you can access the plugin on the FSLeyes interface by selecting ``S
 
 Known issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
+1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
 
 
 GPU-compatible installation
