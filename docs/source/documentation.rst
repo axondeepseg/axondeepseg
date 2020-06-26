@@ -192,6 +192,10 @@ Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
 
+Downgrade from latest version of indexed_gzip to the most recent working version ::
+
+           yes | conda install -c conda-forge indexed_gzip=1.2.0
+
 Launch FSLeyes ::
 
            fsleyes
@@ -200,6 +204,10 @@ On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (
 ``Install permanently --> yes.``
 
 The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
+
+.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
+           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
+           This step may only be required when you first install the plugin.
 
 Linux (tested on ubuntu)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -216,7 +224,11 @@ Install wxPython using conda ::
 Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
-           
+
+Downgrade from latest version of indexed_gzip to the most recent working version ::
+
+           yes | conda install -c conda-forge indexed_gzip=1.2.0
+
 Launch FSLeyes ::
 
            fsleyes
