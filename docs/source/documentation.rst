@@ -298,8 +298,8 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 **Optional arguments:**
 
 -m MODEL            Folder where the model is located. 
-                    The default SEM model path is **default_SEM_model_v1**. 
-                    The default TEM model path is **default_TEM_model_v1**.
+                    The default SEM model path is **default_SEM_model**. 
+                    The default TEM model path is **default_TEM_model**.
 
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
