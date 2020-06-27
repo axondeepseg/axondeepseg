@@ -48,7 +48,7 @@ class TestCore(object):
             pass
 
     # --------------download_models tests-------------- #
-    @pytest.mark.debug
+    @pytest.mark.unit
     def test_download_models_works(self):
         assert not self.sem_model_path.exists()
         assert not self.tem_model_path.exists()
@@ -59,7 +59,7 @@ class TestCore(object):
         assert self.sem_model_path.exists()
         assert self.tem_model_path.exists()
 
-    @pytest.mark.debug
+    @pytest.mark.unit
     def test_redownload_models_multiple_times_works(self):
 
         download_model(self.tmpPath)
