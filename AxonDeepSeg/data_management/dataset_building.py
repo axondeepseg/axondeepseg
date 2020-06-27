@@ -291,7 +291,7 @@ def split_data(raw_dir, out_dir, seed=2019, split = [0.8, 0.2], override=False):
 
     # Move the image dirs from the raw folder to the split folder
     for index in sorted_indices[:round(len(sorted_indices)*split_train)]:
-        dirs[index].rename(train_dir / dirs[index].parts[1])
+        dirs[index].rename(train_dir / dirs[index].parts[-1])
 
     for index in sorted_indices[-round(len(sorted_indices)*split_valid):]:
-        dirs[index].rename(valid_dir / dirs[index].parts[1])
+        dirs[index].rename(valid_dir / dirs[index].parts[-1])
