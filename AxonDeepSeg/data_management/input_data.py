@@ -131,17 +131,18 @@ def descritize_mask(mask, thresh_indices):
     mask = labellize_mask_2d(
         mask, thresh_indices
     )  # mask intensity float between 0-1
-
     # Working out the real mask (sparse cube with n depth layer, one for each class)
     n = len(thresh_indices)  # number of classes
     thresh_indices = [255 * x for x in thresh_indices]
     real_mask = np.zeros([mask.shape[0], mask.shape[1], n])
 
-    for class_ in range(n - 1):
-        real_mask[:, :, class_] = (mask[:, :] >= thresh_indices[class_]) * (
-            mask[:, :] < thresh_indices[class_ + 1]
-        )
-    real_mask[:, :, -1] = mask[:, :] >= thresh_indices[-1]
-    real_mask = real_mask.astype(np.uint8)
+    # for class_ in range(n - 1):     #0-1
+    #     real_mask[:, :, class_] = (mask[:, :] >= thresh_indices[class_]) * (
+    #         mask[:, :] < thresh_indices[class_ + 1]
+    #     )
+    for class_ in range(n):
+        real_mask[:, :, class_] = mask[:, :] / 255
+    # real_mask[:, :, -1] = mask[:, :] >= thresh_indices[-1]
+    # real_mask = real_mask.astype(np.uint8)
 
     return real_mask
