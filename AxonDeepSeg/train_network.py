@@ -148,7 +148,7 @@ def train_model(
                 rotate_limit=(0, 0),
                 border_mode=border_mode,
                 p=p_shift,
-                interpolation=cv2.INTER_NEAREST,
+                interpolation=cv2.INTER_LINEAR,
             ),
             # Randomly applies elastic transformation on the image.
             ElasticTransform(
@@ -156,7 +156,7 @@ def train_model(
                 sigma=sigma,
                 p=p_elastic,
                 alpha_affine=alpha,
-                interpolation=cv2.INTER_NEAREST,
+                interpolation=cv2.INTER_LINEAR,
             ),
             # Blurs an image using gaussian kernal.
             GaussianBlur(p=p_blur),
@@ -165,7 +165,7 @@ def train_model(
                 limit=(low_bound, high_bound),
                 border_mode=border_mode,
                 p=p_rotate,
-                interpolation=cv2.INTER_NEAREST,
+                interpolation=cv2.INTER_LINEAR,
             ),
         ]
     )
