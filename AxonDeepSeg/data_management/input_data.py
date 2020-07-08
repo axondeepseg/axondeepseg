@@ -140,14 +140,12 @@ def descritize_mask(mask, thresh_indices):
     #     real_mask[:, :, class_] = (mask[:, :] >= thresh_indices[class_]) * (
     #         mask[:, :] < thresh_indices[class_ + 1]
     #     )
-    for i in range(len(mask)):
-        for j in range(len(mask[i])):
-            if mask[i, j] < 128:
-                real_mask[i, j, 0] = 1 - (mask[i, j] / 128)
-                real_mask[i, j, 1] = mask[i, j] / 128
-            else:
-                real_mask[i, j, 1] = (255 - mask[i, j]) / (255-128)
-                real_mask[i, j, 2] = 1 - ((255 - mask[i, j]) / (255-128))
+
+    real_mask[:, :, 0] = np.where(mask < 128, 1 - (mask / 128), mask)
+    real_mask[:, :, 1] = 1 - real_mask[:, :, 0]
+    real_mask[:, :, 1] = np.where(mask >= 128, (255 - mask) / (255 - 128), mask)
+    real_mask[:, :, 2] = 1 - real_mask[:, :, 1]
+
     # real_mask[:, :, -1] = mask[:, :] >= thresh_indices[-1]
     # real_mask = real_mask.astype(np.uint8)
 
