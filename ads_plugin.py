@@ -400,12 +400,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Note 2 : The image array loaded in FSLeyes is flipped. We need to flip it back
 
         myelin_array = np.array(
-            myelin_mask_overlay[:, :, 0] * params.intensity['binary'], copy=True, dtype=np.uint8
+            myelin_mask_overlay[:, :, 0], copy=True, dtype=np.uint8
         )
         myelin_array = np.flipud(myelin_array)
         myelin_array = np.rot90(myelin_array, k=1, axes=(1, 0))
         axon_array = np.array(
-            axon_mask_overlay[:, :, 0] * params.intensity['binary'], copy=True, dtype=np.uint8
+            axon_mask_overlay[:, :, 0], copy=True, dtype=np.uint8
         )
         axon_array = np.flipud(axon_array)
         axon_array = np.rot90(axon_array, k=1, axes=(1, 0))
@@ -414,6 +414,13 @@ class ADScontrol(ctrlpanel.ControlPanel):
         if myelin_array.shape != axon_array.shape:
             self.show_message("invalid visible masks dimensions")
             return
+
+        # Remove the intersection
+        myelin_array, axon_array = postprocessing.remove_intersection(myelin_array, axon_array, priority=1)
+
+        # Scale the pixel values of the masks to 255 for image saving
+        myelin_array = myelin_array * params.intensity['binary']
+        axon_array = axon_array * params.intensity['binary']
 
         # Save the arrays as PNG files
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
