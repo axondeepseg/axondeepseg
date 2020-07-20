@@ -88,7 +88,6 @@ class TestCore(object):
             # Data augmentation parameters:
             "da-type": "all",
             "da-2-random_rotation-activate": False,
-            "da-5-gaussian_blur-activate": False,
             "da-3-elastic-activate": True,
             "da-0-shifting-activate": True,
             "da-4-flipping-activate": True,
