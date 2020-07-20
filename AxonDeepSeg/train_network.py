@@ -89,6 +89,7 @@ def train_model(
     rotation = config["da-2-random_rotation-activate"]
     elastic = config["da-3-elastic-activate"]
     flipping = config["da-4-flipping-activate"]
+    gaussian_blur = False
     if "da-5-noise_addition-activate" in config:
         # Preserved for retrocompatibility with old configs
         gaussian_blur = config["da-5-noise_addition-activate"]
