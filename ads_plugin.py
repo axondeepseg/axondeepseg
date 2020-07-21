@@ -416,7 +416,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return
 
         # Remove the intersection
-        myelin_array, axon_array = postprocessing.remove_intersection(myelin_array, axon_array, priority=1)
+        myelin_array, axon_array, intersection = postprocessing.remove_intersection(
+            myelin_array, axon_array, priority=1, return_overlap=True)
+
+        if intersection.sum() > 0:
+            self.show_message(
+                "There is an overlap between the axon mask and the myelin mask. The myelin will have priority.")
 
         # Scale the pixel values of the masks to 255 for image saving
         myelin_array = myelin_array * params.intensity['binary']
