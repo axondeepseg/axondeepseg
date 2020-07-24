@@ -57,3 +57,36 @@ def floodfill_axons(axon_array, myelin_array):
     )
     axon_extracted_array = axon_extracted_array.astype(np.uint8)
     return axon_extracted_array
+
+def remove_intersection(mask_1, mask_2, priority=1, return_overlap=False):
+    """
+    This function removes the overlap between two masks on one of those two masks depending on the priority parameter.
+    :param mask_1: First mask, with an intersecting section with the sectond one. The mask must contain values of 1 or 0
+    only.
+    :param mask_2: Second mask, with an intersecting section with the first one. The mask must contain values of 1 or 0
+    only.
+    :param priority (optional): Tells which of the two arrays should be kept. Can only be 1 or 2.
+    :type priority: int
+    :param return_overlap (optional): If set to True, the overlap mask will be returned.
+    :type return_overlap: bool
+    :return split_mask_1: First mask, minus the intersection if it doesn't have priority
+    :return split_mask_2: Sectond mask, minus the intersection if it doesn't have priority
+    :return return_overlap: A mask corresponding to the intersection of the two masks
+    """
+
+    if priority not in [1, 2]:
+        raise Exception("Parameter priority can only be 1 or 2")
+
+    array_1 = mask_1.astype(np.bool)
+    array_2 = mask_2.astype(np.bool)
+    intersection = (array_1 & array_2).astype(np.uint8)
+
+    if priority is 1:
+        mask_2 = mask_2 - intersection
+    if priority is 2:
+        mask_1 = mask_1 - intersection
+
+    if return_overlap is True:
+        return mask_1, mask_2, intersection
+    else:
+        return mask_1, mask_2
