@@ -16,7 +16,7 @@ The following sections will help you install all the tools you need to run AxonD
 
 Miniconda
 -------------------------------------------------------------------------------
-Starting with versions 2.0+, AxonDeepSeg is only supported using Python 3.6.x. Although your system may already have
+Starting with versions 3.2+, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
 a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
 virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
@@ -29,7 +29,7 @@ In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it 
 
     conda search python
 
-If a list of available Python versions are displayed and versions >=3.6.0 are available, you may skip to the next section (Git).
+If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (Git).
 
 Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,11 +88,11 @@ virtual environment managers available, but the one we recommend and will use in
 guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. 
 We strongly recommend you create a virtual environment before you continue with your installation.
 
-To create a Python 3.6 virtual environment named "ads_venv", in a terminal window (macOS or Linux) 
+To create a Python 3.7 virtual environment named "ads_venv", in a terminal window (macOS or Linux) 
 or Anaconda Prompt (Windows) run the following command and answer "y" to the installation 
 instructions::
 
-    conda create -n ads_venv python=3.6
+    conda create -n ads_venv python=3.7
 
 Then, activate your virtual environment::
 
@@ -190,7 +190,11 @@ macOS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Install FSLeyes using conda-forge ::
 
-           yes | conda install -c conda-forge fsleyes>=0.30.1
+           yes | conda install -c conda-forge fsleyes=0.33.1
+
+Downgrade from latest version of indexed_gzip to the most recent working version ::
+
+           yes | conda install -c conda-forge indexed_gzip=1.2.0
 
 Launch FSLeyes ::
 
@@ -200,6 +204,10 @@ On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (
 ``Install permanently --> yes.``
 
 The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
+
+.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
+           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
+           This step may only be required when you first install the plugin.
 
 Linux (tested on ubuntu)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -213,10 +221,14 @@ Install wxPython using conda ::
 
            yes | conda install -c anaconda wxpython
            
-Install FSLeyes using pip ::
+Install FSLeyes using conda-forge ::
 
-           pip install fsleyes>=0.30.1
-           
+           yes | conda install -c conda-forge fsleyes=0.33.1
+
+Downgrade from latest version of indexed_gzip to the most recent working version ::
+
+           yes | conda install -c conda-forge indexed_gzip=1.2.0
+
 Launch FSLeyes ::
 
            fsleyes
@@ -230,7 +242,7 @@ From now on, you can access the plugin on the FSLeyes interface by selecting ``S
 
 Known issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need.
+1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
 
 
 GPU-compatible installation
@@ -286,8 +298,8 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 **Optional arguments:**
 
 -m MODEL            Folder where the model is located. 
-                    The default SEM model path is **default_SEM_model_v1**. 
-                    The default TEM model path is **default_TEM_model_v1**.
+                    The default SEM model path is **default_SEM_model**. 
+                    The default TEM model path is **default_TEM_model**.
 
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
@@ -324,9 +336,9 @@ To segment the same image by using the **'pixel_size_in_micrometer.txt'** file i
 Segment multiple images of the same resolution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image 1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
+To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image 1_sem/ -s 0.07
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ -s 0.07
 
 To segment multiple images of the same folder and of the same resolution by using the **'pixel_size_in_micrometer.txt'** file in the folder (i.e. not specifying the pixel size as argument in the command), use the following folder structure::
 
@@ -340,14 +352,14 @@ To segment multiple images of the same folder and of the same resolution by usin
 
 Then, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image 1_sem/
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/
 
 Segment images from multiple folders
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image 1_sem/'** and **'test_sem_image/image 2_sem/'** of the test dataset, use the following command::
+To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image 1_sem/ test_segmentation/test_sem_image/image 2_sem/
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
 Jupyter notebooks
 -------------------------------------------------------------------------------

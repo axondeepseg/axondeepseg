@@ -76,7 +76,6 @@ class TestCore(object):
         tmpPath = fullPath / '__tmp__'
         if tmpPath.exists():
             shutil.rmtree(tmpPath)
-        pass
 
     # --------------validate_config tests-------------- #
     @pytest.mark.unit

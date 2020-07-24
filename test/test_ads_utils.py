@@ -64,7 +64,7 @@ class TestCore(object):
         object_path = ['folder_name/', Path('folder_name/'), None]
         object_path = convert_path(object_path)
 
-        expected_output = [Path('folder_name/'), Path('folder_name/'), None]
+        expected_output = [Path('folder_name/').absolute(), Path('folder_name/').absolute(), None]
         assert expected_output == object_path
 
     @pytest.mark.unit

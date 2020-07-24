@@ -232,9 +232,9 @@ def convert_path(object_path):
         path_list = []
         for path_iter in object_path:
             if isinstance(path_iter, Path):
-                path_list.append(path_iter)
+                path_list.append(path_iter.absolute())
             elif isinstance(path_iter, str):
-                path_list.append(Path(path_iter))
+                path_list.append(Path(path_iter).absolute())
             elif path_iter == None:
                 path_list.append(None)
             else:
@@ -242,9 +242,9 @@ def convert_path(object_path):
         return path_list
     else:
         if isinstance(object_path, Path):
-            return object_path
+            return object_path.absolute()
         elif isinstance(object_path, str):
-            return Path(object_path)
+            return Path(object_path).absolute()
         elif object_path == None:
             return None
         else:
@@ -279,6 +279,8 @@ def get_existing_models_list():
     ADS_path = os.path.dirname(os.path.realpath(__file__))
     models_path = os.path.join(ADS_path, "models")
     models_list = next(os.walk(models_path))[1]
+    if "__pycache__" in models_list:
+        models_list.remove("__pycache__")
     return models_list
 
 # Call init_ads() automatically when module is imported
