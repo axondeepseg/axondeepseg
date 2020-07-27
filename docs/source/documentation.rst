@@ -417,7 +417,26 @@ If you want to train your own model, you will need manual masks corresponding to
 * Make sure that every structure (background, myelin or axons) contains only the pixel value of that specific structure.
 * Examples of image, good mask and bad mask are provided below:
 
+.. figure:: _static/image_example.png
+    :width: 750px
+    :align: center
+    :height: 500px
+    :alt: Image example
+    Image example
 
+.. figure:: _static/good_mask_example.png
+    :width: 750px
+    :align: center
+    :height: 500px
+    :alt: Good mask example
+    Good mask example
+
+.. figure:: _static/bad_mask_example.png
+    :width: 750px
+    :align: center
+    :height: 500px
+    :alt: Bad mask example
+    Bas mask example
 
 To create a manual mask for training, you can try one of the following:
 * Try segmenting your image with AxonDeepSeg default SEM or TEM models and make manual corrections of the segmentation mask in FSLeyes or GIMP software.
