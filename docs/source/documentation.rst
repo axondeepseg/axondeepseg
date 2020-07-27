@@ -411,6 +411,7 @@ Manual masks for training
 -------------------------------------------------------------------------------
 
 If you want to train your own model, you will need manual masks corresponding to your training images.
+
 * These manual masks must be 8 bits PNG files with 1 channel (256 grayscale) and have the same height abd width as the image.
 * Make sure that they contain only 3 values : 0 (black) for background, 127 (gray) for myelin and 255 (white) for axons and no other intermediate values on strutures edges.
 * Make sure that there is no background pixels (black) on the edges between myelin and axons.
@@ -422,6 +423,7 @@ If you want to train your own model, you will need manual masks corresponding to
     :align: center
     :height: 500px
     :alt: Image example
+
     Image example
 
 .. figure:: _static/good_mask_example.png
@@ -429,6 +431,7 @@ If you want to train your own model, you will need manual masks corresponding to
     :align: center
     :height: 500px
     :alt: Good mask example
+
     Good mask example
 
 .. figure:: _static/bad_mask_example.png
@@ -436,9 +439,11 @@ If you want to train your own model, you will need manual masks corresponding to
     :align: center
     :height: 500px
     :alt: Bad mask example
-    Bas mask example
+    
+    Bad mask example
 
 To create a manual mask for training, you can try one of the following:
+
 * Try segmenting your image with AxonDeepSeg default SEM or TEM models and make manual corrections of the segmentation mask in FSLeyes or GIMP software.
 * Create a new manual mask using GIMP.
 * These options are described in the next section "Manual correction of segmentation masks".
