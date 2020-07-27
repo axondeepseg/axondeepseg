@@ -404,21 +404,45 @@ Help
 
 If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the `AxonDeepSeg GitHub issues webpage <https://github.com/neuropoly/axondeepseg/issues>`_. We will reply to you as soon as possible.
 
-Manual correction
+Guide for manual labelling
+===============================================================================
+
+Manual masks for training
+-------------------------------------------------------------------------------
+
+If you want to train your own model, you will need manual masks corresponding to your training images.
+* These manual masks must be 8 bits PNG files with 1 channel (256 grayscale) and have the same height abd width as the image.
+* Make sure that they contain only 3 values : 0 (black) for background, 127 (gray) for myelin and 255 (white) for axons and no other intermediate values on strutures edges.
+* Make sure that there is no background pixels (black) on the edges between myelin and axons.
+* Make sure that every structure (background, myelin or axons) contains only the pixel value of that specific structure.
+* Examples of image, good mask and bad mask are provided below:
+
+
+
+To create a manual mask for training, you can try one of the following:
+* Try segmenting your image with AxonDeepSeg default SEM or TEM models and make manual corrections of the segmentation mask in FSLeyes or GIMP software.
+* Create a new manual mask using GIMP.
+* These options are described in the next section "Manual correction of segmentation masks".
+
+Manual correction of segmentation masks
 -------------------------------------------------------------------------------
 
 If the segmentation with AxonDeepSeg fails or does not give optimal results, you can try one of the following options:
 
-**Option 1: manual correction of the segmentation masks**
+**Option 1: manual correction of the segmentation masks with FSLeyes**
 
-* Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask.
-* For the manual correction, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure on how to do the manual correction with GIMP, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
+* In FSLeyes, load your image and apply ADS prediction with the default SEM or TEM models.
+* Make correction on myelin and axons masks using the Edit Tool in **Tools > Edit mode**.
+* In case of an overlap between the axons mask and the myelin mask, the myelin will have priority.
 
-* After correcting the myelin mask, you can regenerate the segmentation masks (axon+myelin). To do this, you can use the following notebook: https://github.com/neuropoly/axondeepseg/blob/master/notebooks/generate_axons_from_myelin.ipynb.
+**Option 2: manual correction of the segmentation masks or creation of a new manual mask with GIMP software**
 
-**Option 2: manual correction combined with *AxonSeg* software**
+* Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask and create a new axon+myelin mask.
+* For the manual correction or the creation of a new manual mask, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
 
-* Manually correct the axon mask (as explained in Option 1).
+**Option 3: manual correction combined with *AxonSeg* software**
+
+* Manually correct the axon mask (as explained in Option 2).
 * Use the `AxonSeg <https://github.com/neuropoly/axonseg>`_ software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the `as_tutorial guideline <https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m>`_.
 
 Citation
