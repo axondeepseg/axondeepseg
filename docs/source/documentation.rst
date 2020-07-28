@@ -444,7 +444,7 @@ If you want to train your own model, you will need manual masks corresponding to
 
 To create a manual mask for training, you can try one of the following:
 
-* Try segmenting your image with AxonDeepSeg default SEM or TEM models and make manual corrections of the segmentation mask in FSLeyes or GIMP software.
+* Try segmenting your images with AxonDeepSeg's default models and make manual corrections of the segmentation masks in FSLeyes or GIMP software (see section below).
 * Create a new manual mask using GIMP.
 * These options are described in the next section "Manual correction of segmentation masks".
 
