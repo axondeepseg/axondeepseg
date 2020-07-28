@@ -464,11 +464,6 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 * Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask and create a new axon+myelin mask.
 * For the manual correction or the creation of a new manual mask, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
 
-**Option 3: manual correction combined with *AxonSeg* software**
-
-* Manually correct the axon mask (as explained in Option 2).
-* Use the `AxonSeg <https://github.com/neuropoly/axonseg>`_ software to segment the myelin from the axon mask. In order to do this, install AxonSeg, and then follow the instructions in part 5 of the `as_tutorial guideline <https://github.com/neuropoly/axonseg/blob/master/as_tutorial.m>`_.
-
 Citation
 ===============================================================================
 
