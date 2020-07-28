@@ -407,7 +407,7 @@ Manual masks for training
 
 If you want to train your own model, you will need manual masks corresponding to your training images.
 
-* These manual masks must be 8 bits PNG files with 1 channel (256 grayscale) and have the same height abd width as the image.
+* These manual masks must be 8 bits PNG files with 1 channel (256 grayscale) and have the same height and width as the image.
 * Make sure that they contain only 3 values : 0 (black) for background, 127 (gray) for myelin and 255 (white) for axons and no other intermediate values on strutures edges.
 * Make sure that there is no background pixels (black) on the edges between myelin and axons.
 * Make sure that every structure (background, myelin or axons) contains only the pixel value of that specific structure.
