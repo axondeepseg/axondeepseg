@@ -1,5 +1,5 @@
 Introduction
-===============================================================================
+============
 AxonDeepSeg is an open-source software using deep learning and aiming at automatically segmenting axons and myelin
 sheaths from microscopy images. It performs 3-class semantic segmentation using a convolutional neural network.
 
@@ -7,7 +7,7 @@ AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University o
 
 
 Installation
-===============================================================================
+============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
 .. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system.
@@ -15,7 +15,7 @@ The following sections will help you install all the tools you need to run AxonD
            for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
 
 Miniconda
--------------------------------------------------------------------------------
+---------
 Starting with versions 3.2+, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
 a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
@@ -32,7 +32,7 @@ In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it 
 If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (Git).
 
 Linux
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
 
 To install Miniconda, run the following commands in your terminal:::
 
@@ -46,7 +46,7 @@ To install Miniconda, run the following commands in your terminal:::
    If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try adding the line ``source ~/.bashrc`` to your ``~/.bash_profile`` file. `See here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ for more details.
 
 macOS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
 
 To install Miniconda, run the following commands in your terminal:::
 
@@ -57,7 +57,7 @@ To install Miniconda, run the following commands in your terminal:::
     source ~/.bash_profile
 
 Windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
 
 .. NOTE ::
    The AxonDeepSeg installation instruction using the Miniconda have only been tested for Windows 10. Older
@@ -69,7 +69,7 @@ downloaded file, and follow the instructions. If you are unsure about any of the
 installation options, we recommend you use the default settings.
 
 Git (optional)
--------------------------------------------------------------------------------
+--------------
 Git is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
 service that hosts Git repositories, having Git installed on your system allows you
 to download the most up-to-date development version of AxonDeepSeg from a terminal, and 
@@ -80,7 +80,7 @@ want to install Git, please follow instructions for your operating system on the
 `Git website <https://git-scm.com/downloads>`_
 
 Virtual Environment
--------------------------------------------------------------------------------
+-------------------
 Virtual environments are a tool to separate the Python environment and packages used 
 between Python projects. They allow for different versions of Python packages to be 
 installed and managed for the specific needs of your projects. There are several 
@@ -104,19 +104,19 @@ Then, activate your virtual environment::
        conda deactivate
 
 AxonDeepSeg
--------------------------------------------------------------------------------
+-----------
 .. WARNING ::
    Ensure that the virtual environment is activated before you begin your installation.
 
 Stable release
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
 
     pip install axondeepseg
 
 
 Development version
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 To install the development version of AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
 have ``git`` installed on your system)::
@@ -146,12 +146,12 @@ instruction above::
 
 
 Testing the installation
--------------------------------------------------------------------------------
+------------------------
 .. WARNING ::
    Ensure that the virtual environment is activated.
 
 Quick test
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 To test if the software was installed correctly, you can launch a quick integrity test by running the following command on the terminal::
 
@@ -162,7 +162,7 @@ This integrity test automatically performs the axon and myelin segmentation of a
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
 
 Comprehensive test
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 .. NOTE ::
    This feature is not available if you installed AxonDeepSeg using ``pip``.
 
@@ -175,7 +175,7 @@ If all tests pass, AxonDeepSeg was installed succesfully.
 
 
 Graphical User Interface (GUI) (optional)
--------------------------------------------------------------------------------
+-----------------------------------------
 
 AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if need to).
 
@@ -187,7 +187,7 @@ FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a vir
 Once AxonDeepSeg is installed, remain in the virtual environment and follow the OS-specific instructions to install the GUI:
 
 macOS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
 Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
@@ -210,7 +210,7 @@ The plugin is now installed. From now on, you can access the plugin on the FSLey
            This step may only be required when you first install the plugin.
 
 Linux (tested on ubuntu)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 Install the C/C++ compilers required to use wxPython ::
 
            sudo apt-get install build-essential
@@ -241,12 +241,12 @@ In FSLeyes, do the following:
 From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
 
 Known issues
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
 
 
 GPU-compatible installation
---------------------------------------------------------------------------------
+---------------------------
 .. NOTE ::
    This feature is not available if you installed AxonDeepSeg using ``pip``,
    or if you are using a macOS.
@@ -263,7 +263,7 @@ and install the GPU version of it::
    CUDA version less than 10 is not compatible with Tensorflow 1.13.1. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
 
 Existing models
-===============================================================================
+===============
 
 Two models are available and shipped together with the installation package, so you don't need to install them separately.
 The two models are described below:
@@ -272,15 +272,15 @@ The two models are described below:
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
 
 Getting started
-===============================================================================
+===============
 
 Example dataset
--------------------------------------------------------------------------------
+---------------
 
 You can test AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
 
 Syntax
--------------------------------------------------------------------------------
+------
 
 The script to launch is called **axondeepseg**. It takes several arguments:
 
@@ -320,7 +320,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
         axondeepseg -h
 
 Segment a single image
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image **'77.png'** of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
 
@@ -334,7 +334,7 @@ To segment the same image by using the **'pixel_size_in_micrometer.txt'** file i
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png
 
 Segment multiple images of the same resolution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
 
@@ -355,14 +355,14 @@ Then, use the following command::
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/
 
 Segment images from multiple folders
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
 Jupyter notebooks
--------------------------------------------------------------------------------
+-----------------
 
 Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 
@@ -400,10 +400,10 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
    **Option:** If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).
 
 Guide for manual labelling
-===============================================================================
+==========================
 
 Manual masks for training
--------------------------------------------------------------------------------
+-------------------------
 
 If you want to train your own model, you will need manual masks corresponding to your training images.
 
@@ -444,7 +444,7 @@ To create a manual mask for training, you can try one of the following:
 * These options are described in the next section "Manual correction of segmentation masks".
 
 Manual correction of segmentation masks
--------------------------------------------------------------------------------
+---------------------------------------
 
 If the segmentation with AxonDeepSeg fails or does not give optimal results, you can try one of the following options:
 
@@ -461,12 +461,12 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 * For the manual correction or the creation of a new manual mask, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
 
 Help
-===============================================================================
+====
 
 If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the `AxonDeepSeg GitHub issues webpage <https://github.com/neuropoly/axondeepseg/issues>`_. We will reply to you as soon as possible.
 
 Citation
-===============================================================================
+========
 
 If you use this work in your research, please cite:
 
@@ -475,7 +475,7 @@ Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-A
 .. include:: ../../CHANGELOG.md
 
 Licensing
-===============================================================================
+=========
 
 The MIT License (MIT)
 
@@ -500,6 +500,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 Contributors
-===============================================================================
+============
 
 Pierre-Louis Antonsanti, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Christian Perone, Maxime Wabartha, Aldo Zaimi, Vasudev Sharma, Stoyan Asenov, Marie-Hélène Bourget.
