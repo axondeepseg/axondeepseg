@@ -455,9 +455,10 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 
 **Option 1: manual correction of the segmentation masks with FSLeyes**
 
-* In FSLeyes, load your image and apply ADS prediction with the default SEM or TEM models.
-* Make correction on myelin and axons masks using the Edit Tool in **Tools > Edit mode**.
-* In case of an overlap between the axons mask and the myelin mask, the myelin will have priority.
+* In FSLeyes, you can make correction on the myelin segmentation mask using the Edit mode in **Tools > Edit mode**. `Link to user guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/editing_images.html>`_.
+* Then, use the **Fill Axons** button in the ADS Control tab to automatically fill the axons inside the myelin objects.
+* In order for the **Fill Axons** function to work properly, each myelin object needs to be closed and contains at least one pixel of axon mask. Also, make sure that no pixel of the axons mask are outside the borders of the myelin objects.
+* In case of an overlap between the axons mask and the myelin mask, the myelin will have priority when saving the new segmentation.
 
 **Option 2: manual correction of the segmentation masks or creation of a new manual mask with GIMP software**
 
