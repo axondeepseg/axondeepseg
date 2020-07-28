@@ -399,11 +399,6 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 
    **Option:** If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).
 
-Help
-===============================================================================
-
-If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the `AxonDeepSeg GitHub issues webpage <https://github.com/neuropoly/axondeepseg/issues>`_. We will reply to you as soon as possible.
-
 Guide for manual labelling
 ===============================================================================
 
@@ -464,6 +459,11 @@ If the segmentation with AxonDeepSeg fails or does not give optimal results, you
 
 * Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask and create a new axon+myelin mask.
 * For the manual correction or the creation of a new manual mask, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
+
+Help
+===============================================================================
+
+If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the `AxonDeepSeg GitHub issues webpage <https://github.com/neuropoly/axondeepseg/issues>`_. We will reply to you as soon as possible.
 
 Citation
 ===============================================================================
