@@ -446,19 +446,20 @@ To create a manual mask for training, you can try one of the following:
 Manual correction of segmentation masks
 ---------------------------------------
 
-If the segmentation with AxonDeepSeg fails or does not give optimal results, you can try one of the following options:
+If the segmentation with AxonDeepSeg does not give optimal results, you can try one of the following options:
 
-**Option 1: manual correction of the segmentation masks with FSLeyes**
+**Option 1: manual correction of the segmentation mask with FSLeyes**
 
-* In FSLeyes, you can make correction on the myelin segmentation mask using the Edit mode in **Tools > Edit mode**. `Link to user guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/editing_images.html>`_.
-* Then, use the **Fill Axons** button in the ADS Control tab to automatically fill the axons inside the myelin objects.
-* In order for the **Fill Axons** function to work properly, each myelin object needs to be closed and contains at least one pixel of axon mask. Also, make sure that no pixel of the axons mask are outside the borders of the myelin objects.
-* In case of an overlap between the axons mask and the myelin mask, the myelin will have priority when saving the new segmentation.
+* In FSLeyes, you can make corrections on the myelin segmentation mask using the Edit mode in **Tools > Edit mode**.
+* Then, use the **Fill Axons** function to automatically fill the axons and create a corrected axon+myelin mask.
+* For a detailed procedure, please consult the following link: `Manual correction with FSLeyes <https://docs.google.com/document/d/1S8i96cJyWZogsMw4RrlQYwglcOWd3HrM5bpTOJE4RBQ/edit>`_.
+* As a reference, you can find more informtations about the FSLeyes Edit mode in the `user guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/editing_images.html>`_.
 
-**Option 2: manual correction of the segmentation masks or creation of a new manual mask with GIMP software**
+**Option 2: manual labelling with GIMP software**
 
-* Note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). If the segmentation proposed by AxonDeepSeg is not optimal, you can manually correct the myelin mask and create a new axon+myelin mask.
-* For the manual correction or the creation of a new manual mask, we suggest using the GIMP software (https://www.gimp.org/). For a more detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
+* To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`_).
+* If you are making correction on an existing segmentation mask, note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). You can then manually correct the myelin mask and create a corrected axon+myelin mask.
+* For a detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
 
 Help
 ====
