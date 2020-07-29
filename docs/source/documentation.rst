@@ -402,16 +402,31 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 Guide for manual labelling
 ==========================
 
-Manual masks for training
--------------------------
+Manual masks for training your own model
+----------------------------------------
 
-If you want to train your own model, you will need manual masks corresponding to your training images.
+To be able to train your own model, you will need to manually segment a set of masks. The deep learning model quality will only be as good as your manual masks, so it's important to take care at this step and define your cases.
 
-* These manual masks must be 8 bits PNG files with 1 channel (256 grayscale) and have the same height and width as the image.
-* Make sure that they contain only 3 values : 0 (black) for background, 127 (gray) for myelin and 255 (white) for axons and no other intermediate values on strutures edges.
-* Make sure that there is no background pixels (black) on the edges between myelin and axons.
-* Make sure that every structure (background, myelin or axons) contains only the pixel value of that specific structure.
-* Examples of image, good mask and bad mask are provided below:
+Technical properties of the manual masks:
+
+* They should be 8-bit PNG files with 1 channel (256 grayscale).
+* They should be the same height and width as the images.
+* They should contain only 3 unique color values : 0 (black) for background, 127 (gray) for myelin and 255 (white) for axons, and no other intermediate values on strutures edges.
+* If you are unfamiliar with those properties, don't worry, the detailed procedures provided in the section below will allow you to follow these guidelines.
+
+Qualitative properties of the manual masks:
+
+* Make sure that every structure (background, myelin or axons) contains only the color of that specific structure (e.g., no black pixels (background) in the axons or the myelin, no white pixels (axons) in the background or myelin, etc.)
+* For normal samples without myelin splitting away from the axons, make sure that there is no black pixels (background) on the edges between myelin and axons.
+
+To create a manual mask for training, you can try one of the following:
+
+* Try segmenting your images with AxonDeepSeg's default models and make manual corrections of the segmentation masks in FSLeyes or GIMP software.
+* Create a new manual mask using GIMP software.
+
+These options and detailed procedures are described in the section below "Manual correction of segmentation masks".
+
+Here are examples of an image, a good manual mask and a bad manual mask.
 
 .. figure:: _static/image_example.png
     :width: 750px
@@ -425,23 +440,17 @@ If you want to train your own model, you will need manual masks corresponding to
     :width: 750px
     :align: center
     :height: 500px
-    :alt: Good mask example
+    :alt: Good manual mask example
 
-    Good mask example
+    Good manual mask example
 
 .. figure:: _static/bad_mask_example.png
     :width: 750px
     :align: center
     :height: 500px
-    :alt: Bad mask example
+    :alt: Bad manual mask example
     
-    Bad mask example
-
-To create a manual mask for training, you can try one of the following:
-
-* Try segmenting your images with AxonDeepSeg's default models and make manual corrections of the segmentation masks in FSLeyes or GIMP software (see section below).
-* Create a new manual mask using GIMP.
-* These options are described in the next section "Manual correction of segmentation masks".
+    Bad manual mask example
 
 Manual correction of segmentation masks
 ---------------------------------------
