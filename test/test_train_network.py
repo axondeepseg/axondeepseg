@@ -52,6 +52,8 @@ class TestCore(object):
             "batch_size": 2,
             "epochs":2,
             "save_epoch_freq": 1,
+            "checkpoint": None,
+            "checkpoint_period": 5,
 
             # Network architecture parameters:
             "depth": 2,
