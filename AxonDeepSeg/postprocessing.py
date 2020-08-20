@@ -4,6 +4,7 @@ Tools for the FSLeyes plugin.
 from skimage import measure, morphology, feature
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
+import AxonDeepSeg.params
 
 def get_centroids(mask):
     """
@@ -90,7 +91,7 @@ def remove_intersection(mask_1, mask_2, priority=1, return_overlap=False):
         return mask_1, mask_2, intersection
     else:
         return mask_1, mask_2
-    
+
 def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size):
     """
     This function generates an image where the numbers in centroid_index are at their corresponding location specified
@@ -108,13 +109,18 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size):
 
     # Create an empty image which will contain the binary image
     # number_image = Image.new(mode='L', size=tuple(reversed(image_size)), color=0)
-    number_image = Image.new(mode='L', size=image_size, color=0)
+    number_image = Image.new(mode='L', size=tuple(reversed(image_size)), color=0)
     draw = ImageDraw.Draw(number_image)
-    font = ImageFont.truetype("arial.ttf", size=20)  # Might need to change the size if its too small
+    font = None
+    try:
+        font = ImageFont.truetype("arial.ttf", size=20)  # Might need to change the size if its too small
+    except OSError: # On Linux, it can't find this Font
+        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", size=20, encoding="unic")
 
     # Fill the image with the numbers at their corresponding coordinates
     for i in range(centroid_index.size):
-        draw.text(xy=(x0_array[i], y0_array[i]), text=str(centroid_index[i]), font=font, fill=100)
+        draw.text(xy=(x0_array[i]-10, y0_array[i]-10),
+                  text=str(centroid_index[i]), font=font, fill=AxonDeepSeg.params.intensity['binary'])
         #TODO: check if the coordinates in FSLeyes are at the correct position
 
     # Transform the image into a numpy array
