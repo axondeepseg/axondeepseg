@@ -91,7 +91,7 @@ def remove_intersection(mask_1, mask_2, priority=1, return_overlap=False):
     else:
         return mask_1, mask_2
     
-   def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size):
+def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size):
     """
     This function generates an image where the numbers in centroid_index are at their corresponding location specified
     by their coordinates (x0, y0)
