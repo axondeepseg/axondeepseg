@@ -619,7 +619,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Create the axon coordinate array
         axon_indexes = np.arange(x.size)
-        number_array = postprocessing.generate_axon_numbers_image(axon_indexes, x['x0'], x['y0'], axon_array.shape)
+        number_array = postprocessing.generate_axon_numbers_image(axon_indexes, x['x0'], x['y0'],
+                                                                  tuple(reversed(axon_array.shape)))
 
         # Load the axon coordinate image into FSLeyes
         number_outfile = self.ads_temp_dir.name + "/numbers.png"
