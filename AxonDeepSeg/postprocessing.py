@@ -109,7 +109,7 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size):
 
     # Create an empty image which will contain the binary image
     # number_image = Image.new(mode='L', size=tuple(reversed(image_size)), color=0)
-    number_image = Image.new(mode='L', size=tuple(reversed(image_size)), color=0)
+    number_image = Image.new(mode='L', size=image_size, color=0)
     draw = ImageDraw.Draw(number_image)
     font = None
     try:
