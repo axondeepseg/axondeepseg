@@ -617,6 +617,15 @@ class ADScontrol(ctrlpanel.ControlPanel):
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
+        # Create the axon coordinate array
+        axon_indexes = np.arange(x.size)
+        number_array = postprocessing.generate_axon_numbers_image(axon_indexes, x['x0'], x['y0'], axon_array.shape)
+
+        # Load the axon coordinate image into FSLeyes
+        number_outfile = self.ads_temp_dir.name + "/numbers.png"
+        ads_utils.imwrite(number_outfile, number_array)
+        self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
+
         return
 
     def get_watershed_segmentation(self, im_axon, im_myelin, return_centroids=False):
