@@ -99,10 +99,10 @@ def train_model(
     rotation = config["da-2-random_rotation-activate"]
     elastic = config["da-3-elastic-activate"]
     flipping = config["da-4-flipping-activate"]
+    gaussian_blur = False   # Gaussian Blur preserved for retrocompatibility with old configs
     if "da-5-gaussian_blur-activate" in config:
         gaussian_blur = config["da-5-gaussian_blur-activate"]
     elif "da-5-noise_addition-activate" in config:
-        # Preserved for retrocompatibility with old configs
         gaussian_blur = config["da-5-noise_addition-activate"]
     reflection_border = config[
         "da-6-reflection_border-activate"
@@ -168,7 +168,7 @@ def train_model(
                 alpha_affine=alpha,
                 interpolation=cv2.INTER_NEAREST,
             ),
-            # Blurs an image using gaussian kernal.
+            # Blurs an image using gaussian kernel.
             GaussianBlur(p=p_blur),
             # Randomly rotates the image between low bound and high bound.
             Rotate(
