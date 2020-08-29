@@ -5,6 +5,8 @@ from skimage import measure, morphology, feature
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
 import AxonDeepSeg.params
+from matplotlib import rcParams
+import os
 
 def get_centroids(mask):
     """
@@ -111,19 +113,20 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size):
     # number_image = Image.new(mode='L', size=tuple(reversed(image_size)), color=0)
     number_image = Image.new(mode='L', size=image_size, color=0)
     draw = ImageDraw.Draw(number_image)
-    font = None
-    try:
-        font = ImageFont.truetype("arial.ttf", size=20)  # Might need to change the size if its too small
-    except OSError: # On Linux, it can't find this Font
-        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", size=20, encoding="unic")
+
+    # Use a font from the matplotlib package
+    # The size of the font depends on the dimensions of the image, should be at least 10
+    font_path = os.path.join(rcParams["datapath"], "fonts/ttf/DejaVuSans.ttf")
+    font_size = max(int(sum(image_size) * 0.5 * 0.01), 10)
+    font = ImageFont.truetype(font=font_path, size=font_size)
 
     # Fill the image with the numbers at their corresponding coordinates
     for i in range(centroid_index.size):
-        draw.text(xy=(x0_array[i]-10, y0_array[i]-10),
+        draw.text(xy=(x0_array[i] - font_size/2, y0_array[i] - font_size/2),
                   text=str(centroid_index[i]), font=font, fill=AxonDeepSeg.params.intensity['binary'])
         #TODO: check if the coordinates in FSLeyes are at the correct position
 
     # Transform the image into a numpy array
     image_array = np.asarray(number_image)
 
-    return image_array
+    return image_array.astype(np.uint8)
