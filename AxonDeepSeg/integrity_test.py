@@ -22,9 +22,9 @@ def integrity_test():
         # input parameters
 
         path = Path('folder_name') / 'file_name'
-        path_testing = dir_path / 'data_test'
         model_name = 'default_SEM_model'
         path_model = dir_path / 'models' / model_name
+        path_testing = path_model / 'data_test'
         path_configfile = path_model / 'config_network.json'
 
         # Read the configuration file 
