@@ -110,7 +110,6 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size):
     """
 
     # Create an empty image which will contain the binary image
-    # number_image = Image.new(mode='L', size=tuple(reversed(image_size)), color=0)
     number_image = Image.new(mode='L', size=image_size, color=0)
     draw = ImageDraw.Draw(number_image)
 
@@ -124,7 +123,6 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size):
     for i in range(centroid_index.size):
         draw.text(xy=(x0_array[i] - font_size/2, y0_array[i] - font_size/2),
                   text=str(centroid_index[i]), font=font, fill=AxonDeepSeg.params.intensity['binary'])
-        #TODO: check if the coordinates in FSLeyes are at the correct position
 
     # Transform the image into a numpy array
     image_array = np.asarray(number_image)
