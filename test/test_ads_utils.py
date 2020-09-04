@@ -64,5 +64,12 @@ class TestCore(object):
         object_path = ['folder_name/', Path('folder_name/'), None]
         object_path = convert_path(object_path)
 
-        expected_output = [Path('folder_name/'), Path('folder_name/'), None]
+        expected_output = [Path('folder_name/').absolute(), Path('folder_name/').absolute(), None]
         assert expected_output == object_path
+
+    @pytest.mark.unit
+    def test_get_existing_models_list_returns_known_models(self):
+        known_models = ['default_TEM_model', 'default_SEM_model']
+
+        for model in known_models:
+            assert model in get_existing_models_list()

@@ -5,9 +5,8 @@
 
 import os
 import numpy as np
-import imageio
 
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
 
 def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
@@ -22,8 +21,8 @@ def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
     path_myelin_corrected = convert_path(path_myelin_corrected)
 
     # read output from axondeepseg and myelin mask corrected by user
-    prediction = imageio.imread(path_prediction)
-    myelin_corrected = imageio.imread(path_myelin_corrected)
+    prediction = ads.imread(path_prediction)
+    myelin_corrected = ads.imread(path_myelin_corrected)
 
     # compute the axon mask from axondeepseg (axon=255, myelin=127, background=0)
     axon_ads = prediction > 200
@@ -42,6 +41,6 @@ def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
 
     # save the corrected axon+myelin image
     path = path_prediction.parent / 'axon_myelin_mask_corrected.png'
-    imageio.imwrite(path, both)
+    ads.imwrite(path, both)
 
     return both

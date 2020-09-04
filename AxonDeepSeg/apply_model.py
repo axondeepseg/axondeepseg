@@ -1,19 +1,8 @@
 # -*- coding: utf-8 -*-
-
-from pathlib import Path
-import imageio
-
-from scipy.misc import imread, imsave
 from skimage.transform import rescale, resize
-
-import tensorflow as tf
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
-
-
 from AxonDeepSeg.network_construction import *
-
-
 from AxonDeepSeg.visualization.get_masks import get_masks
 from AxonDeepSeg.patch_management_tools import im2patches_overlap, patches2im_overlap
 from AxonDeepSeg.config_tools import update_config, default_configuration
@@ -160,8 +149,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
             # Update of the predictions lists.
             predictions_list.extend(current_batch_prediction)
 
-    # End of the inference step. Closing Tensorflow.
-    sess.close()
+    # End of the inference step.
     tf.reset_default_graph()
 
     # Now we have to transform the list of predictions in list of lists,
@@ -289,7 +277,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
             for j in range(n_classes):
                 mask[pred == j] = paint_vals[j]
             # Then we save the image
-            imsave(path_acquisitions_folders[i] / segmentations_filenames[i], mask, 'png')
+            ads.imwrite(path_acquisitions_folders[i] / segmentations_filenames[i], mask, 'png')
 
             axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] / segmentations_filenames[i])
 
@@ -334,7 +322,8 @@ def load_acquisitions(path_acquisitions, acquisitions_resolutions, resampled_res
     original_acquisitions, resampled_acquisitions, original_acquisitions_shapes = [], [], []
 
     for path_img in path_acquisitions:
-        original_acquisitions.append(imread(path_img, flatten=False, mode='L'))
+
+        original_acquisitions.append(ads.imread(path_img))
         original_acquisitions_shapes.append(original_acquisitions[-1].shape)
 
     # Resampling acquisitions to the target resolution
@@ -475,8 +464,7 @@ def perform_batch_inference(model, tf_session, tf_prediction_op, tf_input, batch
     :return: List of segmentation of the patches, and optionally list of the probabilty maps for each patch.
     """
 
-    batch_x = np.expand_dims(batch_x, axis=3)
-    batch_x = np.concatenate((batch_x, batch_x, batch_x), axis=3)
+    batch_x = np.reshape(batch_x,(size_batch, input_size, input_size, 1))
 
     p = model.predict(batch_x)
 

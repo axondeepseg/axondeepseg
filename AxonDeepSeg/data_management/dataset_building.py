@@ -1,11 +1,12 @@
 
 
-from scipy.misc import imread, imsave
+
 from skimage.transform import rescale
 import numpy as np
 from tqdm import tqdm
+import shutil
 
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.data_management.input_data import labellize_mask_2d
 from AxonDeepSeg.data_management.patch_extraction import extract_patch
 from AxonDeepSeg.ads_utils import convert_path
@@ -48,12 +49,13 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
             data_names = [d.name for d in path_img_folder.iterdir()]
             for data in data_names:
                 if 'image' in data: # If it's the raw image.
-                    img = imread(path_img_folder / data, flatten=False, mode='L')
+
+                    img = ads.imread(path_img_folder / data)
                     img = rescale(img, resample_coeff, preserve_range=True, mode='constant').astype(int)
 
-                elif 'mask.png' in data:
-                    mask_init = imread(path_img_folder / data, flatten=False, mode='L')
-                    mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant')
+                elif 'mask' in data:
+                    mask_init = ads.imread(path_img_folder / data)
+                    mask = rescale(mask_init, resample_coeff, preserve_range=True, mode='constant', order=0)
 
                     # Set the mask values to the classes' values
                     mask = labellize_mask_2d(mask, thresh_indices)  # shape (size, size), values float 0.0-1.0
@@ -68,8 +70,8 @@ def raw_img_to_patches(path_raw_data, path_patched_data, thresh_indices = [0, 0.
                 path_patched_folder.mkdir(parents=True)
 
             for j, patch in enumerate(patches):
-                imsave(path_patched_folder.joinpath('image_%s.png'%j), patch[0],'png')
-                imsave(path_patched_folder.joinpath('mask_%s.png'%j), patch[1],'png')
+                ads.imwrite(path_patched_folder.joinpath('image_%s.png'%j), patch[0])
+                ads.imwrite(path_patched_folder.joinpath('mask_%s.png'%j), patch[1])
 
 def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None):
     """
@@ -112,11 +114,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data.name, flatten=True, mode='L')
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        mask = ads.imread(path_patches_folder / data.name)
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
@@ -124,8 +126,8 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
 
                 # Saving the images in the new folder
                 for img,k in L_img_sorted:
-                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
-                    imsave(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0], 'png')
+                    ads.imwrite(path_dataset.joinpath('image_%s.png'%i), img)
+                    ads.imwrite(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0])
                     i = i+1 # Using the global i here.
 
     # Else we are using different types of acquisitions. It's important to have them separated in a SEM folder
@@ -152,19 +154,19 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                     root, index = data.stem.split('_')
 
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data, flatten=True, mode='L')
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        mask = ads.imread(path_patches_folder / data.name)
                         L_mask.append((mask, int(index)))
                 # Now we sort the patches to be sure we get them in the right order
                 L_img_sorted, L_mask_sorted = sort_list_files(L_img, L_mask)
 
                 # Saving the images in the new folder
                 for img,k in L_img_sorted:
-                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
-                    imsave(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0], 'png')
+                    ads.imwrite(path_dataset.joinpath('image_%s.png'%i), img)
+                    ads.imwrite(path_dataset.joinpath('mask_%s.png'%i), L_mask_sorted[k][0])
                     i = i+1
         # Then we stratify - oversample the minority acquisition to the new dataset
 
@@ -186,11 +188,11 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 for data in filenames:
                     root, index = data.stem.split('_')
                     if 'image' in data.name:
-                        img = imread(path_patches_folder / data, flatten=True, mode='L')
+                        img = ads.imread(path_patches_folder / data.name)
                         L_img.append((img, int(index)))
 
                     elif 'mask' in data.name:
-                        mask = imread(path_patches_folder / data, flatten=True, mode='L')
+                        mask = ads.imread(path_patches_folder / data.name)
                         L_mask.append((mask, int(index)))
 
                 # Now we sort the patches to be sure we get them in the right order
@@ -206,8 +208,8 @@ def patched_to_dataset(path_patched_data, path_dataset, type_, random_seed=None)
                 for j in range(L_elements_to_save.shape[0]):
                     img = L_elements_to_save[j][0]
                     mask = L_elements_to_save[j][2]
-                    imsave(path_dataset.joinpath('image_%s.png'%i), img, 'png')
-                    imsave(path_dataset.joinpath('mask_%s.png'%i), mask, 'png')
+                    ads.imwrite(path_dataset.joinpath('image_%s.png'%i), img)
+                    ads.imwrite(path_dataset.joinpath('mask_%s.png'%i), mask)
                     i = i+1
 
 
@@ -246,3 +248,50 @@ def find_minority_type(SEM_patches_folder, TEM_patches_folder):
         len_majority = SEM_len
 
     return minority_patches_folder, len_minority, majority_patches_folder, len_majority
+
+def split_data(raw_dir, out_dir, seed=2019, split = [0.8, 0.2], override=False):
+    """
+    Splits a dataset into training and validation folders. 
+    :param raw_dir: Raw dataset folder containing a set of subdirectories to be split.
+    :param out_dir: Output directory of splitted dataset
+    :param seed: Random number generator seed.
+    :param split: Split fractions ([Train, Validation]).
+    :param override: Bool. If out_dir exists and is True, the directory will be overwritten.
+    """
+    
+    # If string, convert to Path objects
+    raw_dir = convert_path(raw_dir)
+    out_dir = convert_path(out_dir)
+    
+    # Handle case if output dir already exists
+    if out_dir.is_dir():
+        if override == True:
+            shutil.rmtree(out_dir)
+        else:
+            raise IOError("Directory " + str(out_dir) + " already exist. Delete or change override option.")
+    
+    
+    # Get splits for Training and Validation
+    split_train = split[0]
+    split_valid = split[1]
+
+    # get sorted list of image directories
+    dirs=sorted([x for x in raw_dir.iterdir() if x.is_dir()])
+
+    # Create directories for splitted datasets
+    train_dir = out_dir / "Train"
+    train_dir.mkdir(parents=True, exist_ok=True)
+
+    valid_dir = out_dir / "Validation"
+    valid_dir.mkdir(parents=True, exist_ok=True)
+
+    # Randomly assign a number to each image folder for splitting
+    np.random.seed(seed=seed)
+    sorted_indices=np.random.choice(len(dirs), size=len(dirs), replace=False)
+
+    # Move the image dirs from the raw folder to the split folder
+    for index in sorted_indices[:round(len(sorted_indices)*split_train)]:
+        dirs[index].rename(train_dir / dirs[index].parts[-1])
+
+    for index in sorted_indices[-round(len(sorted_indices)*split_valid):]:
+        dirs[index].rename(valid_dir / dirs[index].parts[-1])

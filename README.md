@@ -19,11 +19,15 @@ For more information, see the [documentation website](http://axondeepseg.readthe
 If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues). We will reply to you as soon as possible.
 
 
+### FSLeyes plugin
+
+A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
+
 ## References
 
 **AxonDeepSeg**
 
-* Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data.* Montreal Artificial Intelligence and Neuroscience 2018 - \[[**source code**](https://github.com/neuropoly/deep-active-learning)\]
+* [Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data.* Montreal Artificial Intelligence and Neuroscience 2019](https://arxiv.org/abs/1907.05143) - \[[**source code**](https://github.com/neuropoly/deep-active-learning)\]
 * [Zaimi et al. *AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks.* Scientific Reports 2018](https://www.nature.com/articles/s41598-018-22181-4)
 
 **Applications**
@@ -58,4 +62,4 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 ## Contributors
 
-Pierre-Louis Antonsanti, Stoyan Asenov, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Antoine Moevus, Christian Perone, Vasudev Sharma, Thibault Tabarin, Maxime Wabartha, Aldo Zaimi.
+Pierre-Louis Antonsanti, Stoyan Asenov, Mathieu Boudreau, Oumayma Bounou, Marie-Hélène Bourget, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Antoine Moevus, Christian Perone, Vasudev Sharma, Thibault Tabarin, Maxime Wabartha, Aldo Zaimi.

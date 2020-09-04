@@ -12,20 +12,28 @@ import AxonDeepSeg.ads_utils
 import keras
 
 from keras.models import *
-from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import *
 
 # Keras import
-from keras.losses import categorical_crossentropy
 import keras.backend.tensorflow_backend as K
-
 
 K.set_session
 import tensorflow as tf
+from albumentations import *
+import random
+import cv2
 
 
-def train_model(path_trainingset, path_model, config, path_model_init=None,
-                save_trainable=True, gpu=None, debug_mode=False, gpu_per=1.0):
+def train_model(
+    path_trainingset,
+    path_model,
+    config,
+    path_model_init=None,
+    save_trainable=True,
+    gpu=None,
+    debug_mode=False,
+    gpu_per=1.0,
+):
     """
     Main function. Trains a model using the configuration parameters.
     :param path_trainingset: Path to access the trainingset.
@@ -48,8 +56,6 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     ############################################## VARIABLES INITIALIZATION ###########################################
     ###################################################################################################################
 
-
-
     # Results and Models
     if not path_model.exists():
         path_model.mkdir(parents=True)
@@ -60,12 +66,21 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     epochs = config["epochs"]
     image_size = config["trainingset_patchsize"]
     thresh_indices = config["thresholds"]
-
+    if "checkpoint" in config:
+        checkpoint = config["checkpoint"]
+    else:
+        # For retrocompatibility with old configs
+        checkpoint = None
+    if "checkpoint_period" in config:
+        checkpoint_period = config["checkpoint_period"]
+    else:
+        # For retrocompatibility with old configs
+        checkpoint_period = 5
 
     # Training and Validation Path
+
     path_training_set = path_trainingset / "Train"
     path_validation_set = path_trainingset / "Validation"
-
 
     # List of Training Ids
     no_train_images = int(len(os.listdir(path_training_set)) / 2)
@@ -75,126 +90,212 @@ def train_model(path_trainingset, path_model, config, path_model_init=None,
     no_valid_images = int(len(os.listdir(path_validation_set)) / 2)
     valid_ids = [str(i) for i in range(no_valid_images)]
 
-    # Loading the Training images and masks in batch
-    train_gen = DataGen(train_ids, path_training_set, batch_size=no_train_images, image_size=image_size,
-                        thresh_indices=thresh_indices)
-    image_train_gen, mask_train_gen = train_gen.__getitem__(0)
-
-    # Loading the Validation images and masks in batch
-    valid_gen = DataGen(valid_ids, path_validation_set, batch_size=no_valid_images, image_size=image_size,
-                        thresh_indices=thresh_indices)
-    image_valid_gen, mask_valid_gen = valid_gen.__getitem__(0)
-
     ###################################################################################################################
     ############################################# DATA AUGMENTATION ##################################################
     ###################################################################################################################
 
-    # Data dictionary to feed into image generator
-    data_gen_args = dict(horizontal_flip=True,
-                         # flipping()[1],
-                         vertical_flip=True,
-                         # preprocessing_function = elastic
-                         # flipping()[0],
-                         # rotation_range = random_rotation()[0],
-                         # width_shift_range = shifting(patch_size, n_classes)[1],
-                         # height_shift_range = shifting(patch_size, n_classes) [0],
-                         # fill_mode = "constant",
-                         # cval = 0
-                         )
+    shifting = (config["da-0-shifting-activate"],)
+    rescaling = config["da-1-rescaling-activate"]
+    rotation = config["da-2-random_rotation-activate"]
+    elastic = config["da-3-elastic-activate"]
+    flipping = config["da-4-flipping-activate"]
+    gaussian_blur = False   # Gaussian Blur preserved for retrocompatibility with old configs
+    if "da-5-gaussian_blur-activate" in config:
+        gaussian_blur = config["da-5-gaussian_blur-activate"]
+    elif "da-5-noise_addition-activate" in config:
+        gaussian_blur = config["da-5-noise_addition-activate"]
+    reflection_border = config[
+        "da-6-reflection_border-activate"
+    ]  # Config parameter to determine whether relection or constant(value = 0) is used for border pixel values while performing augmentation operations such as rotation, rescaling and shifting.
 
-    #####################Training###################
-    image_datagen = ImageDataGenerator(**data_gen_args)
-    mask_datagen = ImageDataGenerator(**data_gen_args)
+    if reflection_border:
+        border_mode = cv2.BORDER_REFLECT_101
+    else:
+        border_mode = cv2.BORDER_CONSTANT
 
-    seed = 2018
+    p_shift = p_rescale = p_rotate = p_elastic = p_flip = p_blur = 0
+    # If the key values of augmentation are set to True then their respective probability are set to 0.5 else to 0. Probalility(p) suggests a certainity of applying data augmentation operations (shift, rotate, blur, elastic, flip) to an image.
 
-    # Image and Mask Data Generator
-    image_generator_train = image_datagen.flow(image_train_gen, y=None, seed = seed,  batch_size=batch_size, shuffle=True)
-    mask_generator_train = mask_datagen.flow(mask_train_gen, y=None, seed = seed, batch_size=batch_size, shuffle=True)
+    # Probability value of 0.5 is chosen so that the original as well augmented image are taken into account while training the model.
+    if shifting:
+        p_shift = 0.5
+    if rotation:
+        p_rotate = 0.5
+    if flipping:
+        p_flip = 0.5
+    if gaussian_blur:
+        p_blur = 0.5
+    if elastic:
+        p_elastic = 0.5
 
-    # Just zip the two generators to get a generator that provides augmented images and masks at the same time
-    train_generator = zip(image_generator_train, mask_generator_train)
+    #####Data Augmentation parameters#####
 
-    ###########################Validation###########
-    data_gen_args = dict()
-    image_datagen = ImageDataGenerator(**data_gen_args)
-    mask_datagen = ImageDataGenerator(**data_gen_args)
+    # Elastic transform parameters
+    alpha_max = 9
+    sigma = 3
+    alpha = random.choice(list(range(1, alpha_max)))
 
+    # Random rotation parameters
+    low_bound = 5
+    high_bound = 89
 
-    image_generator_valid = image_datagen.flow(x=image_valid_gen, y=None,  batch_size=batch_size, seed = seed, shuffle=False)
-    mask_generator_valid = mask_datagen.flow(x=mask_valid_gen, y=None,  batch_size=batch_size, seed = seed, shuffle=False)
+    # Shifting parameters
+    percentage_max = 0.1
+    size_shift = int(percentage_max * image_size)
+    low_limit = 0
+    high_limit = (2 * size_shift - 1) / image_size
 
-    # Just zip the two generators to get a generator that provides augmented images and masks at the same time
-    valid_generator = zip(image_generator_valid, mask_generator_valid)
+    ######################################
+
+    AUGMENTATIONS_TRAIN = Compose(
+        [
+            # Randomy flips an image either horizontally, vertically or both.
+            Flip(p=p_flip),
+            # Randomly rotates an image between low limit and high limit.
+            ShiftScaleRotate(
+                shift_limit=(low_limit, high_limit),
+                scale_limit=(0, 0),
+                rotate_limit=(0, 0),
+                border_mode=border_mode,
+                p=p_shift,
+                interpolation=cv2.INTER_NEAREST,
+            ),
+            # Randomly applies elastic transformation on the image.
+            ElasticTransform(
+                alpha=alpha,
+                sigma=sigma,
+                p=p_elastic,
+                alpha_affine=alpha,
+                interpolation=cv2.INTER_NEAREST,
+            ),
+            # Blurs an image using gaussian kernel.
+            GaussianBlur(p=p_blur),
+            # Randomly rotates the image between low bound and high bound.
+            Rotate(
+                limit=(low_bound, high_bound),
+                border_mode=border_mode,
+                p=p_rotate,
+                interpolation=cv2.INTER_NEAREST,
+            ),
+        ]
+    )
+
+    AUGMENTATIONS_TEST = Compose([])
+
+    ###################################################################################################################
+
+    # Loading the Training images and masks in batch
+    train_generator = DataGen(
+        train_ids,
+        path_training_set,
+        batch_size=batch_size,
+        image_size=image_size,
+        thresh_indices=thresh_indices,
+        augmentations=AUGMENTATIONS_TRAIN,
+    )
+
+    # Loading the Validation images and masks in batch
+    valid_generator = DataGen(
+        valid_ids,
+        path_validation_set,
+        batch_size=batch_size,
+        image_size=image_size,
+        thresh_indices=thresh_indices,
+        augmentations=AUGMENTATIONS_TEST,
+    )
 
     ########################### Initalizing U-Net Model ###########
+
     model = uconv_net(config, bn_updated_decay=None, verbose=True)
 
     ########################### Tensorboard for Visualization ###########
-    # Name = "SEM_3c_dataset-{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
     tensorboard = TensorBoard(log_dir=str(path_model))
 
     ########################## Training Unet Model ###########
 
     # Adam Optimizer for Unet
-    adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    adam = keras.optimizers.Adam(
+        lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0
+    )
 
     # Compile the model with Categorical Cross Entropy loss and Adam Optimizer
-    model.compile(optimizer=adam, loss="categorical_crossentropy",
-                  metrics=["accuracy", dice_axon, dice_myelin])
+    model.compile(
+        optimizer=adam,
+        loss=dice_coef_loss,
+        metrics=["accuracy", dice_axon, dice_myelin],
+    )
 
     train_steps = len(train_ids) // batch_size
     valid_steps = len(valid_ids) // batch_size
 
-    ########################## Use Checkpoints to save best Acuuracy and Loss ###########
+    ########################## Use Checkpoints to save best Accuracy and Loss ###########
 
     # Save the checkpoint in the /models/path_model folder
     filepath_acc = str(path_model) + "/best_acc_model.ckpt"
 
     # Keep only a single checkpoint, the best over test accuracy.
-    checkpoint_acc = ModelCheckpoint(filepath_acc,
-                                     monitor='val_acc',
-                                     verbose=0,
-                                     save_best_only=True,
-                                     mode='max', period = 5)
+    checkpoint_acc = ModelCheckpoint(
+        filepath_acc,
+        monitor="val_acc",
+        verbose=0,
+        save_best_only=True,
+        mode="max",
+        period=checkpoint_period,
+    )
 
     # Save the checkpoint in the /models/path_model folder
     filepath_loss = str(path_model) + "/best_loss_model.ckpt"
 
-
     # Keep only a single checkpoint, the best over test loss.
-    checkpoint_loss = ModelCheckpoint(filepath_loss,
-                                      monitor='val_loss',
-                                      verbose=0,
-                                      save_best_only=True,
-                                      mode='min', period = 5)
+    checkpoint_loss = ModelCheckpoint(
+        filepath_loss,
+        monitor="val_loss",
+        verbose=0,
+        save_best_only=True,
+        mode="min",
+        period=checkpoint_period,
+    )
 
+    ########################## Training ###########
+    
+    if checkpoint == "loss":
+        model.load_weights(filepath_loss)
+    elif checkpoint == "accuracy":
+        model.load_weights(filepath_acc)
 
-
-    ########################## Use Checkpoints to save best Acuuracy and Loss ###########
-    model.fit_generator(train_generator, validation_data=(valid_generator), steps_per_epoch=train_steps,
-                        validation_steps=valid_steps,
-                        epochs=epochs, callbacks=[tensorboard, checkpoint_loss, checkpoint_acc])
+    model.fit_generator(
+        train_generator,
+        validation_data=(valid_generator),
+        steps_per_epoch=train_steps,
+        validation_steps=valid_steps,
+        epochs=epochs,
+        callbacks=[tensorboard, checkpoint_loss, checkpoint_acc],
+    )
 
     ########################## Save the model after Training ###########
 
-    model.save(str(path_model) + '/model.hdf5')
-
+    model.save(str(path_model) + "/model.hdf5")
 
     # Add ops to save and restore all the variables.
     saver = tf.train.Saver()
 
     # Save Model in ckpt format
-    custom_objects = {'dice_axon': dice_axon, 'dice_myelin': dice_myelin}
-    model = load_model(str(path_model) + "/model.hdf5", custom_objects=custom_objects)
+    custom_objects = {
+        "dice_axon": dice_axon,
+        "dice_myelin": dice_myelin,
+        "dice_coef_loss": dice_coef_loss,
+    }
+    model = load_model(
+        str(path_model) + "/model.hdf5", custom_objects=custom_objects
+    )
 
     sess = K.get_session()
     # Save the model to be used by TF framework
     save_path = saver.save(sess, str(path_model) + "/model.ckpt")
 
 
-
 # Defining the Loss and  Performance Metrics
+
 
 def dice_myelin(y_true, y_pred, smooth=1e-3):
     """
@@ -207,7 +308,10 @@ def dice_myelin(y_true, y_pred, smooth=1e-3):
     y_true_f = K.flatten(y_true[..., 1])
     y_pred_f = K.flatten(y_pred[..., 1])
     intersection = K.sum(y_true_f * y_pred_f)
-    return K.mean((2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth))
+    return K.mean(
+        (2.0 * intersection + smooth)
+        / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+    )
 
 
 def dice_axon(y_true, y_pred, smooth=1e-3):
@@ -221,18 +325,42 @@ def dice_axon(y_true, y_pred, smooth=1e-3):
     y_true_f = K.flatten(y_true[..., 2])
     y_pred_f = K.flatten(y_pred[..., 2])
     intersection = K.sum(y_true_f * y_pred_f)
-    return K.mean((2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth))
+    return K.mean(
+        (2.0 * intersection + smooth)
+        / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+    )
 
+
+def dice_coef(y_true, y_pred, smooth=1e-3):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return K.mean(
+        (2.0 * intersection + smooth)
+        / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+    )
+
+
+def dice_coef_loss(y_true, y_pred):
+    return 1 - dice_coef(y_true, y_pred)
 
 
 # To Call the training in the terminal
 
+
 def main():
     import argparse
+
     ap = argparse.ArgumentParser()
     ap.add_argument("-p", "--path_training", required=True, help="")
     ap.add_argument("-m", "--path_model", required=True, help="")
-    ap.add_argument("-co", "--config_file", required=False, help="", default="~/.axondeepseg.json")
+    ap.add_argument(
+        "-co",
+        "--config_file",
+        required=False,
+        help="",
+        default="~/.axondeepseg.json",
+    )
     ap.add_argument("-m_init", "--path_model_init", required=False, help="")
     ap.add_argument("-gpu", "--GPU", required=False, help="")
 
@@ -248,6 +376,5 @@ def main():
     train_model(path_training, path_model, config, path_model_init, gpu=gpu)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

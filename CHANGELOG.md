@@ -1,11 +1,29 @@
 Changelog
 ===============================================================================
 
-Version [2.2dev] - XXXX-XX-XX
+Version [3.2] - 2020-06-18
 -------------------------------------------------------------------------------
 
 **Changed:**
 
+- Require Python 3.7.x version at installation
+
+Version [3.1] - 2020-04-15
+-------------------------------------------------------------------------------
+
+**Changed:**
+
+- Resolved bug that caused TEM data to not segment images well (at all).
+
+Version [3.0] - 2020-03-13
+-------------------------------------------------------------------------------
+
+**Changed:**
+
+- Refractored data augmentation to use `Albumentation` library.
+- Cleaned jupyter notebooks and reduced from 13 notebooks to 5.
+- Switched to `Dice Loss` from `Categorical Cross Entropy` as loss function.
+- Updated SEM and TEM models for better performance.
 - Shifted AxonDeepSeg from TensorFlow to Keras framework.
 - Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
 - Resolve image rescale warnings
@@ -13,7 +31,9 @@ Version [2.2dev] - XXXX-XX-XX
 - Revert tensorflow requirekment to 1.3.0 and remove tifffile requirement
 - Remove `matplotlib.pyplot` from source code and refactor to full OO plotting
 - Standardize path management to `pathlib` library
-
+- Shifted AxonDeepSeg from TensorFlow to Keras framework.
+- Upgraded CUDA to 10.0 and tensorflow to 1.13.1.
+- Add FSLeyes plugin
 
 Version [2.1] - 2018-09-25
 -------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-# Can ignore specific files
+# Can ignore ADS specific files/folders
 AxonDeepSeg\.egg-info/
 
 AxonDeepSeg/.adsconfig
@@ -26,6 +26,9 @@ guidelines/test_weights\.ipynb
 notebooks/\.ipynb_checkpoints/
 
 notebooks/test_weights\.ipynb
+
+AxonDeepSeg/models/default_SEM_model/
+AxonDeepSeg/models/default_TEM_model/
 
 # Generated image files
 AxonDeepSeg/data_test/AxonDeepSeg*

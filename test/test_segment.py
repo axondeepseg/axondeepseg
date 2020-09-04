@@ -17,7 +17,7 @@ class TestCore(object):
             self.projectPath /
             'AxonDeepSeg' /
             'models' /
-            'default_SEM_model_v1'
+            'default_SEM_model'
             )
 
         self.imageFolderPath = (
@@ -25,6 +25,9 @@ class TestCore(object):
             '__test_files__' /
             '__test_segment_files__'
             )
+        self.relativeImageFolderPath = Path(
+            'test/__test_files__/__test_segment_files__'
+        )
 
         self.imagePath = self.imageFolderPath / 'image.png'
 
@@ -117,6 +120,30 @@ class TestCore(object):
 
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
+
+    @pytest.mark.integration
+    def test_segment_folders_runs_with_relative_path(self):
+
+        path_model, config = generate_default_parameters('SEM', str(self.modelPath))
+
+        overlap_value = 25
+        resolution_model = generate_resolution('SEM', 512)
+
+        outputFiles = [
+            'image_seg-axon.png',
+            'image_seg-myelin.png',
+            'image_seg-axonmyelin.png'
+            ]
+
+        segment_folders(
+            path_testing_images_folder=str(self.relativeImageFolderPath),
+            path_model=str(path_model),
+            overlap_value=overlap_value,
+            config=config,
+            resolution_model=resolution_model,
+            acquired_resolution=0.37,
+            verbosity_level=2
+            )
 
     # --------------segment_image tests-------------- #
     @pytest.mark.integration

@@ -76,7 +76,6 @@ class TestCore(object):
         tmpPath = fullPath / '__tmp__'
         if tmpPath.exists():
             shutil.rmtree(tmpPath)
-        pass
 
     # --------------validate_config tests-------------- #
     @pytest.mark.unit
@@ -142,8 +141,7 @@ class TestCore(object):
     # --------------grid_config tests-------------- #
     @pytest.mark.unit
     def test_grid_config_feature_augmentation_x(self):
-        # Sample L_struct and dict_params values below taken from
-        # guide_bireli.ipynb
+        # Sample L_struct and dict_params values
         L_struct = [{
             'structure': [[5, 5, 5], [3, 3, 3], [3, 3, 3], [3, 3, 3]],
             'features_augmentation': 'x2',
@@ -166,8 +164,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_grid_config_feature_augmentation_p(self):
-        # Sample L_struct and dict_params values below taken from
-        # guide_bireli.ipynb
+        # Sample L_struct and dict_params values
         L_struct = [{
             'structure': [[5, 5, 5], [3, 3, 3], [3, 3, 3], [3, 3, 3]],
             'features_augmentation': 'p2',
@@ -190,8 +187,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_grid_config_feature_augmentation_invalid(self):
-        # Sample L_struct and dict_params values below taken from
-        # guide_bireli.ipynb
+        # Sample L_struct and dict_params values
 
         # Note: 'features_augmentation':'d2'-> d is not a valid augmentation
         # flag.

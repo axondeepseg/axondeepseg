@@ -6,14 +6,13 @@ import numpy as np
 from tqdm import tqdm
 import pickle
 from AxonDeepSeg.apply_model import axon_segmentation
-from scipy.misc import imread
 from prettytable import PrettyTable
 from sklearn.metrics import accuracy_score, log_loss
 from AxonDeepSeg.testing.segmentation_scoring import pw_dice
 import time
 from AxonDeepSeg.config_tools import rec_update
 import pandas as pd
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
 
 def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_resolution, overlap_value=25,
@@ -226,7 +225,7 @@ def generate_statistics(path_model_folder, path_images_folder, resampled_resolut
                 current_network_output = outputs_network[i]
 
                 # Reading the images and processing them
-                mask_raw = imread(image_folder / 'mask.png', flatten=True, mode='L')
+                mask_raw = ads.imread(image_folder / 'mask.png')
                 mask = labellize(mask_raw)
 
                 # We infer the name of the different files
@@ -463,7 +462,7 @@ def main():
     import argparse
     ap = argparse.ArgumentParser()
 
-    ap.add_argument("-m", "--model", required=False, default="../models/defaults/default_SEM_model_v1/")
+    ap.add_argument("-m", "--model", required=False, default="../models/defaults/default_SEM_model/")
     ap.add_argument("-d", "--data", required=False, default="../../data/baseline_validation/")
     ap.add_argument("-t", "--type", required=False, default="single")
     ap.add_argument("-r", "--resolution", required=False, default=0.1)

@@ -4,18 +4,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from skimage import io
-from scipy.misc import imread, imsave
-import imageio
 
 # AxonDeepSeg modules import
-import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
 
 def get_masks(path_prediction):
     # If string, convert to Path objects
     path_prediction = convert_path(path_prediction)
 
-    prediction = imageio.imread(path_prediction)
+    prediction = ads.imread(path_prediction)
 
     # compute the axon mask
     axon_prediction = prediction > 200
@@ -34,8 +32,8 @@ def get_masks(path_prediction):
     # Save masks
     filename_axon   = filename_part + '_seg-axon.png'
     filename_myelin = filename_part + '_seg-myelin.png'
-    imageio.imwrite(folder_path / filename_axon, axon_prediction.astype(int))
-    imageio.imwrite(folder_path / filename_myelin, myelin_prediction.astype(int))
+    ads.imwrite(folder_path / filename_axon, axon_prediction.astype(int))
+    ads.imwrite(folder_path / filename_myelin, myelin_prediction.astype(int))
 
     return axon_prediction, myelin_prediction
 
@@ -60,6 +58,30 @@ def rgb_rendering_of_mask(pred_img, writing_path=None):
     if writing_path is not None:
         # If string, convert to Path objects
         writing_path = convert_path(writing_path)
-        imageio.imwrite(writing_path, rgb_mask)
+        ads.imwrite(writing_path, rgb_mask)
 
     return rgb_mask
+
+def get_image_unique_vals_properties(image):
+    """
+    Returns dict with image unique values properties.
+    :param image: np.ndarray or string path to image an file.
+    :return: image_properties: dict.
+        Keys:
+            num_uniques: Integer number of unique pixel values in the image.
+            unique_values: Array containing the unique pixel values in the
+                           image.
+    """
+    if not isinstance(image, np.ndarray):
+        try:
+            image = ads.imread(image)
+        except:
+            raise IOError('AxonDeepSeg.get_image_unique_vals_properties: Error '
+                          'reading image. Function arg must be either an '
+                          'np.ndarray or string path to an image file.')
+
+    image_properties = dict()
+    image_properties['unique_values'] = np.unique(image)
+    image_properties['num_uniques'] = len(image_properties['unique_values'])
+
+    return image_properties
