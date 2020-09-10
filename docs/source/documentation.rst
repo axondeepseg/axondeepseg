@@ -192,10 +192,6 @@ Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
 
-Downgrade from latest version of indexed_gzip to the most recent working version ::
-
-           yes | conda install -c conda-forge indexed_gzip=1.2.0
-
 Launch FSLeyes ::
 
            fsleyes
@@ -224,10 +220,6 @@ Install wxPython using conda ::
 Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
-
-Downgrade from latest version of indexed_gzip to the most recent working version ::
-
-           yes | conda install -c conda-forge indexed_gzip=1.2.0
 
 Launch FSLeyes ::
 
