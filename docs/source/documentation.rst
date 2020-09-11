@@ -145,7 +145,7 @@ instruction above::
         pip install -e .
 
 .. WARNING ::
-   When re-installing the application, the ``default_SEM_model`` and ``default_TEM_model`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded, make sure to not store valuable data in these folders.
+   When re-installing the application, the ``default_SEM_model`` and ``default_TEM_model`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
 Testing the installation
 ------------------------
