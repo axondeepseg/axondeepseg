@@ -52,6 +52,8 @@ class TestCore(object):
             "batch_size": 2,
             "epochs":2,
             "save_epoch_freq": 1,
+            "checkpoint": None,
+            "checkpoint_period": 5,
 
             # Network architecture parameters:
             "depth": 2,
@@ -88,7 +90,6 @@ class TestCore(object):
             # Data augmentation parameters:
             "da-type": "all",
             "da-2-random_rotation-activate": False,
-            "da-5-gaussian_blur-activate": False,
             "da-3-elastic-activate": True,
             "da-0-shifting-activate": True,
             "da-4-flipping-activate": True,
