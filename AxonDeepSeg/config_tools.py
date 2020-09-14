@@ -58,6 +58,7 @@ def default_configuration():
      'da-gaussian_blur-order': 6,
      'da-gaussian_blur-sigma_max': 1.5,
      'da-5-noise_addition-activate': False,
+     'da-6-reflection_border-activate': False,
      'da-noise_addition-order': 5,
      'da-2-random_rotation-activate': False,
      'da-random_rotation-high_bound': 89,
