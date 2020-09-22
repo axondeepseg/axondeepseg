@@ -16,7 +16,7 @@ The following sections will help you install all the tools you need to run AxonD
 
 Miniconda
 ---------
-Starting with versions 3.2+, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
+Starting with version 3.1, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
 a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
 virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
@@ -108,13 +108,6 @@ AxonDeepSeg
 .. WARNING ::
    Ensure that the virtual environment is activated before you begin your installation.
 
-Stable release
-~~~~~~~~~~~~~~
-You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
-
-    pip install axondeepseg
-
-
 Development version
 ~~~~~~~~~~~~~~~~~~~
 
@@ -165,8 +158,6 @@ This integrity test automatically performs the axon and myelin segmentation of a
 
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
-.. NOTE ::
-   This feature is not available if you installed AxonDeepSeg using ``pip``.
 
 To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
 
@@ -242,8 +233,7 @@ Known issues
 GPU-compatible installation
 ---------------------------
 .. NOTE ::
-   This feature is not available if you installed AxonDeepSeg using ``pip``,
-   or if you are using a macOS.
+   This feature is not available if you are using a macOS.
 
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
 using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
