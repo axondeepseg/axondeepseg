@@ -35,7 +35,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.13"
+VERSION = "0.2.14"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -161,7 +161,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 "Calculates and saves the morphometrics to an excel and csv file. "
                 "Shows the numbers of the axons at the coordinates specified in the morphometrics file."
             )
-        ) 
+        )
         sizer_h.Add(compute_morphometrics_button, flag=wx.SHAPED, proportion=1)
 
         # Set the sizer of the control panel
@@ -615,6 +615,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
             # save the current contents in the file
             pathname = fileDialog.GetPath()
+            if not (pathname.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
+                pathname = pathname + ".xlsx"
             try:
                 # Export to excel
                 pd.DataFrame(x).to_excel(pathname)
@@ -623,9 +625,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
         # Create the axon coordinate array
+        mean_diameter_in_pixel = np.average(x['axon_diam']) / pixel_size
         axon_indexes = np.arange(x.size)
         number_array = postprocessing.generate_axon_numbers_image(axon_indexes, x['x0'], x['y0'],
-                                                                  tuple(reversed(axon_array.shape)))
+                                                                  tuple(reversed(axon_array.shape)),
+                                                                  mean_diameter_in_pixel)
 
         # Load the axon coordinate image into FSLeyes
         number_outfile = self.ads_temp_dir.name + "/numbers.png"
