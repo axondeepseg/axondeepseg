@@ -209,8 +209,8 @@ def download_data(url_data):
             # Unzip
             print("Unzip...")
             try:
-                zf = zipfile.ZipFile(str(tmp_path))
-                zf.extractall(".")
+                with zipfile.ZipFile(str(tmp_path)) as zf:
+                    zf.extractall(".")
             except (zipfile.BadZipfile):
                 print('ERROR: ZIP package corrupted. Please try downloading again.')
                 return 1
