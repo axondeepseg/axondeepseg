@@ -1,7 +1,7 @@
 Changelog
 ===============================================================================
 
-## Version 3.2.0 - 2020-10-09
+## Version 3.2.0 - 2020-10-13
 [View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.0...v3.2.0)
 
 **BUG**
@@ -33,6 +33,7 @@ Changelog
 
 **INSTALLATION**
 
+ - Fix for the Windows installation.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/362)
  - Move test images in default models folder.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/344)
  - Upgrade to Python 3.7.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/307)
  - Use a specific version of FSLeyes for the plugin.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/305)
