@@ -1,7 +1,7 @@
 Changelog
 ===============================================================================
 
-## Version 3.2.0 - 2020-10-13
+## Version 3.2.0 - 2020-10-16
 [View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.0...v3.2.0)
 
 **BUG**
