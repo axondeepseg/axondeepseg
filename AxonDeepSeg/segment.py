@@ -159,10 +159,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
         img_name_original = file_.stem
 
-        if selected_model == "default_TEM_model":
-            ads.imwrite(fp,255-img, format='png')
-        else:
-            ads.imwrite(fp,img, format='png')
+        ads.imwrite(fp,img, format='png')
 
         acquisition_name = Path(fp.name).name
         segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
