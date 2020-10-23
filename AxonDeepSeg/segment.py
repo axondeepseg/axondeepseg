@@ -159,7 +159,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
         img_name_original = file_.stem
 
-        ads.imwrite(fp,img, format='png')
+        ads.imwrite(fp, img, format='png')
 
         acquisition_name = Path(fp.name).name
         segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
