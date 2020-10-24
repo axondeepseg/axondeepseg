@@ -64,3 +64,18 @@ class TestCore(object):
         for i in range(expectations.__len__()):
             assert np.array_equal(expectations[i], obtained_results[i])
 
+    @pytest.mark.unit
+    def test_generate_axon_numbers_image_returns_expected_array(self):
+        # Load the test image
+        expected_image = ads_utils.imread((self.test_files_path / 'test_numbers_image.png'))
+        expected_image = np.array(expected_image)
+
+        # Atempt to recreate the test image
+        obtained_image = postprocessing.generate_axon_numbers_image(
+            centroid_index=np.array([0]),
+            x0_array=[20],
+            y0_array=[10],
+            image_size=(30, 30),
+            mean_axon_diameter_in_pixels=6
+        )
+        assert np.array_equal(expected_image, obtained_image)
