@@ -1,19 +1,42 @@
 Changelog
 ===============================================================================
 
-Version [3.2] - 2020-06-18
--------------------------------------------------------------------------------
+## Version 3.2.0 - 2020-10-16
+[View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.0...v3.2.0)
 
-**Changed:**
+**BUG**
 
-- Require Python 3.7.x version at installation
+ - Fix redownloading models bug.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/322)
+ - [Bug] Resolve segment folder bug when using relative paths.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/320)
+ - Resolve bug that makes TEM data not segment well (#293 and #249).  [View pull request](https://github.com/neuropoly/axondeepseg/pull/294)
+ - Add missing import to apply_model.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/290)
 
-Version [3.1] - 2020-04-15
--------------------------------------------------------------------------------
+**ENHANCEMENT**
 
-**Changed:**
+ - FSLeyes plugin: default morphometrics file extension and font size .  [View pull request](https://github.com/neuropoly/axondeepseg/pull/358)
+ - Remove gaussian blur option for data augmentation.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/332)
+ - Remove overlap when saving masks.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/328)
+ - Resume training from checkpoint.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/301)
 
-- Resolved bug that caused TEM data to not segment images well (at all).
+**FEATURE**
+
+ - Add an "Axon numbers" overlay in FSLeyes.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/342)
+ - [FSLeyes plugin] changed Image.save/open with ads_utils.read/write.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/296)
+
+**DOCUMENTATION**
+
+ - Add warning to doc for re-download of model folders when re-installing.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/351)
+ - Update documentation for manual masks creation.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/338)
+ - Add resampled_resolutions parameter in getting_started notebook.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/325)
+ - [Doc] Add notice about restarting FSLeyes to see the plugin for installation.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/317)
+ - Fix format in Changelog.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/291)
+
+**INSTALLATION**
+
+ - Fix for the Windows installation.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/362)
+ - Move test images in default models folder.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/344)
+ - Upgrade to Python 3.7.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/307)
+ - Use a specific version of FSLeyes for the plugin.  [View pull request](https://github.com/neuropoly/axondeepseg/pull/305)
 
 Version [3.0] - 2020-03-13
 -------------------------------------------------------------------------------
