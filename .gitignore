@@ -29,6 +29,7 @@ notebooks/test_weights\.ipynb
 
 AxonDeepSeg/models/default_SEM_model/
 AxonDeepSeg/models/default_TEM_model/
+test/__test_files__
 
 # Generated image files
 AxonDeepSeg/data_test/AxonDeepSeg*
