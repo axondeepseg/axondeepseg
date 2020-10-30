@@ -21,7 +21,10 @@ If you experience issues during installation and/or use of AxonDeepSeg, you can 
 
 ### FSLeyes plugin
 
-A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
+A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube<img src="https://github.com/neuropoly/axondeepseg/blob/master/docs/source/_static/logo_youtube.png"
+     alt="Youtube logo"
+     style="float: left; margin-right: 10px;" />
+, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
 
 ## References
 

@@ -14,6 +14,7 @@ The following sections will help you install all the tools you need to run AxonD
            However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg
            for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
 
+In case, you find trouble installing ADS or FSLeyes pulugin you could refer to our youtube video 
 Miniconda
 ---------
 Starting with version 3.2.0, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
