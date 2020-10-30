@@ -16,6 +16,7 @@ from requests.packages.urllib3.util import Retry
 from tqdm import tqdm
 import raven
 import imageio
+import numpy as np
 
 DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
@@ -269,6 +270,24 @@ def imwrite(filename, img, format='png'):
     """ Write image.
     """
     imageio.imwrite(filename, img, format=format)
+
+def extract_axon_and_myelin_masks_from_image_data(image_data):
+    """
+    Returns the binary axon and myelin masks from the image data.
+    :param image_data: the image data that contains the 8-bit greyscale data, with over 200 (usually 255 if following
+    the ADS convention) being axons, 100 to 200 (usually 127 if following the ADS convention) being myelin
+    and 0 being background
+    :return axon_mask: the binairy axon mask
+    :return myelin_mask: the binary myelin mask
+    """
+    image_data_array = np.array(image_data)
+    axon_mask = image_data_array > 200
+    myelin_mask = (image_data_array > 100) & (image_data_array < 200)
+
+    axon_mask = axon_mask.astype(np.uint8)
+    myelin_mask = myelin_mask.astype(np.uint8)
+
+    return axon_mask, myelin_mask
     
 def get_existing_models_list():
     """
