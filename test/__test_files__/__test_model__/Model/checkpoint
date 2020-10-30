@@ -1,2 +1,0 @@
-model_checkpoint_path: "/Users/mathieuboudreau/neuropoly/github/axondeepseg/test/__test_files__/__test_training_files__/Model/model.ckpt"
-all_model_checkpoint_paths: "/Users/mathieuboudreau/neuropoly/github/axondeepseg/test/__test_files__/__test_training_files__/Model/model.ckpt"
