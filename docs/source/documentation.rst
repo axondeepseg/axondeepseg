@@ -68,16 +68,15 @@ installer compatible with your Windows system (64 bit recommended). After the do
 downloaded file, and follow the instructions. If you are unsure about any of the
 installation options, we recommend you use the default settings.
 
-Git (optional)
---------------
-Git is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
-service that hosts Git repositories, having Git installed on your system allows you
+git
+---
+``git`` is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
+service that hosts ``git`` repositories, having ``git`` installed on your system allows you
 to download the most up-to-date development version of AxonDeepSeg from a terminal, and 
 also allows you to contribute to the project if you wish to do so.
 
-Although an optional step (AxonDeepSeg can also be downloaded other ways, see below), if you 
-want to install Git, please follow instructions for your operating system on the 
-`Git website <https://git-scm.com/downloads>`_
+To install ``git``, please follow instructions for your operating system on the 
+`git website <https://git-scm.com/downloads>`_
 
 Virtual Environment
 -------------------
