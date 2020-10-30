@@ -107,10 +107,7 @@ AxonDeepSeg
 .. WARNING ::
    Ensure that the virtual environment is activated before you begin your installation.
 
-Development version
-~~~~~~~~~~~~~~~~~~~
-
-To install the development version of AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
+To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
 have ``git`` installed on your system)::
 
     git clone https://github.com/neuropoly/axondeepseg.git
