@@ -16,9 +16,10 @@ pytest-cov==2.5.1
 prettytable==0.7.2
 raven==6.8.0
 jupyter>=1.0.0
-Keras==2.2.5
+Keras==2.2.4
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.0
 opencv-contrib-python==4.1.0.25
 albumentations==0.3.0
 openpyxl==2.6.3
+h5py~=2.10.0
