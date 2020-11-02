@@ -19,6 +19,7 @@ from AxonDeepSeg.testing.segmentation_scoring import *
 from AxonDeepSeg.ads_utils import convert_path
 
 
+
 def get_pixelsize(path_pixelsize_file):
     """
     :param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
@@ -44,16 +45,23 @@ def get_pixelsize(path_pixelsize_file):
     else:
         return pixelsize
 
+def print_hello():
+    print("Hello the import is working as expected")
+    return
 
-def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None):
+
+
+def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, ellipse = False):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
     :param im_axon: Array: axon binary mask, output of axondeepseg
     :param path_folder: str: absolute path of folder containing pixel size file
     :param im_myelin: Array: myelin binary mask, output of axondeepseg
+    :param ellipse: Boolean: if axon is considered ellipse, set to True else if considered circle, set to False.
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
+
     if path_folder is not None:
         # If string, convert to Path objects
         path_folder = convert_path(path_folder)
@@ -108,8 +116,12 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         solidity = prop_axon.solidity
         # Eccentricity
         eccentricity = prop_axon.eccentricity
-        # Axon equivalent diameter in micrometers
-        axon_diam = prop_axon.equivalent_diameter * pixelsize
+        if not ellipse:
+            # Axon equivalent diameter in micrometers
+            axon_diam = prop_axon.equivalent_diameter * pixelsize
+        else: 
+            # Axon diameter using ellipse minor axis in micrometers
+            axon_diam = prop_axon.minor_axis_length * pixelsize
         # Axon area in µm^2
         axon_area = prop_axon.area * (pixelsize ** 2)
         # Axon orientation angle
@@ -132,7 +144,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 idx = axonmyelin_labels_list.index(label_axonmyelin)
                 prop_axonmyelin = axonmyelin_objects[idx]
 
-                _res1 = evaluate_myelin_thickness_in_px(prop_axon, prop_axonmyelin)
+                _res1 = evaluate_myelin_thickness_in_px(prop_axon, prop_axonmyelin, ellipse)
                 myelin_thickness = pixelsize * _res1
 
                 _res2 = evaluate_myelin_area_in_px(prop_axon, prop_axonmyelin)
@@ -154,27 +166,32 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
     return stats_array
 
-def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object):
+def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object ,ellipse):
     """
-    Returns the equivalent thickness of a myelin ring around an axon of a
-    given equivalent diameter (see note [1] below). The result is in pixels.
+    Returns the  thickness of a myelin ring around an axon of a
+    given equivalent diameter (see note [1] below) or minimum axis diameter of an ellipse. The result is in pixels.
     :param axon_object (skimage.measure._regionprops): object returned after
         measuring a axon labeled region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
         measuring a axon with myelin labeled region
-
+    :param ellipse (boolean): value indicating whether you want to consider the shape as ellipse or circle for diameter computation. 
+    
     [1] According to https://scikit-image.org/docs/dev/api/skimage.measure.html?highlight=region%20properties#regionprops,
     the equivalent diameter is the diameter of a circle with the same area as
     the region.
     """
+    attribute = "ellipse_minor_axis" if ellipse else "equivalent_diameter"
     warn_if_measures_are_unexpected(
         axon_object,
         axonmyelin_object,
-        "equivalent_diameter"
+        attribute
         )
-
-    axon_diam = axon_object.equivalent_diameter
-    axonmyelin_diam = axonmyelin_object.equivalent_diameter
+    if not ellipse: 
+        axon_diam = axon_object.equivalent_diameter
+        axonmyelin_diam = axonmyelin_object.equivalent_diameter
+    else: 
+        axon_diam = axon_object.minor_axis_length
+        axonmyelin_diam = axonmyelin_object.minor_axis_length
     return (axonmyelin_diam - axon_diam)/2
 
 def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
@@ -385,4 +402,3 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         print(("\nError: Could not save file \"{0}\" in "
                "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
         raise
-
