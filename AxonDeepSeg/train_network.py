@@ -273,11 +273,8 @@ def train_model(
     )
 
     ########################## Save the model after Training ###########
-    model_output = str(path_model / "model.hdf5")
-    model_output2 = path_model / "model.hdf5"
-    print(model_output)
-    print(model_output2)
-    model.save(model_output)
+
+    model.save(str(path_model / "model.hdf5"))
 
     # Add ops to save and restore all the variables.
     saver = tf.train.Saver()
