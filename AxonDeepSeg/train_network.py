@@ -274,7 +274,7 @@ def train_model(
 
     ########################## Save the model after Training ###########
 
-    model.save(str(path_model) + "/model.hdf5")
+    model.save(path_model / "model.hdf5")
 
     # Add ops to save and restore all the variables.
     saver = tf.train.Saver()
