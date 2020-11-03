@@ -22,3 +22,5 @@ Keras-Preprocessing==1.1.0
 opencv-contrib-python==4.1.0.25
 albumentations==0.3.0
 openpyxl==2.6.3
+h5py~=2.10.0
+opencv-python-headless==4.4.0.44
