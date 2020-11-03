@@ -45,11 +45,6 @@ def get_pixelsize(path_pixelsize_file):
     else:
         return pixelsize
 
-def print_hello():
-    print("Hello the import is working as expected")
-    return
-
-
 
 def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, ellipse = False):
     """
@@ -174,7 +169,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object ,ellipse):
         measuring a axon labeled region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
         measuring a axon with myelin labeled region
-    :param ellipse (boolean): value indicating whether you want to consider the shape as ellipse or circle for diameter computation. 
+    :param ellipse (boolean): value indicating whether you want to consider the shape as ellipse or circle for diameter calculation. 
     
     [1] According to https://scikit-image.org/docs/dev/api/skimage.measure.html?highlight=region%20properties#regionprops,
     the equivalent diameter is the diameter of a circle with the same area as
