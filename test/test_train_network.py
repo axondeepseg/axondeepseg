@@ -122,7 +122,7 @@ class TestCore(object):
                 print("Could not clean up {} - you may want to remove it manually.".format(modelPath))
 
     # --------------train_model tests-------------- #
-    @pytest.mark.debug
+    @pytest.mark.integration
     def test_train_model_runs_successfully_for_simplified_case(self):
         # Note: This test is simply a mock test to ensure that the pipeline
         # runs successfully, and is not a test of the quality of the model
