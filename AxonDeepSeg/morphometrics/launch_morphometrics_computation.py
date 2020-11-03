@@ -10,13 +10,15 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import *
 import AxonDeepSeg.ads_utils as ads
 
 
-def launch_morphometrics_computation(path_img, path_prediction):
+def launch_morphometrics_computation(path_img, path_prediction, ellipse = False):
     """
     This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
     It automatically performs all steps (computations, savings, displays,...) of the
     morphometrics extraction of a given sample.
     :param path_img: path of the input image (microscopy sample)
     :param path_prediction: path of the segmented image (output of AxonDeepSeg)
+    :param ellipse: Boolean: if axon is considered ellipse, set to True else it is considered circle, and set to False.
+
     :return: none.
     """
     
@@ -43,15 +45,15 @@ def launch_morphometrics_computation(path_img, path_prediction):
         path_folder = path_img.parent
 
         # Compute and save axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, path_folder)
+        stats_array = get_axon_morphometrics(pred_axon, path_folder, ellipse = ellipse)
         save_axon_morphometrics(path_folder, stats_array)
 
         # Generate and save displays of axon morphometrics
-        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin)
+        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, ellipse = ellipse)
         save_map_of_axon_diameters(path_folder, fig)
 
         # Compute and save aggregate morphometrics
         aggregate_metrics = get_aggregate_morphometrics(
-            pred_axon, pred_myelin, path_folder
+            pred_axon, pred_myelin, path_folder, ellipse = ellipse
         )
         write_aggregate_morphometrics(path_folder, aggregate_metrics)
