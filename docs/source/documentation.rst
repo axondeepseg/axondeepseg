@@ -17,7 +17,7 @@ The following sections will help you install all the tools you need to run AxonD
 Miniconda
 ---------
 Starting with version 3.2.0, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
-a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
+a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight 
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
 virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
 it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions
@@ -29,7 +29,7 @@ In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it 
 
     conda search python
 
-If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (Git).
+If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (git).
 
 Linux
 ~~~~~
@@ -112,18 +112,11 @@ have ``git`` installed on your system)::
 
     git clone https://github.com/neuropoly/axondeepseg.git
 
-If you don't have ``git``, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
-
 Then, in your Terminal, go to the AxonDeepSeg folder and install the 
-AxonDeepSeg package. The following ``cd`` command assumes that you followed the ``git clone``
-instruction above::
+AxonDeepSeg package with the following commands::
 
     cd axondeepseg
     pip install -e .
-
-.. NOTE ::
-   If you downloaded AxonDeepSeg using the link above instead of ``git clone``, you may need to ``cd`` to a different folder (e.g. ``Downloads`` folder 
-   located within your home folder ``~``), and the AxonDeepSeg folder may have a different name (e.g. ``axondeepseg-master``).
 
 .. NOTE ::
    To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
