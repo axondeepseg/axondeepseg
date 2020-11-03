@@ -338,11 +338,13 @@ def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
     axon_diameter_figure.savefig(file_path)
 
 
-def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
+def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, ellipse = False):
     """
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param path_folder: absolute path of folder containing pixel size file
+    :param ellipse: Boolean: if axon is considered ellipse, set to True else if considered circle, set to False.
+
     :return: aggregate_metrics: dictionary containing values of aggregate metrics
     """
 
@@ -358,7 +360,7 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder):
     gratio = math.sqrt(1 / (1 + (float(mvf) / float(avf))))
 
     # Get individual axons metrics and compute mean axon diameter
-    stats_array = get_axon_morphometrics(pred_axon, path_folder)
+    stats_array = get_axon_morphometrics(pred_axon, path_folder, ellipse = ellipse)
     axon_diam_list = [d["axon_diam"] for d in stats_array]
     mean_axon_diam = np.mean(axon_diam_list)
 
