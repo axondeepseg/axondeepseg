@@ -277,13 +277,15 @@ def load_axon_morphometrics(path_folder):
         return stats_array
 
 
-def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
+def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, ellipse = False):
     """
     :param img: sample grayscale image (png)
     :param path_prediction: full path to the segmented file (*_seg-axonmyelin.png)
         from axondeepseg segmentation output
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
+    :param ellipse: Boolean: if axon is considered ellipse, set to True else if considered circle, set to False.
+
     :return: matplotlib.figure.Figure
     """
     
@@ -292,7 +294,7 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin):
 
     path_folder = path_prediction.parent
 
-    stats_array = get_axon_morphometrics(pred_axon, path_folder)
+    stats_array = get_axon_morphometrics(pred_axon, path_folder , ellipse = ellipse)
     axon_diam_list = [d["axon_diam"] for d in stats_array]
     axon_diam_array = np.asarray(axon_diam_list)
 
