@@ -17,7 +17,7 @@ The following sections will help you install all the tools you need to run AxonD
 Miniconda
 ---------
 Starting with version 3.2.0, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
-a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
+a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight 
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
 virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
 it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions
@@ -29,7 +29,7 @@ In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it 
 
     conda search python
 
-If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (Git).
+If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (git).
 
 Linux
 ~~~~~
@@ -68,16 +68,15 @@ installer compatible with your Windows system (64 bit recommended). After the do
 downloaded file, and follow the instructions. If you are unsure about any of the
 installation options, we recommend you use the default settings.
 
-Git (optional)
---------------
-Git is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
-service that hosts Git repositories, having Git installed on your system allows you
+git
+---
+``git`` is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
+service that hosts ``git`` repositories, having ``git`` installed on your system allows you
 to download the most up-to-date development version of AxonDeepSeg from a terminal, and 
 also allows you to contribute to the project if you wish to do so.
 
-Although an optional step (AxonDeepSeg can also be downloaded other ways, see below), if you 
-want to install Git, please follow instructions for your operating system on the 
-`Git website <https://git-scm.com/downloads>`_
+To install ``git``, please follow instructions for your operating system on the 
+`git website <https://git-scm.com/downloads>`_
 
 Virtual Environment
 -------------------
@@ -108,32 +107,16 @@ AxonDeepSeg
 .. WARNING ::
    Ensure that the virtual environment is activated before you begin your installation.
 
-Stable release
-~~~~~~~~~~~~~~
-You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
-
-    pip install axondeepseg
-
-Development version
-~~~~~~~~~~~~~~~~~~~
-
-To install the development version of AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
+To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
 have ``git`` installed on your system)::
 
     git clone https://github.com/neuropoly/axondeepseg.git
 
-If you don't have ``git``, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
-
 Then, in your Terminal, go to the AxonDeepSeg folder and install the 
-AxonDeepSeg package. The following ``cd`` command assumes that you followed the ``git clone``
-instruction above::
+AxonDeepSeg package with the following commands::
 
     cd axondeepseg
     pip install -e .
-
-.. NOTE ::
-   If you downloaded AxonDeepSeg using the link above instead of ``git clone``, you may need to ``cd`` to a different folder (e.g. ``Downloads`` folder 
-   located within your home folder ``~``), and the AxonDeepSeg folder may have a different name (e.g. ``axondeepseg-master``).
 
 .. NOTE ::
    To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
@@ -164,8 +147,6 @@ This integrity test automatically performs the axon and myelin segmentation of a
 
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
-.. NOTE ::
-   This feature is not available if you installed AxonDeepSeg using ``pip``.
 
 To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
 
@@ -250,8 +231,7 @@ Known issues
 GPU-compatible installation
 ---------------------------
 .. NOTE ::
-   This feature is not available if you installed AxonDeepSeg using ``pip``,
-   or if you are using a macOS.
+   This feature is not available if you are using a macOS.
 
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
 using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
