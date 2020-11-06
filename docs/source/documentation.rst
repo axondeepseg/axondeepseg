@@ -419,7 +419,7 @@ Here are examples of an image, a good manual mask and a bad manual mask.
     Image example
 
 .. figure:: _static/good_mask_example.png
-    :width: 750px
+    :width: 970px
     :align: center
     :height: 500px
     :alt: Good manual mask example
@@ -427,7 +427,7 @@ Here are examples of an image, a good manual mask and a bad manual mask.
     Good manual mask example
 
 .. figure:: _static/bad_mask_example.png
-    :width: 750px
+    :width: 970px
     :align: center
     :height: 500px
     :alt: Bad manual mask example
