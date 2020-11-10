@@ -1,7 +1,8 @@
 from AxonDeepSeg.ads_utils import *
 from pathlib import Path
 import shutil
-
+import argparse
+from argparse import RawTextHelpFormatter
 
 def download_model(destination = None):
     if destination is None:
@@ -36,4 +37,10 @@ def download_model(destination = None):
 
 
 def main(argv=None):
-    download_model()
+
+    ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    # Setting the argument for specifying the directory where you wish to download the models
+    ap.add_argument("-p", "--path", required=False, help='Path where you wish to save your models', default = None)
+    args = vars(ap.parse_args(argv))
+    destination = args["path"]
+    download_model(destination)
