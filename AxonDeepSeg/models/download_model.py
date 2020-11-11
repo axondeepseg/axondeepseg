@@ -13,8 +13,7 @@ def download_model(destination = None):
         destination = convert_path(destination)
         sem_destination = destination / "default_SEM_model"
         tem_destination = destination / "default_TEM_model"
-    print("SEM destination is", sem_destination)
-    print("TEM destination is", tem_destination)
+
     url_TEM_model = "https://osf.io/2hcfv/?action=download&version=5"  # URL of TEM model hosted on OSF storage with the appropriate versioning on OSF
     url_SEM_model = "https://osf.io/sv7u2/?action=download&version=5"  # URL of SEM model hosted on OSF storage with the appropriate versioning on OSF
 
