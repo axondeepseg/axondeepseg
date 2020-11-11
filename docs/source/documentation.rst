@@ -176,6 +176,10 @@ Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
 
+Downgrade from latest version of h5py to the most recent working version ::
+
+           yes | conda install -c conda-forge h5py=2.10.0
+
 Launch FSLeyes ::
 
            fsleyes
@@ -211,6 +215,10 @@ Install wxPython using conda ::
 Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
+
+Downgrade from latest version of h5py to the most recent working version ::
+
+           yes | conda install -c conda-forge h5py=2.10.0
 
 Launch FSLeyes ::
 
