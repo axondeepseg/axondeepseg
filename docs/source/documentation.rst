@@ -200,18 +200,8 @@ In case, you find trouble installing FSLeyes plugin for ADS you could refer the 
            To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
            This step may only be required when you first install the plugin.
 
-Linux (tested on ubuntu)
+Linux (tested on Ubuntu 20.04)
 ~~~~~~~~~~~~~~~~~~~~~~~~
-Install the C/C++ compilers required to use wxPython ::
-
-           sudo apt-get install build-essential
-           sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
-           sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev
-           
-Install wxPython using conda ::
-
-           yes | conda install -c anaconda wxpython
-           
 Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
