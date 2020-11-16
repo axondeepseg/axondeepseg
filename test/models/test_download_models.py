@@ -12,22 +12,24 @@ class TestCore(object):
     def setup(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
-        print(self.fullPath)
+        print("\n The full path is", self.fullPath)
+
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent 
+        print("\n The test path is", self.testPath)
         
         # Create temp folder
         # Get the directory where this current file is saved
         self.tmpPath = self.testPath / '__tmp__'
         if not self.tmpPath.exists():
             self.tmpPath.mkdir()
-        print(self.tmpPath)
+        print("\n The tmp path is ", self.tmpPath)
 
         self.sem_model_path = (
             self.tmpPath /
             'default_SEM_model'
             )
-        print(self.sem_model_path)
+        print("\n The SEM model path is", self.sem_model_path)
 
         self.tem_model_path = (
             self.tmpPath /
@@ -35,6 +37,7 @@ class TestCore(object):
             )
 
     def teardown(self):
+        print("\n Running the teardown method of the test class")
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
         print(fullPath)
@@ -46,6 +49,13 @@ class TestCore(object):
         if tmpPath.exists():
             shutil.rmtree(tmpPath)
             pass
+        
+        #Delete the SEM and TEM model's if present in the test/models directory
+        if self.sem_model_path.parent == fullPath:
+            shutil.rmtree(self.sem_model_path)
+            shutil.rmtree(self.tem_model_path)
+        
+      
 
     # --------------download_models tests-------------- #
     @pytest.mark.unit
@@ -64,3 +74,14 @@ class TestCore(object):
 
         download_model(self.tmpPath)
         download_model(self.tmpPath)
+
+    @pytest.mark.unit
+    def test_download_models_working_directory(self):
+        self.sem_model_path = self.fullPath / 'default_SEM_model'
+        self.tem_model_path = self.fullPath / 'default_TEM_model'
+        download_model(self.fullPath)
+
+        assert self.sem_model_path.parent.name == self.fullPath.name
+        assert self.tem_model_path.parent.name == self.fullPath.name
+
+        
