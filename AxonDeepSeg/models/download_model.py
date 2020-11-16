@@ -7,8 +7,8 @@ from argparse import RawTextHelpFormatter
 def download_model(destination = None):
     root_directory = False             #Flag to check if the destination folder is the root directory 
     if destination is None:
-        sem_destination = Path("AxonDeepSeg/models/default_SEM_model")
-        tem_destination = Path("AxonDeepSeg/models/default_TEM_model")
+        sem_destination = Path(__file__).parent / "default_SEM_model"
+        tem_destination = Path(__file__).parent / "default_TEM_model"
     else:
         destination = convert_path(destination)
         sem_destination = destination / "default_SEM_model"
