@@ -37,7 +37,6 @@ class TestCore(object):
         
      
     def teardown(self):
-        print("\n Running the teardown method of the test class")
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
         print(fullPath)
@@ -52,6 +51,7 @@ class TestCore(object):
         
         #Delete the SEM and TEM model's if present in the test/models directory
         if self.sem_model_path.parent == fullPath:
+
             shutil.rmtree(self.sem_model_path)
             shutil.rmtree(self.tem_model_path)
 
@@ -88,13 +88,11 @@ class TestCore(object):
     # --------------download_models (cli) test-------------- #
     @pytest.mark.unit
     def test_download_models_cli_runs_successfully_with_valid_destination_folder(self):
-        destination_path = "." # set the destination path to test/models
+        destination_path = self.fullPath    # set the destination path to test/models
         self.sem_model_path = self.fullPath / 'default_SEM_model'
         self.tem_model_path = self.fullPath / 'default_TEM_model'
 
-
-        main(["-p", destination_path])
+        main(["-p", str(destination_path)])
         assert self.sem_model_path.exists()
         assert self.tem_model_path.exists()
-        
         
