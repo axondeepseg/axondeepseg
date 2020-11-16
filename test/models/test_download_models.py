@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import shutil
+import os
 
 import pytest
 
@@ -10,32 +11,31 @@ from AxonDeepSeg.models.download_model import *
 
 class TestCore(object):
     def setup(self):
-        # Get the directory where this current file is saved
+         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
-        print("\n The full path is", self.fullPath)
-
+        print(self.fullPath)
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent 
-        print("\n The test path is", self.testPath)
         
         # Create temp folder
         # Get the directory where this current file is saved
         self.tmpPath = self.testPath / '__tmp__'
         if not self.tmpPath.exists():
             self.tmpPath.mkdir()
-        print("\n The tmp path is ", self.tmpPath)
+        print(self.tmpPath)
 
         self.sem_model_path = (
             self.tmpPath /
             'default_SEM_model'
             )
-        print("\n The SEM model path is", self.sem_model_path)
+        print(self.sem_model_path)
 
         self.tem_model_path = (
             self.tmpPath /
             'default_TEM_model'
             )
-
+        
+     
     def teardown(self):
         print("\n Running the teardown method of the test class")
         # Get the directory where this current file is saved
@@ -54,6 +54,7 @@ class TestCore(object):
         if self.sem_model_path.parent == fullPath:
             shutil.rmtree(self.sem_model_path)
             shutil.rmtree(self.tem_model_path)
+
         
       
 
@@ -81,7 +82,19 @@ class TestCore(object):
         self.tem_model_path = self.fullPath / 'default_TEM_model'
         download_model(self.fullPath)
 
-        assert self.sem_model_path.parent.name == self.fullPath.name
-        assert self.tem_model_path.parent.name == self.fullPath.name
+        assert self.sem_model_path.exists()
+        assert self.tem_model_path.exists()
 
+    # --------------download_models (cli) test-------------- #
+    @pytest.mark.unit
+    def test_download_models_cli_runs_successfully_with_valid_destination_folder(self):
+        destination_path = "." # set the destination path to test/models
+        self.sem_model_path = self.fullPath / 'default_SEM_model'
+        self.tem_model_path = self.fullPath / 'default_TEM_model'
+
+
+        main(["-p", destination_path])
+        assert self.sem_model_path.exists()
+        assert self.tem_model_path.exists()
+        
         
