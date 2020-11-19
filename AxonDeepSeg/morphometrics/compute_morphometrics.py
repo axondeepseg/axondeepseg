@@ -175,11 +175,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object ,ellipse):
     the equivalent diameter is the diameter of a circle with the same area as
     the region.
     """
-<<<<<<< HEAD
-    attribute = "ellipse_minor_axis" if ellipse else "equivalent_diameter"
-=======
     attribute = "minor_axis_length" if ellipse else "equivalent_diameter"
->>>>>>> 0de4fa334a822713a5450be7918866ac732f2491
     warn_if_measures_are_unexpected(
         axon_object,
         axonmyelin_object,
