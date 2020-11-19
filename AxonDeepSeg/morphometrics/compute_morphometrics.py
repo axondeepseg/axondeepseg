@@ -175,7 +175,11 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object ,ellipse):
     the equivalent diameter is the diameter of a circle with the same area as
     the region.
     """
+<<<<<<< HEAD
     attribute = "ellipse_minor_axis" if ellipse else "equivalent_diameter"
+=======
+    attribute = "minor_axis_length" if ellipse else "equivalent_diameter"
+>>>>>>> 0de4fa334a822713a5450be7918866ac732f2491
     warn_if_measures_are_unexpected(
         axon_object,
         axonmyelin_object,
@@ -192,7 +196,6 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object ,ellipse):
 def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
     """
     Returns the myenlinated axon area minus the axon area.
-
     :param axon_object (skimage.measure._regionprops): object returned after
     measuring an axon labeled  region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
@@ -260,7 +263,6 @@ def save_axon_morphometrics(path_folder, stats_array):
 def load_axon_morphometrics(path_folder):
     """
     :param path_folder: absolute path of the sample and the segmentation folder
-
     :return: stats_array: list of dictionaries containing axon morphometrics
     """
     
@@ -285,7 +287,10 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, ellipse = F
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param ellipse: Boolean: if axon is considered ellipse, set to True else if considered circle, set to False.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0de4fa334a822713a5450be7918866ac732f2491
     :return: matplotlib.figure.Figure
     """
     
@@ -344,7 +349,10 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, ellipse = F
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param path_folder: absolute path of folder containing pixel size file
     :param ellipse: Boolean: if axon is considered ellipse, set to True else if considered circle, set to False.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0de4fa334a822713a5450be7918866ac732f2491
     :return: aggregate_metrics: dictionary containing values of aggregate metrics
     """
 
@@ -400,4 +408,8 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
     except IOError as e:
         print(("\nError: Could not save file \"{0}\" in "
                "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
+<<<<<<< HEAD
         raise
+=======
+        raise
+>>>>>>> 0de4fa334a822713a5450be7918866ac732f2491
