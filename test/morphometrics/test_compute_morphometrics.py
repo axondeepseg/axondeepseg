@@ -74,6 +74,12 @@ class TestCore(object):
     def test_get_axon_morphometrics_returns_expected_type(self):
         stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
         assert isinstance(stats_array, np.ndarray)
+    
+    @pytest.mark.unit
+    def test_get_axon_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
+        self.ellipse = True
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), ellipse = self.ellipse)
+        assert isinstance(stats_array, np.ndarray)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_keys(self):
@@ -89,6 +95,25 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
         for key in list(stats_array[0].keys()):
+            assert key in expectedKeys
+
+    @pytest.mark.unit
+    def test_get_axon_morphometrics_returns_expected_keys_with_axon_as_ellipse(self):
+        self.ellipse = True
+        expectedKeys = {'y0',
+                        'x0',
+                        'axon_diam',
+                        'axon_area',
+                        'solidity',
+                        'eccentricity',
+                        'orientation'
+                        }
+        
+
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), ellipse = self.ellipse)
+
+        for key in list(stats_array[0].keys()):
+            print("The key is", key)
             assert key in expectedKeys
 
     @pytest.mark.unit
@@ -236,7 +261,7 @@ class TestCore(object):
         path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
 
         result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
-        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, self.ellipse)
+        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, ellipse = self.ellipse)
         assert fig.axes
         fig.savefig(result_path)
 
@@ -265,7 +290,7 @@ class TestCore(object):
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path),
-            self.ellipse
+            ellipse = self.ellipse
             )
 
         assert isinstance(aggregate_metrics, dict)
@@ -306,7 +331,7 @@ class TestCore(object):
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path),
-            self.ellipse
+            ellipse = self.ellipse
             )
 
         for key in list(aggregate_metrics.keys()):
@@ -326,6 +351,7 @@ class TestCore(object):
         write_aggregate_morphometrics(str(self.tmpDir), aggregate_metrics)
 
         assert expectedFilePath.is_file()
+
 
     @pytest.mark.unit
     def test_write_aggregate_morphometrics_throws_error_if_folder_doesnt_exist(self):
