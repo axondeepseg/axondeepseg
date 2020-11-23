@@ -113,7 +113,6 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), ellipse = self.ellipse)
 
         for key in list(stats_array[0].keys()):
-            print("The key is", key)
             assert key in expectedKeys
 
     @pytest.mark.unit
@@ -135,7 +134,6 @@ class TestCore(object):
             im_myelin=self.pred_myelin,
             ellipse = self.ellipse
             )
-        print("The value of g ratio is", stats_array[1]['gratio'])    
         assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
 
     @pytest.mark.unit
@@ -182,8 +180,6 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin)
 
         for ii in range(0,9):
-            print(f"The gratio is {stats_array[ii]['gratio']}, axon_diam is {stats_array[ii]['axon_diam']}, and the myelin thickness is {stats_array[ii]['axon_diam']}")
-
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
@@ -233,7 +229,6 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin, ellipse = self.ellipse)
 
         for ii in range(0,9):
-            print(f"The gratio is {stats_array[ii]['gratio']}, axon_diam is {stats_array[ii]['axon_diam']}, and the myelin thickness is {stats_array[ii]['axon_diam']}")
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
@@ -259,7 +254,6 @@ class TestCore(object):
             )
 
         for axon_prop in stats_array:
-            print(f"The myelin thickness is {axon_prop['myelin_thickness']}, axon_area is {axon_prop['myelin_area']}, and the gratio is {axon_prop['gratio']}")
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
@@ -286,7 +280,6 @@ class TestCore(object):
             )
 
         for axon_prop in stats_array:
-            print(f"The myelin thickness is {axon_prop['myelin_thickness']}, axon_area is {axon_prop['myelin_area']}, and the gratio is {axon_prop['gratio']}")
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
