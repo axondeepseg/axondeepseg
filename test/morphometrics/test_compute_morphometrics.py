@@ -25,7 +25,7 @@ class TestCore(object):
             '__test_demo_files__'
             )
         self.pixelsizeValue = 0.07   # For current demo data.
-        self.ellipse = False         #Boolean, indicating whether to treat axons as ellipse or not
+        self.ellipse = True         #Boolean, indicating whether to treat axons as ellipse or not
 
         pred_axon_path = self.test_folder_path / 'AxonDeepSeg_seg-axon.png'
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
@@ -77,7 +77,6 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
-        self.ellipse = True
         stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), ellipse = self.ellipse)
         assert isinstance(stats_array, np.ndarray)
 
@@ -99,7 +98,6 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_keys_with_axon_as_ellipse(self):
-        self.ellipse = True
         expectedKeys = {'y0',
                         'x0',
                         'axon_diam',
@@ -127,7 +125,6 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_with_axon_as_ellipse(self):
-        self.ellipse = True
         stats_array = get_axon_morphometrics(
             self.pred_axon,
             str(self.test_folder_path),
@@ -186,7 +183,6 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse(self):
-        self.ellipse = True
         path_pred = (
             self.testPath /
             '__test_files__' /
@@ -260,7 +256,6 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons_with_axon_as_ellipse(self):
-        self.ellipse = True
         path_pred = (
             self.testPath /
             '__test_files__' /
@@ -344,7 +339,6 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_draw_axon_diameter_creates_file_in_expected_location_with_axon_as_ellipse(self):
-        self.ellipse = True
         img = imageio_imread(self.test_folder_path / 'image.png')
         path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
 
@@ -373,7 +367,6 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
 
-        self.ellipse = True
         aggregate_metrics = get_aggregate_morphometrics(
             self.pred_axon,
             self.pred_myelin,
@@ -405,7 +398,6 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_returns_expected_keys_with_axon_as_ellipse(self):
-        self.ellipse = True
         expectedKeys = {'avf',
                         'mvf',
                         'gratio_aggr',
