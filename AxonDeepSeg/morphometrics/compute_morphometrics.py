@@ -283,10 +283,6 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, ellipse = F
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param ellipse: Boolean: if axon is considered ellipse, set to True else if considered circle, set to False.
-<<<<<<< HEAD
-
-=======
->>>>>>> 0de4fa334a822713a5450be7918866ac732f2491
     :return: matplotlib.figure.Figure
     """
     
@@ -400,8 +396,4 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
     except IOError as e:
         print(("\nError: Could not save file \"{0}\" in "
                "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
-<<<<<<< HEAD
         raise
-=======
-        raise
->>>>>>> 0de4fa334a822713a5450be7918866ac732f2491
