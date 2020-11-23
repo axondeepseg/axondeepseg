@@ -258,6 +258,19 @@ class TestCore(object):
         assert isinstance(aggregate_metrics, dict)
 
     @pytest.mark.unit
+    def test_get_aggregate_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
+
+        self.ellipse = True
+        aggregate_metrics = get_aggregate_morphometrics(
+            self.pred_axon,
+            self.pred_myelin,
+            str(self.test_folder_path),
+            self.ellipse
+            )
+
+        assert isinstance(aggregate_metrics, dict)
+
+    @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_returns_expected_keys(self):
         expectedKeys = {'avf',
                         'mvf',
@@ -272,6 +285,28 @@ class TestCore(object):
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path)
+            )
+
+        for key in list(aggregate_metrics.keys()):
+            assert key in expectedKeys
+    
+    @pytest.mark.unit
+    def test_get_aggregate_morphometrics_returns_returns_expected_keys_with_axon_as_ellipse(self):
+        self.ellipse = True
+        expectedKeys = {'avf',
+                        'mvf',
+                        'gratio_aggr',
+                        'mean_axon_diam',
+                        'mean_myelin_diam',
+                        'mean_myelin_thickness',
+                        'axon_density_mm2'
+                        }
+
+        aggregate_metrics = get_aggregate_morphometrics(
+            self.pred_axon,
+            self.pred_myelin,
+            str(self.test_folder_path),
+            self.ellipse
             )
 
         for key in list(aggregate_metrics.keys()):
