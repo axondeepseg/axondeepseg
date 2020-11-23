@@ -16,7 +16,7 @@ class TestCore(object):
         self.testPath = self.fullPath.parent
         self.dataPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.ellipse = True         #Boolean, indicating whether to treat axons as ellipse or not
+        self.circle_approx = True         #Boolean, indicating whether to treat axons as ellipse or not
 
     def teardown(self):
         pass
@@ -49,7 +49,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
         pathPrediction = self.dataPath / 'AxonDeepSeg_seg-axonmyelin.png'
 
-        launch_morphometrics_computation(str(pathImg), str(pathPrediction), ellipse = self.ellipse)
+        launch_morphometrics_computation(str(pathImg), str(pathPrediction), circle_approx = self.circle_approx)
 
         for fileName in expectedFiles:
             fullFilePath = self.dataPath / fileName
