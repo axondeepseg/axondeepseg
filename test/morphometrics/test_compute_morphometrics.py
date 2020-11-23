@@ -25,6 +25,7 @@ class TestCore(object):
             '__test_demo_files__'
             )
         self.pixelsizeValue = 0.07   # For current demo data.
+        self.ellipse = False         #Boolean, indicating whether to treat axons as ellipse or not
 
         pred_axon_path = self.test_folder_path / 'AxonDeepSeg_seg-axon.png'
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
@@ -227,6 +228,21 @@ class TestCore(object):
 
         assert result_path.is_file()
         result_path.unlink()
+    
+    @pytest.mark.unit
+    def test_draw_axon_diameter_creates_file_in_expected_location_with_axon_as_ellipse(self):
+        self.ellipse = True
+        img = imageio_imread(self.test_folder_path / 'image.png')
+        path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
+
+        result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
+        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, self.ellipse)
+        assert fig.axes
+        fig.savefig(result_path)
+
+        assert result_path.is_file()
+        result_path.unlink()
+
 
     # --------------get_aggregate_morphometrics tests-------------- #
     @pytest.mark.unit
