@@ -111,7 +111,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         solidity = prop_axon.solidity
         # Eccentricity
         eccentricity = prop_axon.eccentricity
-        if  circle_approx:
+        if circle_approx:
             # Axon equivalent diameter in micrometers
             axon_diam = prop_axon.equivalent_diameter * pixelsize
         else: 
