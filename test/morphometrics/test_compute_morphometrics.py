@@ -77,7 +77,7 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), circle_approx = self.circle_approx)
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), circle_approx=self.circle_approx)
         assert isinstance(stats_array, np.ndarray)
 
     @pytest.mark.unit
@@ -108,7 +108,7 @@ class TestCore(object):
                         }
         
 
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), circle_approx = self.circle_approx)
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), circle_approx=self.circle_approx)
 
         for key in list(stats_array[0].keys()):
             assert key in expectedKeys
@@ -129,7 +129,7 @@ class TestCore(object):
             self.pred_axon,
             str(self.test_folder_path),
             im_myelin=self.pred_myelin,
-            circle_approx = self.circle_approx
+            circle_approx=self.circle_approx
             )
         assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
 
@@ -222,7 +222,7 @@ class TestCore(object):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # Compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin, circle_approx = self.circle_approx)
+        stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin, circle_approx=self.circle_approx)
 
         for ii in range(0,9):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
@@ -271,7 +271,7 @@ class TestCore(object):
             pred_axon,
             str(path_pred.parent),
             im_myelin=unexpected_pred_myelin,
-            circle_approx = self.circle_approx
+            circle_approx=self.circle_approx
             )
 
         for axon_prop in stats_array:
@@ -343,7 +343,7 @@ class TestCore(object):
         path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
 
         result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
-        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, circle_approx = self.circle_approx)
+        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, circle_approx=self.circle_approx)
         assert fig.axes
         fig.savefig(result_path)
 
@@ -371,7 +371,7 @@ class TestCore(object):
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path),
-            circle_approx = self.circle_approx
+            circle_approx=self.circle_approx
             )
 
         assert isinstance(aggregate_metrics, dict)
@@ -411,7 +411,7 @@ class TestCore(object):
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path),
-            circle_approx = self.circle_approx
+            circle_approx=self.circle_approx
             )
 
         for key in list(aggregate_metrics.keys()):

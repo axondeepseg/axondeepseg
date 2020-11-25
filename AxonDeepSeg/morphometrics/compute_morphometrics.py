@@ -46,7 +46,7 @@ def get_pixelsize(path_pixelsize_file):
         return pixelsize
 
 
-def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, circle_approx = True):
+def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, circle_approx=True):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
@@ -161,7 +161,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
     return stats_array
 
-def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object ,circle_approx):
+def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, circle_approx):
     """
     Returns the  thickness of a myelin ring around an axon of a
     given equivalent diameter (see note [1] below) or minimum axis diameter of an ellipse. The result is in pixels.
@@ -181,7 +181,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object ,circle_appro
         axonmyelin_object,
         attribute
         )
-    if  circle_approx: 
+    if circle_approx: 
         axon_diam = axon_object.equivalent_diameter
         axonmyelin_diam = axonmyelin_object.equivalent_diameter
     else: 
@@ -275,7 +275,7 @@ def load_axon_morphometrics(path_folder):
         return stats_array
 
 
-def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, circle_approx = True):
+def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, circle_approx=True):
     """
     :param img: sample grayscale image (png)
     :param path_prediction: full path to the segmented file (*_seg-axonmyelin.png)
@@ -291,7 +291,7 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, circle_appr
 
     path_folder = path_prediction.parent
 
-    stats_array = get_axon_morphometrics(pred_axon, path_folder , circle_approx = circle_approx)
+    stats_array = get_axon_morphometrics(pred_axon, path_folder, circle_approx=circle_approx)
     axon_diam_list = [d["axon_diam"] for d in stats_array]
     axon_diam_array = np.asarray(axon_diam_list)
 
@@ -335,7 +335,7 @@ def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
     axon_diameter_figure.savefig(file_path)
 
 
-def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, circle_approx = True):
+def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, circle_approx=True):
     """
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
@@ -356,7 +356,7 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, circle_appr
     gratio = math.sqrt(1 / (1 + (float(mvf) / float(avf))))
 
     # Get individual axons metrics and compute mean axon diameter
-    stats_array = get_axon_morphometrics(pred_axon, path_folder, circle_approx = circle_approx)
+    stats_array = get_axon_morphometrics(pred_axon, path_folder, circle_approx=circle_approx)
     axon_diam_list = [d["axon_diam"] for d in stats_array]
     mean_axon_diam = np.mean(axon_diam_list)
 

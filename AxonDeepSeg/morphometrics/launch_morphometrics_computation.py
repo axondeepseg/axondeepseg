@@ -10,7 +10,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import *
 import AxonDeepSeg.ads_utils as ads
 
 
-def launch_morphometrics_computation(path_img, path_prediction, circle_approx = True):
+def launch_morphometrics_computation(path_img, path_prediction, circle_approx=True):
     """
     This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
     It automatically performs all steps (computations, savings, displays,...) of the
@@ -45,15 +45,15 @@ def launch_morphometrics_computation(path_img, path_prediction, circle_approx = 
         path_folder = path_img.parent
 
         # Compute and save axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, path_folder, circle_approx = circle_approx)
+        stats_array = get_axon_morphometrics(pred_axon, path_folder, circle_approx=circle_approx)
         save_axon_morphometrics(path_folder, stats_array)
 
         # Generate and save displays of axon morphometrics
-        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, circle_approx = circle_approx)
+        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, circle_approx=circle_approx)
         save_map_of_axon_diameters(path_folder, fig)
 
         # Compute and save aggregate morphometrics
         aggregate_metrics = get_aggregate_morphometrics(
-            pred_axon, pred_myelin, path_folder, circle_approx = circle_approx
+            pred_axon, pred_myelin, path_folder, circle_approx=circle_approx
         )
         write_aggregate_morphometrics(path_folder, aggregate_metrics)

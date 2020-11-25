@@ -49,7 +49,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
         pathPrediction = self.dataPath / 'AxonDeepSeg_seg-axonmyelin.png'
 
-        launch_morphometrics_computation(str(pathImg), str(pathPrediction), circle_approx = self.circle_approx)
+        launch_morphometrics_computation(str(pathImg), str(pathPrediction), circle_approx=self.circle_approx)
 
         for fileName in expectedFiles:
             fullFilePath = self.dataPath / fileName
