@@ -7,8 +7,6 @@ install:
   - bash ~/miniconda.sh -b -p $HOME/miniconda
   - echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
   - source ~/.bashrc
-
-  
 jobs:
   include:
     - stage: Basic install
