@@ -11,7 +11,7 @@ install:
   
 jobs:
   include:
-    - stage: Basic install (Python 3.7)
+    - stage: Basic install
       os: linux
       script:
         - yes | conda create -n ads_venv python=3.7
@@ -21,7 +21,7 @@ jobs:
         - pip install -e .
         - pip install python-coveralls  # Add me to install python-coveralls
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: FSLeyes install (Python 3.7)
+    - stage: FSLeyes install
       os: linux
       script: 
         - yes | conda create -n ads_venv python=3.7
@@ -33,7 +33,7 @@ jobs:
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - yes | conda install -c conda-forge h5py=2.10.0
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: Basic install (Python 3.7)
+    - stage: Basic install
       os: osx
       script:
         - yes | conda create -n ads_venv python=3.7
@@ -43,7 +43,7 @@ jobs:
         - pip install -e .
         - pip install python-coveralls  # Add me to install python-coveralls
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: FSLeyes install (Python 3.7)
+    - stage: FSLeyes install
       os: osx
       script: 
         - yes | conda create -n ads_venv python=3.7
@@ -55,7 +55,7 @@ jobs:
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - yes | conda install -c conda-forge h5py=2.10.0
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-     - stage: Basic install (Python 3.8)
+     - stage: Basic install
       os: linux
       script:
         - yes | conda create -n ads_venv python=3.8
@@ -65,7 +65,7 @@ jobs:
         - pip install -e .
         - pip install python-coveralls  # Add me to install python-coveralls
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: FSLeyes install (Python 3.8)
+    - stage: FSLeyes install
       os: linux
       script: 
         - yes | conda create -n ads_venv python=3.8
@@ -77,7 +77,7 @@ jobs:
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - yes | conda install -c conda-forge h5py=2.10.0
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: Basic install (Python 3.8)
+    - stage: Basic install
       os: osx
       script:
         - yes | conda create -n ads_venv python=3.8
@@ -87,7 +87,7 @@ jobs:
         - pip install -e .
         - pip install python-coveralls  # Add me to install python-coveralls
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-    - stage: FSLeyes install (Python 3.8)
+    - stage: FSLeyes install
       os: osx
       script: 
         - yes | conda create -n ads_venv python=3.8
