@@ -32,7 +32,7 @@ class PostDevelopCommand(develop):
 
 setup(
     name='AxonDeepSeg',
-    python_requires='>=3.7, <3.8',
+    python_requires='>=3.7, <3.9',
     version=AxonDeepSeg.__version__,
     description='Python tool for automatic axon and myelin segmentation',
     long_description=long_description,
