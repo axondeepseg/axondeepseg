@@ -16,7 +16,7 @@ install:
   
 jobs:
   include:
-    - stage: Basic install
+    - stage: Basic install 
       os: linux
       script:
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
