@@ -11,7 +11,7 @@ install:
   - conda activate ads_venv
   - echo "Installation of the repository"
   - cd ~/build/neuropoly/axondeepseg
-  - pip install -e .
+  - pip install -e . 
   - pip install python-coveralls  # Add me to install python-coveralls
   
 jobs:
