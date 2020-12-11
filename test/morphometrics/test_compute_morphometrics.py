@@ -25,7 +25,7 @@ class TestCore(object):
             '__test_demo_files__'
             )
         self.pixelsizeValue = 0.07   # For current demo data.
-        self.shape = "ellipse"   # String, axon shape is set to ellipse
+        self.axon_shape = "ellipse"   # String, axon shape is set to ellipse
 
         pred_axon_path = self.test_folder_path / 'AxonDeepSeg_seg-axon.png'
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
@@ -77,7 +77,7 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), shape=self.shape)
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), axon_shape=self.axon_shape)
         assert isinstance(stats_array, np.ndarray)
 
     @pytest.mark.unit
@@ -108,7 +108,7 @@ class TestCore(object):
                         }
         
 
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), shape=self.shape)
+        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), axon_shape=self.axon_shape)
 
         for key in list(stats_array[0].keys()):
             assert key in expectedKeys
@@ -129,7 +129,7 @@ class TestCore(object):
             self.pred_axon,
             str(self.test_folder_path),
             im_myelin=self.pred_myelin,
-            shape=self.shape
+            axon_shape=self.axon_shape
             )
         assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
 
@@ -222,7 +222,7 @@ class TestCore(object):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # Compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin, shape=self.shape)
+        stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0,9):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
@@ -271,7 +271,7 @@ class TestCore(object):
             pred_axon,
             str(path_pred.parent),
             im_myelin=unexpected_pred_myelin,
-            shape=self.shape
+            axon_shape=self.axon_shape
             )
 
         for axon_prop in stats_array:
@@ -343,7 +343,7 @@ class TestCore(object):
         path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
 
         result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
-        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, shape=self.shape)
+        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, axon_shape=self.axon_shape)
         assert fig.axes
         fig.savefig(result_path)
 
@@ -371,7 +371,7 @@ class TestCore(object):
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path),
-            shape=self.shape
+            axon_shape=self.axon_shape
             )
 
         assert isinstance(aggregate_metrics, dict)
@@ -411,7 +411,7 @@ class TestCore(object):
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path),
-            shape=self.shape
+            axon_shape=self.axon_shape
             )
 
         for key in list(aggregate_metrics.keys()):

@@ -46,14 +46,14 @@ def get_pixelsize(path_pixelsize_file):
         return pixelsize
 
 
-def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, shape="circle"):
+def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, axon_shape="circle"):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
     :param im_axon: Array: axon binary mask, output of axondeepseg
     :param path_folder: str: absolute path of folder containing pixel size file
     :param im_myelin: Array: myelin binary mask, output of axondeepseg
-    :param shape: ["circle", "ellipse"]: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: ["circle", "ellipse"]: shape of the axon, can either be either be circle or an ellipse
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
 
@@ -111,7 +111,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         solidity = prop_axon.solidity
         # Eccentricity
         eccentricity = prop_axon.eccentricity
-        if shape == "circle":
+        if axon_shape == "circle":
             # Axon equivalent diameter in micrometers
             axon_diam = prop_axon.equivalent_diameter * pixelsize
         else: 
@@ -139,7 +139,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 idx = axonmyelin_labels_list.index(label_axonmyelin)
                 prop_axonmyelin = axonmyelin_objects[idx]
 
-                _res1 = evaluate_myelin_thickness_in_px(prop_axon, prop_axonmyelin, shape)
+                _res1 = evaluate_myelin_thickness_in_px(prop_axon, prop_axonmyelin, axon_shape)
                 myelin_thickness = pixelsize * _res1
 
                 _res2 = evaluate_myelin_area_in_px(prop_axon, prop_axonmyelin)
@@ -161,7 +161,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
     return stats_array
 
-def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, shape):
+def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
     """
     Returns the  thickness of a myelin ring around an axon of a
     given equivalent diameter (see note [1] below) or minimum axis diameter of an ellipse. The result is in pixels.
@@ -169,19 +169,19 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, shape):
         measuring a axon labeled region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
         measuring a axon with myelin labeled region
-    :param shape: ["circle", "ellipse"]: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: ["circle", "ellipse"]: shape of the axon, can either be either be circle or an ellipse
     
     [1] According to https://scikit-image.org/docs/dev/api/skimage.measure.html?highlight=region%20properties#regionprops,
     the equivalent diameter is the diameter of a circle with the same area as
     the region.
     """
-    attribute = "equivalent_diameter" if shape == "circle" else "minor_axis_length" 
+    attribute = "equivalent_diameter" if axon_shape == "circle" else "minor_axis_length" 
     warn_if_measures_are_unexpected(
         axon_object,
         axonmyelin_object,
         attribute
         )
-    if shape == "circle": 
+    if axon_shape == "circle": 
         axon_diam = axon_object.equivalent_diameter
         axonmyelin_diam = axonmyelin_object.equivalent_diameter
     else: 
@@ -275,14 +275,14 @@ def load_axon_morphometrics(path_folder):
         return stats_array
 
 
-def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, shape="circle"):
+def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape="circle"):
     """
     :param img: sample grayscale image (png)
     :param path_prediction: full path to the segmented file (*_seg-axonmyelin.png)
         from axondeepseg segmentation output
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
-    :param shape: ["circle", "ellipse"]: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: ["circle", "ellipse"]: shape of the axon, can either be either be circle or an ellipse
     :return: matplotlib.figure.Figure
     """
     
@@ -291,7 +291,7 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, shape="circ
 
     path_folder = path_prediction.parent
 
-    stats_array = get_axon_morphometrics(pred_axon, path_folder, shape=shape)
+    stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
     axon_diam_list = [d["axon_diam"] for d in stats_array]
     axon_diam_array = np.asarray(axon_diam_list)
 
@@ -335,12 +335,12 @@ def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
     axon_diameter_figure.savefig(file_path)
 
 
-def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, shape="circle"):
+def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape="circle"):
     """
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param path_folder: absolute path of folder containing pixel size file
-    :param shape: ["circle", "ellipse"]: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: ["circle", "ellipse"]: shape of the axon, can either be either be circle or an ellipse
     :return: aggregate_metrics: dictionary containing values of aggregate metrics
     """
 
@@ -356,7 +356,7 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, shape="circ
     gratio = math.sqrt(1 / (1 + (float(mvf) / float(avf))))
 
     # Get individual axons metrics and compute mean axon diameter
-    stats_array = get_axon_morphometrics(pred_axon, path_folder, shape=shape)
+    stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
     axon_diam_list = [d["axon_diam"] for d in stats_array]
     mean_axon_diam = np.mean(axon_diam_list)
 

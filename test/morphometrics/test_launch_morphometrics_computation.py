@@ -16,7 +16,7 @@ class TestCore(object):
         self.testPath = self.fullPath.parent
         self.dataPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.shape = "ellipse"         #String, axon shape is set to ellipse
+        self.axon_shape = "ellipse"         #String, axon shape is set to ellipse
 
     def teardown(self):
         pass
@@ -49,7 +49,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
         pathPrediction = self.dataPath / 'AxonDeepSeg_seg-axonmyelin.png'
 
-        launch_morphometrics_computation(str(pathImg), str(pathPrediction), shape=self.shape)
+        launch_morphometrics_computation(str(pathImg), str(pathPrediction), axon_shape=self.axon_shape)
 
         for fileName in expectedFiles:
             fullFilePath = self.dataPath / fileName
