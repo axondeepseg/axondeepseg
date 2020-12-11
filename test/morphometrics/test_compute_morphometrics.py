@@ -25,7 +25,7 @@ class TestCore(object):
             '__test_demo_files__'
             )
         self.pixelsizeValue = 0.07   # For current demo data.
-        self.axon_shape = "ellipse"   # String, axon shape is set to ellipse
+        self.axon_shape = "ellipse"   # axon shape is set to ellipse
 
         pred_axon_path = self.test_folder_path / 'AxonDeepSeg_seg-axon.png'
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)

@@ -16,7 +16,7 @@ class TestCore(object):
         self.testPath = self.fullPath.parent
         self.dataPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.axon_shape = "ellipse"         #String, axon shape is set to ellipse
+        self.axon_shape = "ellipse"         # axon shape is set to ellipse
 
     def teardown(self):
         pass
