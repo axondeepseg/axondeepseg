@@ -2,8 +2,11 @@
 Tools for the FSLeyes plugin.
 """
 from skimage import measure, morphology, feature
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
+import AxonDeepSeg.params
+from matplotlib import rcParams
+import os
 
 def get_centroids(mask):
     """
@@ -90,3 +93,45 @@ def remove_intersection(mask_1, mask_2, priority=1, return_overlap=False):
         return mask_1, mask_2, intersection
     else:
         return mask_1, mask_2
+
+def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size, mean_axon_diameter_in_pixels=None):
+    """
+    This function generates an image where the numbers in centroid_index are at their corresponding location specified
+    by their coordinates (x0, y0)
+    :param centroid_index: The array containing the axon numbers.
+    :type centroid_index: numpy array
+    :param x0_array: X coordinate of the centroids
+    :type x0_array: numpy array
+    :param y0_array: Y coordinate of the centroids
+    :type y0_array: numpy array
+    :param image_size: the size of the image
+    :type image_size: tuple
+    :param mean_axon_diameter_in_pixels (optional): the mean axon diameter of the axon mask. If this parameter
+    is passed, the font size will be determined based on it. Otherwise, the image size will be used to determine
+    the font size.
+    :return: the binary image with the numbers at their corresponding coordinate.
+    """
+
+    # Create an empty image which will contain the binary image
+    number_image = Image.new(mode='L', size=image_size, color=0)
+    draw = ImageDraw.Draw(number_image)
+
+    # Use a font from the matplotlib package
+    # The size of the font depends on the dimensions of the image, should be at least 10
+    # If the the mean_axon_diameter is specified, use it to determine the font_size
+    font_path = os.path.join(rcParams["datapath"], "fonts/ttf/DejaVuSans.ttf")
+    if mean_axon_diameter_in_pixels is None:
+        font_size = max(int(sum(image_size) * 0.5 * 0.01), 10)
+    else:
+        font_size = max(int(mean_axon_diameter_in_pixels / 3), 10)
+    font = ImageFont.truetype(font=font_path, size=font_size)
+
+    # Fill the image with the numbers at their corresponding coordinates
+    for i in range(centroid_index.size):
+        draw.text(xy=(x0_array[i] - font_size/2, y0_array[i] - font_size/2),
+                  text=str(centroid_index[i]), font=font, fill=AxonDeepSeg.params.intensity['binary'])
+
+    # Transform the image into a numpy array
+    image_array = np.asarray(number_image)
+
+    return image_array.astype(np.uint8)

@@ -2,10 +2,12 @@
 
 from pathlib import Path
 import shutil
+import numpy as np
 
 import pytest
 
 from AxonDeepSeg.ads_utils import *
+from AxonDeepSeg import params
 
 
 class TestCore(object):
@@ -66,6 +68,20 @@ class TestCore(object):
 
         expected_output = [Path('folder_name/').absolute(), Path('folder_name/').absolute(), None]
         assert expected_output == object_path
+
+    @pytest.mark.unit
+    def test_extract_data_returns_expected_arrays(self):
+        image_data = np.zeros((3, 3), dtype=np.uint8)
+        image_data[1, :] = params.intensity['myelin']
+        image_data[2, :] = params.intensity['axon']
+
+        expected_axon_array = (image_data == params.intensity['axon']).astype(np.uint8)
+        expected_myelin_array = (image_data == params.intensity['myelin']).astype(np.uint8)
+
+        obtained_axon_array, obtained_myelin_array = extract_axon_and_myelin_masks_from_image_data(image_data)
+
+        assert np.array_equal(expected_axon_array, obtained_axon_array)
+        assert np.array_equal(expected_myelin_array, obtained_myelin_array)
 
     @pytest.mark.unit
     def test_get_existing_models_list_returns_known_models(self):

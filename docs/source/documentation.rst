@@ -16,8 +16,8 @@ The following sections will help you install all the tools you need to run AxonD
 
 Miniconda
 ---------
-Starting with versions 3.2+, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
-a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version
+Starting with version 3.2.0, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
+a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight 
 version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
 virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
 it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions
@@ -29,7 +29,7 @@ In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it 
 
     conda search python
 
-If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (Git).
+If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (git).
 
 Linux
 ~~~~~
@@ -68,16 +68,15 @@ installer compatible with your Windows system (64 bit recommended). After the do
 downloaded file, and follow the instructions. If you are unsure about any of the
 installation options, we recommend you use the default settings.
 
-Git (optional)
---------------
-Git is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
-service that hosts Git repositories, having Git installed on your system allows you
+git
+---
+``git`` is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
+service that hosts ``git`` repositories, having ``git`` installed on your system allows you
 to download the most up-to-date development version of AxonDeepSeg from a terminal, and 
 also allows you to contribute to the project if you wish to do so.
 
-Although an optional step (AxonDeepSeg can also be downloaded other ways, see below), if you 
-want to install Git, please follow instructions for your operating system on the 
-`Git website <https://git-scm.com/downloads>`_
+To install ``git``, please follow instructions for your operating system on the 
+`git website <https://git-scm.com/downloads>`_
 
 Virtual Environment
 -------------------
@@ -108,33 +107,16 @@ AxonDeepSeg
 .. WARNING ::
    Ensure that the virtual environment is activated before you begin your installation.
 
-Stable release
-~~~~~~~~~~~~~~
-You can install the latest stable release of AxonDeepSeg using ``pip`` with the following command::
-
-    pip install axondeepseg
-
-
-Development version
-~~~~~~~~~~~~~~~~~~~
-
-To install the development version of AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
+To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
 have ``git`` installed on your system)::
 
     git clone https://github.com/neuropoly/axondeepseg.git
 
-If you don't have ``git``, download and extract AxonDeepSeg by clicking `this link <https://github.com/neuropoly/axondeepseg/archive/master.zip>`_.
-
 Then, in your Terminal, go to the AxonDeepSeg folder and install the 
-AxonDeepSeg package. The following ``cd`` command assumes that you followed the ``git clone``
-instruction above::
+AxonDeepSeg package with the following commands::
 
     cd axondeepseg
     pip install -e .
-
-.. NOTE ::
-   If you downloaded AxonDeepSeg using the link above instead of ``git clone``, you may need to ``cd`` to a different folder (e.g. ``Downloads`` folder 
-   located within your home folder ``~``), and the AxonDeepSeg folder may have a different name (e.g. ``axondeepseg-master``).
 
 .. NOTE ::
    To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
@@ -144,6 +126,8 @@ instruction above::
         git pull
         pip install -e .
 
+.. WARNING ::
+   When re-installing the application, the ``default_SEM_model`` and ``default_TEM_model`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
 Testing the installation
 ------------------------
@@ -163,8 +147,6 @@ This integrity test automatically performs the axon and myelin segmentation of a
 
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
-.. NOTE ::
-   This feature is not available if you installed AxonDeepSeg using ``pip``.
 
 To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
 
@@ -184,7 +166,9 @@ AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Termi
 To install the GUI, you need to install AxonDeepSeg via Github (see instructions above). If you encounter a problem when installing or using the GUI, please report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
 FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
 
+
 Once AxonDeepSeg is installed, remain in the virtual environment and follow the OS-specific instructions to install the GUI:
+
 
 macOS
 ~~~~~
@@ -192,9 +176,9 @@ Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
 
-Downgrade from latest version of indexed_gzip to the most recent working version ::
+Downgrade from latest version of h5py to the most recent working version ::
 
-           yes | conda install -c conda-forge indexed_gzip=1.2.0
+           yes | conda install -c conda-forge h5py=2.10.0
 
 Launch FSLeyes ::
 
@@ -204,6 +188,13 @@ On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (
 ``Install permanently --> yes.``
 
 The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
+
+In case, you find trouble installing FSLeyes plugin for ADS you could refer the video below.
+
+.. raw:: html
+
+   <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+     <iframe width="700" height="394" src="https://www.youtube.com/embed/dz2LqQ5LpIo" frameborder="0" allowfullscreen></iframe>
 
 .. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
            To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
@@ -225,9 +216,9 @@ Install FSLeyes using conda-forge ::
 
            yes | conda install -c conda-forge fsleyes=0.33.1
 
-Downgrade from latest version of indexed_gzip to the most recent working version ::
+Downgrade from latest version of h5py to the most recent working version ::
 
-           yes | conda install -c conda-forge indexed_gzip=1.2.0
+           yes | conda install -c conda-forge h5py=2.10.0
 
 Launch FSLeyes ::
 
@@ -248,8 +239,7 @@ Known issues
 GPU-compatible installation
 ---------------------------
 .. NOTE ::
-   This feature is not available if you installed AxonDeepSeg using ``pip``,
-   or if you are using a macOS.
+   This feature is not available if you are using a macOS.
 
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
 using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
@@ -366,19 +356,19 @@ Jupyter notebooks
 
 Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 
-* `getting_started.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_: 
-    Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb>`_.
+* `getting_started.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/00-getting_started.ipynb>`_:
+    Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2F00-getting_started.ipynb>`_.
 
-* `guide_dataset_building.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/guide_dataset_building.ipynb>`_: 
+* `guide_dataset_building.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/01-guide_dataset_building.ipynb>`_:
     Notebook that shows how to prepare a dataset for training. It automatically divides the dataset samples and corresponding label masks in patches of same size.
 
-* `training_guideline.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/training_guideline.ipynb>`_: 
+* `training_guideline.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/02-training_guideline.ipynb>`_:
     Notebook that shows how to train a new model on AxonDeepSeg. It also defines the main parameters that are needed in order to build the neural network.
 
-* `performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/performance_metrics.ipynb>`_: 
+* `performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/03-performance_metrics.ipynb>`_:
     Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.
 
-* `morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/morphometrics_extraction.ipynb>`_: 
+* `morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/04-morphometrics_extraction.ipynb>`_:
     Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, ...), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, ...), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.
 
 .. NOTE ::
@@ -431,7 +421,6 @@ Here are examples of an image, a good manual mask and a bad manual mask.
 .. figure:: _static/image_example.png
     :width: 750px
     :align: center
-    :height: 500px
     :alt: Image example
 
     Image example
@@ -439,7 +428,6 @@ Here are examples of an image, a good manual mask and a bad manual mask.
 .. figure:: _static/good_mask_example.png
     :width: 750px
     :align: center
-    :height: 500px
     :alt: Good manual mask example
 
     Good manual mask example
@@ -447,7 +435,6 @@ Here are examples of an image, a good manual mask and a bad manual mask.
 .. figure:: _static/bad_mask_example.png
     :width: 750px
     :align: center
-    :height: 500px
     :alt: Bad manual mask example
     
     Bad manual mask example
@@ -481,35 +468,3 @@ Citation
 If you use this work in your research, please cite:
 
 Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`_.
-
-.. include:: ../../CHANGELOG.md
-
-Licensing
-=========
-
-The MIT License (MIT)
-
-Copyright (c) 2018 NeuroPoly, École Polytechnique, Université de Montréal
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-Contributors
-============
-
-Pierre-Louis Antonsanti, Mathieu Boudreau, Oumayma Bounou, Julien Cohen-Adad, Victor Herman, Melanie Lubrano, Christian Perone, Maxime Wabartha, Aldo Zaimi, Vasudev Sharma, Stoyan Asenov, Marie-Hélène Bourget.

@@ -26,6 +26,7 @@ class PostDevelopCommand(develop):
 
         develop.run(self)
         check_call("download_models")
+        check_call("download_tests")
 
 
 
@@ -56,12 +57,16 @@ setup(
     },
     extras_require={
         'docs': ['sphinx>=1.6',
-                 'sphinx_rtd_theme>=0.2.4'],
+                 'sphinx_rtd_theme>=0.2.4',
+                 'recommonmark'],
     },
     include_package_data=True,
     entry_points={
         'console_scripts': [
-           'download_models = AxonDeepSeg.models.download_model:main', 'axondeepseg = AxonDeepSeg.segment:main','axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test'
+           'download_models = AxonDeepSeg.models.download_model:main',
+           'download_tests = AxonDeepSeg.download_tests:main',
+           'axondeepseg = AxonDeepSeg.segment:main',
+           'axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test'
         ],
     },
     cmdclass={
