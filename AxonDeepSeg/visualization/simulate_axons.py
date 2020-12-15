@@ -13,24 +13,59 @@ class SimulateAxons:
         # Initialize image
         self.image = np.zeros([self.width, self.height], dtype=np.uint8)
 
-    def generate_axon(self, axon_radius, center=None, gratio = 0.7, axon_angle = 0, plane_angle = 0, plane_factor = 0):
+    def generate_axon(
+            self,
+            axon_radius,
+            center=None,
+            gratio = 0.7,
+            axon_angle = 0,
+            ellipse_mode = None,
+            ellipse_ratio = 1,
+            plane_angle = 0, plane_factor = 0
+            ):
         if center is None:
             center=self.origin
 
-        axon_major_axis_radius = axon_radius/np.cos(np.deg2rad(plane_angle))
 
-        if plane_factor != 0:
-            axon_minor_axis_radius = np.sqrt(axon_radius**2-(plane_factor*axon_radius)**2)
-        else:
+        if ellipse_mode is 'concentric':
+
+            myelin_thickness = axon_radius*(1/gratio-1)
+
+            axon_major_axis_radius = axon_radius*ellipse_ratio
             axon_minor_axis_radius = axon_radius
 
-        x = np.arange(0, self.width)
-        y = np.arange(0, self.height)
-        axon = (x[np.newaxis,:]-center[0])**2/(axon_major_axis_radius**2) + (y[:,np.newaxis]-center[1])**2/(axon_minor_axis_radius**2) < 1
+            myelin_major_axis_radius = axon_major_axis_radius + myelin_thickness
+            myelin_minor_axis_radius = axon_minor_axis_radius + myelin_thickness
+
+
+            x = np.arange(0, self.width)
+            y = np.arange(0, self.height)
+            axon = (x[np.newaxis,:]-center[0])**2/(axon_major_axis_radius**2) + (y[:,np.newaxis]-center[1])**2/(axon_minor_axis_radius**2) < 1
         
-        myelin_outer = (x[np.newaxis,:]-center[0])**2/(axon_major_axis_radius/gratio)**2 + (y[:,np.newaxis]-center[1])**2/(axon_minor_axis_radius/gratio)**2 < 1
-        myelin = (myelin_outer ^ axon)
-        
+            myelin_outer = (x[np.newaxis,:]-center[0])**2/(myelin_major_axis_radius**2) + (y[:,np.newaxis]-center[1])**2/(myelin_minor_axis_radius**2) < 1
+            myelin = (myelin_outer ^ axon)
+        else:
+            if plane_factor != 0:
+                axon_major_axis_radius = axon_radius/np.cos(np.deg2rad(plane_angle))
+                axon_minor_axis_radius = np.sqrt(axon_radius**2-(plane_factor*axon_radius)**2)
+
+                x = np.arange(0, self.width)
+                y = np.arange(0, self.height)
+                axon = (x[np.newaxis,:]-center[0])**2/(axon_major_axis_radius**2) + (y[:,np.newaxis]-center[1])**2/(axon_minor_axis_radius**2) < 1
+            
+                myelin_outer = (x[np.newaxis,:]-center[0])**2/(axon_major_axis_radius/gratio)**2 + (y[:,np.newaxis]-center[1])**2/(axon_minor_axis_radius/gratio)**2 < 1
+                myelin = (myelin_outer ^ axon)
+            else:
+                axon_major_axis_radius = axon_radius/np.cos(np.deg2rad(plane_angle))
+                axon_minor_axis_radius = axon_radius
+
+                x = np.arange(0, self.width)
+                y = np.arange(0, self.height)
+                axon = (x[np.newaxis,:]-center[0])**2/(axon_major_axis_radius**2) + (y[:,np.newaxis]-center[1])**2/(axon_minor_axis_radius**2) < 1
+                
+                myelin_outer = (x[np.newaxis,:]-center[0])**2/(axon_major_axis_radius/gratio)**2 + (y[:,np.newaxis]-center[1])**2/(axon_minor_axis_radius/gratio)**2 < 1
+                myelin = (myelin_outer ^ axon)
+            
         # Convert to int before rotate
         axon = np.ndarray.astype(axon, int)
         myelin = np.ndarray.astype(myelin, int)
