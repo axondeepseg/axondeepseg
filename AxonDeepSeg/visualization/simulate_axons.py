@@ -18,7 +18,6 @@ class SimulateAxons:
             axon_radius,
             center=None,
             gratio = 0.7,
-            axon_angle = 0,
             ellipse_mode = None,
             ellipse_ratio = 1,
             plane_angle = 0, plane_factor = 0
@@ -69,9 +68,6 @@ class SimulateAxons:
         # Convert to int before rotate
         axon = np.ndarray.astype(axon, int)
         myelin = np.ndarray.astype(myelin, int)
-
-        axon = rotate(axon, axon_angle, reshape=False, mode='nearest')
-        myelin = rotate(myelin, axon_angle,reshape=False, mode='nearest')
 
         # Convert back to bool
         axon = np.ndarray.astype(axon, bool)
