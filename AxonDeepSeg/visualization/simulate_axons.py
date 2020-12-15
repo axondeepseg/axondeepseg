@@ -13,14 +13,14 @@ class SimulateAxons:
         # Initialize image
         self.image = np.zeros([self.width, self.height], dtype=np.uint8)
 
-    def generate_axon(self, axon_radius, center=None, gratio = 0.7, axon_angle = 0, plane_angle = 0, eccentricity = 0):
+    def generate_axon(self, axon_radius, center=None, gratio = 0.7, axon_angle = 0, plane_angle = 0, plane_factor = 0):
         if center is None:
             center=self.origin
 
         axon_major_axis_radius = axon_radius/np.cos(np.deg2rad(plane_angle))
 
-        if eccentricity != 0:
-            axon_minor_axis_radius = np.sqrt(axon_radius**2-(eccentricity*axon_radius)**2)
+        if plane_factor != 0:
+            axon_minor_axis_radius = np.sqrt(axon_radius**2-(plane_factor*axon_radius)**2)
         else:
             axon_minor_axis_radius = axon_radius
 
