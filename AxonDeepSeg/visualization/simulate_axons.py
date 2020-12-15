@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.misc import imrotate
+from scipy.ndimage import rotate
 import imageio
 import AxonDeepSeg.ads_utils
 
@@ -31,12 +31,12 @@ class SimulateAxons:
         myelin_outer = (x[np.newaxis,:]-center[0])**2/(axon_major_axis_radius/gratio)**2 + (y[:,np.newaxis]-center[1])**2/(axon_minor_axis_radius/gratio)**2 < 1
         myelin = (myelin_outer ^ axon)
         
-        # Convert to int befor rotate
+        # Convert to int before rotate
         axon = np.ndarray.astype(axon, int)
         myelin = np.ndarray.astype(myelin, int)
 
-        axon = imrotate(axon, axon_angle, 'nearest')
-        myelin = imrotate(myelin, axon_angle, 'nearest')
+        axon = rotate(axon, axon_angle, reshape=False, mode='nearest')
+        myelin = rotate(myelin, axon_angle,reshape=False, mode='nearest')
 
         # Convert back to bool
         axon = np.ndarray.astype(axon, bool)
