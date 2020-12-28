@@ -26,8 +26,7 @@ Whether you are a newcomer or an experienced user, we will do our best to help a
 
 ### FSLeyes plugin
 
-A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube
-, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
+A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
 
 ## References
 
