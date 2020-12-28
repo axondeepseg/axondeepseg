@@ -59,9 +59,9 @@ summarizing the problem you see.
 
 Examples:
 
-- “*installation failure: problem creating launchers*”
+- “*Installation failure: problem creating launchers*”
 - “*``segment_image`` crashes when applying ConvNet*”
-- “*add a special mode for batch normalization*”
+- “*Add a special mode for batch normalization*”
 
 
 Issue Body
