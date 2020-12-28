@@ -19,18 +19,20 @@ You can contribute to AxonDeepSeg in several ways:
 
 - Contributing to the wiki or mailing list
 
+- Helping answer questions on our user discussions forum
+
 
 Reporting a Bug or Requesting a Feature
 #######################################
 
 
-Issues (bugs, feature requests, or others) can be submitted
-`on our project's issue page
-<https://github.com/neuropoly/axondeepseg/issues>`_.
+Issues (bugs or feature requests) can be submitted on `AxonDeepSeg's issues page <https://github.com/neuropoly/axondeepseg/issues>`_.
 
 .. contents:: See below for guidelines on the steps for opening a
              github issue:
   :local:
+
+If your issue is a question regarding the installation or use of the software, consider posting it to AxonDeepSeg's `"discussions" <https://github.com/neuropoly/axondeepseg/discussions>`_ forum area, instead.
 
 
 Prior to Submitting a New Issue
