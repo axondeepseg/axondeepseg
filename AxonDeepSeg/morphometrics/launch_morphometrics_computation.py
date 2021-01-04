@@ -3,9 +3,10 @@
 from pathlib import Path
 import argparse
 from argparse import RawTextHelpFormatter
-
+from matplotlib import image
 # Scientific modules imports
 import numpy as np
+import pandas as pd
 
 # AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
@@ -64,47 +65,131 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="cicl
 def main(argv=None):
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
-    requiredName = ap.add_argument_group('required arguments')
-
-    # Setting the arguments of the segmentation
-    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
-                                                                                        'SEM: scanning electron microscopy samples. \n'+
-                                                                                        'TEM: transmission electron microscopy samples. ')
-    requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
-                                                                                'where the image(s) to segment is/are located.')
-
-    ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
-                                                          'The default SEM model path is: \n'+str(default_SEM_path)+'\n'+
-                                                          'The default TEM model path is: \n'+str(default_TEM_path)+'\n')
+    
+    # Setting the arguments of the saving the morphometrics in excel file
     ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
                                                               'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
                                                               'file needs to be added to the image folder path. The pixel size \n'+
                                                               'in that file will be used for the segmentation.',
                                                               default=None)
-    ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
-                                                            '0 (default) : Displays the progress bar for the segmentation. \n'+
-                                                            '1: Also displays the path of the image(s) being segmented. \n'+
-                                                            '2: Also displays the information about the prediction step \n'+
-                                                            '   for the segmentation of current sample. \n'+
-                                                            '3: Also displays the patch number being processed in the current sample.',
-                                                            default=0)
-    ap.add_argument('-o', '--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
-                                                            'Higher values of overlap can improve the segmentation at patch borders, \n'+
-                                                            'but also increase the segmentation time. \n'+
-                                                            'Default value: '+str(default_overlap)+'\n'+
-                                                            'Recommended range of values: [10-100]. \n',
-                                                            default=25)
-    ap._action_groups.reverse()
+
+
+    ap.add_argument('-i', '--imgpath', required=True, help='Path to the image to be segmented ')
+
+    
+    ap.add_argument('-f', '--filename', required=False, nargs='+', help='Name of the excel file in which the morphometrics file will be  stored',
+                                                              default = "morphometrics"  )
+
+    
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
-    type_ = str(args["type"])
-    verbosity_level = int(args["verbose"])
-    overlap_value = int(args["overlap"])
+    print(args["imgpath"])
+    image_path = Path(args["imgpath"])
+    print("Image path is ", image_path)
+    print(type(image_path))
+    filename = str(args["filename"])
+
+
+    print("Stem of image path is ", image_path.stem)
+
+    #load the axon image 
+    if (Path(image_path.stem + "_seg-axon.png")).exists():
+        print("Hello")
+        pred_axon = image.imread(image_path.stem + "_seg-axon.png")
+        print(pred_axon.shape)
+    else: 
+        print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+                            "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                            "containing the pixel size value."
+            )
+        sys.exit(3)
+
+    #load myelin image    
+    if (Path(image_path.stem + "_seg-myelin.png")).exists():
+        pred_myelin = image.imread(image_path.stem + "_seg-myelin.png")
+        print(pred_myelin.shape)
+    else: 
+        print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+                            "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                            "containing the pixel size value."
+            )
+        sys.exit(3)
+
+
+    
+
     if args["sizepixel"] is not None:
         psm = float(args["sizepixel"])
-    else:
-        psm = None
-    path_target_list = [Path(p) for p in args["imgpath"]]
-    new_path = Path(args["model"]) if args["model"] else None 
+    else: # Handle cases if no resolution is provided on the CLI
+
+        # Check if a pixel size file exists, if so read it.
+        if (image_path.parent / 'pixel_size_in_micrometer.txt').exists():
+
+            resolution_file = open(image_path.parent / 'pixel_size_in_micrometer.txt', 'r')
+
+            psm = float(resolution_file.read())
+        else:
+
+            print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+                            "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                            "containing the pixel size value."
+            )
+            sys.exit(3)
+
+   
+    
+
+
+    x = np.array([], dtype=[
+                                ('x0', 'f4'),
+                                ('y0', 'f4'),
+                                ('gratio','f4'),
+                                ('axon_area','f4'),
+                                ('myelin_area','f4'),
+                                ('axon_diam','f4'),
+                                ('myelin_thickness','f4'),
+                                ('axonmyelin_area','f4'),
+                                ('solidity','f4'),
+                                ('eccentricity','f4'),
+                                ('orientation','f4')
+                            ]
+                    )
+    
+    # Compute statistics
+    stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm)
+
+    for stats in stats_array:
+
+        x = np.append(x,
+            np.array(
+                [(
+                stats['x0'],
+                stats['y0'],
+                stats['gratio'],
+                stats['axon_area'],
+                stats['myelin_area'],
+                stats['axon_diam'],
+                stats['myelin_thickness'],
+                stats['axonmyelin_area'],
+                stats['solidity'],
+                stats['eccentricity'],
+                stats['orientation']
+                )],
+                dtype=x.dtype)
+            )
+
+
+
+    # save the current contents in the file
+    if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
+        filename = filename + ".xlsx"
+    try:
+        # Export to excel
+        pd.DataFrame(x).to_excel(filename)
+
+    except IOError:
+        print("Cannot save morphometrics  data in file '%s'." % file)
+
+
 
