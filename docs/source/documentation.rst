@@ -367,13 +367,14 @@ Syntax
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
 
--as AXONSHAPE        Axon shape
+
+-a AXONSHAPE       Axon shape
                     **circle:** Axon shape is considered as circle. In this case, diameter is computed using equivalent diameter. 
                     **ellipse:** Axon shape is considered as an ellipse. In this case, diameter is computed using ellipse minor axis.
                     The default axon shape is set to **circle**.
 
 -f FILENAME         Name of the excel file in which the morphometrics file will be stored.
-                    The excel file extension can either be **.xlsx** or **.csv**
+                    The excel file extension can either be **.xlsx** or **.csv**.
                     If name of the excel file is not provided, the morphometrics will be saved as **morphometrics.xlsx**.
 
 
