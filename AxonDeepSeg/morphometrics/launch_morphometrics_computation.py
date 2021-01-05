@@ -96,9 +96,9 @@ def main(argv=None):
         pred_axon = image.imread(image_path.stem + "_seg-axon.png")
         print(pred_axon.shape)
     else: 
-        print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-                            "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                            "containing the pixel size value."
+        print("ERROR: Segmented axon mask is not present in the image folder  ",
+                            "Please check that the axon mask is located in the image folder ",
+                            "If it is not present, perform segmentation of the image first using ADS."
             )
         sys.exit(3)
 
@@ -107,14 +107,13 @@ def main(argv=None):
         pred_myelin = image.imread(image_path.stem + "_seg-myelin.png")
         print(pred_myelin.shape)
     else: 
-        print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-                            "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                            "containing the pixel size value."
+        print("ERROR: Segmented myelin mask is not present in the image folder  ",
+                            "Please check that the myelin mask is located in the image folder ",
+                            "If it is not present, perform segmentation of the image first using ADS."
             )
         sys.exit(3)
 
 
-    
 
     if args["sizepixel"] is not None:
         psm = float(args["sizepixel"])
