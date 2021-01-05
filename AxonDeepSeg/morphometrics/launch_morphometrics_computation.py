@@ -62,6 +62,8 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="cicl
         )
         write_aggregate_morphometrics(path_folder, aggregate_metrics)
 
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -78,18 +80,19 @@ def main(argv=None):
 
     
     ap.add_argument('-f', '--filename', required=False, nargs='+', help='Name of the excel file in which the morphometrics file will be  stored',
-                                                              default = "morphometrics"  )
+                                                              default="morphometrics"  )
+
+    ap.add_argumen('-as', '--axonshape', required=False, help="Axon shape: circle or ellipse for computing the morphometrics", default = "circle")
 
     
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
     image_path = Path(args["imgpath"])
-    print("Image path is ", image_path)
     filename = str(args["filename"])
 
 
-    print("Stem of image path is ", image_path.stem)
+
 
     #load the axon image 
     if (Path(image_path.stem + "_seg-axon.png")).exists():
