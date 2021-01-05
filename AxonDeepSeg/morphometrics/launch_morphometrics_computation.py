@@ -82,7 +82,7 @@ def main(argv=None):
     ap.add_argument('-f', '--filename', required=False, nargs='+', help='Name of the excel file in which the morphometrics file will be  stored',
                                                               default="morphometrics"  )
 
-    ap.add_argumen('-as', '--axonshape', required=False, help="Axon shape: circle or ellipse for computing the morphometrics", default = "circle")
+    ap.add_argument('-as', '--axonshape', required=False, help="Axon shape: circle or ellipse for computing the morphometrics", default = "circle")
 
     
 
@@ -90,9 +90,8 @@ def main(argv=None):
     args = vars(ap.parse_args(argv))
     image_path = Path(args["imgpath"])
     filename = str(args["filename"])
-
-
-
+    axon_shape = str(args["axonshape"])
+  
 
     #load the axon image 
     if (Path(image_path.stem + "_seg-axon.png")).exists():
@@ -156,7 +155,7 @@ def main(argv=None):
                     )
     
     # Compute statistics
-    stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm)
+    stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape = axon_shape)
 
     for stats in stats_array:
 
