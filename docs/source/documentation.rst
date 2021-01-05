@@ -351,6 +351,36 @@ To segment images that are located in different folders, specify the path to the
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
+You can also generate morphometrics using AxonDeepSeg by using the `axondeepseg morphometrics` CLI.
+
+Syntax
+------
+
+
+**Required arguments:**
+
+-i IMGPATH
+                    Path to the image file whose morphometrics need to be calculated.
+
+**Optional arguments:**
+
+-s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
+                    If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
+
+
+
+-as AXONSHAPE        Axon shape
+                    **circle:** Axon shape is considered as circle
+                    **ellipse:** Axon shape is considered as an ellipse
+                    The default axon shape is set to **circle**.
+
+-f FILENAME         Name of the excel file in which the morphometrics file will be stored.
+                    The excel file extension can either be **.xlsx** or **.csv**
+                    If name of the excel file is not provided, the morphometrics will be saved as **morphometrics.xlsx**.
+
+
+
+
 Jupyter notebooks
 -----------------
 
