@@ -84,10 +84,8 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
-    print(args["imgpath"])
     image_path = Path(args["imgpath"])
     print("Image path is ", image_path)
-    print(type(image_path))
     filename = str(args["filename"])
 
 
@@ -95,7 +93,6 @@ def main(argv=None):
 
     #load the axon image 
     if (Path(image_path.stem + "_seg-axon.png")).exists():
-        print("Hello")
         pred_axon = image.imread(image_path.stem + "_seg-axon.png")
         print(pred_axon.shape)
     else: 
