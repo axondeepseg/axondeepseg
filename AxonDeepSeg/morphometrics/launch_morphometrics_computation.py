@@ -82,7 +82,7 @@ def main(argv=None):
     ap.add_argument('-f', '--filename', required=False, nargs='+', help='Name of the excel file in which the morphometrics file will be  stored',
                                                               default="morphometrics"  )
 
-    ap.add_argument('-as', '--axonshape', required=False, help="Axon shape: circle or ellipse for computing the morphometrics", default = "circle")
+    ap.add_argument('-a', '--axonshape', required=False, help="Axon shape: circle or ellipse for computing the morphometrics", default = "circle")
 
     
 
