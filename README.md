@@ -4,6 +4,7 @@
 [![Build Status](https://api.travis-ci.org/neuropoly/axondeepseg.svg?branch=master)](https://travis-ci.org/neuropoly/axondeepseg)
 [![Documentation Status](https://readthedocs.org/projects/axondeepseg/badge/?version=stable)](http://axondeepseg.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/neuropoly/axondeepseg/badge.svg?branch=master)](https://coveralls.io/github/neuropoly/axondeepseg?branch=master)
+[![Twitter Follow](https://img.shields.io/twitter/follow/axondeepseg.svg?style=social&label=Follow)](https://twitter.com/axondeepseg)
 
 Segment axon and myelin from microscopy data using deep learning. Written in Python. Using the TensorFlow framework.
 Based on a convolutional neural network architecture. Pixels are classified as either axon, myelin or background.
