@@ -19,8 +19,6 @@ class SimulateAxons:
         axon_radius,
         center=None,
         gratio=0.7,
-        ellipse_mode=None,
-        ellipse_ratio=1,
         plane_angle=0,
     ):
 
@@ -30,24 +28,13 @@ class SimulateAxons:
         x = np.arange(0, self.width)
         y = np.arange(0, self.height)
 
-        if ellipse_mode is "concentric":
+        myelin_thickness = axon_radius * (1 - gratio)
 
-            myelin_thickness = axon_radius * (1 - gratio)
+        axon_major_axis_radius = axon_radius / np.cos(np.deg2rad(plane_angle))
+        axon_minor_axis_radius = axon_radius
 
-            axon_major_axis_radius = axon_radius * ellipse_ratio
-            axon_minor_axis_radius = axon_radius
-
-            myelin_major_axis_radius = axon_major_axis_radius + myelin_thickness
-            myelin_minor_axis_radius = axon_minor_axis_radius + myelin_thickness
-
-        else:
-            myelin_thickness = axon_radius * (1 - gratio)
-
-            axon_major_axis_radius = axon_radius / np.cos(np.deg2rad(plane_angle))
-            axon_minor_axis_radius = axon_radius
-
-            myelin_major_axis_radius = axon_major_axis_radius + myelin_thickness
-            myelin_minor_axis_radius = axon_minor_axis_radius + myelin_thickness
+        myelin_major_axis_radius = axon_major_axis_radius + myelin_thickness
+        myelin_minor_axis_radius = axon_minor_axis_radius + myelin_thickness
 
         axon = (x[np.newaxis, :] - center[0]) ** 2 / (axon_major_axis_radius ** 2) + (
             y[:, np.newaxis] - center[1]
