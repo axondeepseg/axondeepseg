@@ -13,6 +13,8 @@ config/
 
 *.pyc
 
+*.png
+
 data/
 
 guidelines/.ipynb_checkpoints/
