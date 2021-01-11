@@ -19,13 +19,13 @@ class TestCore(object):
             self.file_path.unlink()
 
     # --------------Class tests-------------- #
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_initiate_class(self):
         obj = SimulateAxons()
 
         assert isinstance(obj, SimulateAxons)
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_default_class_properties(self):
         obj = SimulateAxons()
 
@@ -35,8 +35,11 @@ class TestCore(object):
         assert hasattr(obj, "image")
 
     # --------------Axon tests-------------- #
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_simulate_circular_axon(self):
+        x_pos = 100
+        y_pos = 100
+
         axon_radius = 40
         gratio = 0.6
         myelin_thickness = axon_radius * (1 - gratio)
@@ -44,41 +47,60 @@ class TestCore(object):
         obj = SimulateAxons()
 
         obj.generate_axon(
-            axon_radius=axon_radius, center=[100, 100], gratio=gratio, plane_angle=0
+            axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0
         )
 
         # Verify value inside the axon (center)
-        assert obj.image[100, 100] == 255
+        assert obj.image[x_pos, y_pos] == 255
 
         # Verify value inside the axon (outer edge)
-        assert obj.image[100, 100 + (axon_radius - 1)] == 255
-        assert obj.image[100, 100 - (axon_radius - 1)] == 255
-        assert obj.image[100 + (axon_radius - 1), 100] == 255
-        assert obj.image[100 - (axon_radius - 1), 100] == 255
+        assert obj.image[x_pos, y_pos + (axon_radius - 1)] == 255
+        assert obj.image[x_pos, y_pos - (axon_radius - 1)] == 255
+        assert obj.image[x_pos + (axon_radius - 1), y_pos] == 255
+        assert obj.image[x_pos - (axon_radius - 1), y_pos] == 255
 
         # Verify value inside the myelin (inner edge)
-        assert obj.image[100, 100 + (axon_radius + 1)] == 127
-        assert obj.image[100, 100 - (axon_radius + 1)] == 127
-        assert obj.image[100 + (axon_radius + 1), 100] == 127
-        assert obj.image[100 - (axon_radius + 1), 100] == 127
+        assert obj.image[x_pos, y_pos + (axon_radius + 1)] == 127
+        assert obj.image[x_pos, y_pos - (axon_radius + 1)] == 127
+        assert obj.image[x_pos + (axon_radius + 1), y_pos] == 127
+        assert obj.image[x_pos - (axon_radius + 1), y_pos] == 127
 
         # Verify value inside the myelin (outer edge)
-        assert obj.image[100, round(100 + (axon_radius + myelin_thickness - 1))] == 127
-        assert obj.image[100, round(100 - (axon_radius + myelin_thickness - 1))] == 127
-        assert obj.image[round(100 - (axon_radius + myelin_thickness - 1)), 100] == 127
-        assert obj.image[round(100 - (axon_radius + myelin_thickness - 1)), 100] == 127
+        assert (
+            obj.image[x_pos, round(y_pos + (axon_radius + myelin_thickness - 1))] == 127
+        )
+        assert (
+            obj.image[x_pos, round(y_pos - (axon_radius + myelin_thickness - 1))] == 127
+        )
+        assert (
+            obj.image[round(x_pos - (axon_radius + myelin_thickness - 1)), y_pos] == 127
+        )
+        assert (
+            obj.image[round(x_pos - (axon_radius + myelin_thickness - 1)), y_pos] == 127
+        )
 
         # Verify value outside the myelin
-        assert obj.image[100, round(100 + (axon_radius + myelin_thickness + 1))] == 0
-        assert obj.image[100, round(100 - (axon_radius + myelin_thickness + 1))] == 0
-        assert obj.image[round(100 - (axon_radius + myelin_thickness + 1)), 100] == 0
-        assert obj.image[round(100 - (axon_radius + myelin_thickness + 1)), 100] == 0
+        assert (
+            obj.image[x_pos, round(y_pos + (axon_radius + myelin_thickness + 1))] == 0
+        )
+        assert (
+            obj.image[x_pos, round(y_pos - (axon_radius + myelin_thickness + 1))] == 0
+        )
+        assert (
+            obj.image[round(x_pos - (axon_radius + myelin_thickness + 1)), y_pos] == 0
+        )
+        assert (
+            obj.image[round(x_pos - (axon_radius + myelin_thickness + 1)), y_pos] == 0
+        )
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_simulate_ellipsoidal_axon(self):
+        x_pos = 500
+        y_pos = 500
+
         axon_radius = 40
         gratio = 0.6
-        plane_angle = 45
+        plane_angle = 70
 
         myelin_thickness = axon_radius * (1 - gratio)
 
@@ -86,7 +108,7 @@ class TestCore(object):
 
         obj.generate_axon(
             axon_radius=axon_radius,
-            center=[100, 100],
+            center=[x_pos, y_pos],
             gratio=gratio,
             plane_angle=plane_angle,
         )
@@ -94,38 +116,48 @@ class TestCore(object):
         axon_major_axis_radius = axon_radius / np.cos(np.deg2rad(plane_angle))
         axon_minor_axis_radius = axon_radius
 
-        myelin_major_axis_radius = axon_major_axis_radius + myelin_thickness
-        myelin_minor_axis_radius = axon_minor_axis_radius + myelin_thickness
+        myelin_major_axis_radius = (axon_radius + myelin_thickness) / np.cos(
+            np.deg2rad(plane_angle)
+        )
+        myelin_minor_axis_radius = axon_radius + myelin_thickness
 
         # Verify value inside the axon (center)
-        assert obj.image[100, 100] == 255
+        assert obj.image[x_pos, y_pos] == 255
 
         # Verify value inside the axon (outer edge)
-        assert obj.image[100, int(round(100 + (axon_major_axis_radius - 1)))] == 255
-        assert obj.image[100, int(round(100 - (axon_major_axis_radius - 1)))] == 255
-        assert obj.image[int(round(100 + (axon_minor_axis_radius - 1))), 100] == 255
-        assert obj.image[int(round(100 - (axon_minor_axis_radius - 1))), 100] == 255
+        assert obj.image[x_pos, int(round(y_pos + (axon_major_axis_radius - 1)))] == 255
+        assert obj.image[x_pos, int(round(y_pos - (axon_major_axis_radius - 1)))] == 255
+        assert obj.image[int(round(x_pos + (axon_minor_axis_radius - 1))), y_pos] == 255
+        assert obj.image[int(round(x_pos - (axon_minor_axis_radius - 1))), y_pos] == 255
 
         # Verify value inside the myelin (inner edge)
-        assert obj.image[100, int(round(100 + (axon_major_axis_radius + 1)))] == 127
-        assert obj.image[100, int(round(100 - (axon_major_axis_radius + 1)))] == 127
-        assert obj.image[int(round(100 + (axon_minor_axis_radius + 1))), 100] == 127
-        assert obj.image[int(round(100 - (axon_minor_axis_radius + 1))), 100] == 127
+        assert obj.image[x_pos, int(round(y_pos + (axon_major_axis_radius + 1)))] == 127
+        assert obj.image[x_pos, int(round(y_pos - (axon_major_axis_radius + 1)))] == 127
+        assert obj.image[int(round(x_pos + (axon_minor_axis_radius + 1))), y_pos] == 127
+        assert obj.image[int(round(x_pos - (axon_minor_axis_radius + 1))), y_pos] == 127
 
         # Verify value inside the myelin (outer edge)
-        assert obj.image[100, int(round(100 + (myelin_major_axis_radius - 1)))] == 127
-        assert obj.image[100, int(round(100 - (myelin_major_axis_radius - 1)))] == 127
-        assert obj.image[int(round(100 - (myelin_minor_axis_radius - 1))), 100] == 127
-        assert obj.image[int(round(100 - (myelin_minor_axis_radius - 1))), 100] == 127
+        assert (
+            obj.image[x_pos, int(round(y_pos + (myelin_major_axis_radius - 1)))] == 127
+        )
+        assert (
+            obj.image[x_pos, int(round(y_pos - (myelin_major_axis_radius - 1)))] == 127
+        )
+        assert (
+            obj.image[int(round(x_pos - (myelin_minor_axis_radius - 1))), y_pos] == 127
+        )
+        assert (
+            obj.image[int(round(x_pos - (myelin_minor_axis_radius - 1))), y_pos] == 127
+        )
 
         # Verify value outside the myelin
-        assert obj.image[100, int(round(100 + (myelin_major_axis_radius + 1)))] == 0
-        assert obj.image[100, int(round(100 - (myelin_major_axis_radius + 1)))] == 0
-        assert obj.image[int(round(100 - (myelin_minor_axis_radius + 1))), 100] == 0
-        assert obj.image[int(round(100 - (myelin_minor_axis_radius + 1))), 100] == 0
+        assert obj.image[x_pos, int(round(y_pos + (myelin_major_axis_radius + 1)))] == 0
+        assert obj.image[x_pos, int(round(y_pos - (myelin_major_axis_radius + 1)))] == 0
+        assert obj.image[int(round(x_pos - (myelin_minor_axis_radius + 1))), y_pos] == 0
+        assert obj.image[int(round(x_pos - (myelin_minor_axis_radius + 1))), y_pos] == 0
 
     # --------------Save tests-------------- #
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_saved_file_exists(self):
         axon_radius = 40
         gratio = 0.6
