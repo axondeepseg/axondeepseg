@@ -79,10 +79,13 @@ def main(argv=None):
     ap.add_argument('-i', '--imgpath', required=True, help='Path to the image to be segmented ')
 
     
-    ap.add_argument('-f', '--filename', required=False, nargs='+', help='Name of the excel file in which the morphometrics file will be  stored',
+    ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics file will be  stored',
                                                               default="morphometrics"  )
 
-    ap.add_argument('-a', '--axonshape', required=False, help="Axon shape: circle or ellipse for computing the morphometrics", default = "circle")
+    ap.add_argument('-a', '--axonshape', required=False, help='Axon shape: circle \n' +
+                                                                          '\t    ellipse \n' +
+                                                            'For computing morphometrics, axon shape can either be a circle or an ellipse', 
+                                                              default = "circle")
 
     
 
@@ -109,13 +112,11 @@ def main(argv=None):
         pred_myelin = image.imread(image_path.stem + "_seg-myelin.png")
         print(pred_myelin.shape)
     else: 
-        print("ERROR: Segmented myelin mask is not present in the image folder  ",
-                            "Please check that the myelin mask is located in the image folder ",
+        print("ERROR: Segmented myelin mask is not present in the image folder.  ",
+                            "Please check that the myelin mask is located in the image folder. ",
                             "If it is not present, perform segmentation of the image first using ADS."
             )
         sys.exit(3)
-
-
 
     if args["sizepixel"] is not None:
         psm = float(args["sizepixel"])
@@ -185,7 +186,7 @@ def main(argv=None):
     try:
         # Export to excel
         pd.DataFrame(x).to_excel(filename)
-
+        print(f"Moprhometrics file: {filename} has been saved in the {str(image_path.parent.absolute())} directory")
     except IOError:
         print("Cannot save morphometrics  data in file '%s'." % file)
 
