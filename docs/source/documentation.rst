@@ -351,7 +351,11 @@ To segment images that are located in different folders, specify the path to the
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
-You can also generate morphometrics using AxonDeepSeg by using the `axondeepseg morphometrics` CLI.
+
+Morphometrics
+---------------
+
+You can  generate morphometrics using AxonDeepSeg by running `axondeepseg morphometrics` in the command line interface.
 
 Syntax
 ------
