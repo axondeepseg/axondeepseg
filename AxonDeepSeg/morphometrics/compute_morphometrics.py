@@ -150,7 +150,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 stats['myelin_thickness'] = myelin_thickness
                 stats['myelin_area'] = myelin_area
                 stats['axonmyelin_area'] = axonmyelin_area
-                stats['gratio'] = np.sqrt(axon_area / axonmyelin_area)
+                stats['gratio'] = (axon_diam / 2) / (axon_diam / 2 + myelin_thickness)
             else:
                 print(
                     "WARNING: Myelin object not found for axon" +
