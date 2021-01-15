@@ -10,7 +10,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import *
 import AxonDeepSeg.ads_utils as ads
 
 
-def launch_morphometrics_computation(path_img, path_prediction, axon_shape="cicle"):
+def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle"):
     """
     This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
     It automatically performs all steps (computations, savings, displays,...) of the
