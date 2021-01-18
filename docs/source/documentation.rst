@@ -322,7 +322,7 @@ You can generate morphometrics using AxonDeepSeg via the command line interface.
 Syntax
 ~~~~~
 
-The script to launch in called **axondeepseg morphometrics**. It has several arguments.
+The script to launch in called **axondeepseg_morphometrics**. It has several arguments.
 
 **Required arguments:**
 
@@ -344,6 +344,11 @@ The script to launch in called **axondeepseg morphometrics**. It has several arg
                     The excel file extension can either be **.xlsx** or **.csv**.
                     If name of the excel file is not provided, the morphometrics will be saved as **morphometrics.xlsx**.
 
+
+.. NOTE :: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
+           For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon.
+           If you wish to treat axon shape as an ellipse, you can set the **a** flag to be **ellipse**.
+           When shape is set to ellipse, the calculation of the diameter is based on its minor axis. 
 
 
 
