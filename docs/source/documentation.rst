@@ -358,7 +358,7 @@ This generates a morphometrics file in the image directory::
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
     ---- pixel_size_in_micrometer.txt
-    ---- **morphometrics.xlsx**
+    ---- morphometrics.xlsx
     ...
 
 
