@@ -327,7 +327,7 @@ The script to launch in called **axondeepseg_morphometrics**. It has several arg
 **Required arguments:**
 
 -i IMGPATH
-                    Path to the image file whose morphometrics need to be calculated.
+                    Path to the image file whose morphometrics needs to be calculated.
 
 **Optional arguments:**
 
@@ -344,9 +344,26 @@ The script to launch in called **axondeepseg_morphometrics**. It has several arg
                     The excel file extension can either be **.xlsx** or **.csv**.
                     If name of the excel file is not provided, the morphometrics will be saved as **morphometrics.xlsx**.
 
+Morphometrics of a single image
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg::
+
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle -f morphometrics 
+
+This generates a morphometrics file in the image directory::
+
+    --image1_sem/
+    ---- 77.png
+    ---- 77_seg-axon.png
+    ---- 77_seg-axonmyelin.png
+    ---- 77_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- **morphometrics.xlsx**
+    ...
+
 
 .. NOTE :: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
-           For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon.:
+           For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon::
            
            If you wish to treat axon shape as an ellipse, you can set the  **-a** argument to be **ellipse**.
            When axon shape is set to ellipse, the calculation of the diameter is based on ellipse minor axis::
