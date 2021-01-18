@@ -362,8 +362,10 @@ Circle
 
 Ellipse
 ^^^^^^^
-
-
+**Studies using Ellipse as axon shape to compute morphometrics:**
+* Payne et al: https://pubmed.ncbi.nlm.nih.gov/21381867/
+* Payne et al: https://pubmed.ncbi.nlm.nih.gov/22879411/
+* Fehily et al: https://pubmed.ncbi.nlm.nih.gov/30702755/
 
 
 .. NOTE :: In the literature, both equivalent diameter and ellipse minor axis are used to compute the morphometrics. 
