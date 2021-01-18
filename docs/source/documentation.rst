@@ -233,7 +233,7 @@ Example dataset
 You can test AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
 
 Syntax
-------
+-------
 
 The script to launch is called **axondeepseg**. It takes several arguments:
 
@@ -317,11 +317,12 @@ To segment images that are located in different folders, specify the path to the
 Morphometrics
 ---------------
 
-You can  generate morphometrics using AxonDeepSeg by running `axondeepseg morphometrics` in the command line interface.
+You can generate morphometrics using AxonDeepSeg via the command line interface.
 
 Syntax
-------
+======
 
+The script to launch in called **axondeepseg morphometrics**. It has several arguments
 
 **Required arguments:**
 
