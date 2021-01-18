@@ -63,3 +63,5 @@ class TestCore(object):
 
         with pytest.raises((IOError, OSError)):
             launch_morphometrics_computation(str(nonExistingFile), str(pathPrediction))
+
+    # --------------main (cli) tests-------------- #
