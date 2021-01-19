@@ -397,7 +397,7 @@ This will generate **'morphometrics.xlsx'** file in each of folders::
     ---- pixel_size_in_micrometer.txt
     ---- morphometrics.xlsx
 
-Axon Shape: Circle VS Ellipse
+Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Circle
