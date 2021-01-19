@@ -378,7 +378,7 @@ To generate morphometrics of images which are located in different folders, spec
 
     axondeepseg_morphometrics -i test_sem_image/image1_sem/77.png test_sem_image/image2_sem/image.png
 
-This will generate **'morphometrics.xlsx'** file in each of folders. 
+This will generate **'morphometrics.xlsx'** file in each of folders:: 
 
     --image1_sem/
     ---- 77.png
