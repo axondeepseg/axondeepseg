@@ -232,8 +232,11 @@ Example dataset
 
 You can test AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
 
+Segmentation
+------------
+
 Syntax
--------
+~~~~~~
 
 The script to launch is called **axondeepseg**. It takes several arguments:
 
@@ -272,7 +275,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
         axondeepseg -h
 
 Segment a single image
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
 
 To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image **'77.png'** of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
 
@@ -286,7 +289,7 @@ To segment the same image by using the **'pixel_size_in_micrometer.txt'** file i
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png
 
 Segment multiple images of the same resolution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
 
