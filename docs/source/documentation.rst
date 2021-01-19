@@ -364,7 +364,6 @@ This generates a morphometrics file in the image directory::
     ---- morphometrics.xlsx
     ...
 
-
 .. NOTE :: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
            For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon::
            
@@ -379,7 +378,24 @@ To generate morphometrics of images which are located in different folders, spec
 
     axondeepseg_morphometrics -i test_sem_image/image1_sem/77.png test_sem_image/image2_sem/image.png
 
-This will generate morphometrics file in each of folders. 
+This will generate **'morphometrics.xlsx'** file in each of folders. 
+
+    --image1_sem/
+    ---- 77.png
+    ---- 77_seg-axon.png
+    ---- 77_seg-axonmyelin.png
+    ---- 77_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- morphometrics.xlsx
+    ...
+
+    --image2_sem/
+    ---- image.png
+    ---- image_seg-axon.png
+    ---- image_seg-axonmyelin.png
+    ---- image_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- morphometrics.xlsx
 
 Axon Shape: Circle VS Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
