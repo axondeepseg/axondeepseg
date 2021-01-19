@@ -95,11 +95,9 @@ def main(argv=None):
     filename = str(args["filename"])
     axon_shape = str(args["axonshape"])
   
-
     #load the axon image 
-    if (Path(image_path.stem + "_seg-axon.png")).exists():
-        pred_axon = image.imread(image_path.stem + "_seg-axon.png")
-        print(pred_axon.shape)
+    if (Path(str(image_path.with_suffix("")) + "_seg-axon.png")).exists():
+        pred_axon = image.imread(str(image_path.with_suffix("")) + "_seg-axon.png")
     else: 
         print("ERROR: Segmented axon mask is not present in the image folder  ",
                             "Please check that the axon mask is located in the image folder ",
@@ -108,9 +106,8 @@ def main(argv=None):
         sys.exit(3)
 
     #load myelin image    
-    if (Path(image_path.stem + "_seg-myelin.png")).exists():
-        pred_myelin = image.imread(image_path.stem + "_seg-myelin.png")
-        print(pred_myelin.shape)
+    if (Path(str(image_path.with_suffix("")) + "_seg-myelin.png")).exists():
+        pred_myelin = image.imread(str(image_path.with_suffix("")) + "_seg-myelin.png")
     else: 
         print("ERROR: Segmented myelin mask is not present in the image folder.  ",
                             "Please check that the myelin mask is located in the image folder. ",
