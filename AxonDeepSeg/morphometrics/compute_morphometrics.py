@@ -53,7 +53,9 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
     :param im_axon: Array: axon binary mask, output of axondeepseg
     :param path_folder: str: absolute path of folder containing pixel size file
     :param im_myelin: Array: myelin binary mask, output of axondeepseg
-    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
+                            if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
+                            if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
 
@@ -169,7 +171,9 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
         measuring a axon labeled region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
         measuring a axon with myelin labeled region
-   :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
+                            if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
+                            if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     
     [1] According to https://scikit-image.org/docs/dev/api/skimage.measure.html?highlight=region%20properties#regionprops,
     the equivalent diameter is the diameter of a circle with the same area as
@@ -282,7 +286,9 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=
         from axondeepseg segmentation output
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
-    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
+                            if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
+                            if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :return: matplotlib.figure.Figure
     """
     
@@ -340,7 +346,9 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape=
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param path_folder: absolute path of folder containing pixel size file
-    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
+                            if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
+                            if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :return: aggregate_metrics: dictionary containing values of aggregate metrics
     """
 
