@@ -15,7 +15,7 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__'/'__test_demo_files__'
 
-        self.prediction = self.folderPath/ 'AxonDeepSeg_seg-axonmyelin.png'
+        self.prediction = self.folderPath/ 'image_seg-axonmyelin.png'
 
         self.groundtruth = self.folderPath / 'mask.png'
 

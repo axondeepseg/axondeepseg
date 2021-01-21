@@ -25,7 +25,7 @@ class TestCore(object):
         self.groundtruth = imread(self.folderPath / 'mask.png', as_gray=True)
 
         self.prediction = imread(
-            self.folderPath / 'AxonDeepSeg_seg-axonmyelin.png',
+            self.folderPath / 'image_seg-axonmyelin.png',
             as_gray=True
             )
 

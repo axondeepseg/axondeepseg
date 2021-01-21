@@ -26,9 +26,9 @@ class TestCore(object):
             )
         self.pixelsizeValue = 0.07   # For current demo data.
 
-        pred_axon_path = self.test_folder_path / 'AxonDeepSeg_seg-axon.png'
+        pred_axon_path = self.test_folder_path / 'image_seg-axon.png'
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
-        pred_myelin_path = self.test_folder_path / 'AxonDeepSeg_seg-myelin.png'
+        pred_myelin_path = self.test_folder_path / 'image_seg-myelin.png'
         self.pred_myelin = imageio_imread(pred_myelin_path, as_gray=True)
 
         self.tmpDir = self.fullPath / '__tmp__'
@@ -218,9 +218,9 @@ class TestCore(object):
     @pytest.mark.unit
     def test_draw_axon_diameter_creates_file_in_expected_location(self):
         img = imageio_imread(self.test_folder_path / 'image.png')
-        path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
+        path_prediction = self.test_folder_path / 'image_seg-axonmyelin.png'
 
-        result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
+        result_path = self.test_folder_path / 'image_map-axondiameter.png'
         fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin)
         assert fig.axes
         fig.savefig(result_path)

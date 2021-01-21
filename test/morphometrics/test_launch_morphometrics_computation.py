@@ -28,11 +28,12 @@ class TestCore(object):
                          }
 
         pathImg = self.dataPath / 'image.png'
-        pathPrediction = self.dataPath / 'AxonDeepSeg_seg-axonmyelin.png'
+        pathPrediction = self.dataPath / 'image_seg-axonmyelin.png'
 
         launch_morphometrics_computation(str(pathImg), str(pathPrediction))
 
         for fileName in expectedFiles:
+            print(fileName)
             fullFilePath = self.dataPath / fileName
             assert fullFilePath.is_file()
             fullFilePath.unlink()
@@ -40,7 +41,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_launch_morphometrics_computation_errors_for_missing_file(self):
         nonExistingFile = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
-        pathPrediction = self.dataPath / 'AxonDeepSeg_seg-axonmyelin.png'
+        pathPrediction = self.dataPath / 'image_seg-axonmyelin.png'
 
         with pytest.raises((IOError, OSError)):
             launch_morphometrics_computation(str(nonExistingFile), str(pathPrediction))
