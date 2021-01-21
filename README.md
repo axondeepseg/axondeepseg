@@ -16,13 +16,17 @@ For more information, see the [documentation website](http://axondeepseg.readthe
 
 ## Help
 
-If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues). We will reply to you as soon as possible.
+Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
+
+* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on the [AxonDeepSeg GitHub Discussions forum](https://github.com/neuropoly/axondeepseg/discussions). We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
+* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues).
+
+
 
 
 ### FSLeyes plugin
 
-A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube
-, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
+A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
 
 ## References
 
