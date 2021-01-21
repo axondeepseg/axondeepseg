@@ -17,9 +17,9 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
     morphometrics extraction of a given sample.
     :param path_img: path of the input image (microscopy sample)
     :param path_prediction: path of the segmented image (output of AxonDeepSeg)
-    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
-
-
+    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
+                            if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
+                            if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :return: none.
     """
     
