@@ -4,6 +4,7 @@
 [![Build Status](https://api.travis-ci.org/neuropoly/axondeepseg.svg?branch=master)](https://travis-ci.org/neuropoly/axondeepseg)
 [![Documentation Status](https://readthedocs.org/projects/axondeepseg/badge/?version=stable)](http://axondeepseg.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/neuropoly/axondeepseg/badge.svg?branch=master)](https://coveralls.io/github/neuropoly/axondeepseg?branch=master)
+[![Twitter Follow](https://img.shields.io/twitter/follow/axondeepseg.svg?style=social&label=Follow)](https://twitter.com/axondeepseg)
 
 Segment axon and myelin from microscopy data using deep learning. Written in Python. Using the TensorFlow framework.
 Based on a convolutional neural network architecture. Pixels are classified as either axon, myelin or background.
@@ -16,13 +17,17 @@ For more information, see the [documentation website](http://axondeepseg.readthe
 
 ## Help
 
-If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues). We will reply to you as soon as possible.
+Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
+
+* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on the [AxonDeepSeg GitHub Discussions forum](https://github.com/neuropoly/axondeepseg/discussions). We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
+* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the [AxonDeepSeg GitHub issues webpage](https://github.com/neuropoly/axondeepseg/issues).
+
+
 
 
 ### FSLeyes plugin
 
-A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube
-, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
+A tutorial demonstrating the installation procedure and basic usage of our FSLeyes plugin is available on YouTube, and can be viewed by clicking [this link](https://www.youtube.com/watch?v=dz2LqQ5LpIo).
 
 ## References
 
