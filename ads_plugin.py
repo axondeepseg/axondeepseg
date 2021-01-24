@@ -376,9 +376,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This function saves the active myelin and axon masks as PNG images. Three (3) images are generated in a folder
         selected by the user : one with the axon mask, one with the myelin mask and one with both.
         """
-        print("****** The PNG name is ************")
-        print(self.png_image_name)
-        self.show_message("land")
+
         # Find the visible myelin and axon masks
         axon_mask_overlay = self.get_corrected_axon_overlay()
         if axon_mask_overlay is None:
@@ -433,14 +431,15 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Scale the pixel values of the masks to 255 for image saving
         myelin_array = myelin_array * params.intensity['binary']
         axon_array = axon_array * params.intensity['binary']
-
-        self.show_message(" The image is of this ty[e")
         
         # Save the arrays as PNG files
-        myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-        ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[0] + "_seg-axonmyelin.png", img=myelin_and_axon_array)
-        ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[0] + "_seg-myelin.png", img=myelin_array)
-        ads_utils.imwrite(filename=save_dir +"/" + self.png_image_name[0] + "_seg-axon.png", img=axon_array)
+        n_loaded_images = self.png_image_name.__len__()
+        for i in range(n_loaded_images):
+
+            myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
+            ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[i][:-4] + "_seg-axonmyelin.png", img=myelin_and_axon_array)
+            ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[i][:-4] + "_seg-myelin.png", img=myelin_array)
+            ads_utils.imwrite(filename=save_dir +"/" + self.png_image_name[i][:-4] + "_seg-axon.png", img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
