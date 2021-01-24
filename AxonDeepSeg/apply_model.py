@@ -278,10 +278,6 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
             for j in range(n_classes):
                 mask[pred == j] = paint_vals[j]
             # Then we save the image
-            print("**********The path is ****************")
-            print("path of acquistion folder is ", str(path_acquisitions_folders[i]))
-            print("path of acquisition file names is ", acquisitions_filenames[i])
-            print("path of segmentation file names are", str(segmentations_filenames[i]))
             print(str(path_acquisitions_folders[i] / convert_path(acquisitions_filenames[i] + str(segmentations_filenames[i]))))
             ads.imwrite(path_acquisitions_folders[i] / segmentations_filenames[i], mask, 'png')
 
