@@ -211,7 +211,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
     # If string, convert to Path objects
     path_acquisitions_folders = convert_path(path_acquisitions_folders)
     path_model_folder = convert_path(path_model_folder)
-
+    print("Path of acquisiton folder when it is called is", path_acquisitions_folders)
     # Processing input so they are lists in every situation
     path_acquisitions_folders, acquisitions_filenames, resampled_resolutions, segmentations_filenames = \
         list(map(ensure_list_type, [path_acquisitions_folders, acquisitions_filenames, resampled_resolutions,
@@ -278,10 +278,14 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
             for j in range(n_classes):
                 mask[pred == j] = paint_vals[j]
             # Then we save the image
-            print(str(path_acquisitions_folders[i] / convert_path(acquisitions_filenames[i] + str(segmentations_filenames[i]))))
-            ads.imwrite(path_acquisitions_folders[i] / segmentations_filenames[i], mask, 'png')
+            print("Print path of the acquisiton folder is" , path_acquisitions_folders[i])
+            print("Print path of acquision file name is", acquisitions_filenames[i])
+            print(  str(segmentations_filenames[i]))
+            image_name = str(convert_path(acquisitions_filenames[i]).stem)
+            print("The path where segmented image is saved is", path_acquisitions_folders[i] /  (image_name + str(segmentations_filenames[i])))
+            ads.imwrite(path_acquisitions_folders[i] /  (image_name + str(segmentations_filenames[i])), mask, 'png')
 
-            axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] / segmentations_filenames[i])
+            axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] /  (image_name + str(segmentations_filenames[i])))
 
     if prediction_proba_activate:
         return prediction, prediction_proba
