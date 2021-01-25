@@ -65,17 +65,13 @@ def segment_image(path_testing_image, path_model,
         # Get type of model we are using
         selected_model = path_model.name
 
-        # Read image
-        img = ads.imread(str(path_testing_image))
-
-        # Generate tmp file
-        fp = open(path_acquisition / '__tmp_segment__.png', 'wb+')
+ 
 
         img_name_original = acquisition_name.stem
 
-        ads.imwrite(fp, img, format='png')
-
-        acquisition_name = Path(fp.name).name
+        print("*******************segment single image**************")
+        print("The acquisiont name is ", acquisition_name)
+        print("*******************segment single image**************")
         segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
         # Performing the segmentation
@@ -91,9 +87,6 @@ def segment_image(path_testing_image, path_model,
         if verbosity_level >= 1:
             print(("Image {0} segmented.".format(path_testing_image)))
 
-        # Remove temporary file used for the segmentation
-        fp.close()
-        (path_acquisition / '__tmp_segment__.png').unlink()
 
     else:
         print(("The path {0} does not exist.".format(path_testing_image)))
@@ -154,14 +147,9 @@ def segment_folders(path_testing_images_folder, path_model,
         # Read image for conversion
         img = ads.imread(str(path_testing_images_folder / file_))
 
-        # Generate tmpfile for segmentation pipeline
-        fp = open(path_testing_images_folder / '__tmp_segment__.png', 'wb+')
-
         img_name_original = file_.stem
 
-        ads.imwrite(fp, img, format='png')
-
-        acquisition_name = Path(fp.name).name
+        acquisition_name = file_.name
         segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
         axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
@@ -176,9 +164,7 @@ def segment_folders(path_testing_images_folder, path_model,
         if verbosity_level >= 1:
             tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
-        # Remove temporary file used for the segmentation
-        fp.close()
-        (path_testing_images_folder / '__tmp_segment__.png').unlink()
+
 
     return None
 

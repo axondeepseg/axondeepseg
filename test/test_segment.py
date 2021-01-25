@@ -42,6 +42,7 @@ class TestCore(object):
 
     @classmethod
     def teardown_class(cls):
+
         testPath = Path(__file__).resolve().parent
         projectPath = testPath.parent
         imageFolderPath = testPath / '__test_files__' / '__test_segment_files__'
