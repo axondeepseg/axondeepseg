@@ -279,7 +279,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
             # Then we save the image
             print(str(segmentations_filenames[i]))
             image_name =convert_path(acquisitions_filenames[i]).stem
-            ads.imwrite(path_acquisitions_folders[i] /  (image_name + segmentations_filenames[i]), mask, 'png')
+            ads.imwrite(path_acquisitions_folders[i] / (image_name + segmentations_filenames[i]), mask, 'png')
 
             axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] /  (image_name + segmentations_filenames[i]))
 
@@ -485,5 +485,4 @@ def perform_batch_inference(model, tf_session, tf_prediction_op, tf_input, batch
 
     else:
         return batch_predictions_list
-
 
