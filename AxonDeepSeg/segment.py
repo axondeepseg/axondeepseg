@@ -69,11 +69,6 @@ def segment_image(path_testing_image, path_model,
 
         img_name_original = acquisition_name.stem
 
-        print("*******************segment single image**************")
-        print("The acquisiont name is ", acquisition_name)
-        print("*******************segment single image**************")
-       
-
         # Performing the segmentation
 
         axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
