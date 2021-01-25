@@ -278,7 +278,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
                 mask[pred == j] = paint_vals[j]
             # Then we save the image
             print(str(segmentations_filenames[i]))
-            image_name =convert_path(acquisitions_filenames[i]).stem
+            image_name = convert_path(acquisitions_filenames[i]).stem
             ads.imwrite(path_acquisitions_folders[i] / (image_name + segmentations_filenames[i]), mask, 'png')
 
             axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] / (image_name + segmentations_filenames[i]))
