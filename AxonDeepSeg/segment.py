@@ -72,14 +72,13 @@ def segment_image(path_testing_image, path_model,
         print("*******************segment single image**************")
         print("The acquisiont name is ", acquisition_name)
         print("*******************segment single image**************")
-        segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
+       
 
         # Performing the segmentation
 
         axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
                           path_model_folder=path_model, config_dict=config, ckpt_name='model',
                           inference_batch_size=1, overlap_value=overlap_value,
-                          segmentations_filenames=segmented_image_name,
                           resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
                           acquired_resolution=acquired_resolution,
                           prediction_proba_activate=False, write_mode=True)
@@ -150,12 +149,10 @@ def segment_folders(path_testing_images_folder, path_model,
         img_name_original = file_.stem
 
         acquisition_name = file_.name
-        segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
         axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
                               path_model_folder=path_model, config_dict=config, ckpt_name='model',
                               inference_batch_size=1, overlap_value=overlap_value,
-                              segmentations_filenames=[segmented_image_name],
                               acquired_resolution=acquired_resolution,
                               verbosity_level=verbosity_level,
                               resampled_resolutions=resolution_model, prediction_proba_activate=False,

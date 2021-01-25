@@ -281,11 +281,11 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
             print("Print path of the acquisiton folder is" , path_acquisitions_folders[i])
             print("Print path of acquision file name is", acquisitions_filenames[i])
             print(  str(segmentations_filenames[i]))
-            image_name = str(convert_path(acquisitions_filenames[i]).stem)
+            image_name =convert_path(acquisitions_filenames[i]).stem
             print("The path where segmented image is saved is", path_acquisitions_folders[i] /  (image_name + str(segmentations_filenames[i])))
-            ads.imwrite(path_acquisitions_folders[i] /  segmentations_filenames[i], mask, 'png')
+            ads.imwrite(path_acquisitions_folders[i] /  (image_name + segmentations_filenames[i]), mask, 'png')
 
-            axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] / segmentations_filenames[i])
+            axon_prediction, myelin_prediction = get_masks(path_acquisitions_folders[i] /  (image_name + segmentations_filenames[i]))
 
     if prediction_proba_activate:
         return prediction, prediction_proba
