@@ -20,6 +20,7 @@ import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import convert_path
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model"
@@ -111,7 +112,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
     # Update list of images to segment by selecting only image files (not already segmented or not masks)
     img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
-                 and (not str(file).endswith(('_seg-axonmyelin.png','_seg-axon.png','_seg-myelin.png','mask.png')))]
+                 and (not str(file).endswith((axonmyelin_suffix, axon_suffix, myelin_suffix,'mask.png')))]
 
     # Pre-processing: convert to png if not already done and adapt to model contrast
     for file_ in tqdm(img_files, desc="Segmentation..."):

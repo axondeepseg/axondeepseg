@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from AxonDeepSeg.testing.segmentation_scoring import *
+from config import axonmyelin_suffix
 
 
 class TestCore(object):
@@ -25,7 +26,7 @@ class TestCore(object):
         self.groundtruth = imread(self.folderPath / 'mask.png', as_gray=True)
 
         self.prediction = imread(
-            self.folderPath / 'image_seg-axonmyelin.png',
+            self.folderPath / ('image' + axonmyelin_suffix),
             as_gray=True
             )
 

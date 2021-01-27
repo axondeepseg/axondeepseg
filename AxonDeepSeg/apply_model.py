@@ -7,6 +7,7 @@ from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.visualization.get_masks import get_masks
 from AxonDeepSeg.patch_management_tools import im2patches_overlap, patches2im_overlap
 from AxonDeepSeg.config_tools import update_config, default_configuration
+from config import axonmyelin_suffix
 
 #Keras import
 from keras import backend as K
@@ -185,7 +186,7 @@ def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder
 
 def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_model_folder, config_dict,
                       ckpt_name='model',
-                      segmentations_filenames=['_seg-axonmyelin.png'], inference_batch_size=1,
+                      segmentations_filenames=[axonmyelin_suffix], inference_batch_size=1,
                       overlap_value=25, resampled_resolutions=0.1, acquired_resolution=None,
                       prediction_proba_activate=False, write_mode=True, gpu_per=1.0, verbosity_level=0):
     """
@@ -217,7 +218,7 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
                                     segmentations_filenames]))
 
     if len(segmentations_filenames) != len(path_acquisitions_folders):
-        segmentations_filenames = ['_seg-axonmyelin.png'] * len(path_acquisitions_folders)
+        segmentations_filenames = [axonmyelin_suffix] * len(path_acquisitions_folders)
 
     if len(acquisitions_filenames) != len(path_acquisitions_folders):
         acquisitions_filenames = ['image.png'] * len(path_acquisitions_folders)

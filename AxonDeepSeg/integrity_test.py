@@ -11,6 +11,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 
 import AxonDeepSeg.ads_utils as ads
 import AxonDeepSeg.ads_utils
+from config import axonmyelin_suffix
 
 def integrity_test():
 
@@ -26,6 +27,7 @@ def integrity_test():
         path_model = dir_path / 'models' / model_name
         path_testing = path_model / 'data_test'
         path_configfile = path_model / 'config_network.json'
+        image_name = "image.png"
 
         # Read the configuration file 
         print('Reading test configuration file.')
@@ -35,13 +37,14 @@ def integrity_test():
         with open(path_configfile, 'r') as fd:
             config_network = json.loads(fd.read())
 
+
         # Launch the axon and myelin segmentation on test image sample provided in the installation
         print('Computing the segmentation of axon and myelin on test image.')
-        prediction = axon_segmentation([path_testing], ["image.png"], path_model, config_network, prediction_proba_activate=True, verbosity_level=4)
+        prediction = axon_segmentation([path_testing], [image_name], path_model, config_network, prediction_proba_activate=True, verbosity_level=4)
 
         # Read the ground truth mask and the obtained segmentation mask
         mask = ads.imread(path_testing / 'mask.png')
-        pred = ads.imread(path_testing / 'image_seg-axonmyelin.png')
+        pred = ads.imread(path_testing / (image_name[:-4] + axonmyelin_suffix))
 
         # Generate separate axon and myelin masks of the segmentation output
         print('Generating axon and myelin segmentation masks and saving.')

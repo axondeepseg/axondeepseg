@@ -6,6 +6,7 @@ import pytest
 
 from AxonDeepSeg.segment import *
 import AxonDeepSeg.segment
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 class TestCore(object):
     def setup(self):
@@ -54,12 +55,12 @@ class TestCore(object):
             )
 
         outputFiles = [
-            'image_seg-axon.png',
-            'image_seg-myelin.png',
-            'image_seg-axonmyelin.png',
-            'image_2_seg-axon.png',
-            'image_2_seg-myelin.png',
-            'image_2_seg-axonmyelin.png',
+            'image' + axon_suffix,
+            'image' + myelin_suffix,
+            'image' + axonmyelin_suffix,
+            'image2' + axon_suffix,
+            'image2' + myelin_suffix,
+            'image2' + axonmyelin_suffix
             ]
 
         for fileName in outputFiles:
@@ -101,9 +102,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image_seg-axon.png',
-            'image_seg-myelin.png',
-            'image_seg-axonmyelin.png'
+            'image' + axon_suffix,
+            'image' + myelin_suffix,
+            'image' + axonmyelin_suffix
             ]
 
         for fileName in outputFiles:
@@ -131,9 +132,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image_seg-axon.png',
-            'image_seg-myelin.png',
-            'image_seg-axonmyelin.png'
+            'image' + axon_suffix,
+            'image' + myelin_suffix,
+            'image' + axonmyelin_suffix
             ]
 
         segment_folders(
@@ -158,9 +159,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image_seg-axon.png',
-            'image_seg-myelin.png',
-            'image_seg-axonmyelin.png'
+            'image' + axon_suffix,
+            'image' + myelin_suffix,
+            'image' + axonmyelin_suffix
             ]
 
         for fileName in outputFiles:

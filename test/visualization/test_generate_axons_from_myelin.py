@@ -7,7 +7,7 @@ from imageio import imread
 import pytest
 
 from AxonDeepSeg.visualization.generate_axons_from_myelin import *
-
+from config import myelin_suffix, axonmyelin_suffix
 
 class TestCore(object):
     def setup(self):
@@ -18,9 +18,9 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__'/ '__test_demo_files__'
 
-        self.axonMyelinMask = self.folderPath / 'image_seg-axonmyelin.png'
+        self.axonMyelinMask = self.folderPath / ('image' + axonmyelin_suffix)
 
-        self.myelinMask = self.folderPath / 'image_seg-myelin.png'
+        self.myelinMask = self.folderPath / ('image' + myelin_suffix)
 
     def teardown(self):
         if (self.folderPath / 'axon_myelin_mask_corrected.png').is_file():

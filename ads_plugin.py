@@ -23,6 +23,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 import math
 from scipy import ndimage as ndi
@@ -363,8 +364,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axon_mask_path = image_directory + "/" + image_name_no_extension + "_seg-axon.png"
-        myelin_mask_path = image_directory + "/" + image_name_no_extension + "_seg-myelin.png"
+        axon_mask_path = image_directory + "/" + image_name_no_extension + axon_suffix
+        myelin_mask_path = image_directory + "/" + image_name_no_extension + myelin_suffix
         self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
         self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
         self.pixel_size_float = pixel_size_float
@@ -437,9 +438,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         for i in range(n_loaded_images):
 
             myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-            ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[i][:-4] + "_seg-axonmyelin.png", img=myelin_and_axon_array)
-            ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[i][:-4] + "_seg-myelin.png", img=myelin_array)
-            ads_utils.imwrite(filename=save_dir +"/" + self.png_image_name[i][:-4] + "_seg-axon.png", img=axon_array)
+            ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[i][:-4] + axonmyelin_suffix, img=myelin_and_axon_array)
+            ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[i][:-4] + myelin_suffix, img=myelin_array)
+            ads_utils.imwrite(filename=save_dir +"/" + self.png_image_name[i][:-4] + axon_suffix, img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
