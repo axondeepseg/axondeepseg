@@ -432,15 +432,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Scale the pixel values of the masks to 255 for image saving
         myelin_array = myelin_array * params.intensity['binary']
         axon_array = axon_array * params.intensity['binary']
-        
-        # Save the arrays as PNG files
-        n_loaded_images = self.png_image_name.__len__()
-        for i in range(n_loaded_images):
 
-            myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-            ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[i][:-4 + axonmyelin_suffix.name, img=myelin_and_axon_array)
-            ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[i][:-4] + myelin_suffix.name, img=myelin_array)
-            ads_utils.imwrite(filename=save_dir +"/" + self.png_image_name[i][:-4] + axon_suffix.name, img=axon_array)
+
+        myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
+        ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[0][:-4] + axonmyelin_suffix.name, img=myelin_and_axon_array)
+        ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[0][:-4] + myelin_suffix.name, img=myelin_array)
+        ads_utils.imwrite(filename=save_dir +"/" + self.png_image_name[0][:-4] + axon_suffix.name, img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
