@@ -31,9 +31,9 @@ class TestCore(object):
     @pytest.mark.unit
     def test_merge_masks_outputs_expected_volume_and_writes_files(self):
 
-        path_axon = self.path_folder / ('image' + axon_suffix)
+        path_axon = self.path_folder / ('image' + axon_suffix.name)
 
-        path_myelin = self.path_folder / ('image' + myelin_suffix)
+        path_myelin = self.path_folder / ('image' + myelin_suffix.name)
 
         expectedFilePath = self.path_folder / 'axon_myelin_mask.png'
 

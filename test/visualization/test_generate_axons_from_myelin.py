@@ -18,9 +18,9 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__'/ '__test_demo_files__'
 
-        self.axonMyelinMask = self.folderPath / ('image' + axonmyelin_suffix)
+        self.axonMyelinMask = self.folderPath / ('image' + axonmyelin_suffix.name)
 
-        self.myelinMask = self.folderPath / ('image' + myelin_suffix)
+        self.myelinMask = self.folderPath / ('image' + myelin_suffix.name)
 
     def teardown(self):
         if (self.folderPath / 'axon_myelin_mask_corrected.png').is_file():
