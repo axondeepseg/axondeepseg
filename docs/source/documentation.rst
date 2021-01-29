@@ -403,6 +403,7 @@ Axon Shape: Circle vs Ellipse
 Circle
 ^^^^^^
 **Studies using Circle as axon shape:**
+* Duval et al: https://pubmed.ncbi.nlm.nih.gov/30326296/
 
 
 Ellipse
