@@ -126,10 +126,6 @@ AxonDeepSeg package with the following commands::
         git pull
         pip install -e .
         
-If you are using the FSLeyes GUI, you should update FSLeyes as well to make sure it uses the required packages: ::
-
-    yes | conda install -c conda-forge fsleyes=0.33.1
-    yes | conda install -c conda-forge h5py=2.10.0
 
 .. WARNING ::
    When re-installing the application, the ``default_SEM_model`` and ``default_TEM_model`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
