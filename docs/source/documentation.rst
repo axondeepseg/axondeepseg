@@ -349,7 +349,7 @@ The script to launch in called **axondeepseg_morphometrics**. It has several arg
 
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg::
+Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
 
     axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle -f morphometrics 
 
@@ -402,7 +402,8 @@ Axon Shape: Circle vs Ellipse
 
 Circle
 ^^^^^^
-Usage::
+**Usage** ::
+
     axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a circle
 
 **Studies using Circle as axon shape:**
@@ -412,7 +413,8 @@ Usage::
 
 Ellipse
 ^^^^^^^
-Usage::
+**Usage** ::
+
     axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
 
 **Studies using Ellipse as axon shape:**
