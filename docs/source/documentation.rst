@@ -402,6 +402,9 @@ Axon Shape: Circle vs Ellipse
 
 Circle
 ^^^^^^
+**Usage**
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a circle
+
 **Studies using Circle as axon shape:**
 
 * Duval et al: https://pubmed.ncbi.nlm.nih.gov/30326296/
@@ -409,6 +412,9 @@ Circle
 
 Ellipse
 ^^^^^^^
+**Usage**
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
+
 **Studies using Ellipse as axon shape:**
 
 * Payne et al: https://pubmed.ncbi.nlm.nih.gov/21381867/
