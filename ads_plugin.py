@@ -187,7 +187,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         self.frame.viewPanels[0].frame.viewPanels[0].getZCanvas().opts.invertY = True
 
         # Create a temporary directory that will hold the NIfTI files
-        self.ads_temp_dir = tempfile.TemporaryDirectory()
+        self.ads_temp_dir_var = tempfile.TemporaryDirectory()  #This variable needs to stay loaded to keep the temporary
+                                                               # directory from being destroyed
+        self.ads_temp_dir = Path(self.ads_temp_dir_var.name)
 
         # Check the version
         self.verrify_version()
@@ -208,18 +210,18 @@ class ADScontrol(ctrlpanel.ControlPanel):
             ):  # The user cancelled the operation
                 return
 
-            in_file = file_dialog.GetPath()
+            in_file = Path(file_dialog.GetPath())
 
         # Check if the image format is valid
-        image_extension = os.path.splitext(in_file)[1]
+        image_extension = in_file.suffix
         valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
 
         # Store the directory path and image name for later use in the application of the prediction model
-        self.image_dir_path.append(os.path.dirname(in_file))
-        self.png_image_name.append(in_file[os.path.dirname(in_file).__len__() + 1 :])
+        self.image_dir_path.append(in_file.parents[0])
+        self.png_image_name.append(in_file.stem)
 
         # Call the function that convert and loads the png or tif image
         self.load_png_image_from_path(in_file)
@@ -696,7 +698,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This function converts a 2D image into a NIfTI image and loads it as an overlay.
         The parameter add_to_overlayList allows to display the overlay into FSLeyes.
         :param image_path: The location of the image, including the name and the .extension
-        :type image_path: string
+        :type image_path: Path
         :param is_mask: (optional) Whether or not this is a segmentation mask. It will be treated as a normal
         image by default.
         :type is_mask: bool
@@ -726,8 +728,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
 
         # Save the NIfTI image in a temporary directory
-        img_name = os.path.basename(image_path)
-        out_file = self.ads_temp_dir.name + "/" + img_name[:-3] + "nii.gz"
+        img_name = image_path.stem
+        out_file = self.ads_temp_dir.__str__() + "/" + img_name + ".nii.gz"
         nib.save(img_NIfTI, out_file)
 
         # Load the NIfTI image as an overlay
