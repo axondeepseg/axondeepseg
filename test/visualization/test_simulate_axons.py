@@ -18,6 +18,18 @@ class TestCore(object):
         if self.file_path.is_file():
             self.file_path.unlink()
 
+    # --------------Function tests-------------- #
+    @pytest.mark.unit
+    def test_calc_myelin_thickness(self):
+        gratio = 0.6
+        axon_radius = 40
+
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
+
+        actual_gratio = axon_radius / (axon_radius + myelin_thickness)
+
+        assert actual_gratio == gratio
+
     # --------------Class tests-------------- #
     @pytest.mark.unit
     def test_initiate_class(self):
