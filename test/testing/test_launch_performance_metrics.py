@@ -16,7 +16,7 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__'/'__test_demo_files__'
 
-        self.prediction = self.folderPath/ 'image' + axonmyelin_suffix.name
+        self.prediction = self.folderPath/ ('image' + axonmyelin_suffix.name)
 
         self.groundtruth = self.folderPath / 'mask.png'
 
