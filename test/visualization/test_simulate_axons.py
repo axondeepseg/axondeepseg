@@ -54,7 +54,7 @@ class TestCore(object):
 
         axon_radius = 40
         gratio = 0.6
-        myelin_thickness = axon_radius * (1 - gratio)
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
 
         obj = SimulateAxons()
 
@@ -114,7 +114,7 @@ class TestCore(object):
         gratio = 0.6
         plane_angle = 70
 
-        myelin_thickness = axon_radius * (1 - gratio)
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
 
         obj = SimulateAxons()
 
@@ -173,7 +173,7 @@ class TestCore(object):
     def test_saved_file_exists(self):
         axon_radius = 40
         gratio = 0.6
-        myelin_thickness = axon_radius * (1 - gratio)
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
 
         obj = SimulateAxons()
 
