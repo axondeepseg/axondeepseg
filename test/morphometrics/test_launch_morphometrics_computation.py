@@ -34,7 +34,6 @@ class TestCore(object):
         launch_morphometrics_computation(str(pathImg), str(pathPrediction))
 
         for fileName in expectedFiles:
-            print(fileName)
             fullFilePath = self.dataPath / fileName
             assert fullFilePath.is_file()
             fullFilePath.unlink()
