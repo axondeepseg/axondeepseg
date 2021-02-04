@@ -119,6 +119,8 @@ def train_model(
     # Probability value of 0.5 is chosen so that the original as well augmented image are taken into account while training the model.
     if shifting:
         p_shift = 0.5
+    if rescaling:
+        p_rescale = 0.5
     if rotation:
         p_rotate = 0.5
     if flipping:
@@ -129,6 +131,10 @@ def train_model(
         p_elastic = 0.5
 
     #####Data Augmentation parameters#####
+
+    # Rescaling parameters
+    low_rescale_bound = 0.8
+    high_rescale_bound = 1.2
 
     # Elastic transform parameters
     alpha_max = 9
@@ -151,7 +157,16 @@ def train_model(
         [
             # Randomy flips an image either horizontally, vertically or both.
             Flip(p=p_flip),
-            # Randomly rotates an image between low limit and high limit.
+            # Randomly rescales an image between low rescale bound and high rescale bound.
+            ShiftScaleRotate(
+                shift_limit=(0, 0),
+                scale_limit=(low_rescale_bound, high_rescale_bound),
+                rotate_limit=(0, 0),
+                border_mode=border_mode,
+                p=p_shift,
+                interpolation=cv2.INTER_NEAREST,
+            ),
+            # Randomly shifts an image between low limit and high limit.
             ShiftScaleRotate(
                 shift_limit=(low_limit, high_limit),
                 scale_limit=(0, 0),
