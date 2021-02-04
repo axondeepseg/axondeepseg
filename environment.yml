@@ -1,0 +1,36 @@
+name: ads_venv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - fsleyes=0.33.1
+  - h5py=2.10.0
+  - numpy
+  - scipy
+  - scikit-learn
+  - scikit-image
+  - tabulate
+  - pandas
+  - matplotlib
+  - tensorflow=1.13.1
+  - mpld3
+  - tqdm
+  - requests
+  - pillow
+  - imageio
+  - pytest
+  - pytest-cov
+  - prettytable
+  - raven
+  - jupyter
+  - Keras
+  - Keras-Applications
+  - Keras-Preprocessing
+  - albumentations
+  - openpyxl
+  - h5py
+  - pip
+  - pip:
+    - opencv-contrib-python
+    - opencv-python-headless
