@@ -60,9 +60,8 @@ git
 
 To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
 
-Install AxonDeepSeg inside a conda venv
+Create Virtual Environment and Install AxonDeepSeg
 -----------
-.. WARNING :: Ensure that the virtual environment is activated before you begin your installation.
 
 To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
 
