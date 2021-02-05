@@ -60,13 +60,20 @@ git
 
 To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
 
-Virtual Environment
--------------------
+Install AxonDeepSeg inside a conda venv
+-----------
+.. WARNING :: Ensure that the virtual environment is activated before you begin your installation.
+
+To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+
+    git clone https://github.com/neuropoly/axondeepseg.git
+    cd axondeepseg
+
 Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you create a virtual environment before you continue with your installation.
 
-To create a Python 3.7 virtual environment named "ads_venv", in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions::
+To setup a Python 3.7 virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions::
 
-    conda create -n ads_venv python=3.7
+    conda env create -f environment.yml -n ads_venv
 
 Then, activate your virtual environment::
 
@@ -76,17 +83,8 @@ Then, activate your virtual environment::
 
        conda deactivate
 
-AxonDeepSeg
------------
-.. WARNING :: Ensure that the virtual environment is activated before you begin your installation.
+Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
 
-To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system)::
-
-    git clone https://github.com/neuropoly/axondeepseg.git
-
-Then, in your Terminal, go to the AxonDeepSeg folder and install the AxonDeepSeg package with the following commands::
-
-    cd axondeepseg
     pip install -e .
 
 .. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
