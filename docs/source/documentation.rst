@@ -128,63 +128,6 @@ AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Termi
 
 .. image:: _static/GUI_image.png
 
-To install the GUI, you need to install AxonDeepSeg via Github (see instructions above). If you encounter a problem when installing or using the GUI, please report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
-FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
-
-
-Once AxonDeepSeg is installed, remain in the virtual environment and follow the OS-specific instructions to install the GUI:
-
-
-macOS
-~~~~~
-Install FSLeyes using conda-forge ::
-
-           yes | conda install -c conda-forge fsleyes=0.33.1
-
-Downgrade from latest version of h5py to the most recent working version ::
-
-           yes | conda install -c conda-forge h5py=2.10.0
-
-Launch FSLeyes ::
-
-           fsleyes
-           
-On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (found in the cloned repository)``
-``Install permanently --> yes.``
-
-The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
-
-In case, you find trouble installing FSLeyes plugin for ADS you could refer the video below.
-
-.. raw:: html
-
-   <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
-     <iframe width="700" height="394" src="https://www.youtube.com/embed/dz2LqQ5LpIo" frameborder="0" allowfullscreen></iframe>
-
-.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
-           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
-           This step may only be required when you first install the plugin.
-
-Linux (tested on ubuntu)
-~~~~~~~~~~~~~~~~~~~~~~~~
-Install the C/C++ compilers required to use wxPython ::
-
-           sudo apt-get install build-essential
-           sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
-           sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev
-           
-Install wxPython using conda ::
-
-           yes | conda install -c anaconda wxpython
-           
-Install FSLeyes using conda-forge ::
-
-           yes | conda install -c conda-forge fsleyes=0.33.1
-
-Downgrade from latest version of h5py to the most recent working version ::
-
-           yes | conda install -c conda-forge h5py=2.10.0
-
 Launch FSLeyes ::
 
            fsleyes
