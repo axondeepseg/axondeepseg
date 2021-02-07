@@ -52,7 +52,7 @@ class TestCore(object):
     # --------------rgb_rendering_of_mask tests-------------- #
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_returns_array_with_extra_dim_of_len_3(self):
-        pred_img = imageio.imread(self.path_folder / ('image' + str(myelin_suffix)))
+        pred_img = imageio.imread(self.path_folder / ('image' + str(axonmyelin_suffix)))
 
         rgb_mask = rgb_rendering_of_mask(pred_img)
 
