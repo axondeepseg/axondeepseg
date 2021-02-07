@@ -6,7 +6,7 @@ import pytest
 
 from AxonDeepSeg.segment import *
 import AxonDeepSeg.segment
-from config import str(axonmyelin_suffix)(axon_suffix)lin_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 class TestCore(object):
     def setup(self):
