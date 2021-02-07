@@ -277,8 +277,8 @@ def axon_segmentation(path_acquisitions_folders, acquisitions_filenames, path_mo
             mask = np.zeros_like(pred)
             for j in range(n_classes):
                 mask[pred == j] = paint_vals[j]
+                
             # Then we save the image
-            print(str(segmentations_filenames[i]))
             image_name = convert_path(acquisitions_filenames[i]).stem
             ads.imwrite(path_acquisitions_folders[i] / (image_name + segmentations_filenames[i]), mask, 'png')
 
