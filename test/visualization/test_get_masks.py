@@ -38,7 +38,7 @@ class TestCore(object):
     # --------------get_masks tests-------------- #
     @pytest.mark.unit
     def test_get_masks_writes_expected_files(self):
-        pred_img = self.path_folder/ ('image' + str(myelin_suffix))
+        pred_img = self.path_folder/ ('image' + str(axonmyelin_suffix))
 
         axon_prediction, myelin_prediction = get_masks(str(pred_img))
 
@@ -64,7 +64,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_writes_expected_files(self):
-        pred_img = imageio.imread(self.path_folder / ('image' + str(myelin_suffix)))
+        pred_img = imageio.imread(self.path_folder / ('image' + str(axonmyelin_suffix)))
 
         rgbFile = self.path_folder / ('image' + axonmyelin_suffix.stem + '-rgb.png')
 
@@ -81,7 +81,7 @@ class TestCore(object):
     def test_get_image_properties_returns_expected_number_of_unique_values(self):
         pred_img = os.path.join(
             self.path_folder,
-            ('image' + str(myelin_suffix))
+            ('image' + str(axonmyelin_suffix))
             )
 
         image_properties = get_image_unique_vals_properties(pred_img)
@@ -93,7 +93,7 @@ class TestCore(object):
     def test_get_image_properties_returns_expeception_for_unexpected_number_of_unique_values(self):
         pred_img = os.path.join(
             self.path_folder,
-            ('image' + str(myelin_suffix))
+            ('image' + str(axonmyelin_suffix))
             )
 
         loaded_image = imageio.imread(pred_img)
