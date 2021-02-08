@@ -433,11 +433,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_array = myelin_array * params.intensity['binary']
         axon_array = axon_array * params.intensity['binary']
 
+        image_name = myelin_mask_overlay.name[:-len("_seg-myelin")]
 
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-        ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[0][:-4] + str(axonmyelin_suffix), img=myelin_and_axon_array)
-        ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[0][:-4] + str(myelin_suffix), img=myelin_array)
-        ads_utils.imwrite(filename=save_dir +"/" + self.png_image_name[0][:-4] + str(axon_suffix), img=axon_array)
+        ads_utils.imwrite(filename=save_dir + "/" + image_name + str(axonmyelin_suffix), img=myelin_and_axon_array)
+        ads_utils.imwrite(filename=save_dir + "/" + image_name + str(myelin_suffix), img=myelin_array)
+        ads_utils.imwrite(filename=save_dir +"/" + image_name + str(axon_suffix), img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
@@ -495,7 +496,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
-        axon_mask_overlay = self.get_visible_axon_overlay()
+        axon_mask_overlay = self.get_visible_axon_overlay() 
 
         if myelin_mask_overlay is None:
             return
