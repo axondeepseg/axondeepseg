@@ -1,7 +1,6 @@
 Introduction
 ============
-AxonDeepSeg is an open-source software using deep learning and aiming at automatically segmenting axons and myelin
-sheaths from microscopy images. It performs 3-class semantic segmentation using a convolutional neural network.
+AxonDeepSeg is an open-source software using deep learning and aiming at automatically segmenting axons and myelin sheaths from microscopy images. It performs 3-class semantic segmentation using a convolutional neural network.
 
 AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University of Montreal, Canada.
 
@@ -10,18 +9,11 @@ Installation
 ============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
-.. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system.
-           However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg
-           for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
+.. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system. However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
 
 Miniconda
 ---------
-Starting with version 3.2.0, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have
-a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight 
-version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create
-virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although
-it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions
-for this recommended installation setup.
+Starting with version 3.2.0, AxonDeepSeg is only supported using Python 3.7.x. Although your system may already have a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions for this recommended installation setup.
 
 First, verify if you already have an AxonDeepSeg-compatible version of Miniconda or Anaconda properly installed and is in your systems path. 
 
@@ -42,8 +34,7 @@ To install Miniconda, run the following commands in your terminal:::
     echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
     source ~/.bashrc
 
-.. NOTE ::
-   If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try adding the line ``source ~/.bashrc`` to your ``~/.bash_profile`` file. `See here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ for more details.
+.. NOTE :: If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try adding the line ``source ~/.bashrc`` to your ``~/.bash_profile`` file. `See here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ for more details.
 
 macOS
 ~~~~~
@@ -59,37 +50,21 @@ To install Miniconda, run the following commands in your terminal:::
 Windows
 ~~~~~~~
 
-.. NOTE ::
-   The AxonDeepSeg installation instruction using the Miniconda have only been tested for Windows 10. Older
-   versions of Windows may not be compatible with the tools required to run AxonDeepSeg.
+.. NOTE :: The AxonDeepSeg installation instruction using the Miniconda have only been tested for Windows 10. Older versions of Windows may not be compatible with the tools required to run AxonDeepSeg.
 
-To install Miniconda, go to the `Miniconda installation website <https://conda.io/miniconda.html>`_ and click on the Python 3.x version
-installer compatible with your Windows system (64 bit recommended). After the download is complete, execute the
-downloaded file, and follow the instructions. If you are unsure about any of the
-installation options, we recommend you use the default settings.
+To install Miniconda, go to the `Miniconda installation website <https://conda.io/miniconda.html>`_ and click on the Python 3.x version installer compatible with your Windows system (64 bit recommended). After the download is complete, execute the downloaded file, and follow the instructions. If you are unsure about any of the installation options, we recommend you use the default settings.
 
 git
 ---
-``git`` is a software version control system. Because AxonDeepSeg is hosted on GitHub, a 
-service that hosts ``git`` repositories, having ``git`` installed on your system allows you
-to download the most up-to-date development version of AxonDeepSeg from a terminal, and 
-also allows you to contribute to the project if you wish to do so.
+``git`` is a software version control system. Because AxonDeepSeg is hosted on GitHub, a service that hosts ``git`` repositories, having ``git`` installed on your system allows you to download the most up-to-date development version of AxonDeepSeg from a terminal, and also allows you to contribute to the project if you wish to do so.
 
-To install ``git``, please follow instructions for your operating system on the 
-`git website <https://git-scm.com/downloads>`_
+To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
 
 Virtual Environment
 -------------------
-Virtual environments are a tool to separate the Python environment and packages used 
-between Python projects. They allow for different versions of Python packages to be 
-installed and managed for the specific needs of your projects. There are several 
-virtual environment managers available, but the one we recommend and will use in our installation 
-guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. 
-We strongly recommend you create a virtual environment before you continue with your installation.
+Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you create a virtual environment before you continue with your installation.
 
-To create a Python 3.7 virtual environment named "ads_venv", in a terminal window (macOS or Linux) 
-or Anaconda Prompt (Windows) run the following command and answer "y" to the installation 
-instructions::
+To create a Python 3.7 virtual environment named "ads_venv", in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions::
 
     conda create -n ads_venv python=3.7
 
@@ -97,42 +72,35 @@ Then, activate your virtual environment::
 
     conda activate ads_venv
 
-.. NOTE ::
-   To switch back to your default environment, run::
+.. NOTE :: To switch back to your default environment, run::
 
        conda deactivate
 
 AxonDeepSeg
 -----------
-.. WARNING ::
-   Ensure that the virtual environment is activated before you begin your installation.
+.. WARNING :: Ensure that the virtual environment is activated before you begin your installation.
 
-To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to  
-have ``git`` installed on your system)::
+To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system)::
 
     git clone https://github.com/neuropoly/axondeepseg.git
 
-Then, in your Terminal, go to the AxonDeepSeg folder and install the 
-AxonDeepSeg package with the following commands::
+Then, in your Terminal, go to the AxonDeepSeg folder and install the AxonDeepSeg package with the following commands::
 
     cd axondeepseg
     pip install -e .
 
-.. NOTE ::
-   To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
+.. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
    ::
 
         cd axondeepseg
         git pull
         pip install -e .
 
-.. WARNING ::
-   When re-installing the application, the ``default_SEM_model`` and ``default_TEM_model`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
+.. WARNING :: When re-installing the application, the ``default_SEM_model`` and ``default_TEM_model`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
 Testing the installation
 ------------------------
-.. WARNING ::
-   Ensure that the virtual environment is activated.
+.. WARNING :: Ensure that the virtual environment is activated.
 
 Quick test
 ~~~~~~~~~~
@@ -238,19 +206,14 @@ Known issues
 
 GPU-compatible installation
 ---------------------------
-.. NOTE ::
-   This feature is not available if you are using a macOS.
+.. NOTE :: This feature is not available if you are using a macOS.
 
-By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
-using your GPU, you need to uninstall the TensorFlow from your virtual environment, 
-and install the GPU version of it::
+By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model using your GPU, you need to uninstall the TensorFlow from your virtual environment, and install the GPU version of it::
 
     pip uninstall tensorflow
     pip install tensorflow-gpu==1.13.1
 
-.. WARNING ::
-   Because we recommend the use of version 1.13.1 of Tensorflow GPU, the CUDA version on your system should be 10.0.
-   CUDA version less than 10 is not compatible with Tensorflow 1.13.1. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
+.. WARNING :: Because we recommend the use of version 1.13.1 of Tensorflow GPU, the CUDA version on your system should be 10.0. CUDA version less than 10 is not compatible with Tensorflow 1.13.1. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
 
 Existing models
 ===============
@@ -303,8 +266,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 -o OVERLAP          Overlap value (in pixels) of the patches when doing the segmentation. 
                     Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 25. Recommended range of values: [10-100]. 
 
-.. NOTE ::
-   You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
+.. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
 
         axondeepseg -h
@@ -356,19 +318,19 @@ Jupyter notebooks
 
 Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 
-* `getting_started.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/getting_started.ipynb>`_: 
-    Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb>`_.
+* `getting_started.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/00-getting_started.ipynb>`_:
+    Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2F00-getting_started.ipynb>`_.
 
-* `guide_dataset_building.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/guide_dataset_building.ipynb>`_: 
+* `guide_dataset_building.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/01-guide_dataset_building.ipynb>`_:
     Notebook that shows how to prepare a dataset for training. It automatically divides the dataset samples and corresponding label masks in patches of same size.
 
-* `training_guideline.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/training_guideline.ipynb>`_: 
+* `training_guideline.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/02-training_guideline.ipynb>`_:
     Notebook that shows how to train a new model on AxonDeepSeg. It also defines the main parameters that are needed in order to build the neural network.
 
-* `performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/performance_metrics.ipynb>`_: 
+* `performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/03-performance_metrics.ipynb>`_:
     Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.
 
-* `morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/morphometrics_extraction.ipynb>`_: 
+* `morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/04-morphometrics_extraction.ipynb>`_:
     Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, ...), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, ...), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.
 
 .. NOTE ::
@@ -460,7 +422,10 @@ If the segmentation with AxonDeepSeg does not give optimal results, you can try 
 Help
 ====
 
-If you experience issues during installation and/or use of AxonDeepSeg, you can post a new issue on the `AxonDeepSeg GitHub issues webpage <https://github.com/neuropoly/axondeepseg/issues>`_. We will reply to you as soon as possible.
+Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
+
+* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`_. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
+* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
 
 Citation
 ========

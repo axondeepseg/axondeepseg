@@ -13,6 +13,8 @@ config/
 
 *.pyc
 
+*.png
+
 data/
 
 guidelines/.ipynb_checkpoints/
@@ -42,3 +44,4 @@ AxonDeepSeg/data_test/AxonDeepSeg*
 # OS-related files/folders
 __MACOSX/
 .DS_Store
+.vscode/
