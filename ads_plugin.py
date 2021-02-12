@@ -364,8 +364,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axon_mask_path = image_directory + "/" + image_name_no_extension + axon_suffix.name
-        myelin_mask_path = image_directory + "/" + image_name_no_extension + myelin_suffix.name
+        axon_mask_path = image_directory + "/" + image_name_no_extension + str(axon_suffix)
+        myelin_mask_path = image_directory + "/" + image_name_no_extension + str(myelin_suffix)
         self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
         self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
         self.pixel_size_float = pixel_size_float
@@ -434,10 +434,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_array = axon_array * params.intensity['binary']
 
 
+        image_name = myelin_mask_overlay.name[:-len("_seg-myelin")]
+
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-        ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[0][:-4] + axonmyelin_suffix.name, img=myelin_and_axon_array)
-        ads_utils.imwrite(filename=save_dir + "/" + self.png_image_name[0][:-4] + myelin_suffix.name, img=myelin_array)
-        ads_utils.imwrite(filename=save_dir +"/" + self.png_image_name[0][:-4] + axon_suffix.name, img=axon_array)
+        ads_utils.imwrite(filename=save_dir + "/" + image_name + str(axonmyelin_suffix), img=myelin_and_axon_array)
+        ads_utils.imwrite(filename=save_dir + "/" + image_name + str(myelin_suffix), img=myelin_array)
+        ads_utils.imwrite(filename=save_dir +"/" + image_name + str(axon_suffix), img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
@@ -495,7 +497,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
-        axon_mask_overlay = self.get_visible_axon_overlay()
+        axon_mask_overlay = self.get_visible_axon_overlay() 
 
         if myelin_mask_overlay is None:
             return

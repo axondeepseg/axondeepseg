@@ -55,12 +55,12 @@ class TestCore(object):
             )
 
         outputFiles = [
-            'image' + axon_suffix.name,
-            'image' + myelin_suffix.name,
-            'image' + axonmyelin_suffix.name,
-            'image2' + axon_suffix.name,
-            'image2' + myelin_suffix.name,
-            'image2' + axonmyelin_suffix.name
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix),
+            'image2' + str(axon_suffix),
+            'image2' + str(myelin_suffix),
+            'image2' + str(axonmyelin_suffix)
             ]
 
         for fileName in outputFiles:
@@ -102,9 +102,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image' + axon_suffix.name,
-            'image' + myelin_suffix.name,
-            'image' + axonmyelin_suffix.name
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
             ]
 
         for fileName in outputFiles:
@@ -132,9 +132,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image' + axon_suffix.name,
-            'image' + myelin_suffix.name,
-            'image' + axonmyelin_suffix.name
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
             ]
 
         segment_folders(
@@ -159,9 +159,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image' + axon_suffix.name,
-            'image' + myelin_suffix.name,
-            'image' + axonmyelin_suffix.name
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
             ]
 
         for fileName in outputFiles:
