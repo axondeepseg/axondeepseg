@@ -168,7 +168,7 @@ def main(argv=None):
                         )
         
         # Compute statistics
-        stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape = axon_shape)
+        stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape)
 
         for stats in stats_array:
 
