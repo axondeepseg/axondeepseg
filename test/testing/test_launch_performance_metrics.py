@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from AxonDeepSeg.testing.launch_performance_metrics import *
+from config import axonmyelin_suffix
 
 
 class TestCore(object):
@@ -15,7 +16,7 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__'/'__test_demo_files__'
 
-        self.prediction = self.folderPath/ 'AxonDeepSeg_seg-axonmyelin.png'
+        self.prediction = self.folderPath/ ('image' + str(axonmyelin_suffix))
 
         self.groundtruth = self.folderPath / 'mask.png'
 
