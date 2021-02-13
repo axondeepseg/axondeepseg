@@ -6,6 +6,7 @@ import pytest
 
 from AxonDeepSeg.segment import *
 import AxonDeepSeg.segment
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 class TestCore(object):
     def setup(self):
@@ -42,6 +43,7 @@ class TestCore(object):
 
     @classmethod
     def teardown_class(cls):
+
         testPath = Path(__file__).resolve().parent
         projectPath = testPath.parent
         imageFolderPath = testPath / '__test_files__' / '__test_segment_files__'
@@ -53,12 +55,12 @@ class TestCore(object):
             )
 
         outputFiles = [
-            'image_seg-axon.png',
-            'image_seg-myelin.png',
-            'image_seg-axonmyelin.png',
-            'image_2_seg-axon.png',
-            'image_2_seg-myelin.png',
-            'image_2_seg-axonmyelin.png',
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix),
+            'image2' + str(axon_suffix),
+            'image2' + str(myelin_suffix),
+            'image2' + str(axonmyelin_suffix)
             ]
 
         for fileName in outputFiles:
@@ -100,9 +102,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image_seg-axon.png',
-            'image_seg-myelin.png',
-            'image_seg-axonmyelin.png'
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
             ]
 
         for fileName in outputFiles:
@@ -130,9 +132,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image_seg-axon.png',
-            'image_seg-myelin.png',
-            'image_seg-axonmyelin.png'
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
             ]
 
         segment_folders(
@@ -157,9 +159,9 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image_seg-axon.png',
-            'image_seg-myelin.png',
-            'image_seg-axonmyelin.png'
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
             ]
 
         for fileName in outputFiles:
