@@ -4,6 +4,7 @@ from pathlib import Path
 import random
 import string
 import pytest
+import shutil
 
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import *
 from AxonDeepSeg.segment import *
@@ -131,19 +132,26 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
-    '''
+
+    
     @pytest.mark.exceptionhandling
-    def test_main_cli_handles_exception_for_resolution_file_provided(self):
+    def test_main_cli_handles_exception_for_resolution_file_not_provided(self):
 
         pathImg = pathImg = self.dataPath / 'image.png'
-    
+        path_resolution_file = self.dataPath / 'pixel_size_in_micrometer.txt'
+        path_new_resolution_file = self.dataPath / 'pixel_size.txt'
 
-        
+        # For exception handling, rename the resolution file name 
+        shutil.move(path_resolution_file, path_new_resolution_file)
+
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
+        
+        # Rename the resolution file to its original name
+        shutil.move(path_new_resolution_file, path_resolution_file)
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
-    '''
+    
     
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_myelin_mask_not_present(self):
