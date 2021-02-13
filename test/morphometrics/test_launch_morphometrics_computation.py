@@ -19,9 +19,13 @@ class TestCore(object):
         self.dataPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
         self.axon_shape = "ellipse"         # axon shape is set to ellipse
+        self.morphometricsFile = "Morphometrics.xlsx"
 
     def teardown(self):
-        pass
+        self.morphometricsPath = self.dataPath / self.morphometricsFile
+
+        if self.morphometricsPath.exists():
+            self.morphometricsPath.unlink()
 
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
@@ -75,3 +79,45 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", "Morphometrics", "-a", "circle"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+    
+    @pytest.mark.unit
+    def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input_with_pixel_size_file(self):
+        pathImg = self.dataPath / 'image.png'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.unit
+    def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_ellipse(self):
+        pathImg = self.dataPath / 'image.png'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-a", "ellipse"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+    
+    @pytest.mark.unit
+    def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_ellipse(self):
+        pathImg = self.dataPath / 'image.png'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-a", "circle"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.unit
+    def test_main_cli_runs_succesfully_with_valid_inputs_for_custom_morphometrics_file_name(self):
+        pathImg = self.dataPath / 'image.png'
+        self.morphometricsFile = "test_morphometrics.xlsx"
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", str(self.morphometricsFile)])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+    
+
+
+
+
