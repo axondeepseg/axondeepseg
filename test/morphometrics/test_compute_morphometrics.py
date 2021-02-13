@@ -377,9 +377,9 @@ class TestCore(object):
     @pytest.mark.unit
     def test_draw_axon_diameter_creates_file_in_expected_location_with_axon_as_ellipse(self):
         img = imageio_imread(self.test_folder_path / 'image.png')
-        path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
+        path_prediction = self.test_folder_path / ('image' + str(axonmyelin_suffix))
 
-        result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
+        result_path = self.test_folder_path / 'image_map-axondiameter.png'
         fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, axon_shape=self.axon_shape)
         assert fig.axes
         fig.savefig(result_path)
