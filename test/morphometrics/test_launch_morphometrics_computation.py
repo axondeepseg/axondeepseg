@@ -6,8 +6,8 @@ import string
 import pytest
 
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import *
-import AxonDeepSeg
-from config import axonmyelin_suffix
+from AxonDeepSeg.segment import *
+from config import axonmyelin_suffix, myelin_suffix, axon_suffix
 
 
 class TestCore(object):
@@ -99,7 +99,7 @@ class TestCore(object):
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
     
     @pytest.mark.unit
-    def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_ellipse(self):
+    def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_circle(self):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -129,22 +129,46 @@ class TestCore(object):
     
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_pixel_size_not_provided(self):
+        self.dataPath = self.testPath / '__test_files__' / '__test_segment_files__'
         pathImg = pathImg = self.dataPath / 'image.png'
+
         
-        #Remove the pixel_size_in_micrometer.txt file first
-        if (self.dataPath / 'pixel_size_in_micrometer.txt').exists():
-            (self.dataPath / 'pixel_size_in_micrometer.txt').unlink()
+        #Segment `image.png` present in `__test_segment_files__` directory
+        AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(pathImg), "-v", "2", "-s", "0.37"])
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
 
+    '''
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_for_myelin_mask_not_present(self):
+        pathImg = pathImg = self.dataPath / 'image.png'
+        
+        #myelin mask path
+        pathMyelin = self.dataPath / ('image' + str(myelin_suffix))
 
+        if pathMyelin.exists():
+            pathMyelin.unlink()
 
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_for_axon_mask_not_present(self):
+        pathImg = pathImg = self.dataPath / 'image.png'
+        
+        #axon mask path
+        pathAxon = self.dataPath / ('image' + str(axon_suffix))
 
+        if pathAxon.exists():
+            pathAxon.unlink()
 
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
-
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+    '''
