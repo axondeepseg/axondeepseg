@@ -144,23 +144,30 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     '''
-    '''
+    
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_myelin_mask_not_present(self):
         pathImg = self.dataPath / 'image.png'
-        #Read the myelin mask
-        myelinMask = ads.imread(pa)
+
         
         #myelin mask path
         pathMyelin = self.dataPath / ('image' + str(myelin_suffix))
 
+        #Read the myelin mask
+        myelinMask = ads.imread(str(pathMyelin))
+
+        #Delete the myelin mask for exception 
         if pathMyelin.exists():
             pathMyelin.unlink()
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
+        #Save the myelin mask back to the `__test_demo_files__`
+        ads.imwrite(str(pathMyelin), myelinMask)
+
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
     
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_axon_mask_not_present(self):
@@ -169,11 +176,18 @@ class TestCore(object):
         #axon mask path
         pathAxon = self.dataPath / ('image' + str(axon_suffix))
 
+        #Read the axon mask
+        axonMask = ads.imread(str(pathAxon))
+
         if pathAxon.exists():
             pathAxon.unlink()
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
+
+        #Save the myelin mask back to the `__test_demo_files__`
+        ads.imwrite(str(pathAxon), axonMask)
+
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
-    '''
+    
