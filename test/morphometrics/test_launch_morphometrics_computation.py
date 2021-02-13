@@ -6,6 +6,7 @@ import string
 import pytest
 
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import *
+import AxonDeepSeg
 from config import axonmyelin_suffix
 
 
@@ -66,3 +67,11 @@ class TestCore(object):
             launch_morphometrics_computation(str(nonExistingFile), str(pathPrediction))
 
     # --------------main (cli) tests-------------- #
+    @pytest.mark.unit
+    def test_main_cli_runs_succesfully_with_valid_inputs(self):
+        pathImg = self.dataPath / 'image.png'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.compute_morphometrics.main(["-s", "0.07", "-i", str(pathImg), "-s", "Morphometrics", "-s", "0.37"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)

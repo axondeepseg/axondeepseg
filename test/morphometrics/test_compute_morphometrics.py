@@ -447,3 +447,4 @@ class TestCore(object):
 
         with pytest.raises(IOError):
             write_aggregate_morphometrics(str(nonExistingFolder), aggregate_metrics)
+
