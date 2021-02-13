@@ -186,7 +186,7 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
 
-        #Save the myelin mask back to the `__test_demo_files__`
+        #Save the axon mask back to the `__test_demo_files__`
         ads.imwrite(str(pathAxon), axonMask)
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
