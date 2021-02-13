@@ -43,7 +43,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_launch_morphometrics_computation_saves_expected_files_with_axon_as_ellipse(self):
         expectedFiles = {'aggregate_morphometrics.txt',
-                         'image_map-axondiameter.png',
+                         'AxonDeepSeg_map-axondiameter.png',
                          'axonlist.npy'
                          }
 
