@@ -117,6 +117,33 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
     
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_if_image_is_not_segmented(self):
+        self.dataPath = self.testPath / '__test_files__' / '__test_segment_files__'
+        pathImg = pathImg = self.dataPath / 'image.png'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+    
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_for_pixel_size_not_provided(self):
+        pathImg = pathImg = self.dataPath / 'image.png'
+        
+        #Remove the pixel_size_in_micrometer.txt file first
+        if (self.dataPath / 'pixel_size_in_micrometer.txt').exists():
+            (self.dataPath / 'pixel_size_in_micrometer.txt').unlink()
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+
+
+
+    
 
 
 

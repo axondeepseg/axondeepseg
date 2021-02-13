@@ -110,7 +110,7 @@ def main(argv=None):
 
 
 
-        #load the axon image 
+        #load the axon mask 
         if (Path(str(current_path_target.with_suffix("")) + "_seg-axon.png")).exists():
             pred_axon = image.imread(str(current_path_target.with_suffix("")) + "_seg-axon.png")
         else: 
@@ -120,7 +120,7 @@ def main(argv=None):
                 )
             sys.exit(3)
 
-        #load myelin image    
+        #load myelin mask    
         if (Path(str(current_path_target.with_suffix("")) + "_seg-myelin.png")).exists():
             pred_myelin = image.imread(str(current_path_target.with_suffix("")) + "_seg-myelin.png")
         else: 
