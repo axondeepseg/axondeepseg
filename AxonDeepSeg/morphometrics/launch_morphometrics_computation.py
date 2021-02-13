@@ -13,6 +13,7 @@ import pandas as pd
 # AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 import AxonDeepSeg.ads_utils as ads
+from config import axon_suffix, axonmyelin_suffix, myelin_suffix
 
 
 def launch_morphometrics_computation(path_img, path_prediction, axon_shape="cicle"):
@@ -111,8 +112,8 @@ def main(argv=None):
         if current_path_target.suffix.lower() in validExtensions:
 
             #load the axon mask 
-            if (Path(str(current_path_target.with_suffix("")) + "_seg-axon.png")).exists():
-                pred_axon = image.imread(str(current_path_target.with_suffix("")) + "_seg-axon.png")
+            if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
+                pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
             else: 
                 print("ERROR: Segmented axon mask is not present in the image folder  ",
                                     "Please check that the axon mask is located in the image folder ",
@@ -121,8 +122,8 @@ def main(argv=None):
                 sys.exit(3)
 
             #load myelin mask    
-            if (Path(str(current_path_target.with_suffix("")) + "_seg-myelin.png")).exists():
-                pred_myelin = image.imread(str(current_path_target.with_suffix("")) + "_seg-myelin.png")
+            if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
+                pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
             else: 
                 print("ERROR: Segmented myelin mask is not present in the image folder.  ",
                                     "Please check that the myelin mask is located in the image folder. ",
@@ -201,7 +202,7 @@ def main(argv=None):
                 print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
                 print("Cannot save morphometrics  data in file '%s'." % file)
-                
+
         else: 
                 print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
                 break

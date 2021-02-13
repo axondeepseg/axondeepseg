@@ -7,7 +7,10 @@ import pytest
 
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import *
 from AxonDeepSeg.segment import *
+import AxonDeepSeg.ads_utils as ads
+
 from config import axonmyelin_suffix, myelin_suffix, axon_suffix
+
 
 
 class TestCore(object):
@@ -128,25 +131,25 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
-    
+    '''
     @pytest.mark.exceptionhandling
-    def test_main_cli_handles_exception_for_pixel_size_not_provided(self):
-        self.dataPath = self.testPath / '__test_files__' / '__test_segment_files__'
+    def test_main_cli_handles_exception_for_resolution_file_provided(self):
+
         pathImg = pathImg = self.dataPath / 'image.png'
+    
 
         
-        #Segment `image.png` present in `__test_segment_files__` directory
-        AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(pathImg), "-v", "2", "-s", "0.37"])
-
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
-
+    '''
     '''
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_myelin_mask_not_present(self):
-        pathImg = pathImg = self.dataPath / 'image.png'
+        pathImg = self.dataPath / 'image.png'
+        #Read the myelin mask
+        myelinMask = ads.imread(pa)
         
         #myelin mask path
         pathMyelin = self.dataPath / ('image' + str(myelin_suffix))
