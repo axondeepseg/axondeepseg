@@ -108,100 +108,104 @@ def main(argv=None):
 
     for current_path_target in path_target_list:
 
+        if current_path_target.suffix.lower() in validExtensions:
 
-
-        #load the axon mask 
-        if (Path(str(current_path_target.with_suffix("")) + "_seg-axon.png")).exists():
-            pred_axon = image.imread(str(current_path_target.with_suffix("")) + "_seg-axon.png")
-        else: 
-            print("ERROR: Segmented axon mask is not present in the image folder  ",
-                                "Please check that the axon mask is located in the image folder ",
-                                "If it is not present, perform segmentation of the image first using ADS."
-                )
-            sys.exit(3)
-
-        #load myelin mask    
-        if (Path(str(current_path_target.with_suffix("")) + "_seg-myelin.png")).exists():
-            pred_myelin = image.imread(str(current_path_target.with_suffix("")) + "_seg-myelin.png")
-        else: 
-            print("ERROR: Segmented myelin mask is not present in the image folder.  ",
-                                "Please check that the myelin mask is located in the image folder. ",
-                                "If it is not present, perform segmentation of the image first using ADS."
-                )
-            sys.exit(3)
-
-        if args["sizepixel"] is not None:
-            psm = float(args["sizepixel"])
-        else: # Handle cases if no resolution is provided on the CLI
-
-            # Check if a pixel size file exists, if so read it.
-            if (current_path_target.parent / 'pixel_size_in_micrometer.txt').exists():
-
-                resolution_file = open(current_path_target.parent / 'pixel_size_in_micrometer.txt', 'r')
-
-                psm = float(resolution_file.read())
-            else:
-
-                print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-                                "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                                "containing the pixel size value."
-                )
+            #load the axon mask 
+            if (Path(str(current_path_target.with_suffix("")) + "_seg-axon.png")).exists():
+                pred_axon = image.imread(str(current_path_target.with_suffix("")) + "_seg-axon.png")
+            else: 
+                print("ERROR: Segmented axon mask is not present in the image folder  ",
+                                    "Please check that the axon mask is located in the image folder ",
+                                    "If it is not present, perform segmentation of the image first using ADS."
+                    )
                 sys.exit(3)
 
-    
+            #load myelin mask    
+            if (Path(str(current_path_target.with_suffix("")) + "_seg-myelin.png")).exists():
+                pred_myelin = image.imread(str(current_path_target.with_suffix("")) + "_seg-myelin.png")
+            else: 
+                print("ERROR: Segmented myelin mask is not present in the image folder.  ",
+                                    "Please check that the myelin mask is located in the image folder. ",
+                                    "If it is not present, perform segmentation of the image first using ADS."
+                    )
+                sys.exit(3)
+
+            if args["sizepixel"] is not None:
+                psm = float(args["sizepixel"])
+            else: # Handle cases if no resolution is provided on the CLI
+
+                # Check if a pixel size file exists, if so read it.
+                if (current_path_target.parent / 'pixel_size_in_micrometer.txt').exists():
+
+                    resolution_file = open(current_path_target.parent / 'pixel_size_in_micrometer.txt', 'r')
+
+                    psm = float(resolution_file.read())
+                else:
+
+                    print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+                                    "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                                    "containing the pixel size value."
+                    )
+                    sys.exit(3)
+
         
+            
 
 
-        x = np.array([], dtype=[
-                                    ('x0', 'f4'),
-                                    ('y0', 'f4'),
-                                    ('gratio','f4'),
-                                    ('axon_area','f4'),
-                                    ('myelin_area','f4'),
-                                    ('axon_diam','f4'),
-                                    ('myelin_thickness','f4'),
-                                    ('axonmyelin_area','f4'),
-                                    ('solidity','f4'),
-                                    ('eccentricity','f4'),
-                                    ('orientation','f4')
-                                ]
-                        )
+            x = np.array([], dtype=[
+                                        ('x0', 'f4'),
+                                        ('y0', 'f4'),
+                                        ('gratio','f4'),
+                                        ('axon_area','f4'),
+                                        ('myelin_area','f4'),
+                                        ('axon_diam','f4'),
+                                        ('myelin_thickness','f4'),
+                                        ('axonmyelin_area','f4'),
+                                        ('solidity','f4'),
+                                        ('eccentricity','f4'),
+                                        ('orientation','f4')
+                                    ]
+                            )
+            
+            # Compute statistics
+            stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape)
+
+            for stats in stats_array:
+
+                x = np.append(x,
+                    np.array(
+                        [(
+                        stats['x0'],
+                        stats['y0'],
+                        stats['gratio'],
+                        stats['axon_area'],
+                        stats['myelin_area'],
+                        stats['axon_diam'],
+                        stats['myelin_thickness'],
+                        stats['axonmyelin_area'],
+                        stats['solidity'],
+                        stats['eccentricity'],
+                        stats['orientation']
+                        )],
+                        dtype=x.dtype)
+                    )
+
+
+
+            # save the current contents in the file
+            if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
+                filename = filename + ".xlsx"
+            try:
+                # Export to excel
+                pd.DataFrame(x).to_excel(current_path_target.parent /  filename)
+                print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
+            except IOError:
+                print("Cannot save morphometrics  data in file '%s'." % file)
+                
+        else: 
+                print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
+                break
         
-        # Compute statistics
-        stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape)
-
-        for stats in stats_array:
-
-            x = np.append(x,
-                np.array(
-                    [(
-                    stats['x0'],
-                    stats['y0'],
-                    stats['gratio'],
-                    stats['axon_area'],
-                    stats['myelin_area'],
-                    stats['axon_diam'],
-                    stats['myelin_thickness'],
-                    stats['axonmyelin_area'],
-                    stats['solidity'],
-                    stats['eccentricity'],
-                    stats['orientation']
-                    )],
-                    dtype=x.dtype)
-                )
-
-
-
-        # save the current contents in the file
-        if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
-            filename = filename + ".xlsx"
-        try:
-            # Export to excel
-            pd.DataFrame(x).to_excel(current_path_target.parent /  filename)
-            print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
-        except IOError:
-            print("Cannot save morphometrics  data in file '%s'." % file)
-    
     sys.exit(0)
 
 # Calling the script
