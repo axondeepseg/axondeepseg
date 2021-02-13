@@ -49,7 +49,7 @@ class TestCore(object):
                          }
 
         pathImg = self.dataPath / 'image.png'
-        pathPrediction = self.dataPath / 'AxonDeepSeg_seg-axonmyelin.png'
+        pathPrediction = self.dataPath / ('image' + str(axonmyelin_suffix))
 
         launch_morphometrics_computation(str(pathImg), str(pathPrediction), axon_shape=self.axon_shape)
 
@@ -72,6 +72,6 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.compute_morphometrics.main(["-s", "0.07", "-i", str(pathImg), "-s", "Morphometrics", "-s", "0.37"])
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", "Morphometrics", "-a", "circle"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)

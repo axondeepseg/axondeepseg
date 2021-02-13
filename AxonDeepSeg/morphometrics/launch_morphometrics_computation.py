@@ -4,6 +4,8 @@ from pathlib import Path
 import argparse
 from argparse import RawTextHelpFormatter
 from matplotlib import image
+import sys
+
 # Scientific modules imports
 import numpy as np
 import pandas as pd
@@ -199,6 +201,8 @@ def main(argv=None):
             print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
         except IOError:
             print("Cannot save morphometrics  data in file '%s'." % file)
+    
+    sys.exit(0)
 
 # Calling the script
 if __name__ == '__main__':
