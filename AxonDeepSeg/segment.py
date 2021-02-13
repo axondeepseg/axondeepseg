@@ -20,6 +20,7 @@ import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import convert_path
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model"
@@ -65,25 +66,15 @@ def segment_image(path_testing_image, path_model,
         # Get type of model we are using
         selected_model = path_model.name
 
-        # Read image
-        img = ads.imread(str(path_testing_image))
-
-        # Generate tmp file
-        fp = open(path_acquisition / '__tmp_segment__.png', 'wb+')
+ 
 
         img_name_original = acquisition_name.stem
-
-        ads.imwrite(fp, img, format='png')
-
-        acquisition_name = Path(fp.name).name
-        segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
         # Performing the segmentation
 
         axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
                           path_model_folder=path_model, config_dict=config, ckpt_name='model',
                           inference_batch_size=1, overlap_value=overlap_value,
-                          segmentations_filenames=segmented_image_name,
                           resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
                           acquired_resolution=acquired_resolution,
                           prediction_proba_activate=False, write_mode=True)
@@ -91,9 +82,6 @@ def segment_image(path_testing_image, path_model,
         if verbosity_level >= 1:
             print(("Image {0} segmented.".format(path_testing_image)))
 
-        # Remove temporary file used for the segmentation
-        fp.close()
-        (path_acquisition / '__tmp_segment__.png').unlink()
 
     else:
         print(("The path {0} does not exist.".format(path_testing_image)))
@@ -124,7 +112,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
     # Update list of images to segment by selecting only image files (not already segmented or not masks)
     img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
-                 and (not str(file).endswith(('_seg-axonmyelin.png','_seg-axon.png','_seg-myelin.png','mask.png')))]
+                 and (not str(file).endswith((str(axonmyelin_suffix), str(axon_suffix), str(myelin_suffix),'mask.png')))]
 
     # Pre-processing: convert to png if not already done and adapt to model contrast
     for file_ in tqdm(img_files, desc="Segmentation..."):
@@ -154,20 +142,13 @@ def segment_folders(path_testing_images_folder, path_model,
         # Read image for conversion
         img = ads.imread(str(path_testing_images_folder / file_))
 
-        # Generate tmpfile for segmentation pipeline
-        fp = open(path_testing_images_folder / '__tmp_segment__.png', 'wb+')
-
         img_name_original = file_.stem
 
-        ads.imwrite(fp, img, format='png')
-
-        acquisition_name = Path(fp.name).name
-        segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
+        acquisition_name = file_.name
 
         axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
                               path_model_folder=path_model, config_dict=config, ckpt_name='model',
                               inference_batch_size=1, overlap_value=overlap_value,
-                              segmentations_filenames=[segmented_image_name],
                               acquired_resolution=acquired_resolution,
                               verbosity_level=verbosity_level,
                               resampled_resolutions=resolution_model, prediction_proba_activate=False,
@@ -176,9 +157,7 @@ def segment_folders(path_testing_images_folder, path_model,
         if verbosity_level >= 1:
             tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
-        # Remove temporary file used for the segmentation
-        fp.close()
-        (path_testing_images_folder / '__tmp_segment__.png').unlink()
+
 
     return None
 

@@ -20,4 +20,3 @@ config.set('paths', 'path_matlab', path_matlab)
 
 config.write(open(path_cfg, 'w'))
 
-

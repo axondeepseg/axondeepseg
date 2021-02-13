@@ -10,6 +10,7 @@ from imageio import imread as imageio_imread  # to avoid confusion with mpl.pypl
 import pytest
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 
 class TestCore(object):
@@ -27,9 +28,9 @@ class TestCore(object):
         self.pixelsizeValue = 0.07   # For current demo data.
         self.axon_shape = "ellipse"   # axon shape is set to ellipse
 
-        pred_axon_path = self.test_folder_path / 'AxonDeepSeg_seg-axon.png'
+        pred_axon_path = self.test_folder_path / ('image' +  str(axon_suffix))
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
-        pred_myelin_path = self.test_folder_path / 'AxonDeepSeg_seg-myelin.png'
+        pred_myelin_path = self.test_folder_path / ('image' + str(myelin_suffix))
         self.pred_myelin = imageio_imread(pred_myelin_path, as_gray=True)
 
         self.tmpDir = self.fullPath / '__tmp__'
@@ -327,9 +328,9 @@ class TestCore(object):
     @pytest.mark.unit
     def test_draw_axon_diameter_creates_file_in_expected_location(self):
         img = imageio_imread(self.test_folder_path / 'image.png')
-        path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
+        path_prediction = self.test_folder_path / ('image' + str(axonmyelin_suffix))
 
-        result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
+        result_path = self.test_folder_path / 'image_map-axondiameter.png'
         fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin)
         assert fig.axes
         fig.savefig(result_path)
