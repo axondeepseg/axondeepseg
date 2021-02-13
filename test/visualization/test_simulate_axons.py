@@ -18,6 +18,18 @@ class TestCore(object):
         if self.file_path.is_file():
             self.file_path.unlink()
 
+    # --------------Function tests-------------- #
+    @pytest.mark.unit
+    def test_calc_myelin_thickness(self):
+        gratio = 0.6
+        axon_radius = 40
+
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
+
+        actual_gratio = axon_radius / (axon_radius + myelin_thickness)
+
+        assert actual_gratio == gratio
+
     # --------------Class tests-------------- #
     @pytest.mark.unit
     def test_initiate_class(self):
@@ -42,7 +54,7 @@ class TestCore(object):
 
         axon_radius = 40
         gratio = 0.6
-        myelin_thickness = axon_radius * (1 - gratio)
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
 
         obj = SimulateAxons()
 
@@ -102,7 +114,7 @@ class TestCore(object):
         gratio = 0.6
         plane_angle = 70
 
-        myelin_thickness = axon_radius * (1 - gratio)
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
 
         obj = SimulateAxons()
 
@@ -161,7 +173,7 @@ class TestCore(object):
     def test_saved_file_exists(self):
         axon_radius = 40
         gratio = 0.6
-        myelin_thickness = axon_radius * (1 - gratio)
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
 
         obj = SimulateAxons()
 
