@@ -23,6 +23,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 import math
 from scipy import ndimage as ndi
@@ -358,8 +359,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axon_mask_path = image_directory / (image_name_no_extension + "_seg-axon.png")
-        myelin_mask_path = image_directory / (image_name_no_extension + "_seg-myelin.png")
+
+        axon_mask_path = image_directory + "/" + image_name_no_extension + str(axon_suffix)
+        myelin_mask_path = image_directory + "/" + image_name_no_extension + str(myelin_suffix)
+
         self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
         self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
         self.pixel_size_float = pixel_size_float
@@ -427,11 +430,13 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_array = myelin_array * params.intensity['binary']
         axon_array = axon_array * params.intensity['binary']
 
-        # Save the arrays as PNG files
+        image_name = myelin_mask_overlay.name[:-len("_seg-myelin")]
+
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-        ads_utils.imwrite(filename=(save_dir / "ADS_seg.png"), img=myelin_and_axon_array)
-        ads_utils.imwrite(filename=save_dir / "ADS_seg-myelin.png", img=myelin_array)
-        ads_utils.imwrite(filename=save_dir / "ADS_seg-axon.png", img=axon_array)
+
+        ads_utils.imwrite(filename=save_dir + "/" + image_name + str(axonmyelin_suffix), img=myelin_and_axon_array)
+        ads_utils.imwrite(filename=save_dir + "/" + image_name + str(myelin_suffix), img=myelin_array)
+        ads_utils.imwrite(filename=save_dir +"/" + image_name + str(axon_suffix), img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
@@ -490,7 +495,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
-        axon_mask_overlay = self.get_visible_axon_overlay()
+        axon_mask_overlay = self.get_visible_axon_overlay() 
 
         if myelin_mask_overlay is None:
             return
