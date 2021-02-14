@@ -987,4 +987,3 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This method makes the control panel appear on the left of the FSLeyes window.
         """
         return {"location": wx.LEFT}
-    
