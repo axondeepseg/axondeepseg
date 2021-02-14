@@ -1,6 +1,5 @@
 """
 This is an FSLeyes plugin script that integrates AxonDeepSeg tools into FSLeyes.
-
 Author : Stoyan I. Asenov
 """
 
@@ -23,6 +22,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 import math
 from scipy import ndimage as ndi
@@ -35,7 +35,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.15"
+VERSION = "0.2.14"
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -187,9 +187,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         self.frame.viewPanels[0].frame.viewPanels[0].getZCanvas().opts.invertY = True
 
         # Create a temporary directory that will hold the NIfTI files
-        self.ads_temp_dir_var = tempfile.TemporaryDirectory()  #This variable needs to stay loaded to keep the temporary
-                                                               # directory from being destroyed
-        self.ads_temp_dir = Path(self.ads_temp_dir_var.name)
+        self.ads_temp_dir = tempfile.TemporaryDirectory()
 
         # Check the version
         self.verrify_version()
@@ -210,18 +208,18 @@ class ADScontrol(ctrlpanel.ControlPanel):
             ):  # The user cancelled the operation
                 return
 
-            in_file = Path(file_dialog.GetPath())
+            in_file = file_dialog.GetPath()
 
         # Check if the image format is valid
-        image_extension = in_file.suffix
+        image_extension = os.path.splitext(in_file)[1]
         valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
 
         # Store the directory path and image name for later use in the application of the prediction model
-        self.image_dir_path.append(in_file.parents[0])
-        self.png_image_name.append(in_file.name)
+        self.image_dir_path.append(os.path.dirname(in_file))
+        self.png_image_name.append(in_file[os.path.dirname(in_file).__len__() + 1 :])
 
         # Call the function that convert and loads the png or tif image
         self.load_png_image_from_path(in_file)
@@ -243,10 +241,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
             ):  # The user cancelled the operation
                 return
 
-            in_file = Path(file_dialog.GetPath())
+            in_file = file_dialog.GetPath()
 
         # Check if the image format is valid
-        image_extension = in_file.suffix
+        image_extension = os.path.splitext(in_file)[1]
         valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
@@ -254,7 +252,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Get the image data
         img_png2D = ads_utils.imread(in_file)
-        image_name = in_file.stem
+
+        image_name = os.path.basename(in_file)
+        image_name = image_name.split(image_extension)[0]
 
         # Extract the Axon mask
         axon_mask = img_png2D > 200
@@ -265,11 +265,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_mask = params.intensity['binary'] * np.array(myelin_mask, dtype=np.uint8)
 
         # Load the masks into FSLeyes
-        axon_outfile = self.ads_temp_dir / (image_name + "-axon.png")
+        axon_outfile = self.ads_temp_dir.name + "/" + image_name + "-axon.png"
         ads_utils.imwrite(axon_outfile, axon_mask)
         self.load_png_image_from_path(axon_outfile, is_mask=True, colormap="blue")
 
-        myelin_outfile = self.ads_temp_dir / (image_name + "-myelin.png")
+        myelin_outfile = self.ads_temp_dir.name + "/" + image_name + "-myelin.png"
         ads_utils.imwrite(myelin_outfile, myelin_mask)
         self.load_png_image_from_path(myelin_outfile, is_mask=True, colormap="red")
 
@@ -291,7 +291,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         image_name = None
         image_directory = None
         for i in range(n_loaded_images):
-            if image_overlay.name == (Path(self.png_image_name[i])).stem:
+            if image_overlay.name == (self.png_image_name[i])[:-4]:
                 image_name = self.png_image_name[i]
                 image_directory = self.image_dir_path[i]
 
@@ -302,16 +302,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
             )
             return
 
-        image_path = image_directory / image_name
-        image_name_no_extension = Path(image_name).stem
+        image_path = image_directory + '/' + image_name
+        image_name_no_extension = os.path.splitext(image_name)[0]
 
         # Get the selected model
         selected_model = self.model_combobox.GetStringSelection()
 
         # Get the path of the selected model
         if any(selected_model in models for models in ads_utils.get_existing_models_list()):
-            dir_path = Path(AxonDeepSeg.__file__).parents[0]
-            model_path = dir_path / "models" / selected_model
+            dir_path = os.path.dirname(AxonDeepSeg.__file__)
+            model_path = os.path.join(
+                dir_path, "models", selected_model
+            )
+
         else:
             self.show_message("Please select a model")
             return
@@ -321,7 +324,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
             resolution = 0.01
 
         # Check if the pixel size txt file exist in the imageDirPath
-        pixel_size_exists = (image_directory / "pixel_size_in_micrometer.txt").exists()
+        pixel_size_exists = os.path.isfile(
+            image_directory + "/pixel_size_in_micrometer.txt"
+        )
 
         # if it doesn't exist, ask the user to input the pixel size
         if pixel_size_exists is False:
@@ -335,13 +340,13 @@ class ADScontrol(ctrlpanel.ControlPanel):
             pixel_size_float = float(pixel_size_str)
 
         else:  # read the pixel size
-            resolution_file = open((image_directory / "pixel_size_in_micrometer.txt").__str__(), 'r')
+            resolution_file = open(image_directory + "/pixel_size_in_micrometer.txt", 'r')
             pixel_size_float = float(resolution_file.read())
 
 
         # Load model configs and apply prediction
-        model_configfile = model_path / "config_network.json"
-        with open(model_configfile.__str__(), "r") as fd:
+        model_configfile = os.path.join(model_path, "config_network.json")
+        with open(model_configfile, "r") as fd:
             config_network = json.loads(fd.read())
 
         segment_image(
@@ -358,8 +363,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axon_mask_path = image_directory / (image_name_no_extension + "_seg-axon.png")
-        myelin_mask_path = image_directory / (image_name_no_extension + "_seg-myelin.png")
+        axon_mask_path = image_directory + "/" + image_name_no_extension + str(axon_suffix)
+        myelin_mask_path = image_directory + "/" + image_name_no_extension + str(myelin_suffix)
         self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
         self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
         self.pixel_size_float = pixel_size_float
@@ -392,7 +397,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             if file_dialog.ShowModal() == wx.ID_CANCEL:
                 return
 
-        save_dir = Path(file_dialog.GetPath())
+        save_dir = file_dialog.GetPath()
 
         # store the data of the masks in variables as numpy arrays.
         # Note: since PIL uses a different convention for the X and Y coordinates, some array manipulation has to be
@@ -427,17 +432,17 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_array = myelin_array * params.intensity['binary']
         axon_array = axon_array * params.intensity['binary']
 
-        # Save the arrays as PNG files
+        image_name = myelin_mask_overlay.name[:-len("_seg-myelin")]
+
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-        ads_utils.imwrite(filename=(save_dir / "ADS_seg.png"), img=myelin_and_axon_array)
-        ads_utils.imwrite(filename=save_dir / "ADS_seg-myelin.png", img=myelin_array)
-        ads_utils.imwrite(filename=save_dir / "ADS_seg-axon.png", img=axon_array)
+        ads_utils.imwrite(filename=save_dir + "/" + image_name + str(axonmyelin_suffix), img=myelin_and_axon_array)
+        ads_utils.imwrite(filename=save_dir + "/" + image_name + str(myelin_suffix), img=myelin_array)
+        ads_utils.imwrite(filename=save_dir +"/" + image_name + str(axon_suffix), img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
         This function is called then the user presses on the runWatershed button. This creates a watershed mask that is
         used to locate where are the connections between the axon-myelin objects.
-        The runWatershed button is currently commented, so this function is unused at the moment.
         """
 
         # Find the visible myelin and axon masks
@@ -490,7 +495,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
-        axon_mask_overlay = self.get_visible_axon_overlay()
+        axon_mask_overlay = self.get_visible_axon_overlay() 
 
         if myelin_mask_overlay is None:
             return
@@ -506,7 +511,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         axon_corr_array = np.flipud(axon_extracted_array)
         axon_corr_array = params.intensity['binary'] * np.rot90(axon_corr_array, k=1, axes=(1, 0))
-        file_name = self.ads_temp_dir / (myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png")
+        file_name = self.ads_temp_dir.name + "/" + myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png"
         ads_utils.imwrite(filename=file_name, img=axon_corr_array)
         self.load_png_image_from_path(file_name, is_mask=True, colormap="blue")
 
@@ -628,7 +633,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                                                                   mean_diameter_in_pixel)
 
         # Load the axon coordinate image into FSLeyes
-        number_outfile = self.ads_temp_dir / "numbers.png"
+        number_outfile = self.ads_temp_dir.name + "/numbers.png"
         ads_utils.imwrite(number_outfile, number_array)
         self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
 
@@ -692,7 +697,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This function converts a 2D image into a NIfTI image and loads it as an overlay.
         The parameter add_to_overlayList allows to display the overlay into FSLeyes.
         :param image_path: The location of the image, including the name and the .extension
-        :type image_path: Path
+        :type image_path: string
         :param is_mask: (optional) Whether or not this is a segmentation mask. It will be treated as a normal
         image by default.
         :type is_mask: bool
@@ -722,8 +727,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
 
         # Save the NIfTI image in a temporary directory
-        img_name = image_path.stem
-        out_file = self.ads_temp_dir.__str__() + "/" + img_name + ".nii.gz"
+        img_name = os.path.basename(image_path)
+        out_file = self.ads_temp_dir.name + "/" + img_name[:-3] + "nii.gz"
         nib.save(img_NIfTI, out_file)
 
         # Load the NIfTI image as an overlay
@@ -897,19 +902,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         This function checks if the plugin version is the same as the one in the AxonDeepSeg directory
         """
-        ads_path = Path(AxonDeepSeg.__file__).parents[0]
+        ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[0]
         plugin_path_parts = ads_path.parts[:-1]
-        plugin_path = Path(*plugin_path_parts)
-        plugin_file = plugin_path / "ads_plugin.py"
+        plugin_path = str(Path(*plugin_path_parts))
+        plugin_file = plugin_path + "/ads_plugin.py"
 
         # Check if the plugin file exists
-        plugin_file_exists = plugin_file.exists()
+        plugin_file_exists = os.path.isfile(plugin_file)
 
         if plugin_file_exists is False:
             return
 
         # Check the version of the plugin
-        with open(plugin_file.__str__()) as plugin_file_reader:
+        with open(plugin_file) as plugin_file_reader:
             plugin_file_lines = plugin_file_reader.readlines()
 
         plugin_file_lines = [x.strip() for x in plugin_file_lines]
