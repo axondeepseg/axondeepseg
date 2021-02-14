@@ -1,5 +1,6 @@
 """
 This is an FSLeyes plugin script that integrates AxonDeepSeg tools into FSLeyes.
+
 Author : Stoyan I. Asenov
 """
 
@@ -986,3 +987,4 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This method makes the control panel appear on the left of the FSLeyes window.
         """
         return {"location": wx.LEFT}
+    
