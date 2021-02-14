@@ -69,7 +69,7 @@ class SimulateAxons:
         x = np.arange(0, self.width)
         y = np.arange(0, self.height)
 
-        myelin_thickness = axon_radius * (1 - gratio)
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
 
         axon_major_axis_radius = axon_radius / np.cos(np.deg2rad(plane_angle))
         axon_minor_axis_radius = axon_radius
@@ -104,3 +104,7 @@ class SimulateAxons:
 
     def reset(self):
         self.image = np.zeros([self.width, self.height], dtype=np.uint8)
+
+def calc_myelin_thickness(axon_radius, gratio):
+
+    return axon_radius * (1/gratio-1)
