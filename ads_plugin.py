@@ -429,7 +429,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Save the arrays as PNG files
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-        ads_utils.imwrite(filename=(save_dir / "ADS_seg.png"), img=myelin_and_axon_array)
+        ads_utils.imwrite(filename=save_dir / "ADS_seg.png", img=myelin_and_axon_array)
         ads_utils.imwrite(filename=save_dir / "ADS_seg-myelin.png", img=myelin_array)
         ads_utils.imwrite(filename=save_dir / "ADS_seg-axon.png", img=axon_array)
 
