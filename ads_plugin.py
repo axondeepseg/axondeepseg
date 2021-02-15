@@ -359,7 +359,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axon_mask_path = image_directory  / (image_name_no_extension + str(axon_suffix))
+        axon_mask_path = image_directory / (image_name_no_extension + str(axon_suffix))
         myelin_mask_path = image_directory / (image_name_no_extension + str(myelin_suffix))
         self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
         self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
