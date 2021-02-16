@@ -1,5 +1,6 @@
 """
 This is an FSLeyes plugin script that integrates AxonDeepSeg tools into FSLeyes.
+
 Author : Stoyan I. Asenov
 """
 
