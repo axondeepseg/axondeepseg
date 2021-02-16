@@ -12,6 +12,7 @@ def download_model(destination = None):
         destination = convert_path(destination)
         sem_destination = destination / "default_SEM_model"
         tem_destination = destination / "default_TEM_model"
+        model_seg_pns_bf_destination = destination / "model_seg_pns_bf"
 
     url_TEM_model = "https://osf.io/2hcfv/?action=download&version=5"  # URL of TEM model hosted on OSF storage with the appropriate versioning on OSF
     url_SEM_model = "https://osf.io/sv7u2/?action=download&version=5"  # URL of SEM model hosted on OSF storage with the appropriate versioning on OSF
@@ -34,7 +35,8 @@ def download_model(destination = None):
         print('TEM model folder already existed - deleting old one.')
         shutil.rmtree(str(tem_destination))
     if model_seg_pns_bf_destination.exists():
-        print('Optical model folder already exists - deleting old one')
+        print('Bright Field Optical Microscopy model folder already exists - deleting old one')
+        shutil.rmtree(str(tem_destination))
 
     shutil.move("default_SEM_model", str(sem_destination))
     shutil.move("default_TEM_model", str(tem_destination))

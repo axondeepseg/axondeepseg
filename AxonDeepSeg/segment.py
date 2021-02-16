@@ -247,9 +247,10 @@ def main(argv=None):
     requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
+    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM', 'OM'], help='Type of acquisition to segment. \n'+
                                                                                         'SEM: scanning electron microscopy samples. \n'+
-                                                                                        'TEM: transmission electron microscopy samples. ')
+                                                                                        'TEM: transmission electron microscopy samples. \n'+
+                                                                                        'OM: optical microscopy samples')
     requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
                                                                                 'where the image(s) to segment is/are located.')
 
