@@ -16,8 +16,7 @@ def download_model(destination = None):
 
     url_TEM_model = "https://osf.io/2hcfv/?action=download&version=5"  # URL of TEM model hosted on OSF storage with the appropriate versioning on OSF
     url_SEM_model = "https://osf.io/sv7u2/?action=download&version=5"  # URL of SEM model hosted on OSF storage with the appropriate versioning on OSF
-    #url has to be added
-    url_model_seg_pns_bf = "https://osf.io/hfeu2/?action=download&version=1"                                             # URL of Optical model hosted on storagge with the appropriate versioning on OSF (Model is trained on Simeon's data)
+    url_model_seg_pns_bf = "https://osf.io/hfeu2/?action=download&version=1" # URL of Bright Field Optical Microscopy model hosted on storagge with the appropriate versioning on OSF
 
     if (
         not download_data(url_TEM_model) and not download_data(url_SEM_model) and not download_data(url_model_seg_pns_bf)
