@@ -36,7 +36,7 @@ def download_model(destination = None):
         shutil.rmtree(str(tem_destination))
     if model_seg_pns_bf_destination.exists():
         print('Bright Field Optical Microscopy model folder already exists - deleting old one')
-        shutil.rmtree(str(tem_destination))
+        shutil.rmtree(str(model_seg_pns_bf_destination))
 
     shutil.move("default_SEM_model", str(sem_destination))
     shutil.move("default_TEM_model", str(tem_destination))
