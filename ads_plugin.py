@@ -165,6 +165,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         sizer_h.Add(compute_morphometrics_button, flag=wx.SHAPED, proportion=1)
 
+        # Add the settings button
+        settings_button = wx.Button(self, label="Settings")
+        settings_button.SetForegroundColour(button_label_color)
+        settings_button.Bind(wx.EVT_BUTTON, self.on_settings_button)
+        sizer_h.Add(settings_button, flag=wx.SHAPED, proportion=1)
+
         # Set the sizer of the control panel
         self.SetSizer(sizer_h)
 
@@ -192,6 +198,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Check the version
         self.verrify_version()
+
+        self.overlap_value = 25  # TODO: Move this to a more appropriate place later
 
 
     def on_load_png_button(self, event):
@@ -353,7 +361,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         segment_image(
                       image_path,
                       model_path,
-                      25,
+                      self.overlap_value,
                       config_network,
                       resolution,
                       acquired_resolution=pixel_size_float,
@@ -496,7 +504,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
-        axon_mask_overlay = self.get_visible_axon_overlay() 
+        axon_mask_overlay = self.get_visible_axon_overlay()
 
         if myelin_mask_overlay is None:
             return
@@ -639,6 +647,42 @@ class ADScontrol(ctrlpanel.ControlPanel):
         self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
 
         return
+
+    def on_settings_button(self, event):
+        settings_frame = wx.Frame(self, title="Settings", size=(300, 300))
+        frame_sizer_h = wx.BoxSizer(wx.VERTICAL)
+
+        frame_sizer_axon_choice = wx.BoxSizer(wx.HORIZONTAL)
+        frame_sizer_axon_choice.Add(wx.StaticText(settings_frame, label="Axon Shape: "))
+        self.axon_shape_choices = ["circle", "ellipse"]
+        self.axon_shape_combobox = wx.ComboBox(
+            settings_frame,
+            choices=self.axon_shape_choices,
+            size=(100, 20),
+            value=self.axon_shape_choices[0]  # TODO: show the one currently selected
+        )
+        self.axon_shape_combobox.SetToolTip(
+            wx.ToolTip(
+                'Select what is the shape of the axons that will be considered when computing the morphometrics'
+                '. "circle" will use the mean diameter of the axons. "ellipse" will use minor axis of the axons.'
+            )
+        )
+        frame_sizer_axon_choice.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(frame_sizer_axon_choice)
+
+        sizer_overlap_value = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_overlap_value.Add(wx.StaticText(settings_frame, label="Overlap value: "))
+        self.overlap_value_spinCtrl = wx.SpinCtrl(
+            settings_frame, value="test", min=0, max=100, initial=self.overlap_value)
+        self.overlap_value_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_overlap_value_changed)
+        sizer_overlap_value.Add(self.overlap_value_spinCtrl, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_overlap_value)
+
+        settings_frame.SetSizer(frame_sizer_h)
+        settings_frame.Show()
+
+    def on_overlap_value_changed(self, event):
+        self.overlap_value = self.overlap_value_spinCtrl.GetValue()
 
     def get_watershed_segmentation(self, im_axon, im_myelin, return_centroids=False):
         """
