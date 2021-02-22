@@ -8,12 +8,12 @@ dependencies:
   - h5py=2.10.0
   - numpy
   - scipy
-  - scikit-learn=0.19.2
+  - scikit-learn=0.20.0
   - scikit-image=0.14.2
   - tabulate
   - pandas
   - matplotlib
-  - tensorflow=1.13.1
+  - tensorflow=1.14.0
   - mpld3
   - tqdm
   - requests
@@ -29,7 +29,6 @@ dependencies:
   - Keras-Preprocessing
   - albumentations=0.3.0
   - openpyxl
-  - h5py
   - pip
   - pip:
     - opencv-contrib-python
