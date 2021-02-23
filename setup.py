@@ -7,6 +7,7 @@ from os import path
 
 import AxonDeepSeg
 
+
 # Get the directory where this current file is saved
 here = path.abspath(path.dirname(__file__))
 
