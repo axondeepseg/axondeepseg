@@ -14,7 +14,6 @@ import numpy as np
 import nibabel as nib
 from PIL import Image, ImageDraw, ImageOps
 import scipy.misc
-import os
 import json
 from pathlib import Path
 
@@ -493,7 +492,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
-        axon_mask_overlay = self.get_visible_axon_overlay() 
+        axon_mask_overlay = self.get_visible_axon_overlay()
 
         if myelin_mask_overlay is None:
             return
@@ -958,7 +957,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         :rtype: wx.StaticBitmap
         """
 
-        ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[0]
+        ads_path = Path(AxonDeepSeg.__file__).parents[0]
 
         logo_file = ads_path / "logo_ads-alpha_small.png"
 
