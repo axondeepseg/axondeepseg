@@ -128,11 +128,11 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png' 
 
         # Make a copy of `__test_demo_files__` directory 
-        shutil.copytree(self.dataPath.parent  / '__test_demo_files__', self.dataPath.parent  / '__test_demo_files_copy__')
+        shutil.copytree(self.dataPath.parent  / '__test_demo_files__', self.dataPath.parent  / '__test_demo_files_copy__', copy_function = shutil.copy)
         
         pathImgcopy = self.dataPath.parent / '__test_demo_files_copy__' / 'image.png'
         morphometricsPathcopy =  self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
-        
+
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgcopy)])
 
@@ -140,9 +140,7 @@ class TestCore(object):
 
         #Remove the `__test_demo_files_copy__` directory
         if (self.dataPath.parent /  '__test_demo_files_copy__').exists():
-             (self.dataPath.parent /  '__test_demo_files_copy__').unlink()
-
-
+             shutil.rmtree(self.dataPath.parent /  '__test_demo_files_copy__')
 
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
