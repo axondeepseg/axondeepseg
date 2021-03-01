@@ -1,7 +1,7 @@
 # Segmentation script
 # -------------------
-# This script lets the user segment automatically one or many images based on the default segmentation models: SEM or
-# TEM.
+# This script lets the user segment automatically one or many images based on the segmentation models: SEM,
+# TEM or OM.
 #
 # Maxime Wabartha - 2017-08-30
 
@@ -25,12 +25,14 @@ from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model"
 TEM_DEFAULT_MODEL_NAME = "default_TEM_model"
+OM_MODEL_NAME = "model_seg_pns_bf"
 
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
 default_SEM_path = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
 default_TEM_path = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
+model_seg_pns_bf_path = MODELS_PATH / OM_MODEL_NAME
 default_overlap = 25
 
 # Definition of the functions
@@ -183,6 +185,11 @@ def generate_default_parameters(type_acquisition, new_path):
             path_model = new_path
         else:
             path_model = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
+    else:
+        if (new_path is not None) and new_path.exists():
+            path_model = new_path
+        else:
+            path_model = MODELS_PATH / OM_MODEL_NAME
 
     path_config_file = path_model / 'config_network.json'
     config = generate_config_dict(path_config_file)
@@ -225,7 +232,10 @@ def generate_resolution(type_acquisition, model_input_size):
         },
         "TEM":{
             "512":0.01
-        }
+        },
+        "OM":{
+            "512":0.1
+        },
     }
 
     return dict_size[str(type_acquisition)][str(model_input_size)]
@@ -247,15 +257,17 @@ def main(argv=None):
     requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
+    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM', 'OM'], help='Type of acquisition to segment. \n'+
                                                                                         'SEM: scanning electron microscopy samples. \n'+
-                                                                                        'TEM: transmission electron microscopy samples. ')
+                                                                                        'TEM: transmission electron microscopy samples. \n'+
+                                                                                        'OM: optical microscopy samples')
     requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
                                                                                 'where the image(s) to segment is/are located.')
 
     ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
                                                           'The default SEM model path is: \n'+str(default_SEM_path)+'\n'+
-                                                          'The default TEM model path is: \n'+str(default_TEM_path)+'\n')
+                                                          'The default TEM model path is: \n'+str(default_TEM_path)+'\n'+
+                                                          'The default OM model path is: \n'+str(model_seg_pns_bf_path)+'\n')
     ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
                                                               'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
                                                               'file needs to be added to the image folder path. The pixel size \n'+
