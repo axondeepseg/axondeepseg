@@ -61,9 +61,6 @@ class TestCore(object):
 
         self.image_sim_ellipse.save(self.image_sim_ellipse_path)
         
-
-
-
     def teardown(self):
         if self.tmpDir.exists():
             shutil.rmtree(self.tmpDir)
