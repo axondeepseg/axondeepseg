@@ -227,7 +227,6 @@ class TestCore(object):
         self.image_sim_ellipse.generate_axon(axon_radius=12, center=[800, 850], gratio=0.2, plane_angle=70)
         self.image_sim_ellipse.save(self.image_sim_ellipse_path)
         
-
         gratio_sim = np.array([
                                 0.9,
                                 0.8,
@@ -261,10 +260,6 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0,9):
-            print("The ith axon instance is", ii)
-            print("The value of gratio is", stats_array[ii]['gratio'])
-            print("The value of axon_diam is", stats_array[ii]['axon_diam'])
-            print("The value of myelin thickness is ", stats_array[ii]['myelin_thickness'])
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
@@ -317,14 +312,10 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0,len(gratio_sim)):
-            print("The ith axon instance is", ii)
-            print("The value of gratio is", stats_array[ii]['gratio'])
-            print("The value of axon_diam is", stats_array[ii]['axon_diam'])
-            print("The value of myelin thickness is ", stats_array[ii]['myelin_thickness'])
+
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
-
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse_plane_angle_varies(self):
@@ -376,10 +367,6 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0,len(gratio_sim)):
-            print("The ith axon instance is", ii)
-            print("The value of gratio is", stats_array[ii]['gratio'])
-            print("The value of axon_diam is", stats_array[ii]['axon_diam'])
-            print("The value of myelin thickness is ", stats_array[ii]['myelin_thickness'])
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
@@ -400,8 +387,6 @@ class TestCore(object):
         self.image_sim_ellipse.generate_axon(axon_radius=18, center=[750, 750], gratio=0.7, plane_angle=60)
         self.image_sim_ellipse.generate_axon(axon_radius=12, center=[800, 800], gratio=0.7, plane_angle=60)
         self.image_sim_ellipse.generate_axon(axon_radius=6, center=[850, 850], gratio=0.7, plane_angle=60)
-
-
 
         self.image_sim_ellipse.save(self.image_sim_ellipse_path)
 
@@ -441,17 +426,9 @@ class TestCore(object):
         stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0,len(gratio_sim)):
-            print("The ith axon instance is", ii)
-            print("The value of gratio is", stats_array[ii]['gratio'])
-            print("The value of axon_diam is", stats_array[ii]['axon_diam'])
-            print("The value of myelin thickness is ", stats_array[ii]['myelin_thickness'])
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
-
-
-
-
 
 
     @pytest.mark.unit
@@ -480,8 +457,6 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons_with_axon_as_ellipse(self):
-
-
         prediction = imageio_imread(self.image_sim_ellipse_path, as_gray=True)
         pred_axon = prediction > 200
         unexpected_pred_myelin = np.zeros(prediction.shape)
@@ -568,7 +543,6 @@ class TestCore(object):
 
         assert result_path.is_file()
         result_path.unlink()
-
 
     # --------------get_aggregate_morphometrics tests-------------- #
     @pytest.mark.unit
