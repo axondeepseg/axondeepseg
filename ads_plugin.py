@@ -199,7 +199,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Check the version
         self.verrify_version()
 
+        #TODO: move the settings to another class
         self.overlap_value = 25  # TODO: Move this to a more appropriate place later
+        self.model_resolution = 0.01
+        self.use_custom_resolution = False
+        self.custom_resolution = 0.07
 
 
     def on_load_png_button(self, event):
@@ -288,9 +292,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         selected in the combobox. The segmentation masks are then loaded into FSLeyes
         """
 
-        # Declare the default resolution of the model
-        resolution = 0.1
-
         # Get the image name and directory
         image_overlay = self.get_visible_image_overlay()
         if self.get_visible_image_overlay() is None:
@@ -316,6 +317,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Get the selected model
         selected_model = self.model_combobox.GetStringSelection()
+        if selected_model == "":
+            self.show_message("Please select a model")
+            return
 
         # Get the path of the selected model
         if any(selected_model in models for models in ads_utils.get_existing_models_list()):
@@ -328,30 +332,29 @@ class ADScontrol(ctrlpanel.ControlPanel):
             self.show_message("Please select a model")
             return
 
-        # If the TEM model is selected, modify the resolution
-        if "TEM" in selected_model.upper():
-            resolution = 0.01
+        # Determine if we will use a custom resolution or not
+        if self.use_custom_resolution:
+            pixel_size_float = self.custom_resolution
+        else:
+            # Check if the pixel size txt file exist in the imageDirPath
+            pixel_size_exists = os.path.isfile(
+                image_directory + "/pixel_size_in_micrometer.txt"
+            )
 
-        # Check if the pixel size txt file exist in the imageDirPath
-        pixel_size_exists = os.path.isfile(
-            image_directory + "/pixel_size_in_micrometer.txt"
-        )
+            # if it doesn't exist, ask the user to input the pixel size
+            if pixel_size_exists is False:
+                with wx.TextEntryDialog(
+                        self, "Enter the pixel size in micrometer", value="0.07"
+                ) as text_entry:
+                    if text_entry.ShowModal() == wx.ID_CANCEL:
+                        return
 
-        # if it doesn't exist, ask the user to input the pixel size
-        if pixel_size_exists is False:
-            with wx.TextEntryDialog(
-                self, "Enter the pixel size in micrometer", value="0.07"
-            ) as text_entry:
-                if text_entry.ShowModal() == wx.ID_CANCEL:
-                    return
+                    pixel_size_str = text_entry.GetValue()
+                pixel_size_float = float(pixel_size_str)
 
-                pixel_size_str = text_entry.GetValue()
-            pixel_size_float = float(pixel_size_str)
-
-        else:  # read the pixel size
-            resolution_file = open(image_directory + "/pixel_size_in_micrometer.txt", 'r')
-            pixel_size_float = float(resolution_file.read())
-
+            else:  # read the pixel size
+                resolution_file = open(image_directory + "/pixel_size_in_micrometer.txt", 'r')
+                pixel_size_float = float(resolution_file.read())
 
         # Load model configs and apply prediction
         model_configfile = os.path.join(model_path, "config_network.json")
@@ -363,7 +366,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                       model_path,
                       self.overlap_value,
                       config_network,
-                      resolution,
+                      self.model_resolution,
                       acquired_resolution=pixel_size_float,
                       verbosity_level=3
                       )
@@ -649,40 +652,77 @@ class ADScontrol(ctrlpanel.ControlPanel):
         return
 
     def on_settings_button(self, event):
-        settings_frame = wx.Frame(self, title="Settings", size=(300, 300))
+        #TODO: Add a class for the settings. Perhaps even one for the window
+        settings_frame = wx.Frame(self, title="Settings", size=(600, 300))
         frame_sizer_h = wx.BoxSizer(wx.VERTICAL)
 
-        frame_sizer_axon_choice = wx.BoxSizer(wx.HORIZONTAL)
-        frame_sizer_axon_choice.Add(wx.StaticText(settings_frame, label="Axon Shape: "))
-        self.axon_shape_choices = ["circle", "ellipse"]
-        self.axon_shape_combobox = wx.ComboBox(
-            settings_frame,
-            choices=self.axon_shape_choices,
-            size=(100, 20),
-            value=self.axon_shape_choices[0]  # TODO: show the one currently selected
-        )
-        self.axon_shape_combobox.SetToolTip(
-            wx.ToolTip(
-                'Select what is the shape of the axons that will be considered when computing the morphometrics'
-                '. "circle" will use the mean diameter of the axons. "ellipse" will use minor axis of the axons.'
-            )
-        )
-        frame_sizer_axon_choice.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
-        frame_sizer_h.Add(frame_sizer_axon_choice)
+        # Since the axon shape doesn't do anything yet, I will just comment it
 
+        # frame_sizer_axon_choice = wx.BoxSizer(wx.HORIZONTAL)
+        # frame_sizer_axon_choice.Add(wx.StaticText(settings_frame, label="Axon Shape: "))
+        # self.axon_shape_choices = ["circle", "ellipse"]
+        # self.axon_shape_combobox = wx.ComboBox(
+        #     settings_frame,
+        #     choices=self.axon_shape_choices,
+        #     size=(100, 20),
+        #     value=self.axon_shape_choices[0]  # TODO: show the one currently selected
+        # )
+        # self.axon_shape_combobox.SetToolTip(
+        #     wx.ToolTip(
+        #         'Select what is the shape of the axons that will be considered when computing the morphometrics'
+        #         '. "circle" will use the mean diameter of the axons. "ellipse" will use minor axis of the axons.'
+        #     )
+        # )
+        # frame_sizer_axon_choice.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
+        # frame_sizer_h.Add(frame_sizer_axon_choice)
+
+        # Add the overlap value to the settings menu
         sizer_overlap_value = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_overlap_value.Add(wx.StaticText(settings_frame, label="Overlap value: "))
-        self.overlap_value_spinCtrl = wx.SpinCtrl(
-            settings_frame, value="test", min=0, max=100, initial=self.overlap_value)
+        sizer_overlap_value.Add(wx.StaticText(settings_frame, label="Overlap value (pixels): "))
+        self.overlap_value_spinCtrl = wx.SpinCtrl(settings_frame, min=0, max=100, initial=self.overlap_value)
         self.overlap_value_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_overlap_value_changed)
         sizer_overlap_value.Add(self.overlap_value_spinCtrl, flag=wx.SHAPED, proportion=1)
         frame_sizer_h.Add(sizer_overlap_value)
+
+        # Add the model resolution to the settings menu
+        sizer_model_resolution = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_model_resolution.Add(wx.StaticText(settings_frame, label="Model resolution (um/pixel): "))
+        self.model_resolution_spinCtrlDouble = wx.SpinCtrlDouble(
+            settings_frame, initial=self.model_resolution, inc=0.0001)
+        self.model_resolution_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_model_resolution_value_changed)
+        sizer_model_resolution.Add(self.model_resolution_spinCtrlDouble, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_model_resolution)
+
+        # Add the option to use a custom image resolution
+        sizer_custom_resolution = wx.BoxSizer(wx.HORIZONTAL)
+        self.use_custom_resolution_checkbox = wx.CheckBox(
+            settings_frame, label="Use custom image resolution (um/pixel): ")
+        self.use_custom_resolution_checkbox.Bind(wx.EVT_CHECKBOX, self.on_use_custom_resolution_state_change)
+        sizer_custom_resolution.Add(self.use_custom_resolution_checkbox)
+        self.custom_resolution_spinCtrlDouble = wx.SpinCtrlDouble(
+            settings_frame, initial=self.custom_resolution, inc=0.0001)
+        self.custom_resolution_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_custom_resolution_value_changed)
+        sizer_custom_resolution.Add(self.custom_resolution_spinCtrlDouble)
+        frame_sizer_h.Add(sizer_custom_resolution)
 
         settings_frame.SetSizer(frame_sizer_h)
         settings_frame.Show()
 
     def on_overlap_value_changed(self, event):
         self.overlap_value = self.overlap_value_spinCtrl.GetValue()
+        print(self.overlap_value)
+
+    def on_model_resolution_value_changed(self, event):
+        self.model_resolution = self.model_resolution_spinCtrlDouble.GetValue()
+        print(self.model_resolution)
+
+    def on_use_custom_resolution_state_change(self, event):
+        self.use_custom_resolution = self.use_custom_resolution_checkbox.GetValue()
+        print(self.use_custom_resolution)
+
+    def on_custom_resolution_value_changed(self, event):
+        self.custom_resolution = self.custom_resolution_spinCtrlDouble.GetValue()
+        print(self.custom_resolution)
 
     def get_watershed_segmentation(self, im_axon, im_myelin, return_centroids=False):
         """
