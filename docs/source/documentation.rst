@@ -376,7 +376,7 @@ Morphometrics of images from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argumument of the CLI separated by space. For instance, to compute morphometrics of the images present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
-    axondeepseg_morphometrics -i test_sem_image/image1_sem/77.png test_sem_image/image2_sem/image.png
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png test_segmentation/test_sem_image/image2_sem/image.png
 
 This will generate **'morphometrics.xlsx'** file in each of folders:: 
 
