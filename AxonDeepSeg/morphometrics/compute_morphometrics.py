@@ -52,7 +52,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
     :param im_axon: Array: axon binary mask, output of axondeepseg
     :param path_folder: str: absolute path of folder containing pixel size file
     :param im_myelin: Array: myelin binary mask, output of axondeepseg
-    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: str: shape of the axon, can either be circle or ellipse
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
 
