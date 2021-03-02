@@ -281,7 +281,7 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=
         from axondeepseg segmentation output
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
-    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: str: shape of the axon, can either be circle or ellipse
     :return: matplotlib.figure.Figure
     """
     
