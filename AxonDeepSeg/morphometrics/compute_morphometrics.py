@@ -168,7 +168,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
         measuring a axon labeled region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
         measuring a axon with myelin labeled region
-   :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
+   :param axon_shape: str: shape of the axon, can either be circle or ellipse
     
     [1] According to https://scikit-image.org/docs/dev/api/skimage.measure.html?highlight=region%20properties#regionprops,
     the equivalent diameter is the diameter of a circle with the same area as
