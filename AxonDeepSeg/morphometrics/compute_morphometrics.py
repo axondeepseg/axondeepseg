@@ -163,7 +163,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
     """
     Returns the  thickness of a myelin ring around an axon of a
-    given equivalent diameter (see note [1] below) or minimum axis diameter of an ellipse. The result is in pixels.
+    given equivalent diameter (see note [1] below) or minor axis of an ellipse. The result is in pixels.
     :param axon_object (skimage.measure._regionprops): object returned after
         measuring a axon labeled region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
