@@ -19,7 +19,6 @@ from AxonDeepSeg.testing.segmentation_scoring import *
 from AxonDeepSeg.ads_utils import convert_path
 
 
-
 def get_pixelsize(path_pixelsize_file):
     """
     :param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
