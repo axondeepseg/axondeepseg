@@ -335,7 +335,7 @@ The script to launch in called **axondeepseg_morphometrics**. It has several arg
 **Optional arguments:**
 
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
-                    If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
+                    If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path (that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the morphometrics computation.
 
 
 -a AXONSHAPE       Axon shape
