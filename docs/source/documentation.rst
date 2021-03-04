@@ -365,7 +365,7 @@ This generates a morphometrics file in the image directory::
     ...
 
 .. NOTE :: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
-           For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon ::
+           For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon. ::
            
            If you wish to treat axon shape as an ellipse, you can set the  **-a** argument to be **ellipse**.
            When axon shape is set to ellipse, the calculation of the diameter is based on ellipse minor axis::
