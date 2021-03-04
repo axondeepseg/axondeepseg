@@ -79,7 +79,7 @@ def main(argv=None):
                                                               default=None)
 
 
-    ap.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to be segmented ')
+    ap.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image.')
 
     
     ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics file will be  stored',
