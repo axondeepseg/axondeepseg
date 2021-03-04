@@ -339,7 +339,7 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape=
     :param pred_axon: axon mask from axondeepseg segmentation output
     :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param path_folder: absolute path of folder containing pixel size file
-    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse
+    :param axon_shape: str: shape of the axon, can either be circle or ellipse
     :return: aggregate_metrics: dictionary containing values of aggregate metrics
     """
 
