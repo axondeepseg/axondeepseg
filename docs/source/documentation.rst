@@ -425,7 +425,7 @@ Ellipse
 
 
 .. NOTE :: In the literature, both equivalent diameter and ellipse minor axis are used to compute the morphometrics. 
-           Thus, depending on the usecase the user is advised to choose axon shape accordingly.
+           Thus, depending on the usecase, the user is advised to choose axon shape accordingly.
            
 
 Jupyter notebooks
