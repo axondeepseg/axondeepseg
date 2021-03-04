@@ -116,7 +116,7 @@ def main(argv=None):
                 pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
             else: 
                 print("ERROR: Segmented axon mask is not present in the image folder. ",
-                                    "Please check that the axon mask is located in the image folder ",
+                                    "Please check that the axon mask is located in the image folder. ",
                                     "If it is not present, perform segmentation of the image first using ADS."
                     )
                 sys.exit(3)
