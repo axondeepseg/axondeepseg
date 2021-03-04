@@ -343,7 +343,7 @@ The script to launch in called **axondeepseg_morphometrics**. It has several arg
                     **ellipse:** Axon shape is considered as an ellipse. In this case, diameter is computed using ellipse minor axis.
                     The default axon shape is set to **circle**.
 
--f FILENAME         Name of the excel file in which the morphometrics file will be stored.
+-f FILENAME         Name of the excel file in which the morphometrics will be stored.
                     The excel file extension can either be **.xlsx** or **.csv**.
                     If name of the excel file is not provided, the morphometrics will be saved as **morphometrics.xlsx**.
 
