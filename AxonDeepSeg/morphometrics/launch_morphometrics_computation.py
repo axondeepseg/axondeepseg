@@ -72,7 +72,7 @@ def main(argv=None):
 
     
     # Setting the arguments of the saving the morphometrics in excel file
-    ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
+    ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to compute morphometrics, in micrometers. \n'+
                                                               'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
                                                               'file needs to be added to the image folder path. The pixel size \n'+
                                                               'in that file will be used for the segmentation.',
@@ -212,5 +212,4 @@ def main(argv=None):
 # Calling the script
 if __name__ == '__main__':
     main()
-
 
