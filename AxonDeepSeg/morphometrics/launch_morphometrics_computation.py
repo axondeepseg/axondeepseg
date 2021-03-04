@@ -125,7 +125,7 @@ def main(argv=None):
             if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
                 pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
             else: 
-                print("ERROR: Segmented myelin mask is not present in the image folder.  ",
+                print("ERROR: Segmented myelin mask is not present in the image folder. ",
                                     "Please check that the myelin mask is located in the image folder. ",
                                     "If it is not present, perform segmentation of the image first using ADS."
                     )
