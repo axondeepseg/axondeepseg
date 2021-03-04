@@ -66,7 +66,6 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="cicl
         write_aggregate_morphometrics(path_folder, aggregate_metrics)
 
 
-
 def main(argv=None):
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -89,7 +88,6 @@ def main(argv=None):
                                                                           '\t    ellipse \n' +
                                                             'For computing morphometrics, axon shape can either be a circle or an ellipse', 
                                                               default = "circle")
-
     
 
     # Processing the arguments
@@ -108,7 +106,6 @@ def main(argv=None):
                         )
 
     for current_path_target in path_target_list:
-
         if current_path_target.suffix.lower() in validExtensions:
 
             #load the axon mask 
@@ -149,10 +146,6 @@ def main(argv=None):
                     )
                     sys.exit(3)
 
-        
-            
-
-
             x = np.array([], dtype=[
                                         ('x0', 'f4'),
                                         ('y0', 'f4'),
@@ -190,8 +183,6 @@ def main(argv=None):
                         )],
                         dtype=x.dtype)
                     )
-
-
 
             # save the current contents in the file
             if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
