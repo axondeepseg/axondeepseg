@@ -184,13 +184,15 @@ def main(argv=None):
 
             # save the current contents in the file
             if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
-                if filename.lower().endswith('.xlsx'):
-                    filename = filename + ".xlsx"
-                else: 
-                    filename = filename + '.csv'
+                    filename = filename + '.xlsx' 
             try:
                 # Export to excel
-                pd.DataFrame(x).to_excel(current_path_target.parent /  filename)
+                if filename.endswith('.xlsx'):
+                    pd.DataFrame(x).to_excel(current_path_target.parent /  filename)
+                # Export to csv    
+                else: 
+                    pd.DataFrame(x).to_csv(current_path_target.parent /  filename)
+                    
                 print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
                 print("Cannot save morphometrics  data in file '%s'." % file)
