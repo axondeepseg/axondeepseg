@@ -92,6 +92,17 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
+    def test_main_cli_runs_succesfully_with_valid_inputs_for_save_morphometrics_as_csv(self):
+        pathImg = self.dataPath / 'image.png'
+
+        self.morphometricsFile = "Morphometrics.csv"    
+        self.morphometricsPath = self.dataPath / self.morphometricsFile
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', 'Morphometrics.csv'])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
+
     @pytest.mark.unit
     def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_ellipse(self):
         pathImg = self.dataPath / 'image.png'
