@@ -184,7 +184,10 @@ def main(argv=None):
 
             # save the current contents in the file
             if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
-                filename = filename + ".xlsx"
+                if filename.lower().endswith('.xlsx'):
+                    filename = filename + ".xlsx"
+                else: 
+                    filename = filename + '.csv'
             try:
                 # Export to excel
                 pd.DataFrame(x).to_excel(current_path_target.parent /  filename)
