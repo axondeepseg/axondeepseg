@@ -13,7 +13,6 @@ import AxonDeepSeg.ads_utils as ads
 from config import axonmyelin_suffix, myelin_suffix, axon_suffix
 
 
-
 class TestCore(object):
     def setup(self):
         # Get the directory where this current file is saved
@@ -25,7 +24,6 @@ class TestCore(object):
         self.axon_shape = "ellipse"         # axon shape is set to ellipse
         self.morphometricsFile = "Morphometrics.xlsx"
         self.morphometricsPath = self.dataPath / self.morphometricsFile
-
 
     def teardown(self):
 
