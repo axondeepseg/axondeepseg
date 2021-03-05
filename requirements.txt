@@ -24,3 +24,4 @@ albumentations==0.3.0
 openpyxl==2.6.3
 h5py~=2.10.0
 opencv-python-headless==4.4.0.44 
+pre-commit==2.10.1
