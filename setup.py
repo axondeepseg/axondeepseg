@@ -19,7 +19,6 @@ with open(req_path, "r") as f:
     install_reqs = f.read().strip()
     install_reqs = install_reqs.split("\n")
 
-
 class PostDevelopCommand(develop):
     """Post-installation for installation mode."""
     def run(self):
