@@ -58,6 +58,7 @@ setup(
         'docs': ['sphinx>=1.6',
                  'sphinx_rtd_theme>=0.2.4',
                  'recommonmark'],
+        'dev': ["pre-commit>=2.10.0"]
     },
     include_package_data=True,
     entry_points={
