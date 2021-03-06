@@ -20,22 +20,26 @@ jobs:
     - stage: Basic install
       os: linux
       script:
+        - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
     - stage: FSLeyes install
       os: linux
       script: 
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - yes | conda install -c conda-forge h5py=2.10.0
+        - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
     - stage: Basic install
       os: osx
       script:
+        - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
     - stage: FSLeyes install
       os: osx
       script: 
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - yes | conda install -c conda-forge h5py=2.10.0
+        - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
 after_success:
   - coveralls
