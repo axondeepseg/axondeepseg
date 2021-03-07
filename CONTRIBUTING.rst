@@ -170,6 +170,10 @@ Guidelines for developing
 
 - Ensure that you are the original author of your changes, and if that is not the case, ensure that the borrowed/adapted code is compatible with the ADS MIT license.
 
+Pre-commit checks
+~~~~~~~~~~~~~~~~~
+
+We use ``pre-commit`` to enforce conventions like file sizes and yaml check. After you've installed ``AxonDeepSeg``, install the hooks by running ``pre-commit install`` at the root of the repo clone.
 
 Guidelines on Commits
 =====================
