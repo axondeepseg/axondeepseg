@@ -1,4 +1,4 @@
-name: ads_venv_macos
+name: ads_new_2
 channels:
   - conda-forge
   - defaults
@@ -271,3 +271,4 @@ dependencies:
   - pip:
     - opencv-contrib-python==4.5.1.48
     - opencv-python-headless==4.5.1.48
+prefix: /Users/mathieuboudreau/opt/anaconda3/envs/ads_new_2
