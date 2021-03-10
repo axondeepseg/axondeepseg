@@ -1,4 +1,4 @@
-name: ads_new_4
+name: ads_venv
 channels:
   - conda-forge
   - defaults
