@@ -606,7 +606,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 )
 
         with wx.FileDialog(self, "Save morphometrics file", wildcard="Excel files (*.xlsx)|*.xlsx",
-                       style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+                        defaultFile="axon_morphometrics.xlsx", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return     # the user changed their mind
