@@ -731,7 +731,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
     def on_model_resolution_value_changed(self, event):
         self.model_resolution = self.model_resolution_spinCtrlDouble.GetValue()
-        print(self.model_resolution)
 
     def on_use_custom_resolution_state_change(self, event):
         self.use_custom_resolution = self.use_custom_resolution_checkbox.GetValue()
@@ -743,7 +742,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
     def on_zoom_factor_changed(self, event):
         self.zoom_factor = self.zoom_factor_spinCtrlDouble.GetValue()
-        print(self.zoom_factor)
 
     def on_done_button(self, event):
         # TODO: make sure every setting is saved
