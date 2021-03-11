@@ -12,7 +12,8 @@ install:
   - echo "Installation of the repository"
   - cd ~/build/neuropoly/axondeepseg
   - pip install -e .
-  - pip install pre-commit
+-  pip install pre-commit
+
 - pip install python-coveralls  # Add me to install python-coveralls
   
 jobs:
