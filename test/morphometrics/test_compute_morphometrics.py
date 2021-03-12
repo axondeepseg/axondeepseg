@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from pathlib import Path
-import inspect
 import string
 import random
 import shutil
@@ -28,7 +27,7 @@ class TestCore(object):
         self.pixelsizeValue = 0.07   # For current demo data.
         self.axon_shape = "ellipse"   # axon shape is set to ellipse
 
-        pred_axon_path = self.test_folder_path / ('image' +  str(axon_suffix))
+        pred_axon_path = self.test_folder_path / ('image' + str(axon_suffix))
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
         pred_myelin_path = self.test_folder_path / ('image' + str(myelin_suffix))
         self.pred_myelin = imageio_imread(pred_myelin_path, as_gray=True)
@@ -36,7 +35,6 @@ class TestCore(object):
         self.tmpDir = self.fullPath / '__tmp__'
         if not self.tmpDir.exists():
             self.tmpDir.mkdir()
-
 
     def teardown(self):
         if self.tmpDir.exists():
@@ -122,7 +120,6 @@ class TestCore(object):
             )
         assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
     
-
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_with_axon_as_ellipse(self):
         stats_array = get_axon_morphometrics(
@@ -176,7 +173,7 @@ class TestCore(object):
         # Compute axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin)
 
-        for ii in range(0,9):
+        for ii in range(0, 9):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
@@ -224,11 +221,10 @@ class TestCore(object):
         # Compute axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
-        for ii in range(0,9):
+        for ii in range(0, 9):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
-
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons(self):
@@ -278,7 +274,6 @@ class TestCore(object):
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
-
 
     # --------------save and load _axon_morphometrics tests-------------- #
     @pytest.mark.unit
@@ -350,11 +345,9 @@ class TestCore(object):
         assert result_path.is_file()
         result_path.unlink()
 
-
     # --------------get_aggregate_morphometrics tests-------------- #
     @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_expected_type(self):
-
 
         aggregate_metrics = get_aggregate_morphometrics(
             self.pred_axon,
@@ -395,7 +388,7 @@ class TestCore(object):
 
         for key in list(aggregate_metrics.keys()):
             assert key in expectedKeys
-    
+                
     @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_returns_expected_keys_with_axon_as_ellipse(self):
         expectedKeys = {'avf',
@@ -432,7 +425,6 @@ class TestCore(object):
 
         assert expectedFilePath.is_file()
 
-
     @pytest.mark.unit
     def test_write_aggregate_morphometrics_throws_error_if_folder_doesnt_exist(self):
         aggregate_metrics = get_aggregate_morphometrics(
@@ -446,4 +438,3 @@ class TestCore(object):
 
         with pytest.raises(IOError):
             write_aggregate_morphometrics(str(nonExistingFolder), aggregate_metrics)
-

@@ -186,7 +186,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37"])
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
