@@ -17,6 +17,8 @@ config/
 
 data/
 
+models/
+
 guidelines/.ipynb_checkpoints/
 
 summaries/
