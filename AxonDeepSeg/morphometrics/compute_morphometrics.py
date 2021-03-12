@@ -18,6 +18,7 @@ from matplotlib.figure import Figure
 from AxonDeepSeg.testing.segmentation_scoring import *
 from AxonDeepSeg.ads_utils import convert_path
 
+
 def get_pixelsize(path_pixelsize_file):
     """
     :param path_pixelsize_file: path of the txt file indicating the pixel size of the sample
@@ -61,7 +62,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
         pixelsize = get_pixelsize(path_folder / 'pixel_size_in_micrometer.txt')
 
-    if (pixel_size  is not None) and (path_folder is None ):
+    if (pixel_size  is not None) and (path_folder is None):
         pixelsize = pixel_size
 
     stats_array = np.empty(0)
@@ -187,6 +188,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
         axonmyelin_diam = axonmyelin_object.minor_axis_length
     return (axonmyelin_diam - axon_diam)/2
 
+
 def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
     """
     Returns the myenlinated axon area minus the axon area.
@@ -201,6 +203,7 @@ def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
         "area"
         )
     return axonmyelin_object.area - axon_object.area
+
 
 def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
     """
@@ -217,13 +220,13 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
             "y_ax": y_a,
             "axonmyelin_label": axonmyelin_object.label,
         }
-        
         warning_msg = Template(
             "Warning, axon #$axon_label at [y:$y_ax, x:$x_ax] and " +
             "corresponding myelinated axon #$axonmyelin_label " +
             "have unexpected measure values for $attribute attributest."
             )
         print(warning_msg.safe_substitute(data))
+
 
 def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
     """
@@ -235,6 +238,7 @@ def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribu
         return True
     else:
         return False
+
 
 def save_axon_morphometrics(path_folder, stats_array):
     """
