@@ -258,13 +258,13 @@ The script to launch is called **axondeepseg**. It takes several arguments:
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
 
 -v VERBOSITY        Verbosity level. 
-                            **0** (default) : Displays the progress bar for the segmentation. 
-                            **1**: Also displays the path of the image(s) being segmented. 
-                            **2**: Also displays the information about the prediction step for the segmentation of current sample. 
-                            **3**: Also displays the patch number being processed in the current sample.
+                    **0** (default) : Displays the progress bar for the segmentation. 
+                    **1**: Also displays the path of the image(s) being segmented. 
+                    **2**: Also displays the information about the prediction step for the segmentation of current sample. 
+                    **3**: Also displays the patch number being processed in the current sample.
 
--overlap                 Overlap value (in pixels) of the patches when doing the segmentation. 
-                         Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 25. Recommended range of values: [10-100]. 
+-overlap            Overlap value (in pixels) of the patches when doing the segmentation. 
+                    Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 25. Recommended range of values: [10-100]. 
 
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
