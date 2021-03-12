@@ -137,19 +137,19 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png' 
 
         # Make a copy of `__test_demo_files__` directory 
-        shutil.copytree(self.dataPath.parent  / '__test_demo_files__', self.dataPath.parent  / '__test_demo_files_copy__', copy_function = shutil.copy)
+        shutil.copytree(self.dataPath.parent / '__test_demo_files__', self.dataPath.parent / '__test_demo_files_copy__', copy_function=shutil.copy)
         
         pathImgcopy = self.dataPath.parent / '__test_demo_files_copy__' / 'image.png'
-        morphometricsPathcopy =  self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
+        morphometricsPathcopy = self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgcopy)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathcopy.exists()
 
-        #Remove the `__test_demo_files_copy__` directory
-        if (self.dataPath.parent /  '__test_demo_files_copy__').exists():
-             shutil.rmtree(self.dataPath.parent /  '__test_demo_files_copy__')
+        # Remove the `__test_demo_files_copy__` directory
+        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
+            shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
 
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
@@ -161,7 +161,6 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
 
-    
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_resolution_file_not_provided(self):
 
@@ -180,38 +179,36 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     
-    
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_myelin_mask_not_present(self):
         pathImg = self.dataPath / 'image.png'
 
-        #myelin mask path
+        # myelin mask path
         pathMyelin = self.dataPath / ('image' + str(myelin_suffix))
 
-        #Read the myelin mask
+        # Read the myelin mask
         myelinMask = ads.imread(str(pathMyelin))
 
-        #Delete the myelin mask for exception 
+        # Delete the myelin mask for exception 
         if pathMyelin.exists():
             pathMyelin.unlink()
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
-        #Save the myelin mask back to the `__test_demo_files__`
+        # Save the myelin mask back to the `__test_demo_files__`
         ads.imwrite(str(pathMyelin), myelinMask)
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
 
-    
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_axon_mask_not_present(self):
         pathImg = pathImg = self.dataPath / 'image.png'
         
-        #axon mask path
+        # axon mask path
         pathAxon = self.dataPath / ('image' + str(axon_suffix))
 
-        #Read the axon mask
+        # Read the axon mask
         axonMask = ads.imread(str(pathAxon))
 
         if pathAxon.exists():
@@ -220,8 +217,7 @@ class TestCore(object):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
-
-        #Save the axon mask back to the `__test_demo_files__`
+        # Save the axon mask back to the `__test_demo_files__`
         ads.imwrite(str(pathAxon), axonMask)
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
