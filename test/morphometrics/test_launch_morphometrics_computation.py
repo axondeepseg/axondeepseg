@@ -185,7 +185,6 @@ class TestCore(object):
     def test_main_cli_handles_exception_for_myelin_mask_not_present(self):
         pathImg = self.dataPath / 'image.png'
 
-        
         #myelin mask path
         pathMyelin = self.dataPath / ('image' + str(myelin_suffix))
 
