@@ -108,7 +108,6 @@ class TestCore(object):
                         'orientation'
                         }
         
-
         stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), axon_shape=self.axon_shape)
 
         for key in list(stats_array[0].keys()):
