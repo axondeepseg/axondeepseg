@@ -24,8 +24,6 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="cicl
     :param path_img: path of the input image (microscopy sample)
     :param path_prediction: path of the segmented image (output of AxonDeepSeg)
     :param axon_shape: str: shape of the axon, can either be circle or ellipse
-
-
     :return: none.
     """
     
