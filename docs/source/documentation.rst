@@ -263,7 +263,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
                     **2**: Also displays the information about the prediction step for the segmentation of current sample. 
                     **3**: Also displays the patch number being processed in the current sample.
 
--overlap            Overlap value (in pixels) of the patches when doing the segmentation. 
+--overlap            Overlap value (in pixels) of the patches when doing the segmentation. 
                     Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 25. Recommended range of values: [10-100]. 
 
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
