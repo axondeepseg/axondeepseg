@@ -70,9 +70,15 @@ To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have 
 
 Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you create a virtual environment before you continue with your installation.
 
-To setup a Python 3.7 virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions::
+To setup a Python 3.7 virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions:
 
-    conda env create -f environment.yml -n ads_venv
+macOS::
+
+    conda env create -f environment_macOS.yml -n ads_venv
+
+Linux::
+
+    conda env create -f environment_Linux.yml -n ads_venv
 
 Then, activate your virtual environment::
 
