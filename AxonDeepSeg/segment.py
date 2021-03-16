@@ -280,7 +280,7 @@ def main(argv=None):
                                                             '   for the segmentation of current sample. \n'+
                                                             '3: Also displays the patch number being processed in the current sample.',
                                                             default=0)
-    ap.add_argument('-o', '--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
+    ap.add_argument('--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
                                                             'Higher values of overlap can improve the segmentation at patch borders, \n'+
                                                             'but also increase the segmentation time. \n'+
                                                             'Default value: '+str(default_overlap)+'\n'+
