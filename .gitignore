@@ -29,9 +29,8 @@ notebooks/\.ipynb_checkpoints/
 
 notebooks/test_weights\.ipynb
 
-AxonDeepSeg/models/default_SEM_model/
-AxonDeepSeg/models/default_TEM_model/
-AxonDeepSeg/models/model_seg_pns_bf/
+AxonDeepSeg/models/
+
 test/__test_files__
 
 # Generated image files
