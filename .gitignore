@@ -29,7 +29,7 @@ notebooks/\.ipynb_checkpoints/
 
 notebooks/test_weights\.ipynb
 
-AxonDeepSeg/models/
+AxonDeepSeg/models
 
 test/__test_files__
 
