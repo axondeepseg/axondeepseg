@@ -5,3 +5,9 @@ repos:
     -   id: check-yaml
     -   id: check-added-large-files
         args: [--maxkb=500]
+    -   id: jupyter-nb-clear-output
+        name: jupyter-nb-clear-output
+        files: \.ipynb$
+        stages: [commit]
+        language: system
+        entry: jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace
