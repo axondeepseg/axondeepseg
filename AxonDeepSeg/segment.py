@@ -1,7 +1,7 @@
 # Segmentation script
 # -------------------
-# This script lets the user segment automatically one or many images based on the default segmentation models: SEM or
-# TEM.
+# This script lets the user segment automatically one or many images based on the segmentation models: SEM,
+# TEM or OM.
 #
 # Maxime Wabartha - 2017-08-30
 
@@ -20,16 +20,19 @@ import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import convert_path
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "default_SEM_model"
 TEM_DEFAULT_MODEL_NAME = "default_TEM_model"
+OM_MODEL_NAME = "model_seg_pns_bf"
 
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
 default_SEM_path = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
 default_TEM_path = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
+model_seg_pns_bf_path = MODELS_PATH / OM_MODEL_NAME
 default_overlap = 25
 
 # Definition of the functions
@@ -65,25 +68,15 @@ def segment_image(path_testing_image, path_model,
         # Get type of model we are using
         selected_model = path_model.name
 
-        # Read image
-        img = ads.imread(str(path_testing_image))
-
-        # Generate tmp file
-        fp = open(path_acquisition / '__tmp_segment__.png', 'wb+')
+ 
 
         img_name_original = acquisition_name.stem
-
-        ads.imwrite(fp, img, format='png')
-
-        acquisition_name = Path(fp.name).name
-        segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
 
         # Performing the segmentation
 
         axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
                           path_model_folder=path_model, config_dict=config, ckpt_name='model',
                           inference_batch_size=1, overlap_value=overlap_value,
-                          segmentations_filenames=segmented_image_name,
                           resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
                           acquired_resolution=acquired_resolution,
                           prediction_proba_activate=False, write_mode=True)
@@ -91,9 +84,6 @@ def segment_image(path_testing_image, path_model,
         if verbosity_level >= 1:
             print(("Image {0} segmented.".format(path_testing_image)))
 
-        # Remove temporary file used for the segmentation
-        fp.close()
-        (path_acquisition / '__tmp_segment__.png').unlink()
 
     else:
         print(("The path {0} does not exist.".format(path_testing_image)))
@@ -124,7 +114,7 @@ def segment_folders(path_testing_images_folder, path_model,
 
     # Update list of images to segment by selecting only image files (not already segmented or not masks)
     img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
-                 and (not str(file).endswith(('_seg-axonmyelin.png','_seg-axon.png','_seg-myelin.png','mask.png')))]
+                 and (not str(file).endswith((str(axonmyelin_suffix), str(axon_suffix), str(myelin_suffix),'mask.png')))]
 
     # Pre-processing: convert to png if not already done and adapt to model contrast
     for file_ in tqdm(img_files, desc="Segmentation..."):
@@ -154,20 +144,13 @@ def segment_folders(path_testing_images_folder, path_model,
         # Read image for conversion
         img = ads.imread(str(path_testing_images_folder / file_))
 
-        # Generate tmpfile for segmentation pipeline
-        fp = open(path_testing_images_folder / '__tmp_segment__.png', 'wb+')
-
         img_name_original = file_.stem
 
-        ads.imwrite(fp, img, format='png')
-
-        acquisition_name = Path(fp.name).name
-        segmented_image_name = img_name_original + '_seg-axonmyelin' + '.png'
+        acquisition_name = file_.name
 
         axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
                               path_model_folder=path_model, config_dict=config, ckpt_name='model',
                               inference_batch_size=1, overlap_value=overlap_value,
-                              segmentations_filenames=[segmented_image_name],
                               acquired_resolution=acquired_resolution,
                               verbosity_level=verbosity_level,
                               resampled_resolutions=resolution_model, prediction_proba_activate=False,
@@ -176,9 +159,7 @@ def segment_folders(path_testing_images_folder, path_model,
         if verbosity_level >= 1:
             tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
-        # Remove temporary file used for the segmentation
-        fp.close()
-        (path_testing_images_folder / '__tmp_segment__.png').unlink()
+
 
     return None
 
@@ -204,6 +185,11 @@ def generate_default_parameters(type_acquisition, new_path):
             path_model = new_path
         else:
             path_model = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
+    else:
+        if (new_path is not None) and new_path.exists():
+            path_model = new_path
+        else:
+            path_model = MODELS_PATH / OM_MODEL_NAME
 
     path_config_file = path_model / 'config_network.json'
     config = generate_config_dict(path_config_file)
@@ -246,7 +232,10 @@ def generate_resolution(type_acquisition, model_input_size):
         },
         "TEM":{
             "512":0.01
-        }
+        },
+        "OM":{
+            "512":0.1
+        },
     }
 
     return dict_size[str(type_acquisition)][str(model_input_size)]
@@ -268,15 +257,17 @@ def main(argv=None):
     requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM'], help='Type of acquisition to segment. \n'+
+    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM', 'OM'], help='Type of acquisition to segment. \n'+
                                                                                         'SEM: scanning electron microscopy samples. \n'+
-                                                                                        'TEM: transmission electron microscopy samples. ')
+                                                                                        'TEM: transmission electron microscopy samples. \n'+
+                                                                                        'OM: optical microscopy samples')
     requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
                                                                                 'where the image(s) to segment is/are located.')
 
     ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
                                                           'The default SEM model path is: \n'+str(default_SEM_path)+'\n'+
-                                                          'The default TEM model path is: \n'+str(default_TEM_path)+'\n')
+                                                          'The default TEM model path is: \n'+str(default_TEM_path)+'\n'+
+                                                          'The default OM model path is: \n'+str(model_seg_pns_bf_path)+'\n')
     ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
                                                               'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
                                                               'file needs to be added to the image folder path. The pixel size \n'+
@@ -289,7 +280,7 @@ def main(argv=None):
                                                             '   for the segmentation of current sample. \n'+
                                                             '3: Also displays the patch number being processed in the current sample.',
                                                             default=0)
-    ap.add_argument('-o', '--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
+    ap.add_argument('--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
                                                             'Higher values of overlap can improve the segmentation at patch borders, \n'+
                                                             'but also increase the segmentation time. \n'+
                                                             'Default value: '+str(default_overlap)+'\n'+

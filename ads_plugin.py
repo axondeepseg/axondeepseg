@@ -14,7 +14,6 @@ import numpy as np
 import nibabel as nib
 from PIL import Image, ImageDraw, ImageOps
 import scipy.misc
-import os
 import json
 from pathlib import Path
 
@@ -23,6 +22,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 import math
 from scipy import ndimage as ndi
@@ -35,7 +35,8 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.14"
+VERSION = "0.2.16"
+
 
 class ADScontrol(ctrlpanel.ControlPanel):
     """
@@ -164,6 +165,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         sizer_h.Add(compute_morphometrics_button, flag=wx.SHAPED, proportion=1)
 
+        # Add the settings button
+        settings_button = wx.Button(self, label="Settings")
+        settings_button.SetForegroundColour(button_label_color)
+        settings_button.Bind(wx.EVT_BUTTON, self.on_settings_button)
+        sizer_h.Add(settings_button, flag=wx.SHAPED, proportion=1)
+
         # Set the sizer of the control panel
         self.SetSizer(sizer_h)
 
@@ -187,10 +194,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
         self.frame.viewPanels[0].frame.viewPanels[0].getZCanvas().opts.invertY = True
 
         # Create a temporary directory that will hold the NIfTI files
-        self.ads_temp_dir = tempfile.TemporaryDirectory()
+        self.ads_temp_dir_var = tempfile.TemporaryDirectory()  #This variable needs to stay loaded to keep the temporary
+                                                               # directory from being destroyed
+        self.ads_temp_dir = Path(self.ads_temp_dir_var.name)
 
         # Check the version
         self.verrify_version()
+
+        #TODO: move the settings to another class
+        self.overlap_value = 25  # TODO: Move this to a more appropriate place later
+        self.model_resolution = 0.01
+        self.use_custom_resolution = False
+        self.custom_resolution = 0.07
+        self.zoom_factor = 1.0
 
 
     def on_load_png_button(self, event):
@@ -208,18 +224,18 @@ class ADScontrol(ctrlpanel.ControlPanel):
             ):  # The user cancelled the operation
                 return
 
-            in_file = file_dialog.GetPath()
+            in_file = Path(file_dialog.GetPath())
 
         # Check if the image format is valid
-        image_extension = os.path.splitext(in_file)[1]
+        image_extension = in_file.suffix
         valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
 
         # Store the directory path and image name for later use in the application of the prediction model
-        self.image_dir_path.append(os.path.dirname(in_file))
-        self.png_image_name.append(in_file[os.path.dirname(in_file).__len__() + 1 :])
+        self.image_dir_path.append(in_file.parents[0])
+        self.png_image_name.append(in_file.name)
 
         # Call the function that convert and loads the png or tif image
         self.load_png_image_from_path(in_file)
@@ -241,10 +257,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
             ):  # The user cancelled the operation
                 return
 
-            in_file = file_dialog.GetPath()
+            in_file = Path(file_dialog.GetPath())
 
         # Check if the image format is valid
-        image_extension = os.path.splitext(in_file)[1]
+        image_extension = in_file.suffix
         valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
@@ -252,9 +268,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Get the image data
         img_png2D = ads_utils.imread(in_file)
-
-        image_name = os.path.basename(in_file)
-        image_name = image_name.split(image_extension)[0]
+        image_name = in_file.stem
 
         # Extract the Axon mask
         axon_mask = img_png2D > 200
@@ -265,11 +279,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_mask = params.intensity['binary'] * np.array(myelin_mask, dtype=np.uint8)
 
         # Load the masks into FSLeyes
-        axon_outfile = self.ads_temp_dir.name + "/" + image_name + "-axon.png"
+        axon_outfile = self.ads_temp_dir / (image_name + "-axon.png")
         ads_utils.imwrite(axon_outfile, axon_mask)
         self.load_png_image_from_path(axon_outfile, is_mask=True, colormap="blue")
 
-        myelin_outfile = self.ads_temp_dir.name + "/" + image_name + "-myelin.png"
+        myelin_outfile = self.ads_temp_dir / (image_name + "-myelin.png")
         ads_utils.imwrite(myelin_outfile, myelin_mask)
         self.load_png_image_from_path(myelin_outfile, is_mask=True, colormap="red")
 
@@ -291,7 +305,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         image_name = None
         image_directory = None
         for i in range(n_loaded_images):
-            if image_overlay.name == (self.png_image_name[i])[:-4]:
+            if image_overlay.name == (Path(self.png_image_name[i])).stem:
                 image_name = self.png_image_name[i]
                 image_directory = self.image_dir_path[i]
 
@@ -302,19 +316,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
             )
             return
 
-        image_path = image_directory + '/' + image_name
-        image_name_no_extension = os.path.splitext(image_name)[0]
+        image_path = image_directory / image_name
+        image_name_no_extension = Path(image_name).stem
 
         # Get the selected model
         selected_model = self.model_combobox.GetStringSelection()
+        if selected_model == "":
+            self.show_message("Please select a model")
+            return
 
         # Get the path of the selected model
         if any(selected_model in models for models in ads_utils.get_existing_models_list()):
-            dir_path = os.path.dirname(AxonDeepSeg.__file__)
-            model_path = os.path.join(
-                dir_path, "models", selected_model
-            )
-
+            dir_path = Path(AxonDeepSeg.__file__).parents[0]
+            model_path = dir_path / "models" / selected_model
         else:
             self.show_message("Please select a model")
             return
@@ -324,14 +338,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
             resolution = 0.01
 
         # Check if the pixel size txt file exist in the imageDirPath
-        pixel_size_exists = os.path.isfile(
-            image_directory + "/pixel_size_in_micrometer.txt"
-        )
+        pixel_size_exists = (image_directory / "pixel_size_in_micrometer.txt").exists()
 
         # if it doesn't exist, ask the user to input the pixel size
         if pixel_size_exists is False:
             with wx.TextEntryDialog(
-                self, "Enter the pixel size in micrometer", value="0.07"
+                    self, "Enter the pixel size in micrometer", value="0.07"
             ) as text_entry:
                 if text_entry.ShowModal() == wx.ID_CANCEL:
                     return
@@ -340,22 +352,21 @@ class ADScontrol(ctrlpanel.ControlPanel):
             pixel_size_float = float(pixel_size_str)
 
         else:  # read the pixel size
-            resolution_file = open(image_directory + "/pixel_size_in_micrometer.txt", 'r')
+            resolution_file = open((image_directory / "pixel_size_in_micrometer.txt").__str__(), 'r')
             pixel_size_float = float(resolution_file.read())
 
-
         # Load model configs and apply prediction
-        model_configfile = os.path.join(model_path, "config_network.json")
-        with open(model_configfile, "r") as fd:
+        model_configfile = model_path / "config_network.json"
+        with open(model_configfile.__str__(), "r") as fd:
             config_network = json.loads(fd.read())
 
         segment_image(
                       image_path,
                       model_path,
-                      25,
+                      self.overlap_value,
                       config_network,
                       resolution,
-                      acquired_resolution=pixel_size_float,
+                      acquired_resolution=pixel_size_float * self.zoom_factor,
                       verbosity_level=3
                       )
 
@@ -363,8 +374,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # as the original image file.
 
         # Load the axon and myelin masks into FSLeyes
-        axon_mask_path = image_directory + "/" + image_name_no_extension + "_seg-axon.png"
-        myelin_mask_path = image_directory + "/" + image_name_no_extension + "_seg-myelin.png"
+        axon_mask_path = image_directory / (image_name_no_extension + str(axon_suffix))
+        myelin_mask_path = image_directory / (image_name_no_extension + str(myelin_suffix))
         self.load_png_image_from_path(axon_mask_path, is_mask=True, colormap="blue")
         self.load_png_image_from_path(myelin_mask_path, is_mask=True, colormap="red")
         self.pixel_size_float = pixel_size_float
@@ -397,7 +408,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             if file_dialog.ShowModal() == wx.ID_CANCEL:
                 return
 
-        save_dir = file_dialog.GetPath()
+        save_dir = Path(file_dialog.GetPath())
 
         # store the data of the masks in variables as numpy arrays.
         # Note: since PIL uses a different convention for the X and Y coordinates, some array manipulation has to be
@@ -432,16 +443,20 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_array = myelin_array * params.intensity['binary']
         axon_array = axon_array * params.intensity['binary']
 
-        # Save the arrays as PNG files
+
+        image_name = myelin_mask_overlay.name[:-len("_seg-myelin")]
+
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
-        ads_utils.imwrite(filename=save_dir + "/ADS_seg.png", img=myelin_and_axon_array)
-        ads_utils.imwrite(filename=save_dir + "/ADS_seg-myelin.png", img=myelin_array)
-        ads_utils.imwrite(filename=save_dir + "/ADS_seg-axon.png", img=axon_array)
+
+        ads_utils.imwrite(filename=save_dir / (image_name + str(axonmyelin_suffix)), img=myelin_and_axon_array)
+        ads_utils.imwrite(filename=save_dir / (image_name + str(myelin_suffix)), img=myelin_array)
+        ads_utils.imwrite(filename=save_dir / (image_name + str(axon_suffix)), img=axon_array)
 
     def on_run_watershed_button(self, event):
         """
         This function is called then the user presses on the runWatershed button. This creates a watershed mask that is
         used to locate where are the connections between the axon-myelin objects.
+        The runWatershed button is currently commented, so this function is unused at the moment.
         """
 
         # Find the visible myelin and axon masks
@@ -510,7 +525,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         axon_corr_array = np.flipud(axon_extracted_array)
         axon_corr_array = params.intensity['binary'] * np.rot90(axon_corr_array, k=1, axes=(1, 0))
-        file_name = self.ads_temp_dir.name + "/" + myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png"
+        file_name = self.ads_temp_dir / (myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png")
         ads_utils.imwrite(filename=file_name, img=axon_corr_array)
         self.load_png_image_from_path(file_name, is_mask=True, colormap="blue")
 
@@ -608,7 +623,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 )
 
         with wx.FileDialog(self, "Save morphometrics file", wildcard="Excel files (*.xlsx)|*.xlsx",
-                       style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+                        defaultFile="axon_morphometrics.xlsx", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return     # the user changed their mind
@@ -632,11 +647,106 @@ class ADScontrol(ctrlpanel.ControlPanel):
                                                                   mean_diameter_in_pixel)
 
         # Load the axon coordinate image into FSLeyes
-        number_outfile = self.ads_temp_dir.name + "/numbers.png"
+        number_outfile = self.ads_temp_dir / "numbers.png"
         ads_utils.imwrite(number_outfile, number_array)
         self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
 
         return
+
+    def on_settings_button(self, event):
+        #TODO: Add a class for the settings. Perhaps even one for the window
+        self.settings_frame = wx.Frame(self, title="Settings", size=(600, 300))
+        frame_sizer_h = wx.BoxSizer(wx.VERTICAL)
+
+        # Since the axon shape doesn't do anything yet, I will just comment it
+
+        # frame_sizer_axon_choice = wx.BoxSizer(wx.HORIZONTAL)
+        # frame_sizer_axon_choice.Add(wx.StaticText(settings_frame, label="Axon Shape: "))
+        # self.axon_shape_choices = ["circle", "ellipse"]
+        # self.axon_shape_combobox = wx.ComboBox(
+        #     settings_frame,
+        #     choices=self.axon_shape_choices,
+        #     size=(100, 20),
+        #     value=self.axon_shape_choices[0]  # TODO: show the one currently selected
+        # )
+        # self.axon_shape_combobox.SetToolTip(
+        #     wx.ToolTip(
+        #         'Select what is the shape of the axons that will be considered when computing the morphometrics'
+        #         '. "circle" will use the mean diameter of the axons. "ellipse" will use minor axis of the axons.'
+        #     )
+        # )
+        # frame_sizer_axon_choice.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
+        # frame_sizer_h.Add(frame_sizer_axon_choice)
+
+        # Add the overlap value to the settings menu
+        sizer_overlap_value = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_overlap_value.Add(wx.StaticText(self.settings_frame, label="Overlap value (pixels): "))
+        self.overlap_value_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=100, initial=self.overlap_value)
+        self.overlap_value_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_overlap_value_changed)
+        sizer_overlap_value.Add(self.overlap_value_spinCtrl, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_overlap_value)
+
+        # # Add the model resolution to the settings menu
+        # sizer_model_resolution = wx.BoxSizer(wx.HORIZONTAL)
+        # sizer_model_resolution.Add(wx.StaticText(settings_frame, label="Model resolution (um/pixel): "))
+        # self.model_resolution_spinCtrlDouble = wx.SpinCtrlDouble(
+        #     settings_frame, initial=self.model_resolution, inc=0.0001)
+        # self.model_resolution_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_model_resolution_value_changed)
+        # sizer_model_resolution.Add(self.model_resolution_spinCtrlDouble, flag=wx.SHAPED, proportion=1)
+        # frame_sizer_h.Add(sizer_model_resolution)
+
+        # # Add the option to use a custom image resolution
+        # sizer_custom_resolution = wx.BoxSizer(wx.HORIZONTAL)
+        # self.use_custom_resolution_checkbox = wx.CheckBox(
+        #     settings_frame, label="Use custom image resolution (um/pixel): ")
+        # self.use_custom_resolution_checkbox.Bind(wx.EVT_CHECKBOX, self.on_use_custom_resolution_state_change)
+        # sizer_custom_resolution.Add(self.use_custom_resolution_checkbox)
+        # self.custom_resolution_spinCtrlDouble = wx.SpinCtrlDouble(
+        #     settings_frame, initial=self.custom_resolution, inc=0.0001)
+        # self.custom_resolution_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_custom_resolution_value_changed)
+        # sizer_custom_resolution.Add(self.custom_resolution_spinCtrlDouble)
+        # frame_sizer_h.Add(sizer_custom_resolution)
+
+        # Add the zoom factor to the settings menu
+        sizer_zoom_factor = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_zoom_factor.Add(wx.StaticText(self.settings_frame, label="Zoom factor: "))
+        self.zoom_factor_spinCtrlDouble = wx.SpinCtrlDouble(
+            self.settings_frame, initial=self.zoom_factor, inc=0.0001)
+        self.zoom_factor_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_zoom_factor_changed)
+        sizer_zoom_factor.Add(self.zoom_factor_spinCtrlDouble, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_zoom_factor)
+
+        # Add the done button
+        sizer_done_button = wx.BoxSizer(wx.HORIZONTAL)
+        done_button = wx.Button(self.settings_frame, label="Done")
+        done_button.Bind(wx.EVT_BUTTON, self.on_done_button)
+        sizer_done_button.Add(done_button, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_done_button)
+
+        self.settings_frame.SetSizer(frame_sizer_h)
+        self.settings_frame.Show()
+
+    def on_overlap_value_changed(self, event):
+        self.overlap_value = self.overlap_value_spinCtrl.GetValue()
+        print(self.overlap_value)
+
+    def on_model_resolution_value_changed(self, event):
+        self.model_resolution = self.model_resolution_spinCtrlDouble.GetValue()
+
+    def on_use_custom_resolution_state_change(self, event):
+        self.use_custom_resolution = self.use_custom_resolution_checkbox.GetValue()
+        print(self.use_custom_resolution)
+
+    def on_custom_resolution_value_changed(self, event):
+        self.custom_resolution = self.custom_resolution_spinCtrlDouble.GetValue()
+        print(self.custom_resolution)
+
+    def on_zoom_factor_changed(self, event):
+        self.zoom_factor = self.zoom_factor_spinCtrlDouble.GetValue()
+
+    def on_done_button(self, event):
+        # TODO: make sure every setting is saved
+        self.settings_frame.Close()
 
     def get_watershed_segmentation(self, im_axon, im_myelin, return_centroids=False):
         """
@@ -696,7 +806,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         This function converts a 2D image into a NIfTI image and loads it as an overlay.
         The parameter add_to_overlayList allows to display the overlay into FSLeyes.
         :param image_path: The location of the image, including the name and the .extension
-        :type image_path: string
+        :type image_path: Path
         :param is_mask: (optional) Whether or not this is a segmentation mask. It will be treated as a normal
         image by default.
         :type is_mask: bool
@@ -726,8 +836,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
 
         # Save the NIfTI image in a temporary directory
-        img_name = os.path.basename(image_path)
-        out_file = self.ads_temp_dir.name + "/" + img_name[:-3] + "nii.gz"
+        img_name = image_path.stem
+        out_file = self.ads_temp_dir.__str__() + "/" + img_name + ".nii.gz"
         nib.save(img_NIfTI, out_file)
 
         # Load the NIfTI image as an overlay
@@ -901,19 +1011,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         This function checks if the plugin version is the same as the one in the AxonDeepSeg directory
         """
-        ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[0]
+        ads_path = Path(AxonDeepSeg.__file__).parents[0]
         plugin_path_parts = ads_path.parts[:-1]
-        plugin_path = str(Path(*plugin_path_parts))
-        plugin_file = plugin_path + "/ads_plugin.py"
+        plugin_path = Path(*plugin_path_parts)
+        plugin_file = plugin_path / "ads_plugin.py"
 
         # Check if the plugin file exists
-        plugin_file_exists = os.path.isfile(plugin_file)
+        plugin_file_exists = plugin_file.exists()
 
         if plugin_file_exists is False:
             return
 
         # Check the version of the plugin
-        with open(plugin_file) as plugin_file_reader:
+        with open(plugin_file.__str__()) as plugin_file_reader:
             plugin_file_lines = plugin_file_reader.readlines()
 
         plugin_file_lines = [x.strip() for x in plugin_file_lines]
@@ -959,7 +1069,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         :rtype: wx.StaticBitmap
         """
 
-        ads_path = Path(os.path.abspath(AxonDeepSeg.__file__)).parents[0]
+        ads_path = Path(AxonDeepSeg.__file__).parents[0]
 
         logo_file = ads_path / "logo_ads-alpha_small.png"
 
