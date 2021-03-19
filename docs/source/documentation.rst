@@ -83,7 +83,9 @@ Linux::
 Windows::
 
     conda env create -f environment_Windows.yml -n ads_venv
-    
+
+.. WARNING :: FSLeyes is only supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI. 
+
 Then, activate your virtual environment::
 
     conda activate ads_venv
