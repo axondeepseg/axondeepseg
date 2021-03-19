@@ -80,6 +80,10 @@ Linux::
 
     conda env create -f environment_Linux.yml -n ads_venv
 
+Windows::
+
+    conda env create -f environment_Windows.yml -n ads_venv
+    
 Then, activate your virtual environment::
 
     conda activate ads_venv
