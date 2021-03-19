@@ -31,6 +31,5 @@ jobs:
         - pip install pre-commit 
         - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
-
 after_success:
   - coveralls
