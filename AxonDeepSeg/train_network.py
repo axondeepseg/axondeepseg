@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
-
+import os
 
 from AxonDeepSeg.network_construction import *
 from AxonDeepSeg.data_management.input_data import *
