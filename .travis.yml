@@ -7,19 +7,20 @@ install:
   - bash ~/miniconda.sh -b -p $HOME/miniconda
   - echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
   - source ~/.bashrc
-  - yes | conda create -n ads_venv python=3.7
-  - conda activate ads_venv
-  - echo "Installation of the repository"
   - cd ~/build/neuropoly/axondeepseg
+<<<<<<< HEAD
   - pip install -e .
   -  pip install pre-commit
   - pip install python-coveralls  # Add me to install python-coveralls
+=======
+>>>>>>> master
   
 jobs:
   include:
     - stage: Basic install
       os: linux
       script:
+<<<<<<< HEAD
         - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
     - stage: FSLeyes install
@@ -28,10 +29,17 @@ jobs:
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - yes | conda install -c conda-forge h5py=2.10.0
         - pre-commit run --all-files
+=======
+        - yes | conda env create -f environment_Linux.yml -n ads_venv
+        - conda activate ads_venv
+        - pip install -e .
+        - pip install python-coveralls  # Add me to install python-coveralls
+>>>>>>> master
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
     - stage: Basic install
       os: osx
       script:
+<<<<<<< HEAD
         - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
     - stage: FSLeyes install
@@ -40,6 +48,12 @@ jobs:
         - yes | conda install -c conda-forge fsleyes=0.33.1
         - yes | conda install -c conda-forge h5py=2.10.0
         - pre-commit run --all-files
+=======
+        - yes | conda env create -f environment_macOS.yml -n ads_venv
+        - conda activate ads_venv
+        - pip install -e .
+        - pip install python-coveralls  # Add me to install python-coveralls
+>>>>>>> master
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
 after_success:
   - coveralls
