@@ -60,13 +60,31 @@ git
 
 To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
 
-Virtual Environment
--------------------
+Create Virtual Environment and Install AxonDeepSeg
+-----------
+
+To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+
+    git clone https://github.com/neuropoly/axondeepseg.git
+    cd axondeepseg
+
 Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you create a virtual environment before you continue with your installation.
 
-To create a Python 3.7 virtual environment named "ads_venv", in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions::
+To setup a Python 3.7 virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions:
 
-    conda create -n ads_venv python=3.7
+macOS::
+
+    conda env create -f environment_macOS.yml -n ads_venv
+
+Linux::
+
+    conda env create -f environment_Linux.yml -n ads_venv
+
+Windows::
+
+    conda env create -f environment_Windows.yml -n ads_venv
+
+.. WARNING :: FSLeyes is only supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI. 
 
 Then, activate your virtual environment::
 
@@ -76,17 +94,8 @@ Then, activate your virtual environment::
 
        conda deactivate
 
-AxonDeepSeg
------------
-.. WARNING :: Ensure that the virtual environment is activated before you begin your installation.
+Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
 
-To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system)::
-
-    git clone https://github.com/neuropoly/axondeepseg.git
-
-Then, in your Terminal, go to the AxonDeepSeg folder and install the AxonDeepSeg package with the following commands::
-
-    cd axondeepseg
     pip install -e .
 
 .. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
@@ -96,7 +105,7 @@ Then, in your Terminal, go to the AxonDeepSeg folder and install the AxonDeepSeg
         git pull
         pip install -e .
 
-.. WARNING :: When re-installing the application, the ``default_SEM_model`` and ``default_TEM_model`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
+.. WARNING :: When re-installing the application, the ``default_SEM_model``, ``default_TEM_model`` and ``model_seg_pns_bf`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
 Testing the installation
 ------------------------
@@ -130,63 +139,6 @@ Graphical User Interface (GUI) (optional)
 AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if need to).
 
 .. image:: _static/GUI_image.png
-
-To install the GUI, you need to install AxonDeepSeg via Github (see instructions above). If you encounter a problem when installing or using the GUI, please report it on our `issue tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
-FSLeyes is supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI.
-
-
-Once AxonDeepSeg is installed, remain in the virtual environment and follow the OS-specific instructions to install the GUI:
-
-
-macOS
-~~~~~
-Install FSLeyes using conda-forge ::
-
-           yes | conda install -c conda-forge fsleyes=0.33.1
-
-Downgrade from latest version of h5py to the most recent working version ::
-
-           yes | conda install -c conda-forge h5py=2.10.0
-
-Launch FSLeyes ::
-
-           fsleyes
-           
-On the FSLeyes interface, select ``file -> load plugin -> select ads_plugin.py (found in the cloned repository)``
-``Install permanently --> yes.``
-
-The plugin is now installed. From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
-
-In case, you find trouble installing FSLeyes plugin for ADS you could refer the video below.
-
-.. raw:: html
-
-   <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
-     <iframe width="700" height="394" src="https://www.youtube.com/embed/dz2LqQ5LpIo" frameborder="0" allowfullscreen></iframe>
-
-.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
-           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
-           This step may only be required when you first install the plugin.
-
-Linux (tested on ubuntu)
-~~~~~~~~~~~~~~~~~~~~~~~~
-Install the C/C++ compilers required to use wxPython ::
-
-           sudo apt-get install build-essential
-           sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
-           sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev
-           
-Install wxPython using conda ::
-
-           yes | conda install -c anaconda wxpython
-           
-Install FSLeyes using conda-forge ::
-
-           yes | conda install -c conda-forge fsleyes=0.33.1
-
-Downgrade from latest version of h5py to the most recent working version ::
-
-           yes | conda install -c conda-forge h5py=2.10.0
 
 Launch FSLeyes ::
 
