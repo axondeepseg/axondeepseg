@@ -105,7 +105,7 @@ Once your virtual environment is installed and activated, install the AxonDeepSe
         git pull
         pip install -e .
 
-.. WARNING :: When re-installing the application, the ``default_SEM_model`` and ``default_TEM_model`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
+.. WARNING :: When re-installing the application, the ``default_SEM_model``, ``default_TEM_model`` and ``model_seg_pns_bf`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
 Testing the installation
 ------------------------
