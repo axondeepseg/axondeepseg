@@ -47,6 +47,7 @@ setup(
     package_data={
         "AxonDeepSeg": ['models/default_SEM_model/*',
                         'models/default_TEM_model/*',
+                        'models/model_seg_pns_bf/*',
                         'data_test/*'],
     },
     extras_require={
