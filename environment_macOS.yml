@@ -273,7 +273,7 @@ dependencies:
   - zipp=3.4.1=pyhd8ed1ab_0
   - zlib=1.2.11=h7795811_1010
   - zstd=1.4.9=h582d3a0_0
-  - pre-commit=2.10.0=py36ha15d459_0
+  - pre-commit=2.10.0=py38h50d1736_0
   - pip:
     - opencv-contrib-python==4.5.1.48
     - opencv-python-headless==4.5.1.48
