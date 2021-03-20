@@ -18,7 +18,7 @@ jobs:
         - conda activate ads_venv
         - pip install -e .
         - pip install python-coveralls  # Add me to install python-coveralls
-        - pip install pre-commit 
+        - pre-commit install 
         - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
     - stage: Basic install
@@ -28,7 +28,7 @@ jobs:
         - conda activate ads_venv
         - pip install -e .
         - pip install python-coveralls  # Add me to install python-coveralls
-        - pip install pre-commit 
+        - pre-commit install
         - pre-commit run --all-files
         - py.test . -v --cov AxonDeepSeg/ --cov-report term-missing
 after_success:
