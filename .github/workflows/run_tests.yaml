@@ -1,0 +1,130 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+# Official DOc on GitHub Workflow Syntax: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+
+# Conda based env testing: https://github.com/conda-incubator/setup-miniconda
+name: Run tests
+
+on:
+
+  # Trigger the workflow on push but only for the master branch
+  push:
+    branches:
+      - master
+
+  # Trigger current workflow on PR from ANY branch
+  pull_request:
+    branches:
+      - '*'
+
+  # Cron Trigger
+  schedule:
+    # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#onschedule
+    # i.e. this runs every day at 4:33AM for the master branch.
+    - cron: '33 4 * * *'
+
+env:
+  # Even when given -y, apt will still sometimes hang at a prompt if a package
+  # has clarifications to ask; DEBIAN_FRONTEND=noninteractive prevents that,
+  # This will be defined for non-debian platforms below too, but there's no harm in that.
+  # (TravisCI quietly defined this on all their platforms, but we have to give it manually on GithubCI.)
+  DEBIAN_FRONTEND: 'noninteractive'
+
+jobs:
+  ultra_matrix_test:
+    name: Matrix Test of Python ${{ matrix.python-version }} on ${{ matrix.os }}
+
+    # Matrix driven OS
+    runs-on: ${{ matrix.os }}
+
+    # Default shell for ALL subsequent steps.
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    # Defining matrix for OS and Python
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
+        python-version: [ "3.7", "3.8", "3.9" ]
+
+    # Main steps for the test to be reproduced across OS x Python
+    steps:
+      # Step 0: Checkout code.
+      - uses: actions/checkout@v2
+
+      # Step 1: List main repo by time modified, and print path
+      - name: List all current repository files and modification date
+        # Parameters.
+        run: |
+          ls -lasth
+          pwd
+
+      # Step 2: Install environment.
+      - name: Install Conda Env All OS
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: ${{matrix.python-version}}
+          activate-environment: ads_venv
+          auto-update-conda: true
+          environment-file: environment.yml
+
+      # Step 3: List conda info, conda packages
+      - name: Conda info and list
+        # List
+        run: |
+          conda info
+          conda list
+
+      # Step 4: Activate and Install main AxonDeepSeg repository
+      - name: Installation of the main ADS repository
+        run: |
+          conda activate ads_venv
+          pip install --verbose -e .
+
+      # Step 5: Conda list packages POST ADS.
+      - name: Conda list post installation
+        # List
+        run: |
+          conda info
+          conda list
+
+      # Step 6: Flake 8 Linting
+      - name: Linting with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          pip install flake8
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      # Step 7: Localized Test
+      - name: Quick Test
+        run: |
+          axondeepseg_test
+
+      # Step 8: PyTest
+      - name: Test with pytest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: ${{ matrix.test-name }}
+          COVERALLS_PARALLEL: true
+        run: |
+          pip install coveralls
+          pytest . -v --cov AxonDeepSeg/ --cov-report term-missing
+          coveralls --service=github
+
+  # This step is MANDATORY and used to indicate matrix completion to coveralls.io
+  # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
+  coveralls:
+    needs: ultra_matrix_test
+    runs-on: ubuntu-latest
+    container: python:3-slim
+    steps:
+      - name: Finished
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip3 install --upgrade coveralls
+          coveralls --finish

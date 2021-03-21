@@ -1,4 +1,4 @@
-name: ads_new
+name: ads_venv
 channels:
   - conda-forge
   - defaults
@@ -238,4 +238,4 @@ dependencies:
   - pip:
     - opencv-contrib-python==4.5.1.48
     - opencv-python-headless==4.5.1.48
-prefix: C:\Users\bourg\miniconda3\envs\ads_new
+prefix: C:\Users\bourg\miniconda3\envs\ads_venv
