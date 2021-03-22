@@ -61,7 +61,7 @@ git
 To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
 
 Install AxonDeepSeg
------------
+-------------------
 
 To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
 
@@ -82,8 +82,9 @@ Then, activate your virtual environment::
 
     conda activate ads_venv
 
-.. NOTE :: To switch back to your default environment, run::
+.. NOTE :: To switch back to your default environment, run:
   ::
+
        conda deactivate
 
 Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
@@ -169,18 +170,17 @@ The two models are described below:
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
 
 Using AxonDeepSeg
-===============
+=================
 
 Activate the virtual environment
------------
+--------------------------------
 
 To use AxonDeepSeg, you must first activate the virtual environment if it isn't currently activated. To do so, run::
 
-Then, activate your virtual environment::
-
     conda activate ads_venv
 
-.. NOTE :: To switch back to your default environment, run::
+.. NOTE :: To switch back to your default environment, run:
+  ::
 
        conda deactivate
 
