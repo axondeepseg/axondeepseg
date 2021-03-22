@@ -60,7 +60,7 @@ git
 
 To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
 
-Create Virtual Environment and Install AxonDeepSeg
+Install AxonDeepSeg
 -----------
 
 To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
@@ -70,21 +70,13 @@ To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have 
 
 Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you create a virtual environment before you continue with your installation.
 
-To setup a Python 3.7 virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions:
+To setup a Python virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions:
 
-macOS::
+conda env create -f environment.yml -n ads_venv
 
-    conda env create -f environment_macOS.yml -n ads_venv
+.. WARNING :: For some users, the installation may take up to 30 minutes as man dependencies that have shared subdependencies, and resolving these potential conflicts takes time. If that's the case, we encourage you to take a break from your screen and go for a walk while listening to the `AxonDeepSeg Spotify playlist <https://open.spotify.com/playlist/27LVNnfhTKjVOli6bPCaV5?si=OydcwxoOSamwCsg3xcqybw>`_.
 
-Linux::
-
-    conda env create -f environment_Linux.yml -n ads_venv
-
-Windows::
-
-    conda env create -f environment_Windows.yml -n ads_venv
-
-.. WARNING :: FSLeyes is only supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI. 
+.. NOTE :: FSLeyes is only supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI. 
 
 Then, activate your virtual environment::
 
@@ -176,13 +168,26 @@ The two models are described below:
 * A SEM model, that works at a resolution of 0.1 micrometer per pixel.
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
 
-Getting started
+Using AxonDeepSeg
 ===============
+
+Activate the virtual environment
+-----------
+
+To use AxonDeepSeg, you must first activate the virtual environment if it isn't currently activated. To do so, run::
+
+Then, activate your virtual environment::
+
+    conda activate ads_venv
+
+.. NOTE :: To switch back to your default environment, run::
+
+       conda deactivate
 
 Example dataset
 ---------------
 
-You can test AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
+You can demo the AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
 
 Syntax
 ------
