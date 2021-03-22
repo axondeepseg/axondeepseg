@@ -83,7 +83,7 @@ Then, activate your virtual environment::
     conda activate ads_venv
 
 .. NOTE :: To switch back to your default environment, run::
-
+  ::
        conda deactivate
 
 Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
