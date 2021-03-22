@@ -5,7 +5,7 @@ import shutil
 
 import pytest
 
-from AxonDeepSeg.models.download_model import *
+from AxonDeepSeg.download_model import *
 
 
 class TestCore(object):
