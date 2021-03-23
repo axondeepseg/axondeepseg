@@ -170,8 +170,8 @@ By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
 Existing models
 ===============
 
-Two models are available and shipped together with the installation package, so you don't need to install them separately.
-The two models are described below:
+Three models are available and shipped together with the installation package, so you don't need to install them separately.
+The three models are described below:
 
 * A SEM model, that works at a resolution of 0.1 micrometer per pixel.
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
