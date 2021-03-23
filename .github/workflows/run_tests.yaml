@@ -18,7 +18,7 @@ on:
     branches:
       - '*'
 
-  # Cron Trigger
+  # Cron based trigger
   schedule:
     # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#onschedule
     # i.e. this runs every day at 4:33AM for the master branch.
@@ -48,7 +48,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
-        python-version: [ "3.7", "3.8", "3.9" ]
+        python-version: [ "3.7" ]
 
     # Main steps for the test to be reproduced across OS x Python
     steps:
