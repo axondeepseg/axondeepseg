@@ -175,7 +175,7 @@ The two models are described below:
 
 * A SEM model, that works at a resolution of 0.1 micrometer per pixel.
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
-* A OM model, that works at a resolution of 0.1 micrometer per pixel
+* A OM model, that works at a resolution of 0.1 micrometer per pixel.
 
 Getting started
 ===============
