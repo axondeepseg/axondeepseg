@@ -115,6 +115,8 @@ This integrity test automatically performs the axon and myelin segmentation of a
 
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
 
+.. NOTE :: For some users, the test may fail because Keras is using Theano backend instead of Tensorflow. In that case, you will see the line ``Using Theano backend.`` when launching ``axondeepseg_test``. To fix this issue, add the line ``export KERAS_BACKEND="tensorflow"`` at the end of the ``<your_conda_install_location>\envs\<your_environment_name>/etc/conda/activate.d/keras_activate.sh`` file, then deactivate and reactivate your environment. The test should print ``Using Tensorflow backend.`` and pass.
+
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
 
