@@ -170,11 +170,12 @@ By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model
 Existing models
 ===============
 
-Two models are available and shipped together with the installation package, so you don't need to install them separately.
-The two models are described below:
+Three models are available and shipped together with the installation package, so you don't need to install them separately.
+The three models are described below:
 
 * A SEM model, that works at a resolution of 0.1 micrometer per pixel.
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
+* A OM model, that works at a resolution of 0.1 micrometer per pixel.
 
 Getting started
 ===============
@@ -196,6 +197,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
                     Type of acquisition to segment.
                     SEM: scanning electron microscopy samples. 
                     TEM: transmission electron microscopy samples.
+                    OM: bright field optical microscopy samples.
 
 -i IMGPATH
                     Path to the image to segment or path to the folder where the image(s) to segment is/are located.
@@ -205,6 +207,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 -m MODEL            Folder where the model is located. 
                     The default SEM model path is **default_SEM_model**. 
                     The default TEM model path is **default_TEM_model**.
+                    The default OM model path is **model_seg_pns_bf**.
 
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
