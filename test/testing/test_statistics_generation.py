@@ -7,7 +7,7 @@ import pandas as pd
 
 import pytest
 
-from AxonDeepSeg.testing.statistics_generation import metrics_single_wrapper, metrics
+from AxonDeepSeg.testing.statistics_generation import metrics_single_wrapper, metrics, metrics_classic_wrapper
 
 
 class TestCore(object):
