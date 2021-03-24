@@ -3,23 +3,30 @@
 from pathlib import Path
 import os
 
-from AxonDeepSeg.network_construction import *
-from AxonDeepSeg.data_management.input_data import *
+from AxonDeepSeg.network_construction import uconv_net
+from AxonDeepSeg.data_management.input_data import DataGen
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg.config_tools import generate_config
 import AxonDeepSeg.ads_utils
 
 import keras
 
-from keras.models import *
-from keras.callbacks import *
+from keras.models import load_model
+from keras.callbacks import ModelCheckpoint, TensorBoard
 
 # Keras import
 import keras.backend.tensorflow_backend as K
 
 K.set_session
 import tensorflow as tf
-from albumentations import *
+from albumentations import (
+                                Compose, 
+                                Flip,
+                                ShiftScaleRotate,
+                                ElasticTransform,
+                                GaussianBlur,
+                                Rotate
+                            )
 import random
 import cv2
 
