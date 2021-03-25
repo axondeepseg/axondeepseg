@@ -14,8 +14,6 @@ from skimage import measure, morphology, feature
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-# AxonDeepSeg imports
-# from AxonDeepSeg.testing.segmentation_scoring import 
 from AxonDeepSeg.ads_utils import convert_path
 
 

@@ -3,18 +3,17 @@
 from pathlib import Path
 import os
 
+# AxonDeepSeg imports
 from AxonDeepSeg.network_construction import uconv_net
 from AxonDeepSeg.data_management.input_data import DataGen
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg.config_tools import generate_config
 import AxonDeepSeg.ads_utils
 
+# Keras imports
 import keras
-
 from keras.models import load_model
 from keras.callbacks import ModelCheckpoint, TensorBoard
-
-# Keras import
 import keras.backend.tensorflow_backend as K
 
 K.set_session

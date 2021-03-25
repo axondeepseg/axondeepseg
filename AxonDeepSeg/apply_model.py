@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from skimage.transform import rescale, resize
+
+# AxonDeepSeg imports
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg.network_construction import uconv_net

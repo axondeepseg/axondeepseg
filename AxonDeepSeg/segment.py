@@ -16,6 +16,7 @@ from argparse import RawTextHelpFormatter
 from tqdm import tqdm
 import pkg_resources
 
+# AxonDeepSeg imports
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.apply_model import axon_segmentation
