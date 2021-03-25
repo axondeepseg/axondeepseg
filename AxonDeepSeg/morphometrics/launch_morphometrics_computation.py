@@ -15,6 +15,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 write_aggregate_morphometrics 
                                                             )
 import AxonDeepSeg.ads_utils as ads
+from AxonDeepSeg.ads_utils import convert_path
 
 
 
@@ -29,8 +30,8 @@ def launch_morphometrics_computation(path_img, path_prediction):
     """
     
     # If string, convert to Path objects
-    path_img = ads.convert_path(path_img)
-    path_prediction = ads.convert_path(path_prediction)
+    path_img = convert_path(path_img)
+    path_prediction = convert_path(path_prediction)
 
     try:
         # Read image
