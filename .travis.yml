@@ -14,7 +14,7 @@ jobs:
     - stage: Basic install
       os: linux
       script:
-        - yes | conda env create -f environment_Linux.yml -n ads_venv
+        - yes | conda env create -f environment.yml -n ads_venv
         - conda activate ads_venv
         - pip install -e .
         - pip install python-coveralls  # Add me to install python-coveralls
@@ -22,7 +22,7 @@ jobs:
     - stage: Basic install
       os: osx
       script:
-        - yes | conda env create -f environment_macOS.yml -n ads_venv
+        - yes | conda env create -f environment.yml -n ads_venv
         - conda activate ads_venv
         - pip install -e .
         - pip install python-coveralls  # Add me to install python-coveralls
