@@ -14,7 +14,7 @@ For more information, see the [documentation website](http://axondeepseg.readthe
 ![alt tag](https://github.com/neuropoly/axondeepseg/blob/master/docs/source/_static/fig0.png)
 
 
-
+ 
 ## Help
 
 Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
