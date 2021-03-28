@@ -8,7 +8,7 @@
 
 Segment axon and myelin from microscopy data using deep learning. Written in Python. Using the TensorFlow framework.
 Based on a convolutional neural network architecture. Pixels are classified as either axon, myelin or background.
-
+ 
 For more information, see the [documentation website](http://axondeepseg.readthedocs.io/).
 
 ![alt tag](https://github.com/neuropoly/axondeepseg/blob/master/docs/source/_static/fig0.png)
