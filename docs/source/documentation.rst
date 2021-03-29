@@ -146,6 +146,19 @@ In FSLeyes, do the following:
 
 From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
 
+In case, you find trouble installing FSLeyes plugin for ADS you could refer the video below.
+
+.. raw:: html
+
+   <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+     <iframe width="700" height="394" src="https://www.youtube.com/embed/dz2LqQ5LpIo" frameborder="0" allowfullscreen></iframe>
+
+
+.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
+           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
+           This step may only be required when you first install the plugin.
+
+
 Known issues
 ~~~~~~~~~~~~
 1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
