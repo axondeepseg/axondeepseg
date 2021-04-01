@@ -1,7 +1,6 @@
 name: ads_venv
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.7
   - fsleyes=0.33.1
@@ -12,7 +11,7 @@ dependencies:
   - scikit-image=0.14.2
   - tabulate
   - pandas
-  - matplotlib
+  - matplotlib=3.3.4
   - tensorflow=1.13.1
   - mpld3
   - tqdm
