@@ -1,0 +1,41 @@
+name: Pre-commit check hooks
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+
+jobs:
+  pre-commit-checks:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Cache pip dependencies
+        id: cache-pip-dependencies
+        uses: actions/cache@v2
+        with:
+          # Ubuntu-specific, see
+          # https://github.com/actions/cache/blob/main/examples.md#python---pip
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install AxonDeepSeg
+        if: steps.cache-pip-dependencies.cache-hit != 'true'
+        run: |
+          pip install -e .
+          pre-commit install
+      - name: Run pre-commit large file check
+        run: pre-commit run --all-files check-added-large-files
+      - name: Run pre-commit YAML check # for GitHub Actions configs
+        run: pre-commit run --all-files check-yaml
+      - name: Run pre-commit notebooks output cells check
+        run: pre-commit run --all-files jupyter-nb-clear-output
