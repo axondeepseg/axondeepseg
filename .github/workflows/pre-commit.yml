@@ -19,7 +19,8 @@ jobs:
         with:
           python-version: '3.7'
       - name: Install dependencies with Conda environment
-      - with:
+        uses: conda-incubator/setup-miniconda@v2
+        with:
           activate-environment: ads_venv
           auto-update-conda: true
           environment-file: environment.yml
