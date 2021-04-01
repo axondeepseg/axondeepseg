@@ -9,8 +9,6 @@ on:
 
 
 jobs:
-
-
   pre-commit-checks:
     runs-on: 'ubuntu-latest'
     # Default shell for ALL subsequent steps.
