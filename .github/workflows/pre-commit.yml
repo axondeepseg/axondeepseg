@@ -24,16 +24,6 @@ jobs:
           activate-environment: ads_venv
           auto-update-conda: true
           environment-file: environment.yml
-      - name: Cache pip dependencies
-        id: cache-pip-dependencies
-        uses: actions/cache@v2
-        with:
-          # Ubuntu-specific, see
-          # https://github.com/actions/cache/blob/main/examples.md#python---pip
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - name: Install AxonDeepSeg
         if: steps.cache-pip-dependencies.cache-hit != 'true'
         run: |
@@ -44,5 +34,5 @@ jobs:
         run: pre-commit run --all-files check-added-large-files
       - name: Run pre-commit YAML check # for GitHub Actions configs
         run: pre-commit run --all-files check-yaml
-      - name: Run pre-commit notebooks output cells check
+      - name: Run pre-commit notebooks clear output cells check
         run: pre-commit run --all-files jupyter-nb-clear-output
