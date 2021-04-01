@@ -9,8 +9,16 @@ on:
 
 
 jobs:
+
+
   pre-commit-checks:
+
+    
     runs-on: 'ubuntu-latest'
+    # Default shell for ALL subsequent steps.
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
