@@ -9,7 +9,16 @@ import numpy as np
 from imageio import imread as imageio_imread  # to avoid confusion with mpl.pyplot.imread
 import pytest
 
-from AxonDeepSeg.morphometrics.compute_morphometrics import *
+from AxonDeepSeg.morphometrics.compute_morphometrics import (  
+                                                                get_pixelsize,
+                                                                get_axon_morphometrics, 
+                                                                save_axon_morphometrics, 
+                                                                load_axon_morphometrics, 
+                                                                draw_axon_diameter,
+                                                                save_map_of_axon_diameters,
+                                                                get_aggregate_morphometrics,
+                                                                write_aggregate_morphometrics 
+                                                            )
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 

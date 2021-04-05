@@ -6,7 +6,7 @@ import numpy as np
 
 import pytest
 
-from AxonDeepSeg.visualization.merge_masks import *
+from AxonDeepSeg.visualization.merge_masks import merge_masks
 from config import axon_suffix, myelin_suffix
 
 

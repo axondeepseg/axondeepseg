@@ -6,7 +6,7 @@ from imageio import imread
 
 import pytest
 
-from AxonDeepSeg.visualization.generate_axons_from_myelin import *
+from AxonDeepSeg.visualization.generate_axons_from_myelin import generate_axons_from_myelin
 from config import myelin_suffix, axonmyelin_suffix
 
 class TestCore(object):
