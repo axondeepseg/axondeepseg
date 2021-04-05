@@ -1,4 +1,4 @@
-from AxonDeepSeg.ads_utils import *
+from AxonDeepSeg.ads_utils import convert_path, download_data
 from pathlib import Path
 import shutil
 

@@ -6,7 +6,7 @@ from imageio import imread
 
 import pytest
 
-from AxonDeepSeg.visualization.visualize import *
+from AxonDeepSeg.visualization.visualize import visualize_training
 
 
 class TestCore(object):

@@ -6,7 +6,7 @@ import shutil
 
 import pytest
 
-from AxonDeepSeg.config_tools import *
+from AxonDeepSeg.config_tools import validate_config, generate_config, grid_config, generate_name_config
 
 
 class TestCore(object):
