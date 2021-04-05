@@ -41,7 +41,7 @@ A tutorial demonstrating the installation procedure and basic usage of our FSLey
 * [Tabarin et al. *Deep learning segmentation (AxonDeepSeg) to generate axonal-property map from ex vivo human optic chiasm using light microscopy.* ISMRM 2019](https://www.ismrm.org/19/program_files/DP23.htm) - \[[**source code**](https://github.com/thibaulttabarin/UnAxSeg)\]
 * [Lousada et al. *Characterization of cortico-striatal myelination in the context of pathological Repetitive Behaviors.*  International Basal Ganglia Society (IBAGS) 2019](http://www.ibags2019.com/key4register/images/client/863/files/Abstractbook1405.pdf)
 * [Duval et al. *Axons morphometry in the human spinal cord.* NeuroImage 2019](https://www.sciencedirect.com/science/article/pii/S1053811918320044)
-* [Yu et al. *Model-informed machine learning for multi-component T2 relaxometry.* Medical Image Analysis 2021](https://www.sciencedirect.com/science/article/pii/S1361841520303042)
+* [Yu et al. *Model-informed machine learning for multi-component T2 relaxometry.* Medical Image Analysis 2021](https://www.sciencedirect.com/science/article/pii/S1361841520303042) - \[[**source code**](https://github.com/thomas-yu-epfl/Model_Informed_Machine_Learning)\]
 
 **Reviews**
 
