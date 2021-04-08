@@ -141,7 +141,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
                 axonmyelin_area = (pixelsize ** 2) * prop_axonmyelin.area
                 # Perimeter of axonmyelin instance in micrometers
-                axonmyelin_perimeter = prop_axonmyelin.perimeter * pixel_size
+                axonmyelin_perimeter = prop_axonmyelin.perimeter * pixelsize
 
                 stats['myelin_thickness'] = myelin_thickness
                 stats['myelin_area'] = myelin_area
