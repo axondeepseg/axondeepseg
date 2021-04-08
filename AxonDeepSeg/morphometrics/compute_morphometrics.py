@@ -119,7 +119,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                  'x0': x0,
                  'axon_diam': axon_diam,
                  'axon_area': axon_area,
-                 'axon_perimeter' : axon_perimeter,
+                 'axon_perimeter': axon_perimeter,
                  'solidity': solidity,
                  'eccentricity': eccentricity,
                  'orientation': orientation}
