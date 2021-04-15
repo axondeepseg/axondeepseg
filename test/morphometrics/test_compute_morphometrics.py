@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from pathlib import Path
+import inspect
 import string
 import random
 import shutil
@@ -34,9 +35,8 @@ class TestCore(object):
             '__test_demo_files__'
             )
         self.pixelsizeValue = 0.07   # For current demo data.
-        self.axon_shape = "ellipse"   # axon shape is set to ellipse
 
-        pred_axon_path = self.test_folder_path / ('image' + str(axon_suffix))
+        pred_axon_path = self.test_folder_path / ('image' +  str(axon_suffix))
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
         pred_myelin_path = self.test_folder_path / ('image' + str(myelin_suffix))
         self.pred_myelin = imageio_imread(pred_myelin_path, as_gray=True)
@@ -44,6 +44,7 @@ class TestCore(object):
         self.tmpDir = self.fullPath / '__tmp__'
         if not self.tmpDir.exists():
             self.tmpDir.mkdir()
+
 
     def teardown(self):
         if self.tmpDir.exists():
@@ -82,11 +83,6 @@ class TestCore(object):
     def test_get_axon_morphometrics_returns_expected_type(self):
         stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
         assert isinstance(stats_array, np.ndarray)
-    
-    @pytest.mark.unit
-    def test_get_axon_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), axon_shape=self.axon_shape)
-        assert isinstance(stats_array, np.ndarray)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_keys(self):
@@ -105,37 +101,11 @@ class TestCore(object):
             assert key in expectedKeys
 
     @pytest.mark.unit
-    def test_get_axon_morphometrics_returns_expected_keys_with_axon_as_ellipse(self):
-        expectedKeys = {'y0',
-                        'x0',
-                        'axon_diam',
-                        'axon_area',
-                        'solidity',
-                        'eccentricity',
-                        'orientation'
-                        }
-        
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), axon_shape=self.axon_shape)
-
-        for key in list(stats_array[0].keys()):
-            assert key in expectedKeys
-
-    @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask(self):
         stats_array = get_axon_morphometrics(
             self.pred_axon,
             str(self.test_folder_path),
             im_myelin=self.pred_myelin
-            )
-        assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
-    
-    @pytest.mark.unit
-    def test_get_axon_morphometrics_with_myelin_mask_with_axon_as_ellipse(self):
-        stats_array = get_axon_morphometrics(
-            self.pred_axon,
-            str(self.test_folder_path),
-            im_myelin=self.pred_myelin,
-            axon_shape=self.axon_shape
             )
         assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
 
@@ -182,55 +152,7 @@ class TestCore(object):
         # Compute axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin)
 
-        for ii in range(0, 9):
-            assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
-            assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
-            assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
-    
-    @pytest.mark.unit
-    def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse(self):
-        path_pred = (
-            self.testPath /
-            '__test_files__' /
-            '__test_simulated_axons__' /
-            'SimulatedAxons.png'
-        )
-
-        gratio_sim = np.array([
-                                0.9,
-                                0.8,
-                                0.7,
-                                0.6,
-                                0.5,
-                                0.4,
-                                0.3,
-                                0.2,
-                                0.1
-                                ])
-
-        axon_diam_sim = np.array([
-                                100,
-                                90,
-                                80,
-                                70,
-                                60,
-                                46,
-                                36,
-                                24,
-                                12
-                                ])
-
-        myelin_thickness_sim = (axon_diam_sim / 2) * (1/gratio_sim - 1)
-
-        # Read paths and compute axon/myelin masks
-        pred = imageio_imread(path_pred)
-        pred_axon = pred > 200
-        pred_myelin = np.logical_and(pred >= 50, pred <= 200)
-
-        # Compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
-
-        for ii in range(0, 9):
+        for ii in range(0,9):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
@@ -252,31 +174,6 @@ class TestCore(object):
             pred_axon,
             str(path_pred.parent),
             im_myelin=unexpected_pred_myelin
-            )
-
-        for axon_prop in stats_array:
-            assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
-            assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
-            assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
-    
-    @pytest.mark.unit
-    def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons_with_axon_as_ellipse(self):
-        path_pred = (
-            self.testPath /
-            '__test_files__' /
-            '__test_simulated_axons__' /
-            'SimulatedAxons.png'
-            )
-
-        prediction = imageio_imread(path_pred, as_gray=True)
-        pred_axon = prediction > 200
-        unexpected_pred_myelin = np.zeros(prediction.shape)
-
-        stats_array = get_axon_morphometrics(
-            pred_axon,
-            str(path_pred.parent),
-            im_myelin=unexpected_pred_myelin,
-            axon_shape=self.axon_shape
             )
 
         for axon_prop in stats_array:
@@ -340,40 +237,16 @@ class TestCore(object):
 
         assert result_path.is_file()
         result_path.unlink()
-    
-    @pytest.mark.unit
-    def test_draw_axon_diameter_creates_file_in_expected_location_with_axon_as_ellipse(self):
-        img = imageio_imread(self.test_folder_path / 'image.png')
-        path_prediction = self.test_folder_path / 'AxonDeepSeg_seg-axonmyelin.png'
-
-        result_path = self.test_folder_path / 'AxonDeepSeg_map-axondiameter.png'
-        fig = draw_axon_diameter(img, str(path_prediction), self.pred_axon, self.pred_myelin, axon_shape=self.axon_shape)
-        assert fig.axes
-        fig.savefig(result_path)
-
-        assert result_path.is_file()
-        result_path.unlink()
 
     # --------------get_aggregate_morphometrics tests-------------- #
     @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_expected_type(self):
 
+
         aggregate_metrics = get_aggregate_morphometrics(
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path)
-            )
-
-        assert isinstance(aggregate_metrics, dict)
-
-    @pytest.mark.unit
-    def test_get_aggregate_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
-
-        aggregate_metrics = get_aggregate_morphometrics(
-            self.pred_axon,
-            self.pred_myelin,
-            str(self.test_folder_path),
-            axon_shape=self.axon_shape
             )
 
         assert isinstance(aggregate_metrics, dict)
@@ -393,27 +266,6 @@ class TestCore(object):
             self.pred_axon,
             self.pred_myelin,
             str(self.test_folder_path)
-            )
-
-        for key in list(aggregate_metrics.keys()):
-            assert key in expectedKeys
-                
-    @pytest.mark.unit
-    def test_get_aggregate_morphometrics_returns_returns_expected_keys_with_axon_as_ellipse(self):
-        expectedKeys = {'avf',
-                        'mvf',
-                        'gratio_aggr',
-                        'mean_axon_diam',
-                        'mean_myelin_diam',
-                        'mean_myelin_thickness',
-                        'axon_density_mm2'
-                        }
-
-        aggregate_metrics = get_aggregate_morphometrics(
-            self.pred_axon,
-            self.pred_myelin,
-            str(self.test_folder_path),
-            axon_shape=self.axon_shape
             )
 
         for key in list(aggregate_metrics.keys()):
