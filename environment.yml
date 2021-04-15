@@ -31,5 +31,5 @@ dependencies:
   - pre-commit
   - pip
   - pip:
-    - opencv-contrib-python
+    - opencv-contrib-pytho
     - opencv-python-headless
