@@ -299,12 +299,6 @@ The script to launch in called **axondeepseg_morphometrics**. It has several arg
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path (that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the morphometrics computation.
 
-
--a AXONSHAPE       Axon shape
-                    **circle:** Axon shape is considered as circle. In this case, diameter is computed using equivalent diameter. 
-                    **ellipse:** Axon shape is considered as an ellipse. In this case, diameter is computed using ellipse minor axis.
-                    The default axon shape is set to **circle**.
-
 -f FILENAME         Name of the excel file in which the morphometrics will be stored.
                     The excel file extension can either be **.xlsx** or **.csv**.
                     If name of the excel file is not provided, the morphometrics will be saved as **axon_morphometrics.xlsx**.
@@ -313,7 +307,7 @@ Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
 
-    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle -f axon_morphometrics 
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -f axon_morphometrics 
 
 This generates a **'axon_morphometrics.xlsx'** file in the image directory::
 
@@ -326,13 +320,6 @@ This generates a **'axon_morphometrics.xlsx'** file in the image directory::
     ---- axon_morphometrics.xlsx
     ...
 
-.. NOTE :: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
-           For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon. ::
-           
-           If you wish to treat axon shape as an ellipse, you can set the  **-a** argument to be **ellipse**.
-           When axon shape is set to ellipse, the calculation of the diameter is based on ellipse minor axis::
-            
-            axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
 
 Morphometrics of images from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -359,36 +346,6 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
     ---- pixel_size_in_micrometer.txt
     ---- axon_morphometrics.xlsx
 
-Axon Shape: Circle vs Ellipse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Circle 
-^^^^^^
-**Usage** ::
-
-    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a circle
-
-**Studies using Circle as axon shape:**
-
-* Duval et al: https://pubmed.ncbi.nlm.nih.gov/30326296/
-* Salini et al: https://www.frontiersin.org/articles/10.3389/fnana.2017.00129/full
-
-Ellipse
-^^^^^^^
-**Usage** ::
-
-    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
-
-**Studies using Ellipse as axon shape:**
-
-* Payne et al: https://pubmed.ncbi.nlm.nih.gov/21381867/
-* Payne et al: https://pubmed.ncbi.nlm.nih.gov/22879411/
-* Fehily et al: https://pubmed.ncbi.nlm.nih.gov/30702755/
-
-
-.. NOTE :: In the literature, both equivalent diameter and ellipse minor axis are used to compute the morphometrics. 
-           Thus, depending on the usecase, the user is advised to choose axon shape accordingly.
-           
 
 Jupyter notebooks
 -----------------
