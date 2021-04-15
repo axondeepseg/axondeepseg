@@ -27,7 +27,6 @@ class PostDevelopCommand(develop):
         # pre-commit install
         check_call("pre-commit install".split())
 
-
 setup(
     name='AxonDeepSeg',
     python_requires='>=3.7, <3.8',
