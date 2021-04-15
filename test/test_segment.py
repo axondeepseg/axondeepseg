@@ -4,7 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from AxonDeepSeg.segment import *
+from AxonDeepSeg.segment import (
+                                    generate_config_dict, 
+                                    generate_resolution, 
+                                    generate_default_parameters, 
+                                    segment_folders, 
+                                    segment_image
+                                )
 import AxonDeepSeg.segment
 import AxonDeepSeg
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix

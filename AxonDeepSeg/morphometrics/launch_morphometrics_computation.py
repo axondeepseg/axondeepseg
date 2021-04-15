@@ -11,9 +11,18 @@ import numpy as np
 import pandas as pd
 
 # AxonDeepSeg imports
-from AxonDeepSeg.morphometrics.compute_morphometrics import *
+from AxonDeepSeg.morphometrics.compute_morphometrics import (
+                                                                get_axon_morphometrics, 
+                                                                save_axon_morphometrics,  
+                                                                draw_axon_diameter,
+                                                                save_map_of_axon_diameters,
+                                                                get_aggregate_morphometrics,
+                                                                write_aggregate_morphometrics 
+                                                            )
 import AxonDeepSeg.ads_utils as ads
 from config import axon_suffix, myelin_suffix
+from AxonDeepSeg.ads_utils import convert_path
+
 
 
 def launch_morphometrics_computation(path_img, path_prediction, axon_shape="cicle"):

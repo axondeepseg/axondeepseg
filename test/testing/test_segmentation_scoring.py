@@ -8,7 +8,7 @@ import pandas as pd
 
 import pytest
 
-from AxonDeepSeg.testing.segmentation_scoring import *
+from AxonDeepSeg.testing.segmentation_scoring import score_analysis, dice, pw_dice, Metrics_calculator
 from config import axonmyelin_suffix
 
 
@@ -72,11 +72,12 @@ class TestCore(object):
                 )
             # Test success of visualisation
             pred_path = Path(tmpdir) / "prediction.png"
-            gt_path = Path(tmpdir) /  "ground_truth.png"
+            gt_path = Path(tmpdir) / "ground_truth.png"
             assert pred_path.is_file()
             assert gt_path.is_file()
-        # Go back to previous dir
-        os.chdir(saved_dir)
+
+            # Go back to previous dir
+            os.chdir(saved_dir)
 
     # --------------dice tests-------------- #
     @pytest.mark.unit

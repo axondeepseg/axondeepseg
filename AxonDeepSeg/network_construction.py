@@ -1,5 +1,14 @@
-from keras.layers import *
-from keras.models import *
+from keras.layers import (
+                            Conv2D,
+                            BatchNormalization,
+                            Activation,
+                            Dropout,
+                            Input,
+                            MaxPooling2D,
+                            UpSampling2D,
+                            Concatenate,                   
+                        )
+from keras.models import Model
 
 import tensorflow as tf
 import AxonDeepSeg.ads_utils

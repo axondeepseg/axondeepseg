@@ -6,11 +6,10 @@ import string
 import pytest
 import shutil
 
-from AxonDeepSeg.morphometrics.launch_morphometrics_computation import *
-from AxonDeepSeg.segment import *
-import AxonDeepSeg.ads_utils as ads
 
-from config import axonmyelin_suffix, myelin_suffix, axon_suffix
+import AxonDeepSeg.ads_utils as ads
+from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
+from config import axonmyelin_suffix
 
 
 class TestCore(object):

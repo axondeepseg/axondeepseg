@@ -5,7 +5,7 @@ from skimage import measure, morphology, feature
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
 import AxonDeepSeg.params
-from matplotlib import rcParams
+from matplotlib import font_manager
 import os
 
 def get_centroids(mask):
@@ -119,7 +119,7 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size, 
     # Use a font from the matplotlib package
     # The size of the font depends on the dimensions of the image, should be at least 10
     # If the the mean_axon_diameter is specified, use it to determine the font_size
-    font_path = os.path.join(rcParams["datapath"], "fonts/ttf/DejaVuSans.ttf")
+    font_path = font_manager.findfont("DejaVu Sans")
     if mean_axon_diameter_in_pixels is None:
         font_size = max(int(sum(image_size) * 0.5 * 0.01), 10)
     else:
