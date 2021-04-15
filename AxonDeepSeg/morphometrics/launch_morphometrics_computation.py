@@ -32,7 +32,6 @@ def launch_morphometrics_computation(path_img, path_prediction):
     morphometrics extraction of a given sample.
     :param path_img: path of the input image (microscopy sample)
     :param path_prediction: path of the segmented image (output of AxonDeepSeg)
-    :param axon_shape: str: shape of the axon, can either be circle or ellipse
     :return: none.
     """
     
@@ -59,16 +58,16 @@ def launch_morphometrics_computation(path_img, path_prediction):
         path_folder = path_img.parent
 
         # Compute and save axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
+        stats_array = get_axon_morphometrics(pred_axon, path_folder)
         save_axon_morphometrics(path_folder, stats_array)
 
         # Generate and save displays of axon morphometrics
-        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=axon_shape)
+        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin)
         save_map_of_axon_diameters(path_folder, fig)
 
         # Compute and save aggregate morphometrics
         aggregate_metrics = get_aggregate_morphometrics(
-            pred_axon, pred_myelin, path_folder, axon_shape=axon_shape
+            pred_axon, pred_myelin, path_folder
         )
         write_aggregate_morphometrics(path_folder, aggregate_metrics)
 
