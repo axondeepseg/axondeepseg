@@ -173,7 +173,7 @@ Guidelines for developing
 Pre-commit checks
 ~~~~~~~~~~~~~~~~~
 
-We use ``pre-commit`` to enforce conventions like file sizes and yaml check. After you've installed ``AxonDeepSeg``, install the hooks by running ``pre-commit install`` at the root of the repo clone.
+We use ``pre-commit`` to enforce conventions like file sizes and yaml check. 
 
 Guidelines on Commits
 =====================
