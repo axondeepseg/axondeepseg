@@ -5,7 +5,7 @@ import random
 import string
 import pytest
 
-from AxonDeepSeg.morphometrics.launch_morphometrics_computation import *
+from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
 from config import axonmyelin_suffix
 
 
