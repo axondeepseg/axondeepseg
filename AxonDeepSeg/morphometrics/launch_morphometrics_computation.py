@@ -25,7 +25,7 @@ from AxonDeepSeg.ads_utils import convert_path
 
 
 
-def launch_morphometrics_computation(path_img, path_prediction, axon_shape="cicle"):
+def launch_morphometrics_computation(path_img, path_prediction):
     """
     This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
     It automatically performs all steps (computations, savings, displays,...) of the
@@ -88,16 +88,11 @@ def main(argv=None):
     ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics will be stored',
                                                               default="axon_morphometrics")
 
-    ap.add_argument('-a', '--axonshape', required=False, help='Axon shape: circle \n' +
-                                                              '\t    ellipse \n' +
-                                                              'For computing morphometrics, axon shape can either be a circle or an ellipse', 
-                                                              default="circle")
     
     # Processing the arguments
     args = vars(ap.parse_args(argv))
     path_target_list = [Path(p) for p in args["imgpath"]]
     filename = str(args["filename"])
-    axon_shape = str(args["axonshape"])
   
     # Tuple of valid file extensions
     validExtensions = (
@@ -165,7 +160,7 @@ def main(argv=None):
                          )
             
             # Compute statistics
-            stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape)
+            stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm)
 
             for stats in stats_array:
 
