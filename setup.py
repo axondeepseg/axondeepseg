@@ -20,10 +20,9 @@ class PostDevelopCommand(develop):
     def run(self):
 
         develop.run(self)
-        # Download models
+        # download models and test files
         check_call("download_models")
         check_call("download_tests")
-
         # pre-commit install
         check_call("pre-commit install".split())
 
