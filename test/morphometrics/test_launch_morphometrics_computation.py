@@ -6,7 +6,7 @@ import string
 import pytest
 import shutil
 
-
+import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
 from config import axonmyelin_suffix
