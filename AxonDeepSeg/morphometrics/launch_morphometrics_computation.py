@@ -24,7 +24,6 @@ from config import axon_suffix, myelin_suffix
 from AxonDeepSeg.ads_utils import convert_path
 
 
-
 def launch_morphometrics_computation(path_img, path_prediction):
     """
     This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
@@ -87,12 +86,11 @@ def main(argv=None):
     ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics will be stored',
                                                               default="axon_morphometrics")
 
-    
     # Processing the arguments
     args = vars(ap.parse_args(argv))
     path_target_list = [Path(p) for p in args["imgpath"]]
     filename = str(args["filename"])
-  
+
     # Tuple of valid file extensions
     validExtensions = (
                         ".jpeg",
@@ -122,7 +120,7 @@ def main(argv=None):
                 print("ERROR: Segmented myelin mask is not present in the image folder. ",
                               "Please check that the myelin mask is located in the image folder. ",
                               "If it is not present, perform segmentation of the image first using ADS."
-                     )
+                      )
                 sys.exit(3)
 
             if args["sizepixel"] is not None:
