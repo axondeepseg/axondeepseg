@@ -192,7 +192,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37"])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -256,7 +256,7 @@ class TestCore(object):
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_too_small_resolution_due_to_min_resampled_patch_size_for_folder_input(self):
 
-        image_size = [436, 344] # of self.imagePath
+        image_size = [436, 344]  # of self.imagePath
         default_SEM_resolution = 0.1
         default_SEM_patch_size = 512
 

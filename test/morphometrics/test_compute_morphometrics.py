@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from pathlib import Path
-import inspect
 import string
 import random
 import shutil
@@ -45,7 +44,6 @@ class TestCore(object):
         self.tmpDir = self.fullPath / '__tmp__'
         if not self.tmpDir.exists():
             self.tmpDir.mkdir()
-
 
     def teardown(self):
         if self.tmpDir.exists():
@@ -242,7 +240,6 @@ class TestCore(object):
     # --------------get_aggregate_morphometrics tests-------------- #
     @pytest.mark.unit
     def test_get_aggregate_morphometrics_returns_expected_type(self):
-
 
         aggregate_metrics = get_aggregate_morphometrics(
             self.pred_axon,

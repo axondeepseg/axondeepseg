@@ -1,12 +1,9 @@
 # coding: utf-8
 
 from pathlib import Path
-import numpy as np
-from imageio import imread
 
 import pytest
 
-import AxonDeepSeg
 from AxonDeepSeg.visualization.visualize import visualize_training
 
 

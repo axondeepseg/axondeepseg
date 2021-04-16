@@ -122,7 +122,7 @@ def main(argv=None):
                 print("ERROR: Segmented myelin mask is not present in the image folder. ",
                               "Please check that the myelin mask is located in the image folder. ",
                               "If it is not present, perform segmentation of the image first using ADS."
-                      )
+                     )
                 sys.exit(3)
 
             if args["sizepixel"] is not None:
@@ -163,8 +163,7 @@ def main(argv=None):
 
             for stats in stats_array:
 
-                x = np.append(x,
-                    np.array(
+                x = np.append(x, np.array(
                         [(
                             stats['x0'],
                             stats['y0'],
