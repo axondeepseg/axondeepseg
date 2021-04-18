@@ -38,7 +38,16 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import *
 VERSION = "0.2.17"
 
 class ADSsettings:
+    """
+    This class handles everything related to the parameters used in the ADS plugin, including the frame for the settings
+    menu.
+    """
     def __init__(self, ads_control):
+        """
+        Constructor for the ADSsettings class. Initializes the default settings.
+        :param ads_control: An instance of ADScontrol
+        :type ads_control: ADScontrol
+        """
         self.ads_control = ads_control
 
         # Declare the settings used
@@ -49,6 +58,10 @@ class ADSsettings:
         self.zoom_factor = 1.0
 
     def on_settings_button(self, event):
+        """
+        This function creates the settings_frame (the settings menu). It is called when the 'settings' button has been
+        pressed.
+        """
         self.settings_frame = wx.Frame(self.ads_control, title="Settings", size=(600, 300))
         frame_sizer_h = wx.BoxSizer(wx.VERTICAL)
 
