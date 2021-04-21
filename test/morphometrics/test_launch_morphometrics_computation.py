@@ -5,6 +5,7 @@ import random
 import string
 import pytest
 import shutil
+import os
 
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
@@ -131,14 +132,14 @@ class TestCore(object):
         path_resolution_file = self.dataPath / 'pixel_size_in_micrometer.txt'
         path_new_resolution_file = self.dataPath / 'pixel_size.txt'
 
-        # For exception handling, rename the resolution file name 
-        shutil.move(path_resolution_file, path_new_resolution_file)
+        # For exception handling, rename the resolution file name
+        os.rename(path_resolution_file, path_new_resolution_file)
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
         
         # Rename the resolution file to its original name
-        shutil.move(path_new_resolution_file, path_resolution_file)
+        os.rename(path_new_resolution_file, path_resolution_file)
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     
