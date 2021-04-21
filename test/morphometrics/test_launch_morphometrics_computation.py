@@ -166,7 +166,7 @@ class TestCore(object):
 
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_axon_mask_not_present(self):
-        pathImg = pathImg = self.dataPath / 'image.png'
+        pathImg = self.dataPath / 'image.png'
         
         # axon mask path
         pathAxon = self.dataPath / ('image' + str(axon_suffix))
