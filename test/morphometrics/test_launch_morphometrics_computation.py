@@ -5,7 +5,6 @@ import random
 import string
 import pytest
 import shutil
-import os
 
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
@@ -98,7 +97,7 @@ class TestCore(object):
     
     @pytest.mark.unit
     def test_main_cli_runs_successfully_for_generating_morphometrics_multiple_images(self):
-        pathImg = self.dataPath / 'image.png' 
+        pathImg = self.dataPath / 'image.png'
 
         # Make a copy of `__test_demo_files__` directory 
         shutil.copytree(self.dataPath.parent / '__test_demo_files__', self.dataPath.parent / '__test_demo_files_copy__', copy_function=shutil.copy)
@@ -131,15 +130,15 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
         path_resolution_file = self.dataPath / 'pixel_size_in_micrometer.txt'
         path_new_resolution_file = self.dataPath / 'pixel_size.txt'
-
+        
         # For exception handling, rename the resolution file name
-        os.rename(path_resolution_file, path_new_resolution_file)
+        shutil.move(str(path_resolution_file), str(path_new_resolution_file))
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
         
         # Rename the resolution file to its original name
-        os.rename(path_new_resolution_file, path_resolution_file)
+        shutil.move(str(path_new_resolution_file), str(path_resolution_file))
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     
