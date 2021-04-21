@@ -117,7 +117,7 @@ class TestCore(object):
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
         self.dataPath = self.testPath / '__test_files__' / '__test_segment_files__'
-        pathImg = pathImg = self.dataPath / 'image.png'
+        pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
@@ -127,7 +127,7 @@ class TestCore(object):
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_resolution_file_not_provided(self):
 
-        pathImg = pathImg = self.dataPath / 'image.png'
+        pathImg = self.dataPath / 'image.png'
         path_resolution_file = self.dataPath / 'pixel_size_in_micrometer.txt'
         path_new_resolution_file = self.dataPath / 'pixel_size.txt'
 
