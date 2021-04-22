@@ -132,16 +132,19 @@ class TestCore(object):
         path_resolution_file = self.dataPath / 'pixel_size_in_micrometer.txt'
         path_new_resolution_file = self.dataPath / 'pixel_size.txt'
         
+        shutil.copyfile(path_resolution_file, path_new_resolution_file)
+        path_resolution_file.unlink()
         # For exception handling, rename the resolution file name
         # shutil.move(path_resolution_file, path_resolution_file.parent)
         
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            path_resolution_file.rename(str(path_new_resolution_file))
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
         
         # Rename the resolution file to its original name
         # shutil.move(path_resolution_file.parent, path_resolution_file)
-        path_new_resolution_file.rename(str(path_resolution_file))
+        # path_new_resolution_file.rename(str(path_resolution_file))
+        shutil.copyfile(path_new_resolution_file, path_resolution_file)
+        path_new_resolution_file.unlink()
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     
