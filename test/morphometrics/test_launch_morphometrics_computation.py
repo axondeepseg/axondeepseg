@@ -124,29 +124,6 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
-
-    @pytest.mark.exceptionhandling
-    def test_main_cli_handles_exception_for_resolution_file_not_provided(self):
-
-        pathImg = self.dataPath / 'image.png'
-        path_resolution_file = self.dataPath / 'pixel_size_in_micrometer.txt'
-        path_new_resolution_file = self.dataPath / 'pixel_size.txt'
-        
-        shutil.copyfile(path_resolution_file, path_new_resolution_file)
-        path_resolution_file.unlink()
-        # For exception handling, rename the resolution file name
-        # shutil.move(path_resolution_file, path_resolution_file.parent)
-        
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
-        
-        # Rename the resolution file to its original name
-        # shutil.move(path_resolution_file.parent, path_resolution_file)
-        # path_new_resolution_file.rename(str(path_resolution_file))
-        shutil.copyfile(path_new_resolution_file, path_resolution_file)
-        path_new_resolution_file.unlink()
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_myelin_mask_not_present(self):
