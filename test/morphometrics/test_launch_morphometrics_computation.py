@@ -134,9 +134,9 @@ class TestCore(object):
         
         # For exception handling, rename the resolution file name
         # shutil.move(path_resolution_file, path_resolution_file.parent)
-        path_resolution_file.rename(str(path_new_resolution_file))
-
+        
         with pytest.raises(SystemExit) as pytest_wrapped_e:
+            path_resolution_file.rename(str(path_new_resolution_file))
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
         
         # Rename the resolution file to its original name
