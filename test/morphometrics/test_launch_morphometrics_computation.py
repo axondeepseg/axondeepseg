@@ -5,7 +5,6 @@ import random
 import string
 import pytest
 import shutil
-import os
 
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
@@ -28,10 +27,6 @@ class TestCore(object):
 
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
-        
-        # Remove the `__test_demo_files_copy__` directory if exists
-        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
-            shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
 
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
