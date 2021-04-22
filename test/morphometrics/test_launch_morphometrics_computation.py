@@ -27,6 +27,10 @@ class TestCore(object):
 
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
+        
+        # Remove the `__test_demo_files_copy__` directory
+        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
+            shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
 
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
@@ -109,10 +113,6 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgcopy)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathcopy.exists()
-
-        # Remove the `__test_demo_files_copy__` directory
-        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
-            shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
 
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
