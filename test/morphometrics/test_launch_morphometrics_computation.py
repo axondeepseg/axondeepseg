@@ -111,10 +111,6 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathcopy.exists()
 
-        # Remove the `__test_demo_files_copy__` directory
-        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
-            shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
-
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
         self.dataPath = self.testPath / '__test_files__' / '__test_segment_files__'
