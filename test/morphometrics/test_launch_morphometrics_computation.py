@@ -133,13 +133,15 @@ class TestCore(object):
         path_new_resolution_file = self.dataPath / 'pixel_size.txt'
         
         # For exception handling, rename the resolution file name
-        os.rename(str(path_resolution_file), str(path_new_resolution_file))
+        # shutil.move(path_resolution_file, path_resolution_file.parent)
+        path_resolution_file.rename(str(path_new_resolution_file))
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
         
         # Rename the resolution file to its original name
-        os.rename(str(path_new_resolution_file), str(path_resolution_file))
+        # shutil.move(path_resolution_file.parent, path_resolution_file)
+        path_new_resolution_file.rename(str(path_resolution_file))
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     
@@ -153,7 +155,7 @@ class TestCore(object):
         # Read the myelin mask
         myelinMask = ads.imread(str(pathMyelin))
 
-        # Delete the myelin mask for exception 
+        # Delete the myelin mask for exception
         if pathMyelin.exists():
             pathMyelin.unlink()
 
