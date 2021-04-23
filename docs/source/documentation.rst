@@ -285,7 +285,7 @@ Morphometrics
 You can generate morphometrics using AxonDeepSeg via the command line interface.
 
 Syntax
-~~~~~
+~~~~~~
 
 The script to launch in called **axondeepseg_morphometrics**. It has several arguments.
 
