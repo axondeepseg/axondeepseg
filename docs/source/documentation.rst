@@ -280,7 +280,7 @@ To segment images that are located in different folders, specify the path to the
 
 
 Morphometrics
----------------
+-------------
 
 You can generate morphometrics using AxonDeepSeg via the command line interface.
 
