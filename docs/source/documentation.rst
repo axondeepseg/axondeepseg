@@ -151,7 +151,7 @@ In case, you find trouble installing FSLeyes plugin for ADS you could refer the 
 .. raw:: html
 
    <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
-     <iframe width="700" height="394" src="https://www.youtube.com/embed/dz2LqQ5LpIo" frameborder="0" allowfullscreen></iframe>
+     <iframe width="700" height="394" src="https://www.youtube.com/embed/qzWeG5vaVyo" frameborder="0" allowfullscreen></iframe>
 
 
 .. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
