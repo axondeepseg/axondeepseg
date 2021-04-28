@@ -1,8 +1,6 @@
 # coding: utf-8
 
 from pathlib import Path
-import numpy as np
-from imageio import imread
 
 import pytest
 

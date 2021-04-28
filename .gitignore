@@ -31,6 +31,8 @@ notebooks/test_weights\.ipynb
 
 AxonDeepSeg/models
 
+models/
+
 test/__test_files__
 
 # Generated image files
