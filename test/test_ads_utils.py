@@ -6,7 +6,7 @@ import numpy as np
 
 import pytest
 
-from AxonDeepSeg.ads_utils import *
+from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data
 from AxonDeepSeg import params
 
 

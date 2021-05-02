@@ -99,7 +99,7 @@ def patches2im_overlap(L_patches, L_pos, overlap_value=25, scw=512):
                                                                                                           -overlap_value:,
                                                                                                           overlap_value:-overlap_value]
         if L_pos[i][1] == w_l:
-            if L_pos[i][1] != h_l:
+            if L_pos[i][0] != h_l:
                 new_img[L_pos[i][0] + overlap_value:L_pos[i][0] + scw - overlap_value, -overlap_value:] = e[
                                                                                                           overlap_value:-overlap_value,
                                                                                                           -overlap_value:]

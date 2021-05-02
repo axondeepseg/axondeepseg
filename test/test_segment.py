@@ -4,8 +4,15 @@ from pathlib import Path
 
 import pytest
 
-from AxonDeepSeg.segment import *
+from AxonDeepSeg.segment import (
+                                    generate_config_dict, 
+                                    generate_resolution, 
+                                    generate_default_parameters, 
+                                    segment_folders, 
+                                    segment_image
+                                )
 import AxonDeepSeg.segment
+import AxonDeepSeg
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 class TestCore(object):
@@ -249,7 +256,7 @@ class TestCore(object):
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_for_too_small_resolution_due_to_min_resampled_patch_size_for_folder_input(self):
 
-        image_size = [436, 344] # of self.imagePath
+        image_size = [436, 344]  # of self.imagePath
         default_SEM_resolution = 0.1
         default_SEM_patch_size = 512
 

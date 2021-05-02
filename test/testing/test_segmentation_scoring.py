@@ -8,7 +8,7 @@ import pandas as pd
 
 import pytest
 
-from AxonDeepSeg.testing.segmentation_scoring import *
+from AxonDeepSeg.testing.segmentation_scoring import score_analysis, dice, pw_dice, Metrics_calculator
 from config import axonmyelin_suffix
 
 

@@ -146,6 +146,19 @@ In FSLeyes, do the following:
 
 From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
 
+In case, you find trouble installing FSLeyes plugin for ADS you could refer the video below.
+
+.. raw:: html
+
+   <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+     <iframe width="700" height="394" src="https://www.youtube.com/embed/qzWeG5vaVyo" frameborder="0" allowfullscreen></iframe>
+
+
+.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
+           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
+           This step may only be required when you first install the plugin.
+
+
 Known issues
 ~~~~~~~~~~~~
 1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
@@ -198,8 +211,11 @@ Example dataset
 
 You can demo the AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
 
+Segmentation
+------------
+
 Syntax
-------
+~~~~~~
 
 The script to launch is called **axondeepseg**. It takes several arguments:
 
@@ -240,7 +256,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
         axondeepseg -h
 
 Segment a single image
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
 
 To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image **'77.png'** of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
 
@@ -254,7 +270,7 @@ To segment the same image by using the **'pixel_size_in_micrometer.txt'** file i
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png
 
 Segment multiple images of the same resolution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
 
@@ -275,11 +291,80 @@ Then, use the following command::
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/
 
 Segment images from multiple folders
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
+
+
+Morphometrics
+-------------
+
+You can generate morphometrics using AxonDeepSeg via the command line interface.
+
+Syntax
+~~~~~~
+
+The script to launch in called **axondeepseg_morphometrics**. It has several arguments.
+
+**Required arguments:**
+
+-i IMGPATH
+                    Path to the image file whose morphometrics needs to be calculated.
+
+**Optional arguments:**
+
+-s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
+                    If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path (that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the morphometrics computation.
+
+-f FILENAME         Name of the excel file in which the morphometrics will be stored.
+                    The excel file extension can either be **.xlsx** or **.csv**.
+                    If name of the excel file is not provided, the morphometrics will be saved as **axon_morphometrics.xlsx**.
+
+Morphometrics of a single image
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
+
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -f axon_morphometrics 
+
+This generates a **'axon_morphometrics.xlsx'** file in the image directory::
+
+    --image1_sem/
+    ---- 77.png
+    ---- 77_seg-axon.png
+    ---- 77_seg-axonmyelin.png
+    ---- 77_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- axon_morphometrics.xlsx
+    ...
+
+
+Morphometrics of images from multiple folders
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argumument of the CLI separated by space. For instance, to compute morphometrics of the images present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
+
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png test_segmentation/test_sem_image/image2_sem/image.png
+
+This will generate **'axon_morphometrics.xlsx'** file in each of folders:: 
+
+    --image1_sem/
+    ---- 77.png
+    ---- 77_seg-axon.png
+    ---- 77_seg-axonmyelin.png
+    ---- 77_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- axon_morphometrics.xlsx
+    ...
+
+    --image2_sem/
+    ---- image.png
+    ---- image_seg-axon.png
+    ---- image_seg-axonmyelin.png
+    ---- image_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- axon_morphometrics.xlsx
+
 
 Jupyter notebooks
 -----------------

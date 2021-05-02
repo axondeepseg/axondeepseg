@@ -7,7 +7,7 @@ import os
 from skimage.transform import resize
 import pytest
 
-from AxonDeepSeg.visualization.get_masks import *
+from AxonDeepSeg.visualization.get_masks import get_masks, rgb_rendering_of_mask, get_image_unique_vals_properties
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 

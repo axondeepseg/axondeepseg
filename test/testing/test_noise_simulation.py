@@ -6,7 +6,7 @@ from imageio import imread
 import pytest
 
 
-from AxonDeepSeg.testing.noise_simulation import *
+from AxonDeepSeg.testing.noise_simulation import add_additive_gaussian_noise, add_multiplicative_gaussian_noise, change_brightness
 
 
 class TestCore(object):

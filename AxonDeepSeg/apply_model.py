@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from skimage.transform import rescale, resize
+
+# AxonDeepSeg imports
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
-from AxonDeepSeg.network_construction import *
+from AxonDeepSeg.network_construction import uconv_net
 from AxonDeepSeg.visualization.get_masks import get_masks
 from AxonDeepSeg.patch_management_tools import im2patches_overlap, patches2im_overlap
 from AxonDeepSeg.config_tools import update_config, default_configuration
 from config import axonmyelin_suffix
 
-#Keras import
+# Keras import
 from keras import backend as K
+
+# TensorFlow import 
+import tensorflow as tf
 
 
 def apply_convnet(path_acquisitions, acquisitions_resolutions, path_model_folder, config_dict, ckpt_name='model',
