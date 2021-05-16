@@ -603,7 +603,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Compute statistics
         stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=pixel_size)
-        # print(stats_array)
         for stats in stats_array:
 
             x = np.append(x,
