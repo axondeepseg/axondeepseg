@@ -9,7 +9,6 @@ import numpy as np
 from imageio import imread as imageio_imread  # to avoid confusion with mpl.pyplot.imread
 import pytest
 
-
 import AxonDeepSeg
 from AxonDeepSeg.visualization.simulate_axons import SimulateAxons
 from AxonDeepSeg.morphometrics.compute_morphometrics import (  
