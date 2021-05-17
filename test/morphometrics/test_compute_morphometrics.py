@@ -210,15 +210,15 @@ class TestCore(object):
         image_sim.save(image_sim_path)
 
         axon_diam_sim = np.array([
-                                100,
-                                90,
-                                80,
-                                70,
-                                60,
-                                46,
-                                36,
-                                24,
-                                12
+                                    100,
+                                    90,
+                                    80,
+                                    70,
+                                    60,
+                                    46,
+                                    36,
+                                    24,
+                                    12
                                 ])
 
         # axon perimeter (inner perimeter of myelin) = pi * diameter of axon                        
@@ -265,15 +265,15 @@ class TestCore(object):
         image_sim.save(image_sim_path)
 
         axon_diam_sim = np.array([
-                                100,
-                                90,
-                                80,
-                                70,
-                                60,
-                                46,
-                                36,
-                                24,
-                                12
+                                    100,
+                                    90,
+                                    80,
+                                    70,
+                                    60,
+                                    46,
+                                    36,
+                                    24,
+                                    12
                                 ])
 
         gratio_sim = np.array([
@@ -286,7 +286,7 @@ class TestCore(object):
                                 0.3,
                                 0.2,
                                 0.1
-                                ])
+                            ])
 
         # myelin thickness = radius_axon * ((1 / gratio) - 1 )
         myelin_thickness =  (axon_diam_sim/2)  * ((1 / gratio_sim) - 1)              
@@ -309,7 +309,6 @@ class TestCore(object):
 
         if image_sim_path.exists():
             image_sim_path.unlink()
-
 
     # --------------save and load _axon_morphometrics tests-------------- #
     @pytest.mark.unit
