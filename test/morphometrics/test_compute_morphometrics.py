@@ -241,7 +241,7 @@ class TestCore(object):
             image_sim_path.unlink()
     
     @pytest.mark.unit
-    def test_axonmyelin_perimeter_morphometrics_when_axon_shape_ciricle(self):
+    def test_axonmyelin_perimeter_morphometrics_when_axon_shape_circle(self):
 
         # Simulated image path
         image_sim_path = Path(
