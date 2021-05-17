@@ -90,6 +90,7 @@ class TestCore(object):
                         'axon_diam',
                         'axon_area',
                         'axon_perimeter',
+                        'axonmyelin_perimeter',
                         'solidity',
                         'eccentricity',
                         'orientation'
