@@ -186,7 +186,7 @@ class TestCore(object):
 
     # --------------axon and myelin perimeter tests-------------- #
     @pytest.mark.unit
-    def test_axon_perimeter_morphometrics_when_axon_shape_ciricle(self):
+    def test_axon_perimeter_morphometrics_when_axon_shape_circle(self):
 
         # Simulated image path
         image_sim_path = Path(
