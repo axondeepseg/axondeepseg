@@ -148,10 +148,10 @@ def main(argv=None):
                                         ('axon_area', 'f4'),
                                         ('axon_perimeter', 'f4'),
                                         ('myelin_area', 'f4'),
-                                        ('axonmyelin_perimeter', 'f4'),
                                         ('axon_diam', 'f4'),
                                         ('myelin_thickness', 'f4'),
                                         ('axonmyelin_area', 'f4'),
+                                        ('axonmyelin_perimeter', 'f4'),
                                         ('solidity', 'f4'),
                                         ('eccentricity', 'f4'),
                                         ('orientation', 'f4')
@@ -171,10 +171,10 @@ def main(argv=None):
                             stats['axon_area'],
                             stats['axon_perimeter'],
                             stats['myelin_area'],
-                            stats['axonmyelin_perimeter'],
                             stats['axon_diam'],
                             stats['myelin_thickness'],
                             stats['axonmyelin_area'],
+                            stats['axonmyelin_perimeter'],
                             stats['solidity'],
                             stats['eccentricity'],
                             stats['orientation']
