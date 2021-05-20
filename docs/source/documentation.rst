@@ -359,6 +359,49 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
     ---- pixel_size_in_micrometer.txt
     ---- axon_morphometrics.xlsx
 
+Morphometrics file
+~~~~~~~~~~~~~~~~~~
+
+The resulting **'axon_morphometrics'** file will contain the following columns headings:
+
+x0
+                        | Axon X centroid position in pixels.
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+y0
+                        | Axon Y centroid position in pixels.
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+gratio
+                        Ratio between the axon equivalent diameter and the axon+myelin (fiber) equivalent diameter.
+axon_area
+                        | Area of the axon region in :math:`{\mu}`\ m\ :sup:`2`\ .
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+axon_perimeter
+                        | Perimeter of the axon object in :math:`{\mu}`\ m.
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+myelin_area
+                        Difference between axon+myelin (fiber) area and axon area in :math:`{\mu}`\ m\ :sup:`2`\ .
+axon_diameter
+                        | Equivalent diameter of the axon in :math:`{\mu}`\ m (diameter of a circle with the same area as the region).
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+myelin_thickness
+                        Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m.
+axonmyelin_area
+                        | Area of the axon+myelin (fiber) region in :math:`{\mu}`\ m\ :sup:`2`\ .
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+axonmyelin_perimeter
+                        | Perimeter of the axon+myelin (fiber) object in :math:`{\mu}`\ m.
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+solidity
+                        | Ratio of pixels in the axon region to pixels of the convex hull image.
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+eccentricity
+                        | Eccentricity of the ellipse that has the same second-moments as the axon region.
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+orientation
+                        | Angle between the 0th axis (rows) and the major axis of the ellipse that has the same second moments as the axon region.
+                        | Extracted from `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_
+
+
 
 Jupyter notebooks
 -----------------
