@@ -169,7 +169,7 @@ GPU-compatible installation
 .. NOTE :: This feature is not available if you are using a macOS.
 
 Linux and Windows 10
-~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model using your GPU, you need to uninstall the TensorFlow from your virtual environment, and install the GPU version of it::
 
@@ -370,13 +370,12 @@ Morphometrics file
 
 The resulting **'axon_morphometrics'** file will contain the following columns headings:
 
-.. list-table:: axon_morphometrics.csv/xls
+.. list-table:: axon_morphometrics.csv/xlsx
    :widths: 20 80
    :header-rows: 1
 
    * - Field
      - Description
-     - Heading row 1, column 3
    * - x0
      - Axon X centroid position in pixels. Extracted with `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
    * - y0
