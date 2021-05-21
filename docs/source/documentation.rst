@@ -368,9 +368,9 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
 Morphometrics file
 ~~~~~~~~~~~~~~~~~~
 
-The resulting **'axon_morphometrics'** file will contain the following columns headings:
+The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings:
 
-.. list-table:: axon_morphometrics.csv/xlsx
+.. list-table::
    :widths: 20 80
    :header-rows: 1
 
