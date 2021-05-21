@@ -368,7 +368,7 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
 Morphometrics file
 ~~~~~~~~~~~~~~~~~~
 
-The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings:
+The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
 
 .. list-table::
    :widths: 20 80
@@ -402,8 +402,6 @@ The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following 
      - Eccentricity of the ellipse that has the same second-moments as the axon region.
    * - orientation
      - Angle between the 0th axis (rows) and the major axis of the ellipse that has the same second moments as the axon region.
-
-.. NOTE :: x0, y0, axon_area, axon_perimeter, axon_diameter, axonmyelin_area, axonmyelin_perimeter, solidity, eccentricity and orientation are extracted with `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
 
 Jupyter notebooks
 -----------------
