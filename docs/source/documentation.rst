@@ -389,7 +389,7 @@ The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following 
    * - myelin_area
      - Difference between axon+myelin (fiber) area and axon area in :math:`{\mu}`\ m\ :sup:`2`\ .
    * - axon_diameter
-     - Equivalent diameter of the axon in :math:`{\mu}`\ m (diameter of a circle with the same area as the region).
+     - Equivalent diameter of the axon in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
    * - myelin_thickness
      - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
    * - axonmyelin_area
