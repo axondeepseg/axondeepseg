@@ -381,7 +381,7 @@ The resulting **'axon_morphometrics'** file will contain the following columns h
    * - y0
      - Axon Y centroid position in pixels. Extracted with `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
    * - gratio
-     - Ratio between the axon equivalent diameter and the axon+myelin (fiber) equivalent diameter.
+     - Ratio between the axon equivalent diameter and the axon+myelin (fiber) equivalent diameter. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
    * - axon_area
      - Area of the axon region in :math:`{\mu}`\ m\ :sup:`2`\ . Extracted with `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
    * - axon_perimeter
@@ -391,7 +391,7 @@ The resulting **'axon_morphometrics'** file will contain the following columns h
    * - axon_diameter
      - Equivalent diameter of the axon in :math:`{\mu}`\ m (diameter of a circle with the same area as the region). Extracted with `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
    * - myelin_thickness
-     - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m.
+     - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
    * - axonmyelin_area
      - Area of the axon+myelin (fiber) region in :math:`{\mu}`\ m\ :sup:`2`\ . Extracted with `skimage.measure.regionprops <scikit-image https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
    * - axonmyelin_perimeter
