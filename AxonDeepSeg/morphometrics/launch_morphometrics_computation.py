@@ -101,19 +101,21 @@ def main(argv=None):
                         ".tiff",
                         ".png"
                         )
+    flag_morp_dir = False
+    target_list = []
 
     for dir_iter in path_target_list:
         if dir_iter.is_dir():
-                                
-            path_target_list = [Path(dir_iter / path_target) for path_target in os.listdir(dir_iter)  \
+            flag_morp_dir = True
+            target_list += [Path(dir_iter / path_target) for path_target in os.listdir(dir_iter)  \
                                 if Path(path_target).suffix.lower() in validExtensions and not path_target.endswith(str(axon_suffix)) \
                                 and not path_target.endswith(str(myelin_suffix)) and not path_target.endswith(str(axonmyelin_suffix)) \
                                 and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
-
+    if flag_morp_dir:
+        path_target_list = target_list
     for current_path_target in tqdm(path_target_list):
         if current_path_target.suffix.lower() in validExtensions:
             
-
             # load the axon mask
             if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
                 pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
