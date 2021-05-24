@@ -328,7 +328,7 @@ Before computing the morphometrics of an image, make sure it has been segmented 
 
     axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -f axon_morphometrics 
 
-This generates a **'axon_morphometrics.xlsx'** file in the image directory::
+This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
 
     --image1_sem/
     ---- 77.png
@@ -336,17 +336,17 @@ This generates a **'axon_morphometrics.xlsx'** file in the image directory::
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
     ---- pixel_size_in_micrometer.txt
-    ---- axon_morphometrics.xlsx
+    ---- 77_axon_morphometrics.xlsx
     ...
 
 
-Morphometrics of images from multiple folders
+Morphometrics of specific image from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argumument of the CLI separated by space. For instance, to compute morphometrics of the images present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
+To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argumument of the CLI separated by space. For instance, to compute morphometrics of the image **'77.png'** and **'image.png'** present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset respectively, use the following command::
 
     axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png test_segmentation/test_sem_image/image2_sem/image.png
 
-This will generate **'axon_morphometrics.xlsx'** file in each of folders:: 
+This will generate **'77_axon_morphometrics.xlsx'** and **'image_axon_morphometrics.xlsx'** files in the **'image1_sem'** and **'image2_sem'** folders:: 
 
     --image1_sem/
     ---- 77.png
@@ -354,7 +354,7 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
     ---- pixel_size_in_micrometer.txt
-    ---- axon_morphometrics.xlsx
+    ---- 77_axon_morphometrics.xlsx
     ...
 
     --image2_sem/
@@ -363,7 +363,48 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
     ---- image_seg-axonmyelin.png
     ---- image_seg-myelin.png
     ---- pixel_size_in_micrometer.txt
-    ---- axon_morphometrics.xlsx
+    ---- image_axon_morphometrics.xlsx
+
+Morphometrics of images present in folder(s)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To compute the morphometrics of batches of images present in folder(s), input the path of the directories using the **-i** argument separated by space. For example, the morphometrics files of the images present in the directories  **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** are computed using the following CLI command.
+
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem test_segmentation/test_sem_image/image2_sem
+ 
+This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics.xlsx'** morphometrics files in the **'image1_sem'** directory, and **'image_axon_morphometrics.xlsx'** and **'image2_axon_morphometrics.xlsx'** orphometrics files in the **'image2_sem'** directory:: 
+
+    --image1_sem/
+    ---- 77.png
+    ---- 77_seg-axon.png
+    ---- 77_seg-axonmyelin.png
+    ---- 77_seg-myelin.png
+    ---- 77_axon_morphometrics.xlsx
+
+    ---- 78.png
+    ---- 78_seg-axon.png
+    ---- 78_seg-axonmyelin.png
+    ---- 78_seg-myelin.png
+    ---- 78_axon_morphometrics.xlsx
+
+    ---- pixel_size_in_micrometer.txt
+
+    ...
+
+    --image2_sem/
+    ---- image.png
+    ---- image_seg-axon.png
+    ---- image_seg-axonmyelin.png
+    ---- image_seg-myelin.png
+    ---- image_axon_morphometrics.xlsx
+
+    ---- image2.png
+    ---- image2_seg-axon.png
+    ---- image2_seg-axonmyelin.png
+    ---- image2_seg-myelin.png
+    ---- image2_axon_morphometrics.xlsx
+    
+    ---- pixel_size_in_micrometer.txt
+
 
 Morphometrics file
 ~~~~~~~~~~~~~~~~~~
