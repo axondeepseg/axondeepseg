@@ -159,7 +159,8 @@ def main(argv=None):
                          )
             
             # Compute statistics
-            stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm)
+            stats_array, number_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
+                                                                pixel_size=psm, return_numbers_image=True)
 
             for stats in stats_array:
 
@@ -192,6 +193,9 @@ def main(argv=None):
                 # Export to csv    
                 else: 
                     pd.DataFrame(x).to_csv(current_path_target.parent / filename)
+
+                number_outfile = current_path_target.parent / "numbers.png"
+                ads.imwrite(number_outfile, number_array)
                     
                 print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:

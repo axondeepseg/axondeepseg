@@ -602,7 +602,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     )
 
         # Compute statistics
-        stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=pixel_size)
+        stats_array, number_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
+                                             pixel_size=pixel_size, return_numbers_image=True)
         for stats in stats_array:
 
             x = np.append(x,
@@ -642,17 +643,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
-        # Create the axon coordinate array
-        mean_diameter_in_pixel = np.average(x['axon_diam']) / pixel_size
-        axon_indexes = np.arange(x.size)
-        number_array = postprocessing.generate_axon_numbers_image(axon_indexes, x['x0'], x['y0'],
-                                                                  tuple(reversed(axon_array.shape)),
-                                                                  mean_diameter_in_pixel)
 
-        # Load the axon coordinate image into FSLeyes
-        number_outfile = self.ads_temp_dir / "numbers.png"
-        ads_utils.imwrite(number_outfile, number_array)
-        self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
+        number_file = Path(pathname).parents[0] / "numbers.png"
+        self.load_png_image_from_path(number_file, is_mask=False, colormap="yellow")
 
         return
 

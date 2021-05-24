@@ -15,6 +15,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from AxonDeepSeg.ads_utils import convert_path
+from AxonDeepSeg import postprocessing
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -43,13 +44,15 @@ def get_pixelsize(path_pixelsize_file):
         return pixelsize
 
 
-def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None):
+def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, return_numbers_image=False):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
     :param im_axon: Array: axon binary mask, output of axondeepseg
     :param path_folder: str: absolute path of folder containing pixel size file
     :param im_myelin: Array: myelin binary mask, output of axondeepseg
+    :param return_numbers_image (optional): If set to true, an image with numbers at the axon centroids will be
+    returned as a second return array
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
     if path_folder is not None:
@@ -155,6 +158,23 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     )
 
         stats_array = np.append(stats_array, [stats], axis=0)
+
+    if return_numbers_image is True:
+        # Extract the information required to generate the numbers image
+        x0_array = np.empty(0)
+        y0_array = np.empty(0)
+        diam_array = np.empty(0)
+        for entries in stats_array:
+            x0_array = np.append(x0_array, entries["x0"])
+            y0_array = np.append(y0_array, entries["y0"])
+            diam_array = np.append(diam_array, entries["axon_diam"])
+        # Create the axon coordinate array, then generate the image
+        mean_diameter_in_pixel = np.average(diam_array) / pixelsize
+        axon_indexes = np.arange(stats_array.size)
+        number_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
+                                                                  tuple(reversed(im_axon.shape)),
+                                                                  mean_diameter_in_pixel)
+        return stats_array, number_array
 
     return stats_array
 
