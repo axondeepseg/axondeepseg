@@ -195,22 +195,22 @@ def main(argv=None):
                         dtype=x.dtype)
                     )
 
-            filename = current_path_target.stem + "_" + filename 
+            morph_filename = current_path_target.stem + "_" + filename 
 
             # save the current contents in the file
-            if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
-                filename = filename + '.xlsx' 
+            if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
+                morph_filename = morph_filename + '.xlsx' 
             try:
                 # Export to excel
-                if filename.endswith('.xlsx'):
-                    pd.DataFrame(x).to_excel(current_path_target.parent / filename)
+                if morph_filename.endswith('.xlsx'):
+                    pd.DataFrame(x).to_excel(current_path_target.parent / morph_filename)
                 # Export to csv    
                 else: 
-                    pd.DataFrame(x).to_csv(current_path_target.parent / filename)
+                    pd.DataFrame(x).to_csv(current_path_target.parent / morph_filename)
                     
-                print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
+                print(f"Moprhometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
-                print("Cannot save morphometrics data in file '%s'." % filename)
+                print("Cannot save morphometrics data in file '%s'." % morph_filename)
 
         else: 
             print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")

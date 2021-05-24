@@ -9,7 +9,7 @@ import shutil
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix
 
 
 class TestCore(object):
@@ -20,7 +20,7 @@ class TestCore(object):
         self.testPath = self.fullPath.parent
         self.dataPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.morphometricsFile = "axon_morphometrics.xlsx"
+        self.morphometricsFile =  "image" + str(morph_suffix)
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
     def teardown(self):
@@ -76,32 +76,35 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_for_save_morphometrics_as_csv(self):
         pathImg = self.dataPath / 'image.png'
 
-        self.morphometricsFile = "axon_morphometrics.csv"
+        self.morphometricsFile = pathImg.stem + morph_suffix.stem + ".csv"
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', 'axon_morphometrics.csv'])
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', (morph_suffix.stem[1:] + '.csv')])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
     @pytest.mark.unit
     def test_main_cli_runs_succesfully_with_valid_inputs_for_custom_morphometrics_file_name(self):
         pathImg = self.dataPath / 'image.png'
-        self.morphometricsFile = "test_morphometrics.xlsx"
+        self.morphometricsFile = pathImg.stem + "_" + "test_morphometrics.xlsx"
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", str(self.morphometricsFile)])
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", "test_morphometrics.xlsx"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
-    
+
+        # unlink the morphometrics file
+        self.morphometricsPath.unlink()
+
     @pytest.mark.unit
     def test_main_cli_runs_successfully_for_generating_morphometrics_multiple_images(self):
         pathImg = self.dataPath / 'image.png'
 
-        # Make a copy of `__test_demo_files__` directory
-        shutil.copytree(self.dataPath.parent / '__test_demo_files__', self.dataPath.parent / '__test_demo_files_copy__', copy_function=shutil.copy)
-        
+        if not Path(self.dataPath.parent / '__test_demo_files__', self.dataPath.parent / '__test_demo_files_copy__').exists():
+            # Make a copy of `__test_demo_files__` directory
+            shutil.copytree(self.dataPath.parent / '__test_demo_files__', self.dataPath.parent / '__test_demo_files_copy__', copy_function=shutil.copy)
         pathImgcopy = self.dataPath.parent / '__test_demo_files_copy__' / 'image.png'
         morphometricsPathcopy = self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
 
