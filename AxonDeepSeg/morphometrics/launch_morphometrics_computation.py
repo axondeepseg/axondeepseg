@@ -5,6 +5,8 @@ import argparse
 from argparse import RawTextHelpFormatter
 from matplotlib import image
 import sys
+import os
+from tqdm import tqdm
 
 # Scientific modules imports
 import numpy as np
@@ -20,7 +22,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 write_aggregate_morphometrics 
                                                             )
 import AxonDeepSeg.ads_utils as ads
-from config import axon_suffix, myelin_suffix
+from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 from AxonDeepSeg.ads_utils import convert_path
 
 
@@ -100,17 +102,26 @@ def main(argv=None):
                         ".png"
                         )
 
-    for current_path_target in path_target_list:
+    for dir_iter in path_target_list:
+        if dir_iter.is_dir():
+                                
+            path_target_list = [Path(dir_iter / path_target) for path_target in os.listdir(dir_iter)  \
+                                if Path(path_target).suffix.lower() in validExtensions and not path_target.endswith(str(axon_suffix)) \
+                                and not path_target.endswith(str(myelin_suffix)) and not path_target.endswith(str(axonmyelin_suffix)) \
+                                and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
+
+    for current_path_target in tqdm(path_target_list):
         if current_path_target.suffix.lower() in validExtensions:
+            
 
             # load the axon mask
             if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
                 pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
             else: 
                 print("ERROR: Segmented axon mask is not present in the image folder. ",
-                              "Please check that the axon mask is located in the image folder. ",
-                              "If it is not present, perform segmentation of the image first using ADS."
-                      )
+                            "Please check that the axon mask is located in the image folder. ",
+                            "If it is not present, perform segmentation of the image first using ADS."
+                    )
                 sys.exit(3)
 
             # load myelin mask    
@@ -118,9 +129,9 @@ def main(argv=None):
                 pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
             else: 
                 print("ERROR: Segmented myelin mask is not present in the image folder. ",
-                              "Please check that the myelin mask is located in the image folder. ",
-                              "If it is not present, perform segmentation of the image first using ADS."
-                      )
+                            "Please check that the myelin mask is located in the image folder. ",
+                            "If it is not present, perform segmentation of the image first using ADS."
+                    )
                 sys.exit(3)
 
             if args["sizepixel"] is not None:
@@ -136,9 +147,9 @@ def main(argv=None):
                 else:
 
                     print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-                                  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                                  "containing the pixel size value."
-                          )
+                                "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                                "containing the pixel size value."
+                        )
                     sys.exit(3)
 
             x = np.array([], dtype=[
@@ -154,7 +165,7 @@ def main(argv=None):
                                         ('eccentricity', 'f4'),
                                         ('orientation', 'f4')
                                     ]
-                         )
+                        )
             
             # Compute statistics
             stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm)
@@ -177,6 +188,8 @@ def main(argv=None):
                         )],
                         dtype=x.dtype)
                     )
+
+            filename = current_path_target.stem + "_" + filename 
 
             # save the current contents in the file
             if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
