@@ -3,12 +3,14 @@
 from pathlib import Path
 import string
 import random
+import math
 import shutil
 import numpy as np
 from imageio import imread as imageio_imread  # to avoid confusion with mpl.pyplot.imread
 import pytest
 
 import AxonDeepSeg
+from AxonDeepSeg.visualization.simulate_axons import SimulateAxons
 from AxonDeepSeg.morphometrics.compute_morphometrics import (  
                                                                 get_pixelsize,
                                                                 get_axon_morphometrics, 
@@ -89,6 +91,8 @@ class TestCore(object):
                         'x0',
                         'axon_diam',
                         'axon_area',
+                        'axon_perimeter',
+                        'axonmyelin_perimeter',
                         'solidity',
                         'eccentricity',
                         'orientation'
@@ -179,6 +183,132 @@ class TestCore(object):
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
+
+    # --------------axon and myelin perimeter tests-------------- #
+    @pytest.mark.unit
+    def test_axon_perimeter_morphometrics_when_axon_shape_circle(self):
+
+        # Simulated image path
+        image_sim_path = Path(
+            self.testPath /
+            '__test_files__' /
+            '__test_simulated_axons__' /
+            'SimulatedAxons_circle_test_perimeter.png'
+        )    
+        
+        image_sim = SimulateAxons()
+        image_sim.generate_axon(axon_radius=50, center=[100, 100], gratio=0.9, plane_angle=0)
+        image_sim.generate_axon(axon_radius=45, center=[200, 200], gratio=0.8, plane_angle=0)
+        image_sim.generate_axon(axon_radius=40, center=[300, 300], gratio=0.7, plane_angle=0)
+        image_sim.generate_axon(axon_radius=35, center=[400, 400], gratio=0.6, plane_angle=0)
+        image_sim.generate_axon(axon_radius=30, center=[520, 520], gratio=0.5, plane_angle=0)
+        image_sim.generate_axon(axon_radius=23, center=[640, 640], gratio=0.4, plane_angle=0)
+        image_sim.generate_axon(axon_radius=18, center=[725, 725], gratio=0.3, plane_angle=0)
+        image_sim.generate_axon(axon_radius=12, center=[830, 830], gratio=0.2, plane_angle=0)
+        image_sim.generate_axon(axon_radius=6, center=[920, 920], gratio=0.1, plane_angle=0)
+
+        image_sim.save(image_sim_path)
+
+        axon_diam_sim = np.array([
+                                    100,
+                                    90,
+                                    80,
+                                    70,
+                                    60,
+                                    46,
+                                    36,
+                                    24,
+                                    12
+                                ])
+
+        # axon perimeter (inner perimeter of myelin) = pi * diameter of axon                        
+        axon_perimeter_sim = math.pi * axon_diam_sim
+
+        prediction = imageio_imread(image_sim_path, as_gray=True)
+        pred_axon = prediction > 200
+        pred_myelin = (prediction > 0) & (prediction < 200)
+
+        stats_array = get_axon_morphometrics(
+            pred_axon,
+            str(image_sim_path.parent),
+            im_myelin=pred_myelin
+            )
+        
+        for ii in range(0,9):
+            assert stats_array[ii]['axon_perimeter'] == pytest.approx(axon_perimeter_sim[ii], rel=0.1)
+
+        if image_sim_path.exists():
+            image_sim_path.unlink()
+    
+    @pytest.mark.unit
+    def test_axonmyelin_perimeter_morphometrics_when_axon_shape_circle(self):
+
+        # Simulated image path
+        image_sim_path = Path(
+            self.testPath /
+            '__test_files__' /
+            '__test_simulated_axons__' /
+            'SimulatedAxons_circle_test_perimeter.png'
+        )    
+        
+        image_sim = SimulateAxons()
+        image_sim.generate_axon(axon_radius=50, center=[100, 100], gratio=0.9, plane_angle=0)
+        image_sim.generate_axon(axon_radius=45, center=[200, 200], gratio=0.8, plane_angle=0)
+        image_sim.generate_axon(axon_radius=40, center=[300, 300], gratio=0.7, plane_angle=0)
+        image_sim.generate_axon(axon_radius=35, center=[400, 400], gratio=0.6, plane_angle=0)
+        image_sim.generate_axon(axon_radius=30, center=[520, 520], gratio=0.5, plane_angle=0)
+        image_sim.generate_axon(axon_radius=23, center=[640, 640], gratio=0.4, plane_angle=0)
+        image_sim.generate_axon(axon_radius=18, center=[725, 725], gratio=0.3, plane_angle=0)
+        image_sim.generate_axon(axon_radius=12, center=[830, 830], gratio=0.2, plane_angle=0)
+        image_sim.generate_axon(axon_radius=6, center=[920, 920], gratio=0.1, plane_angle=0)
+
+        image_sim.save(image_sim_path)
+
+        axon_diam_sim = np.array([
+                                    100,
+                                    90,
+                                    80,
+                                    70,
+                                    60,
+                                    46,
+                                    36,
+                                    24,
+                                    12
+                                ])
+
+        gratio_sim = np.array([
+                                0.9,
+                                0.8,
+                                0.7,
+                                0.6,
+                                0.5,
+                                0.4,
+                                0.3,
+                                0.2,
+                                0.1
+                            ])
+
+        # myelin thickness = radius_axon * ((1 / gratio) - 1 )
+        myelin_thickness =  (axon_diam_sim/2)  * ((1 / gratio_sim) - 1)              
+
+        # axonmyelin perimeter (outer perimeter of myelin) = pi * diameter of axon + myelin
+        axonmyelin_perimeter_sim = math.pi * ((myelin_thickness * 2) + axon_diam_sim)
+
+        prediction = imageio_imread(image_sim_path, as_gray=True)
+        pred_axon = prediction > 200
+        pred_myelin = (prediction > 0) & (prediction < 200)
+
+        stats_array = get_axon_morphometrics(
+            pred_axon,
+            str(image_sim_path.parent),
+            im_myelin=pred_myelin
+            )
+        
+        for ii in range(0,9):
+            assert stats_array[ii]['axonmyelin_perimeter'] == pytest.approx(axonmyelin_perimeter_sim[ii], rel=0.1)
+
+        if image_sim_path.exists():
+            image_sim_path.unlink()
 
     # --------------save and load _axon_morphometrics tests-------------- #
     @pytest.mark.unit

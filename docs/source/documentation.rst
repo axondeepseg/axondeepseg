@@ -168,12 +168,18 @@ GPU-compatible installation
 ---------------------------
 .. NOTE :: This feature is not available if you are using a macOS.
 
+Linux and Windows 10
+~~~~~~~~~~~~~~~~~~~~
+
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model using your GPU, you need to uninstall the TensorFlow from your virtual environment, and install the GPU version of it::
 
-    pip uninstall tensorflow
-    pip install tensorflow-gpu==1.13.1
+    conda uninstall tensorflow
+    conda install -c anaconda tensorflow-gpu==1.13.1
 
-.. WARNING :: Because we recommend the use of version 1.13.1 of Tensorflow GPU, the CUDA version on your system should be 10.0. CUDA version less than 10 is not compatible with Tensorflow 1.13.1. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
+This might uninstall keras in the process, so we need to install it again ::
+
+    conda install -c conda-forge keras==2.2.4
+    
 
 Existing models
 ===============
@@ -359,6 +365,43 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
     ---- pixel_size_in_micrometer.txt
     ---- axon_morphometrics.xlsx
 
+Morphometrics file
+~~~~~~~~~~~~~~~~~~
+
+The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Field
+     - Description
+   * - x0
+     - Axon X centroid position in pixels.
+   * - y0
+     - Axon Y centroid position in pixels.
+   * - gratio
+     - Ratio between the axon equivalent diameter and the axon+myelin (fiber) equivalent diameter (`gratio = axon_diameter / axonmyelin_diameter`). Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+   * - axon_area
+     - Area of the axon region in :math:`{\mu}`\ m\ :sup:`2`\ .
+   * - axon_perimeter
+     - Perimeter of the axon object in :math:`{\mu}`\ m.
+   * - myelin_area
+     - Difference between axon+myelin (fiber) area and axon area in :math:`{\mu}`\ m\ :sup:`2`\ .
+   * - axon_diameter
+     - Equivalent diameter of the axon in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+   * - myelin_thickness
+     - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+   * - axonmyelin_area
+     - Area of the axon+myelin (fiber) region in :math:`{\mu}`\ m\ :sup:`2`\ .
+   * - axonmyelin_perimeter
+     - Perimeter of the axon+myelin (fiber) object in :math:`{\mu}`\ m.
+   * - solidity
+     - Ratio of pixels in the axon region to pixels of the convex hull image.
+   * - eccentricity
+     - Eccentricity of the ellipse that has the same second-moments as the axon region.
+   * - orientation
+     - Angle between the 0th axis (rows) and the major axis of the ellipse that has the same second moments as the axon region.
 
 Jupyter notebooks
 -----------------
