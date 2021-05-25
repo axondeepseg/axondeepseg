@@ -102,7 +102,7 @@ def main(argv=None):
                         ".png"
                         )
     
-    flag_morp_batch = False # flag set to True if batch moprhometrics is to computed else False
+    flag_morp_batch = False # True, if batch moprhometrics is to computed else False
     target_list = []        # list of image paths for batch morphometrics computations
 
     for dir_iter in path_target_list:
@@ -113,7 +113,7 @@ def main(argv=None):
                                 and not path_target.endswith(str(myelin_suffix)) and not path_target.endswith(str(axonmyelin_suffix)) \
                                 and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
     
-    if flag_morp_batch: # set the path_target_list to target_list if flag_morph_batch is True
+    if flag_morp_batch: # If flag_morph_batch = True, set the path_target_list to target_list.
         path_target_list = target_list
 
     for current_path_target in tqdm(path_target_list):
@@ -123,7 +123,7 @@ def main(argv=None):
             if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
                 pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
             else: 
-                print(f"ERROR: Segmented axon mask for image {str(current_path_target)} is not present in the image folder. ",
+                print(f"ERROR: Segmented axon mask for image: `{str(current_path_target)}` is not present in the image folder. ",
                             "Please check that the axon mask is located in the image folder. ",
                             "If it is not present, perform segmentation of the image first using ADS.\n"
                     )
@@ -133,7 +133,7 @@ def main(argv=None):
             if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
                 pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
             else: 
-                print(f"ERROR: Segmented myelin mask for image {str(current_path_target)} is not present in the image folder. ",
+                print(f"ERROR: Segmented myelin mask for image: `{str(current_path_target)}` is not present in the image folder. ",
                             "Please check that the myelin mask is located in the image folder. ",
                             "If it is not present, perform segmentation of the image first using ADS.\n"
                     )
@@ -151,7 +151,7 @@ def main(argv=None):
                     psm = float(resolution_file.read())
                 else:
 
-                    print(f"ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in  for image {str(current_path_target)} in the image folder. ",
+                    print(f"ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file for image: `{str(current_path_target)}` in the image folder. ",
                                 "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
                                 "containing the pixel size value.\n"
                         )
