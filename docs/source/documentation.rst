@@ -354,7 +354,7 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'image_axon_morphometr
     ---- 77_seg-axon.png
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
-    **---- 77_axon_morphometrics.xlsx**
+    ---- 77_axon_morphometrics.xlsx
     ---- pixel_size_in_micrometer.txt
 
     ...
@@ -364,7 +364,7 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'image_axon_morphometr
     ---- image_seg-axon.png
     ---- image_seg-axonmyelin.png
     ---- image_seg-myelin.png
-    **---- image_axon_morphometrics.xlsx**
+    ---- image_axon_morphometrics.xlsx
     ---- pixel_size_in_micrometer.txt
 
 
@@ -381,13 +381,13 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics
     ---- 77_seg-axon.png
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
-    **---- 77_axon_morphometrics.xlsx**
+    ---- 77_axon_morphometrics.xlsx
 
     ---- 78.png
     ---- 78_seg-axon.png
     ---- 78_seg-axonmyelin.png
     ---- 78_seg-myelin.png
-    **---- 78_axon_morphometrics.xlsx**
+    ---- 78_axon_morphometrics.xlsx
 
     ---- pixel_size_in_micrometer.txt
 
@@ -398,13 +398,13 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics
     ---- image_seg-axon.png
     ---- image_seg-axonmyelin.png
     ---- image_seg-myelin.png
-    **---- image_axon_morphometrics.xlsx**
+    ---- image_axon_morphometrics.xlsx
 
     ---- image2.png
     ---- image2_seg-axon.png
     ---- image2_seg-axonmyelin.png
     ---- image2_seg-myelin.png
-    **---- image2_axon_morphometrics.xlsx**
+    ---- image2_axon_morphometrics.xlsx
     
     ---- pixel_size_in_micrometer.txt
 
