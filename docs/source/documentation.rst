@@ -335,8 +335,9 @@ This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
     ---- 77_seg-axon.png
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
-    ---- pixel_size_in_micrometer.txt
     ---- 77_axon_morphometrics.xlsx
+    ---- pixel_size_in_micrometer.txt
+
     ...
 
 
@@ -353,8 +354,9 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'image_axon_morphometr
     ---- 77_seg-axon.png
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
+    **---- 77_axon_morphometrics.xlsx**
     ---- pixel_size_in_micrometer.txt
-    ---- 77_axon_morphometrics.xlsx
+
     ...
 
     --image2_sem/
@@ -362,8 +364,9 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'image_axon_morphometr
     ---- image_seg-axon.png
     ---- image_seg-axonmyelin.png
     ---- image_seg-myelin.png
+    **---- image_axon_morphometrics.xlsx**
     ---- pixel_size_in_micrometer.txt
-    ---- image_axon_morphometrics.xlsx
+
 
 Morphometrics of images present in folder(s)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -371,20 +374,20 @@ To compute the morphometrics of batches of images present in folder(s), input th
 
     axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem test_segmentation/test_sem_image/image2_sem
  
-This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics.xlsx'** morphometrics files in the **'image1_sem'** directory, and **'image_axon_morphometrics.xlsx'** and **'image2_axon_morphometrics.xlsx'** orphometrics files in the **'image2_sem'** directory:: 
+This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics.xlsx'** morphometrics files in the **'image1_sem'** directory. The **'image_axon_morphometrics.xlsx'** and **'image2_axon_morphometrics.xlsx'** morphometrics files are generated in the **'image2_sem'** directory:: 
 
     --image1_sem/
     ---- 77.png
     ---- 77_seg-axon.png
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
-    ---- 77_axon_morphometrics.xlsx
+    **---- 77_axon_morphometrics.xlsx**
 
     ---- 78.png
     ---- 78_seg-axon.png
     ---- 78_seg-axonmyelin.png
     ---- 78_seg-myelin.png
-    ---- 78_axon_morphometrics.xlsx
+    **---- 78_axon_morphometrics.xlsx**
 
     ---- pixel_size_in_micrometer.txt
 
@@ -395,13 +398,13 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics
     ---- image_seg-axon.png
     ---- image_seg-axonmyelin.png
     ---- image_seg-myelin.png
-    ---- image_axon_morphometrics.xlsx
+    **---- image_axon_morphometrics.xlsx**
 
     ---- image2.png
     ---- image2_seg-axon.png
     ---- image2_seg-axonmyelin.png
     ---- image2_seg-myelin.png
-    ---- image2_axon_morphometrics.xlsx
+    **---- image2_axon_morphometrics.xlsx**
     
     ---- pixel_size_in_micrometer.txt
 
