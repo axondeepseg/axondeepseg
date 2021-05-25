@@ -122,7 +122,7 @@ class TestCore(object):
         morphometricsPathCopy.unlink() 
 
     @pytest.mark.unit 
-    def test_main_cli_runs_successfully_for_generating_morphometrics_multiple_images(self):
+    def test_main_cli_runs_successfully_for_generating_batches_morphometrics_multiple_images(self):
         
         # path of `__test_demo_files__` directory
         pathDirCopy = self.dataPath.parent / '__test_demo_files_copy__'
