@@ -35,7 +35,7 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.16"
+VERSION = "0.2.17"
 
 
 class ADScontrol(ctrlpanel.ControlPanel):
@@ -644,8 +644,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
 
-        number_file = Path(pathname).parents[0] / "numbers.png"
-        self.load_png_image_from_path(number_file, is_mask=False, colormap="yellow")
+        number_outfile = Path(pathname).parents[0] / "numbers.png"
+        ads_utils.imwrite(number_outfile, number_array)
+        self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
 
         return
 
