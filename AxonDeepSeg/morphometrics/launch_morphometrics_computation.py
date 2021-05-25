@@ -123,7 +123,7 @@ def main(argv=None):
             if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
                 pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
             else: 
-                print("ERROR: Segmented axon mask is not present in the image folder. ",
+                print(f"ERROR: Segmented axon mask for image {str(current_path_target)} is not present in the image folder. ",
                             "Please check that the axon mask is located in the image folder. ",
                             "If it is not present, perform segmentation of the image first using ADS.\n"
                     )
@@ -133,7 +133,7 @@ def main(argv=None):
             if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
                 pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
             else: 
-                print("ERROR: Segmented myelin mask is not present in the image folder. ",
+                print(f"ERROR: Segmented myelin mask for image {str(current_path_target)} is not present in the image folder. ",
                             "Please check that the myelin mask is located in the image folder. ",
                             "If it is not present, perform segmentation of the image first using ADS.\n"
                     )
@@ -151,7 +151,7 @@ def main(argv=None):
                     psm = float(resolution_file.read())
                 else:
 
-                    print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+                    print(f"ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in  for image {str(current_path_target)} in the image folder. ",
                                 "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
                                 "containing the pixel size value.\n"
                         )
@@ -202,7 +202,7 @@ def main(argv=None):
                 morph_filename = current_path_target.stem + "_" + filename
             else:  
                 morph_filename = filename
-                
+
             # save the current contents in the file
             if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
                 morph_filename = morph_filename + '.xlsx' 

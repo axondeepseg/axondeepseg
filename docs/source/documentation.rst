@@ -341,7 +341,7 @@ This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
     ...
 
 
-Morphometrics of specific image from multiple folders
+Morphometrics of a specific image from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argumument of the CLI separated by space. For instance, to compute morphometrics of the image **'77.png'** and **'image.png'** present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset respectively, use the following command::
 
