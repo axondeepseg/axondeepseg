@@ -5,6 +5,8 @@ import random
 import string
 import pytest
 import shutil
+import glob
+import sys
 
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
@@ -109,16 +111,50 @@ class TestCore(object):
             # Make a copy of `__test_demo_files__` directory
             shutil.copytree(self.dataPath, pathDirCopy, copy_function=shutil.copy)
         pathImgCopy = self.dataPath.parent / '__test_demo_files_copy__' / 'image.png'
-        morphometricsPathcopy = self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
+        morphometricsPathCopy = self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgCopy)])
 
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathcopy.exists()
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathCopy.exists()
         
         # unlink the morphometrics file
-        morphometricsPathcopy.unlink() 
+        morphometricsPathCopy.unlink() 
+
+    @pytest.mark.unit 
+    def test_main_cli_runs_successfully_for_generating_morphometrics_multiple_images(self):
         
+        # path of `__test_demo_files__` directory
+        pathDirCopy = self.dataPath.parent / '__test_demo_files_copy__'
+
+        if not pathDirCopy.exists():
+            # Make a copy of `__test_demo_files__` directory
+            shutil.copytree(self.dataPath, pathDirCopy, copy_function=shutil.copy)
+        
+        list_images = glob.glob(str(pathDirCopy / 'image*.png'))
+
+        for image in list_images:
+            img = image.replace("image", "img") 
+            shutil.copy(pathDirCopy / Path(image), pathDirCopy / Path(img)) # duplicate the images to test batch morphometrics CLI command
+        
+        morphometricsImagePathCopy = self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile # morphometrics file of `image.png` image
+        morphometricsImgPathCopy = self.dataPath.parent / '__test_demo_files_copy__' / ('img' + '_' + str(morph_suffix)) # morphometrics file of `img.png` image
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathDirCopy)])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and morphometricsImagePathCopy.exists() and morphometricsImgPathCopy.exists()
+        
+        # unlink the morphometrics file
+        morphometricsImagePathCopy.unlink() 
+        morphometricsImgPathCopy.unlink() 
+
+        # remove the duplicated images
+        list_images = glob.glob(str(pathDirCopy / 'img*.png')) # list of duplicated images
+        for image in list_images:
+            if  Path(image).exists():
+                Path(image).unlink()
+
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
         self.dataPath = self.testPath / '__test_files__' / '__test_segment_files__'
