@@ -20,7 +20,7 @@ class TestCore(object):
         self.testPath = self.fullPath.parent
         self.dataPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.morphometricsFile =  "image" + str(morph_suffix)
+        self.morphometricsFile =  "image" + "_" + str(morph_suffix)
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
     def teardown(self):
@@ -60,7 +60,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", "axon_morphometrics"])
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", str(morph_suffix)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
     
@@ -76,18 +76,18 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_for_save_morphometrics_as_csv(self):
         pathImg = self.dataPath / 'image.png'
 
-        self.morphometricsFile = pathImg.stem + morph_suffix.stem + ".csv"
+        self.morphometricsFile = pathImg.stem + "_" + morph_suffix.stem + ".csv"
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', (morph_suffix.stem[1:] + '.csv')])
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', (morph_suffix.stem + '.csv')])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
     @pytest.mark.unit
     def test_main_cli_runs_succesfully_with_valid_inputs_for_custom_morphometrics_file_name(self):
         pathImg = self.dataPath / 'image.png'
-        self.morphometricsFile = pathImg.stem + "_" + "test_morphometrics.xlsx"
+        self.morphometricsFile = "test_morphometrics.xlsx"
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:

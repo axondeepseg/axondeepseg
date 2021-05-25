@@ -86,7 +86,7 @@ def main(argv=None):
     ap.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image.')
 
     ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics will be stored',
-                                                              default=morph_suffix.stem)
+                                                              default=morph_suffix)
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -102,19 +102,20 @@ def main(argv=None):
                         ".png"
                         )
     
-    flag_morp_dir = False
-    target_list = []
+    flag_morp_batch = False # flag set to True if batch moprhometrics is to computed else False
+    target_list = []        # list of image paths for batch morphometrics computations
 
     for dir_iter in path_target_list:
-        if dir_iter.is_dir():
-            flag_morp_dir = True
+        if dir_iter.is_dir(): # batch morphometrics
+            flag_morp_batch = True
             target_list += [Path(dir_iter / path_target) for path_target in os.listdir(dir_iter)  \
                                 if Path(path_target).suffix.lower() in validExtensions and not path_target.endswith(str(axon_suffix)) \
                                 and not path_target.endswith(str(myelin_suffix)) and not path_target.endswith(str(axonmyelin_suffix)) \
                                 and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
     
-    if flag_morp_dir:
+    if flag_morp_batch: # set the path_target_list to target_list if flag_morph_batch is True
         path_target_list = target_list
+
     for current_path_target in tqdm(path_target_list):
         if current_path_target.suffix.lower() in validExtensions:
             
@@ -124,7 +125,7 @@ def main(argv=None):
             else: 
                 print("ERROR: Segmented axon mask is not present in the image folder. ",
                             "Please check that the axon mask is located in the image folder. ",
-                            "If it is not present, perform segmentation of the image first using ADS."
+                            "If it is not present, perform segmentation of the image first using ADS.\n"
                     )
                 sys.exit(3)
 
@@ -134,7 +135,7 @@ def main(argv=None):
             else: 
                 print("ERROR: Segmented myelin mask is not present in the image folder. ",
                             "Please check that the myelin mask is located in the image folder. ",
-                            "If it is not present, perform segmentation of the image first using ADS."
+                            "If it is not present, perform segmentation of the image first using ADS.\n"
                     )
                 sys.exit(3)
 
@@ -152,7 +153,7 @@ def main(argv=None):
 
                     print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
                                 "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                                "containing the pixel size value."
+                                "containing the pixel size value.\n"
                         )
                     sys.exit(3)
 
@@ -197,8 +198,11 @@ def main(argv=None):
                         dtype=x.dtype)
                     )
 
-            morph_filename = current_path_target.stem + "_" + filename 
-
+            if Path(filename).stem ==  morph_suffix.stem:
+                morph_filename = current_path_target.stem + "_" + filename
+            else:  
+                morph_filename = filename
+                
             # save the current contents in the file
             if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
                 morph_filename = morph_filename + '.xlsx' 
@@ -210,7 +214,7 @@ def main(argv=None):
                 else: 
                     pd.DataFrame(x).to_csv(current_path_target.parent / morph_filename)
                     
-                print(f"Moprhometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
+                print(f"Moprhometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory ")
             except IOError:
                 print("Cannot save morphometrics data in file '%s'." % morph_filename)
 

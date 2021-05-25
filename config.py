@@ -7,4 +7,4 @@ axon_suffix = Path('_seg-axon.png')             # axon segmentation suffix file 
 myelin_suffix = Path('_seg-myelin.png')         # myelin segmentation suffix file name
 
 # morphometrics file suffix name
-morph_suffix = Path('_axon_morphometrics.xlsx')
+morph_suffix = Path('axon_morphometrics.xlsx')
