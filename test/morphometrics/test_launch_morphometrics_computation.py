@@ -115,7 +115,10 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgCopy)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathcopy.exists()
-
+        
+        # unlink the morphometrics file
+        morphometricsPathcopy.unlink() 
+        
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
         self.dataPath = self.testPath / '__test_files__' / '__test_segment_files__'
