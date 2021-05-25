@@ -22,7 +22,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 write_aggregate_morphometrics 
                                                             )
 import AxonDeepSeg.ads_utils as ads
-from config import axon_suffix, myelin_suffix, axonmyelin_suffix
+from config import axon_suffix, myelin_suffix, axonmyelin_suffix, morph_suffix
 from AxonDeepSeg.ads_utils import convert_path
 
 
@@ -86,7 +86,7 @@ def main(argv=None):
     ap.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image.')
 
     ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics will be stored',
-                                                              default="axon_morphometrics")
+                                                              default=morph_suffix.stem)
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -101,6 +101,7 @@ def main(argv=None):
                         ".tiff",
                         ".png"
                         )
+    
     flag_morp_dir = False
     target_list = []
 
@@ -111,6 +112,7 @@ def main(argv=None):
                                 if Path(path_target).suffix.lower() in validExtensions and not path_target.endswith(str(axon_suffix)) \
                                 and not path_target.endswith(str(myelin_suffix)) and not path_target.endswith(str(axonmyelin_suffix)) \
                                 and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
+    
     if flag_morp_dir:
         path_target_list = target_list
     for current_path_target in tqdm(path_target_list):
