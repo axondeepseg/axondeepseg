@@ -198,9 +198,9 @@ def main(argv=None):
                         dtype=x.dtype)
                     )
 
-            if Path(filename).stem ==  morph_suffix.stem:
+            if Path(filename).stem ==  morph_suffix.stem: # If no custom filename provided, then use the morphometrics filename convention: `image_name_axon_morphometrics.xlsx`
                 morph_filename = current_path_target.stem + "_" + filename
-            else:  
+            else:                                          # If custom filename provided, then set the mophometrics file name to custom filename. 
                 morph_filename = filename
 
             # save the current contents in the file
