@@ -98,18 +98,21 @@ class TestCore(object):
         # unlink the morphometrics file
         self.morphometricsPath.unlink()
 
-    @pytest.mark.unit
+    @pytest.mark.unit 
     def test_main_cli_runs_successfully_for_generating_morphometrics_multiple_images(self):
         pathImg = self.dataPath / 'image.png'
+        
+        # path of `__test_demo_files__` directory
+        pathDirCopy = self.dataPath.parent / '__test_demo_files_copy__'
 
-        if not Path(self.dataPath.parent / '__test_demo_files__', self.dataPath.parent / '__test_demo_files_copy__').exists():
+        if not pathDirCopy.exists():
             # Make a copy of `__test_demo_files__` directory
-            shutil.copytree(self.dataPath.parent / '__test_demo_files__', self.dataPath.parent / '__test_demo_files_copy__', copy_function=shutil.copy)
-        pathImgcopy = self.dataPath.parent / '__test_demo_files_copy__' / 'image.png'
+            shutil.copytree(self.dataPath, pathDirCopy, copy_function=shutil.copy)
+        pathImgCopy = self.dataPath.parent / '__test_demo_files_copy__' / 'image.png'
         morphometricsPathcopy = self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgcopy)])
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgCopy)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathcopy.exists()
 
