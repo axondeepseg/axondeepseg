@@ -89,8 +89,8 @@ class TestCore(object):
     @pytest.mark.unit
     def test_main_cli_runs_succesfully_with_valid_inputs_for_custom_morphometrics_file_name(self):
         pathImg = self.dataPath / 'image.png'
-        self.morphometricsFile = "test_morphometrics.xlsx"
-        self.morphometricsPath = self.dataPath / self.morphometricsFile
+        self.morphometricsFile = 'test_morphometrics.xlsx'
+        self.morphometricsPath = self.dataPath / pathImg + '_' + self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", "test_morphometrics.xlsx"])
