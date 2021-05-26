@@ -340,7 +340,7 @@ This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
 
     ...
 
-.. NOTE :: If name of the excel file is not provided using the -f, the morphometrics will be saved as the original filename with suffix "axon_morphometrics.xlsx". However, if custom filename is provided, then the morphometrics will be saved as the original filename with suffix "custom filename":
+.. NOTE :: If name of the excel file is not provided using the `-f`, the morphometrics will be saved as the original image name with suffix "axon_morphometrics.xlsx". However, if custom filename is provided, then the morphometrics will be saved as the original image name with suffix "custom filename".
    ::
 
 Morphometrics of a specific image from multiple folders
