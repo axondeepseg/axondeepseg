@@ -60,8 +60,8 @@ git
 
 To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
 
-Create Virtual Environment and Install AxonDeepSeg
------------
+Install AxonDeepSeg
+-------------------
 
 To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
 
@@ -70,27 +70,20 @@ To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have 
 
 Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you create a virtual environment before you continue with your installation.
 
-To setup a Python 3.7 virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions:
+To setup a Python virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions::
 
-macOS::
+    conda env create -f environment.yml -n ads_venv
 
-    conda env create -f environment_macOS.yml -n ads_venv
+.. WARNING :: For some users, the installation may take up to 30 minutes as many dependencies have shared subdependencies, and resolving these potential conflicts takes time. If that's the case, we encourage you to take a break from your screen and go for a walk while listening to the `AxonDeepSeg Spotify playlist <https://open.spotify.com/playlist/27LVNnfhTKjVOli6bPCaV5?si=OydcwxoOSamwCsg3xcqybw>`_.
 
-Linux::
-
-    conda env create -f environment_Linux.yml -n ads_venv
-
-Windows::
-
-    conda env create -f environment_Windows.yml -n ads_venv
-
-.. WARNING :: FSLeyes is only supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI. 
+.. NOTE :: FSLeyes is only supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI. 
 
 Then, activate your virtual environment::
 
     conda activate ads_venv
 
-.. NOTE :: To switch back to your default environment, run::
+.. NOTE :: To switch back to your default environment, run:
+  ::
 
        conda deactivate
 
@@ -122,6 +115,8 @@ This integrity test automatically performs the axon and myelin segmentation of a
 
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
 
+.. NOTE :: For some users, the test may fail because Keras is using Theano backend instead of Tensorflow. In that case, you will see the line ``Using Theano backend.`` when launching ``axondeepseg_test``. To fix this issue, add the line ``export KERAS_BACKEND="tensorflow"`` at the end of the ``<your_conda_install_location>\envs\<your_environment_name>/etc/conda/activate.d/keras_activate.sh`` file, then deactivate and reactivate your environment. The test should print ``Using Tensorflow backend.`` and pass.
+
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
 
@@ -151,6 +146,19 @@ In FSLeyes, do the following:
 
 From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
 
+In case, you find trouble installing FSLeyes plugin for ADS you could refer the video below.
+
+.. raw:: html
+
+   <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+     <iframe width="700" height="394" src="https://www.youtube.com/embed/qzWeG5vaVyo" frameborder="0" allowfullscreen></iframe>
+
+
+.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
+           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
+           This step may only be required when you first install the plugin.
+
+
 Known issues
 ~~~~~~~~~~~~
 1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
@@ -160,12 +168,18 @@ GPU-compatible installation
 ---------------------------
 .. NOTE :: This feature is not available if you are using a macOS.
 
+Linux and Windows 10
+~~~~~~~~~~~~~~~~~~~~
+
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model using your GPU, you need to uninstall the TensorFlow from your virtual environment, and install the GPU version of it::
 
-    pip uninstall tensorflow
-    pip install tensorflow-gpu==1.13.1
+    conda uninstall tensorflow
+    conda install -c anaconda tensorflow-gpu==1.13.1
 
-.. WARNING :: Because we recommend the use of version 1.13.1 of Tensorflow GPU, the CUDA version on your system should be 10.0. CUDA version less than 10 is not compatible with Tensorflow 1.13.1. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
+This might uninstall keras in the process, so we need to install it again ::
+
+    conda install -c conda-forge keras==2.2.4
+    
 
 Existing models
 ===============
@@ -177,16 +191,31 @@ The three models are described below:
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
 * A OM model, that works at a resolution of 0.1 micrometer per pixel.
 
-Getting started
-===============
+Using AxonDeepSeg
+=================
+
+Activate the virtual environment
+--------------------------------
+
+To use AxonDeepSeg, you must first activate the virtual environment if it isn't currently activated. To do so, run::
+
+    conda activate ads_venv
+
+.. NOTE :: To switch back to your default environment, run:
+  ::
+
+       conda deactivate
 
 Example dataset
 ---------------
 
-You can test AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
+You can demo the AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
+
+Segmentation
+------------
 
 Syntax
-------
+~~~~~~
 
 The script to launch is called **axondeepseg**. It takes several arguments:
 
@@ -227,7 +256,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
         axondeepseg -h
 
 Segment a single image
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
 
 To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image **'77.png'** of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
 
@@ -241,7 +270,7 @@ To segment the same image by using the **'pixel_size_in_micrometer.txt'** file i
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png
 
 Segment multiple images of the same resolution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
 
@@ -262,11 +291,117 @@ Then, use the following command::
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/
 
 Segment images from multiple folders
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
+
+
+Morphometrics
+-------------
+
+You can generate morphometrics using AxonDeepSeg via the command line interface.
+
+Syntax
+~~~~~~
+
+The script to launch in called **axondeepseg_morphometrics**. It has several arguments.
+
+**Required arguments:**
+
+-i IMGPATH
+                    Path to the image file whose morphometrics needs to be calculated.
+
+**Optional arguments:**
+
+-s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
+                    If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path (that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the morphometrics computation.
+
+-f FILENAME         Name of the excel file in which the morphometrics will be stored.
+                    The excel file extension can either be **.xlsx** or **.csv**.
+                    If name of the excel file is not provided, the morphometrics will be saved as **axon_morphometrics.xlsx**.
+
+Morphometrics of a single image
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
+
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -f axon_morphometrics 
+
+This generates a **'axon_morphometrics.xlsx'** file in the image directory::
+
+    --image1_sem/
+    ---- 77.png
+    ---- 77_seg-axon.png
+    ---- 77_seg-axonmyelin.png
+    ---- 77_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- axon_morphometrics.xlsx
+    ...
+
+
+Morphometrics of images from multiple folders
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argumument of the CLI separated by space. For instance, to compute morphometrics of the images present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
+
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png test_segmentation/test_sem_image/image2_sem/image.png
+
+This will generate **'axon_morphometrics.xlsx'** file in each of folders:: 
+
+    --image1_sem/
+    ---- 77.png
+    ---- 77_seg-axon.png
+    ---- 77_seg-axonmyelin.png
+    ---- 77_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- axon_morphometrics.xlsx
+    ...
+
+    --image2_sem/
+    ---- image.png
+    ---- image_seg-axon.png
+    ---- image_seg-axonmyelin.png
+    ---- image_seg-myelin.png
+    ---- pixel_size_in_micrometer.txt
+    ---- axon_morphometrics.xlsx
+
+Morphometrics file
+~~~~~~~~~~~~~~~~~~
+
+The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Field
+     - Description
+   * - x0
+     - Axon X centroid position in pixels.
+   * - y0
+     - Axon Y centroid position in pixels.
+   * - gratio
+     - Ratio between the axon equivalent diameter and the axon+myelin (fiber) equivalent diameter (`gratio = axon_diameter / axonmyelin_diameter`). Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+   * - axon_area
+     - Area of the axon region in :math:`{\mu}`\ m\ :sup:`2`\ .
+   * - axon_perimeter
+     - Perimeter of the axon object in :math:`{\mu}`\ m.
+   * - myelin_area
+     - Difference between axon+myelin (fiber) area and axon area in :math:`{\mu}`\ m\ :sup:`2`\ .
+   * - axon_diameter
+     - Equivalent diameter of the axon in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+   * - myelin_thickness
+     - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+   * - axonmyelin_area
+     - Area of the axon+myelin (fiber) region in :math:`{\mu}`\ m\ :sup:`2`\ .
+   * - axonmyelin_perimeter
+     - Perimeter of the axon+myelin (fiber) object in :math:`{\mu}`\ m.
+   * - solidity
+     - Ratio of pixels in the axon region to pixels of the convex hull image.
+   * - eccentricity
+     - Eccentricity of the ellipse that has the same second-moments as the axon region.
+   * - orientation
+     - Angle between the 0th axis (rows) and the major axis of the ellipse that has the same second moments as the axon region.
 
 Jupyter notebooks
 -----------------

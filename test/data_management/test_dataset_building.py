@@ -4,8 +4,10 @@ import imageio
 from pathlib import Path
 import shutil
 import pytest
-from AxonDeepSeg.data_management.dataset_building import *
-from AxonDeepSeg.visualization.get_masks import *
+from tqdm import tqdm
+import numpy as np
+from AxonDeepSeg.data_management.dataset_building import raw_img_to_patches, patched_to_dataset, split_data
+from AxonDeepSeg.visualization.get_masks import get_image_unique_vals_properties
 from AxonDeepSeg.ads_utils import download_data
 
 class TestCore(object):

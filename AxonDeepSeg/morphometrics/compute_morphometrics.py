@@ -14,8 +14,6 @@ from skimage import measure, morphology, feature
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-# AxonDeepSeg imports
-from AxonDeepSeg.testing.segmentation_scoring import *
 from AxonDeepSeg.ads_utils import convert_path
 
 
@@ -121,6 +119,8 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
             axon_diam = prop_axon.minor_axis_length * pixelsize
         # Axon area in µm^2
         axon_area = prop_axon.area * (pixelsize ** 2)
+        # Axon perimeter (inner perimeter of myelin) in micrometers
+        axon_perimeter = prop_axon.perimeter * pixelsize
         # Axon orientation angle
         orientation = prop_axon.orientation
         # Add metrics to list of dictionaries
@@ -128,6 +128,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                  'x0': x0,
                  'axon_diam': axon_diam,
                  'axon_area': axon_area,
+                 'axon_perimeter': axon_perimeter,
                  'solidity': solidity,
                  'eccentricity': eccentricity,
                  'orientation': orientation}
@@ -148,11 +149,15 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 myelin_area = (pixelsize ** 2) * _res2
 
                 axonmyelin_area = (pixelsize ** 2) * prop_axonmyelin.area
+                # Perimeter of axonmyelin instance (outer perimeter of myelin) in micrometers
+                axonmyelin_perimeter = prop_axonmyelin.perimeter * pixelsize
 
                 stats['myelin_thickness'] = myelin_thickness
                 stats['myelin_area'] = myelin_area
                 stats['axonmyelin_area'] = axonmyelin_area
+                stats['axonmyelin_perimeter'] = axonmyelin_perimeter
                 stats['gratio'] = (axon_diam / 2) / (axon_diam / 2 + myelin_thickness)
+
             else:
                 print(
                     "WARNING: Myelin object not found for axon" +
@@ -175,6 +180,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
                             if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
                             if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     
+
     [1] According to https://scikit-image.org/docs/dev/api/skimage.measure.html?highlight=region%20properties#regionprops,
     the equivalent diameter is the diameter of a circle with the same area as
     the region.

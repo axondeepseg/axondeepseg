@@ -1,13 +1,27 @@
 # coding: utf-8
 
 from pathlib import Path
+import argparse
+from argparse import RawTextHelpFormatter
+from matplotlib import image
+import sys
 
 # Scientific modules imports
 import numpy as np
+import pandas as pd
 
 # AxonDeepSeg imports
-from AxonDeepSeg.morphometrics.compute_morphometrics import *
+from AxonDeepSeg.morphometrics.compute_morphometrics import (
+                                                                get_axon_morphometrics, 
+                                                                save_axon_morphometrics,  
+                                                                draw_axon_diameter,
+                                                                save_map_of_axon_diameters,
+                                                                get_aggregate_morphometrics,
+                                                                write_aggregate_morphometrics 
+                                                            )
 import AxonDeepSeg.ads_utils as ads
+from config import axon_suffix, myelin_suffix
+from AxonDeepSeg.ads_utils import convert_path
 
 
 def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle"):
@@ -58,3 +72,140 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
             pred_axon, pred_myelin, path_folder, axon_shape=axon_shape
         )
         write_aggregate_morphometrics(path_folder, aggregate_metrics)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+
+    # Setting the arguments of the saving the morphometrics in excel file
+    ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to compute morphometrics, in micrometers. \n' +
+                                                              'If no pixel size is specified, a pixel_size_in_micrometer.txt \n' +
+                                                              'file needs to be added to the image folder path. The pixel size \n' +
+                                                              'in that file will be used for the morphometrics computation.',
+                                                              default=None)
+
+    ap.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image.')
+
+    ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics will be stored',
+                                                              default="axon_morphometrics")
+
+    # Processing the arguments
+    args = vars(ap.parse_args(argv))
+    path_target_list = [Path(p) for p in args["imgpath"]]
+    filename = str(args["filename"])
+
+    # Tuple of valid file extensions
+    validExtensions = (
+                        ".jpeg",
+                        ".jpg",
+                        ".tif",
+                        ".tiff",
+                        ".png"
+                        )
+
+    for current_path_target in path_target_list:
+        if current_path_target.suffix.lower() in validExtensions:
+
+            # load the axon mask
+            if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
+                pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
+            else: 
+                print("ERROR: Segmented axon mask is not present in the image folder. ",
+                              "Please check that the axon mask is located in the image folder. ",
+                              "If it is not present, perform segmentation of the image first using ADS."
+                      )
+                sys.exit(3)
+
+            # load myelin mask    
+            if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
+                pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
+            else: 
+                print("ERROR: Segmented myelin mask is not present in the image folder. ",
+                              "Please check that the myelin mask is located in the image folder. ",
+                              "If it is not present, perform segmentation of the image first using ADS."
+                      )
+                sys.exit(3)
+
+            if args["sizepixel"] is not None:
+                psm = float(args["sizepixel"])
+            else:  # Handle cases if no resolution is provided on the CLI
+
+                # Check if a pixel size file exists, if so read it.
+                if (current_path_target.parent / 'pixel_size_in_micrometer.txt').exists():
+
+                    resolution_file = open(current_path_target.parent / 'pixel_size_in_micrometer.txt', 'r')
+
+                    psm = float(resolution_file.read())
+                else:
+
+                    print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
+                                  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                                  "containing the pixel size value."
+                          )
+                    sys.exit(3)
+
+            x = np.array([], dtype=[
+                                        ('x0', 'f4'),
+                                        ('y0', 'f4'),
+                                        ('gratio', 'f4'),
+                                        ('axon_area', 'f4'),
+                                        ('axon_perimeter', 'f4'),
+                                        ('myelin_area', 'f4'),
+                                        ('axon_diam', 'f4'),
+                                        ('myelin_thickness', 'f4'),
+                                        ('axonmyelin_area', 'f4'),
+                                        ('axonmyelin_perimeter', 'f4'),
+                                        ('solidity', 'f4'),
+                                        ('eccentricity', 'f4'),
+                                        ('orientation', 'f4')
+                                    ]
+                         )
+            
+            # Compute statistics
+            stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm)
+
+            for stats in stats_array:
+
+                x = np.append(x, np.array(
+                        [(
+                            stats['x0'],
+                            stats['y0'],
+                            stats['gratio'],
+                            stats['axon_area'],
+                            stats['axon_perimeter'],
+                            stats['myelin_area'],
+                            stats['axon_diam'],
+                            stats['myelin_thickness'],
+                            stats['axonmyelin_area'],
+                            stats['axonmyelin_perimeter'],
+                            stats['solidity'],
+                            stats['eccentricity'],
+                            stats['orientation']
+                        )],
+                        dtype=x.dtype)
+                    )
+
+            # save the current contents in the file
+            if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
+                filename = filename + '.xlsx' 
+            try:
+                # Export to excel
+                if filename.endswith('.xlsx'):
+                    pd.DataFrame(x).to_excel(current_path_target.parent / filename)
+                # Export to csv    
+                else: 
+                    pd.DataFrame(x).to_csv(current_path_target.parent / filename)
+                    
+                print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
+            except IOError:
+                print("Cannot save morphometrics data in file '%s'." % filename)
+
+        else: 
+            print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
+            break    
+    sys.exit(0)
+
+
+# Calling the script
+if __name__ == '__main__':
+    main()

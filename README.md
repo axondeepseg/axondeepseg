@@ -1,7 +1,7 @@
 <img src="https://github.com/neuropoly/axondeepseg/blob/master/docs/source/_static/logo_ads-alpha.png" width="385">
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb)
-[![Build Status](https://api.travis-ci.org/neuropoly/axondeepseg.svg?branch=master)](https://travis-ci.org/neuropoly/axondeepseg)
+[![Build Status](https://github.com/neuropoly/axondeepseg/actions/workflows/run_tests.yaml/badge.svg)](https://github.com/neuropoly/axondeepseg/actions/workflows/run_tests.yaml)
 [![Documentation Status](https://readthedocs.org/projects/axondeepseg/badge/?version=stable)](http://axondeepseg.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/neuropoly/axondeepseg/badge.svg?branch=master)](https://coveralls.io/github/neuropoly/axondeepseg?branch=master)
 [![Twitter Follow](https://img.shields.io/twitter/follow/axondeepseg.svg?style=social&label=Follow)](https://twitter.com/axondeepseg)
@@ -41,6 +41,7 @@ A tutorial demonstrating the installation procedure and basic usage of our FSLey
 * [Tabarin et al. *Deep learning segmentation (AxonDeepSeg) to generate axonal-property map from ex vivo human optic chiasm using light microscopy.* ISMRM 2019](https://www.ismrm.org/19/program_files/DP23.htm) - \[[**source code**](https://github.com/thibaulttabarin/UnAxSeg)\]
 * [Lousada et al. *Characterization of cortico-striatal myelination in the context of pathological Repetitive Behaviors.*  International Basal Ganglia Society (IBAGS) 2019](http://www.ibags2019.com/key4register/images/client/863/files/Abstractbook1405.pdf)
 * [Duval et al. *Axons morphometry in the human spinal cord.* NeuroImage 2019](https://www.sciencedirect.com/science/article/pii/S1053811918320044)
+* [Yu et al. *Model-informed machine learning for multi-component T2 relaxometry.* Medical Image Analysis 2021](https://www.sciencedirect.com/science/article/pii/S1361841520303042) - \[[**source code**](https://github.com/thomas-yu-epfl/Model_Informed_Machine_Learning)\]
 
 **Reviews**
 
