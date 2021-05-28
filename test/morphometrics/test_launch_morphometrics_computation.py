@@ -117,8 +117,12 @@ class TestCore(object):
     def test_main_cli_runs_successfully_for_generating_morphometrics_multiple_images(self):
         pathImg = self.dataPath / 'image.png'
 
-        # Make a copy of `__test_demo_files__` directory
-        shutil.copytree(self.dataPath.parent / '__test_demo_files__', self.dataPath.parent / '__test_demo_files_copy__', copy_function=shutil.copy)
+        # path of `__test_demo_files__` directory
+        pathDirCopy = self.dataPath.parent / '__test_demo_files_copy__'
+        
+        if not pathDirCopy.exists():
+            # Make a copy of `__test_demo_files__` directory
+            shutil.copytree(self.dataPath, pathDirCopy, copy_function=shutil.copy)
         
         pathImgcopy = self.dataPath.parent / '__test_demo_files_copy__' / 'image.png'
         morphometricsPathcopy = self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
