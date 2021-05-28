@@ -65,10 +65,10 @@ class TestCore(object):
         self.image_sim_ellipse.generate_axon(axon_radius=40, center=[300, 300], gratio=0.7, plane_angle=20)
         self.image_sim_ellipse.generate_axon(axon_radius=35, center=[400, 400], gratio=0.6, plane_angle=30)
         self.image_sim_ellipse.generate_axon(axon_radius=30, center=[520, 520], gratio=0.5, plane_angle=40)
-        self.image_sim_ellipse.generate_axon(axon_radius=23, center=[650, 650], gratio=0.4, plane_angle=50)
-        self.image_sim_ellipse.generate_axon(axon_radius=18, center=[800, 800], gratio=0.3, plane_angle=60)
-        self.image_sim_ellipse.generate_axon(axon_radius=12, center=[830, 830], gratio=0.2, plane_angle=70)
-        self.image_sim_ellipse.generate_axon(axon_radius=6, center=[920, 920], gratio=0.1, plane_angle=80)
+        self.image_sim_ellipse.generate_axon(axon_radius=23, center=[630, 630], gratio=0.4, plane_angle=50)
+        self.image_sim_ellipse.generate_axon(axon_radius=18, center=[720, 750], gratio=0.3, plane_angle=60)
+        self.image_sim_ellipse.generate_axon(axon_radius=12, center=[800, 900], gratio=0.2, plane_angle=70)
+
 
         self.image_sim_ellipse.save(self.image_sim_ellipse_path)
         
