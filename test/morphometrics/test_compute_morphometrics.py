@@ -10,7 +10,6 @@ from imageio import imread as imageio_imread  # to avoid confusion with mpl.pypl
 import pytest
 
 # AxonDeepSeg imports
-import AxonDeepSeg
 from AxonDeepSeg.visualization.simulate_axons import SimulateAxons
 from AxonDeepSeg.morphometrics.compute_morphometrics import (  
                                                                 get_pixelsize,
@@ -23,7 +22,6 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 write_aggregate_morphometrics 
                                                             )
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
-
 
 
 class TestCore(object):
@@ -41,7 +39,7 @@ class TestCore(object):
         self.pixelsizeValue = 0.07   # For current demo data.
         self.axon_shape = "ellipse"   # axon shape is set to ellipse
 
-        pred_axon_path = self.test_folder_path / ('image' +  str(axon_suffix))
+        pred_axon_path = self.test_folder_path / ('image' + str(axon_suffix))
         self.pred_axon = imageio_imread(pred_axon_path, as_gray=True)
         pred_myelin_path = self.test_folder_path / ('image' + str(myelin_suffix))
         self.pred_myelin = imageio_imread(pred_myelin_path, as_gray=True)
@@ -49,7 +47,6 @@ class TestCore(object):
         self.tmpDir = self.fullPath / '__tmp__'
         if not self.tmpDir.exists():
             self.tmpDir.mkdir()
-
 
         self.image_sim_ellipse_path = Path(
             self.testPath /
@@ -69,10 +66,8 @@ class TestCore(object):
         self.image_sim_ellipse.generate_axon(axon_radius=18, center=[720, 750], gratio=0.3, plane_angle=60)
         self.image_sim_ellipse.generate_axon(axon_radius=12, center=[800, 900], gratio=0.2, plane_angle=70)
 
-
         self.image_sim_ellipse.save(self.image_sim_ellipse_path)
         
-
     def teardown(self):
         if self.tmpDir.exists():
             shutil.rmtree(self.tmpDir)
@@ -201,7 +196,7 @@ class TestCore(object):
         # compute axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin)
 
-        for ii in range(0,9):
+        for ii in range(0, len(gratio_sim)):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
@@ -256,11 +251,10 @@ class TestCore(object):
         # compute axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
-        for ii in range(0,len(gratio_sim)):
+        for ii in range(0, len(gratio_sim)):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
-
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse_gratio_varies(self):
@@ -308,7 +302,7 @@ class TestCore(object):
         # compute axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
-        for ii in range(0,len(gratio_sim)):
+        for ii in range(0, len(gratio_sim)):
 
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
@@ -363,11 +357,10 @@ class TestCore(object):
         # compute axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
-        for ii in range(0,len(gratio_sim)):
+        for ii in range(0, len(gratio_sim)):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
-
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse_radius_varies(self):
@@ -399,7 +392,6 @@ class TestCore(object):
                                 0.7,
                                 ])
 
-
         axon_diam_sim = np.array([
                                 100,
                                 90,
@@ -422,11 +414,10 @@ class TestCore(object):
         # Compute axon morphometrics
         stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
-        for ii in range(0,len(gratio_sim)):
+        for ii in range(0, len(gratio_sim)):
             assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
             assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
             assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
-
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons(self):
@@ -469,7 +460,6 @@ class TestCore(object):
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
-
 
     # --------------axon and myelin perimeter tests-------------- #
     @pytest.mark.unit
@@ -521,7 +511,7 @@ class TestCore(object):
             im_myelin=pred_myelin
             )
         
-        for ii in range(0,len(axon_diam_sim)):
+        for ii in range(0, len(axon_diam_sim)):
             assert stats_array[ii]['axon_perimeter'] == pytest.approx(axon_perimeter_sim[ii], rel=0.1)
 
         if image_sim_path.exists():
@@ -536,8 +526,8 @@ class TestCore(object):
             '__test_files__' /
             '__test_simulated_axons__' /
             'SimulatedAxons_circle_test_perimeter.png'
-        )    
-        
+        )   
+
         image_sim = SimulateAxons()
 
         image_sim.generate_axon(axon_radius=50, center=[100, 100], gratio=0.9, plane_angle=0)
@@ -577,7 +567,7 @@ class TestCore(object):
                             ])
 
         # myelin thickness = radius_axon * ((1 / gratio) - 1 )
-        myelin_thickness =  (axon_diam_sim/2)  * ((1 / gratio_sim) - 1)              
+        myelin_thickness = (axon_diam_sim/2) * ((1 / gratio_sim) - 1)             
 
         # axonmyelin perimeter (outer perimeter of myelin) = pi * diameter of axon + myelin
         axonmyelin_perimeter_sim = math.pi * ((myelin_thickness * 2) + axon_diam_sim)
@@ -592,7 +582,7 @@ class TestCore(object):
             im_myelin=pred_myelin
             )
         
-        for ii in range(0,len(gratio_sim)):
+        for ii in range(0, len(gratio_sim)):
             assert stats_array[ii]['axonmyelin_perimeter'] == pytest.approx(axonmyelin_perimeter_sim[ii], rel=0.1)
 
         if image_sim_path.exists():
@@ -747,7 +737,6 @@ class TestCore(object):
         write_aggregate_morphometrics(str(self.tmpDir), aggregate_metrics)
 
         assert expectedFilePath.is_file()
-
 
     @pytest.mark.unit
     def test_write_aggregate_morphometrics_throws_error_if_folder_doesnt_exist(self):
