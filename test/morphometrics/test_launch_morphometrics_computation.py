@@ -114,6 +114,24 @@ class TestCore(object):
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
     
     @pytest.mark.unit
+    def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_ellipse(self):
+        pathImg = self.dataPath / 'image.png'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-a", "ellipse"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
+    
+    @pytest.mark.unit
+    def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_circle(self):
+        pathImg = self.dataPath / 'image.png'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-a", "circle"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
+
+    @pytest.mark.unit
     def test_main_cli_runs_successfully_for_generating_morphometrics_multiple_images(self):
         pathImg = self.dataPath / 'image.png'
 
