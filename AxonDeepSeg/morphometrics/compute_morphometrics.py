@@ -8,14 +8,13 @@ from string import Template
 import math
 import numpy as np
 from scipy import ndimage as ndi
-from skimage import measure, morphology, feature
+from skimage import measure, morphology
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from AxonDeepSeg.ads_utils import convert_path
-
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -63,7 +62,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
         pixelsize = get_pixelsize(path_folder / 'pixel_size_in_micrometer.txt')
 
-    if (pixel_size  is not None) and (path_folder is None ):
+    if (pixel_size is not None) and (path_folder is None):
         pixelsize = pixel_size
 
     stats_array = np.empty(0)
@@ -168,6 +167,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
     return stats_array
 
+
 def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
     """
     Returns the  thickness of a myelin ring around an axon of a
@@ -199,6 +199,7 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
         axonmyelin_diam = axonmyelin_object.minor_axis_length
     return (axonmyelin_diam - axon_diam)/2
 
+
 def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
     """
     Returns the myenlinated axon area minus the axon area.
@@ -213,6 +214,7 @@ def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
         "area"
         )
     return axonmyelin_object.area - axon_object.area
+
 
 def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
     """
@@ -237,6 +239,7 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
             )
         print(warning_msg.safe_substitute(data))
 
+
 def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
     """
     Checks if the attribute is positive and if the myelinated axon has a greater value
@@ -247,6 +250,7 @@ def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribu
         return True
     else:
         return False
+
 
 def save_axon_morphometrics(path_folder, stats_array):
     """

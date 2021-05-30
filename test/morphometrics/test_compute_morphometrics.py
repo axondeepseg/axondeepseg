@@ -17,7 +17,6 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 save_axon_morphometrics, 
                                                                 load_axon_morphometrics, 
                                                                 draw_axon_diameter,
-                                                                save_map_of_axon_diameters,
                                                                 get_aggregate_morphometrics,
                                                                 write_aggregate_morphometrics 
                                                             )
