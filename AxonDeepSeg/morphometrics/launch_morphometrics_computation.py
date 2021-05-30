@@ -20,8 +20,9 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 write_aggregate_morphometrics 
                                                             )
 import AxonDeepSeg.ads_utils as ads
-from config import axon_suffix, myelin_suffix
+from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 from AxonDeepSeg.ads_utils import convert_path
+from AxonDeepSeg import postprocessing
 
 
 def launch_morphometrics_computation(path_img, path_prediction):
@@ -194,8 +195,17 @@ def main(argv=None):
                 else: 
                     pd.DataFrame(x).to_csv(current_path_target.parent / filename)
 
-                number_outfile = current_path_target.parent / "numbers.png"
+                # Generate the numbers image
+                number_outfile = current_path_target.parent /(str(current_path_target.with_suffix("")) +
+                                                              "_numbers_seg.png")
                 ads.imwrite(number_outfile, number_array)
+                # Generate the colored image
+                postprocessing.generate_and_save_colored_image_with_numbers(
+                    filename=current_path_target.parent /(str(current_path_target.with_suffix("")) +
+                                                          "_colored_seg.png"),
+                    axonmyelin_image_path=str(current_path_target.with_suffix("")) + str(axonmyelin_suffix),
+                    numbers_array=number_array
+                )
                     
                 print(f"Moprhometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
