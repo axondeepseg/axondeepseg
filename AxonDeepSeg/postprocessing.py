@@ -135,3 +135,13 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size, 
     image_array = np.asarray(number_image)
 
     return image_array.astype(np.uint8)
+
+def generate_and_save_colored_image_with_numbers(filename, axonmyelin_image_path, numbers_array):
+    seg = Image.open(axonmyelin_image_path)
+    numbers_image = Image.fromarray(numbers_array)
+    colored_image = ImageOps.colorize(seg, black="black", white="blue", mid="red",
+                                      blackpoint=AxonDeepSeg.params.intensity["background"],
+                                      whitepoint=AxonDeepSeg.params.intensity["axon"],
+                                      midpoint=AxonDeepSeg.params.intensity["myelin"])
+    colored_image.paste(numbers_image, mask=numbers_image)
+    colored_image.save(filename)
