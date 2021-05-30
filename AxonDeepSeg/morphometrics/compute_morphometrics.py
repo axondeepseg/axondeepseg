@@ -110,6 +110,8 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         axon_diam = prop_axon.equivalent_diameter * pixelsize
         # Axon area in µm^2
         axon_area = prop_axon.area * (pixelsize ** 2)
+        # Axon perimeter (inner perimeter of myelin) in micrometers
+        axon_perimeter = prop_axon.perimeter * pixelsize
         # Axon orientation angle
         orientation = prop_axon.orientation
         # Add metrics to list of dictionaries
@@ -117,6 +119,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                  'x0': x0,
                  'axon_diam': axon_diam,
                  'axon_area': axon_area,
+                 'axon_perimeter': axon_perimeter,
                  'solidity': solidity,
                  'eccentricity': eccentricity,
                  'orientation': orientation}
@@ -137,10 +140,13 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 myelin_area = (pixelsize ** 2) * _res2
 
                 axonmyelin_area = (pixelsize ** 2) * prop_axonmyelin.area
+                # Perimeter of axonmyelin instance (outer perimeter of myelin) in micrometers
+                axonmyelin_perimeter = prop_axonmyelin.perimeter * pixelsize
 
                 stats['myelin_thickness'] = myelin_thickness
                 stats['myelin_area'] = myelin_area
                 stats['axonmyelin_area'] = axonmyelin_area
+                stats['axonmyelin_perimeter'] = axonmyelin_perimeter
                 stats['gratio'] = np.sqrt(axon_area / axonmyelin_area)
             else:
                 print(
@@ -160,7 +166,6 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object):
         measuring a axon labeled region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
         measuring a axon with myelin labeled region
-
     [1] According to https://scikit-image.org/docs/dev/api/skimage.measure.html?highlight=region%20properties#regionprops,
     the equivalent diameter is the diameter of a circle with the same area as
     the region.
@@ -178,7 +183,6 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object):
 def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
     """
     Returns the myenlinated axon area minus the axon area.
-
     :param axon_object (skimage.measure._regionprops): object returned after
     measuring an axon labeled  region
     :param axonmyelin_object (skimage.measure._regionprops): object returned after
@@ -246,7 +250,6 @@ def save_axon_morphometrics(path_folder, stats_array):
 def load_axon_morphometrics(path_folder):
     """
     :param path_folder: absolute path of the sample and the segmentation folder
-
     :return: stats_array: list of dictionaries containing axon morphometrics
     """
     
@@ -383,4 +386,3 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         print(("\nError: Could not save file \"{0}\" in "
                "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
         raise
-
