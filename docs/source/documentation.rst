@@ -326,7 +326,7 @@ Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
 
-    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -f axon_morphometrics 
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle -f axon_morphometrics 
 
 This generates a **'axon_morphometrics.xlsx'** file in the image directory::
 
@@ -339,6 +339,13 @@ This generates a **'axon_morphometrics.xlsx'** file in the image directory::
     ---- axon_morphometrics.xlsx
     ...
 
+.. NOTE :: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
+           For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon. ::
+           
+           If you wish to treat axon shape as an ellipse, you can set the  **-a** argument to be **ellipse**.
+           When axon shape is set to ellipse, the calculation of the diameter is based on ellipse minor axis::
+            
+            axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
 
 Morphometrics of images from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
