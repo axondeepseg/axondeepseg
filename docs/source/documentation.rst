@@ -371,6 +371,38 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
     ---- image_seg-myelin.png
     ---- pixel_size_in_micrometer.txt
     ---- axon_morphometrics.xlsx
+    
+Axon Shape: Circle vs Ellipse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Circle 
+^^^^^^
+**Usage** ::
+
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a circle
+
+**Studies using Circle as axon shape:**
+
+* Duval et al: https://pubmed.ncbi.nlm.nih.gov/30326296/
+* Salini et al: https://www.frontiersin.org/articles/10.3389/fnana.2017.00129/full
+
+Ellipse
+^^^^^^^
+**Usage** ::
+
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
+
+**Studies using Ellipse as axon shape:**
+
+* Payne et al: https://pubmed.ncbi.nlm.nih.gov/21381867/
+* Payne et al: https://pubmed.ncbi.nlm.nih.gov/22879411/
+* Fehily et al: https://pubmed.ncbi.nlm.nih.gov/30702755/
+
+
+.. NOTE :: In the literature, both equivalent diameter and ellipse minor axis are used to compute the morphometrics. 
+           Thus, depending on the usecase, the user is advised to choose axon shape accordingly.
+           
+
 
 Morphometrics file
 ~~~~~~~~~~~~~~~~~~
