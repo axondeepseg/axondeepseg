@@ -412,7 +412,7 @@ Ellipse
 Morphometrics file
 ~~~~~~~~~~~~~~~~~~
 
-The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
+The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_. By default for axon shape, that is, `circle` the equivalent diameter is used. For `ellipse` axon shape, minor axis is used as the diameter. The equivalent diameter is defined as the diameter of a circle with the same area as the region. 
 
 .. list-table::
    :widths: 20 80
@@ -425,7 +425,7 @@ The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following 
    * - y0
      - Axon Y centroid position in pixels.
    * - gratio
-     - Ratio between the axon equivalent diameter and the axon+myelin (fiber) equivalent diameter (`gratio = axon_diameter / axonmyelin_diameter`). Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+     - Ratio between the axon diameter and the axon+myelin (fiber) diameter (`gratio = axon_diameter / axonmyelin_diameter`). Note 
    * - axon_area
      - Area of the axon region in :math:`{\mu}`\ m\ :sup:`2`\ .
    * - axon_perimeter
@@ -433,9 +433,9 @@ The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following 
    * - myelin_area
      - Difference between axon+myelin (fiber) area and axon area in :math:`{\mu}`\ m\ :sup:`2`\ .
    * - axon_diameter
-     - Equivalent diameter of the axon in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+     - Diameter of the axon in :math:`{\mu}`\ m. 
    * - myelin_thickness
-     - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+     - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m.
    * - axonmyelin_area
      - Area of the axon+myelin (fiber) region in :math:`{\mu}`\ m\ :sup:`2`\ .
    * - axonmyelin_perimeter
