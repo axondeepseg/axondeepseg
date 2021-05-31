@@ -425,7 +425,7 @@ The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following 
    * - y0
      - Axon Y centroid position in pixels.
    * - gratio
-     - Ratio between the axon diameter and the axon+myelin (fiber) diameter (`gratio = axon_diameter / axonmyelin_diameter`). Note 
+     - Ratio between the axon diameter and the axon+myelin (fiber) diameter (`gratio = axon_diameter / axonmyelin_diameter`).
    * - axon_area
      - Area of the axon region in :math:`{\mu}`\ m\ :sup:`2`\ .
    * - axon_perimeter
