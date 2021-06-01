@@ -261,12 +261,13 @@ class TestCore(object):
         # varying g ratio 
         self.image_sim_ellipse = SimulateAxons()
 
-        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[115, 90], gratio=0.9, plane_angle=10)
-        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[410, 410], gratio=0.6, plane_angle=10)
-        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[510, 520], gratio=0.5, plane_angle=10)
-        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[650, 650], gratio=0.4, plane_angle=10)
-        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[800, 800], gratio=0.3, plane_angle=10)
-    
+
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[115, 90], gratio=0.9, plane_angle=20)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[220, 220], gratio=0.6, plane_angle=20)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[360, 360], gratio=0.5, plane_angle=20)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[550, 550], gratio=0.4, plane_angle=20)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[800, 800], gratio=0.3, plane_angle=20)
+            
         self.image_sim_ellipse.save(self.image_sim_ellipse_path)
 
         gratio_sim = np.array([
@@ -285,7 +286,7 @@ class TestCore(object):
                                 100,
                                 ])
 
-        myelin_thickness_sim = (axon_diam_sim / 2) * (1/gratio_sim - 1)
+        myelin_thickness_sim = (axon_diam_sim / 2) * ((1/gratio_sim) - 1)
 
         # Read paths and compute axon/myelin masks
         pred = imageio_imread(self.image_sim_ellipse_path)
