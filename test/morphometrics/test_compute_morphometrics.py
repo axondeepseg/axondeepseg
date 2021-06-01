@@ -261,20 +261,16 @@ class TestCore(object):
         # varying g ratio 
         self.image_sim_ellipse = SimulateAxons()
 
-        self.image_sim_ellipse.generate_axon(axon_radius=25, center=[115, 90], gratio=0.9, plane_angle=60)
-        self.image_sim_ellipse.generate_axon(axon_radius=25, center=[200, 200], gratio=0.8, plane_angle=60)
-        self.image_sim_ellipse.generate_axon(axon_radius=25, center=[305, 305], gratio=0.7, plane_angle=60)
-        self.image_sim_ellipse.generate_axon(axon_radius=25, center=[410, 410], gratio=0.6, plane_angle=60)
-        self.image_sim_ellipse.generate_axon(axon_radius=25, center=[510, 520], gratio=0.5, plane_angle=60)
-        self.image_sim_ellipse.generate_axon(axon_radius=25, center=[650, 650], gratio=0.4, plane_angle=60)
-        self.image_sim_ellipse.generate_axon(axon_radius=25, center=[800, 800], gratio=0.3, plane_angle=60)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[115, 90], gratio=0.9, plane_angle=10)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[410, 410], gratio=0.6, plane_angle=10)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[510, 520], gratio=0.5, plane_angle=10)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[650, 650], gratio=0.4, plane_angle=10)
+        self.image_sim_ellipse.generate_axon(axon_radius=50, center=[800, 800], gratio=0.3, plane_angle=10)
     
         self.image_sim_ellipse.save(self.image_sim_ellipse_path)
 
         gratio_sim = np.array([
                                 0.9,
-                                0.8,
-                                0.7,
                                 0.6,
                                 0.5,
                                 0.4,
@@ -282,13 +278,11 @@ class TestCore(object):
                                 ])
 
         axon_diam_sim = np.array([
-                                50,
-                                50,
-                                50,
-                                50,
-                                50,
-                                50,
-                                50,
+                                100,
+                                100,
+                                100,
+                                100,
+                                100,
                                 ])
 
         myelin_thickness_sim = (axon_diam_sim / 2) * (1/gratio_sim - 1)
