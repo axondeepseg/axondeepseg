@@ -24,13 +24,16 @@ from config import axon_suffix, myelin_suffix
 from AxonDeepSeg.ads_utils import convert_path
 
 
-def launch_morphometrics_computation(path_img, path_prediction):
+def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle"):
     """
     This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
     It automatically performs all steps (computations, savings, displays,...) of the
     morphometrics extraction of a given sample.
     :param path_img: path of the input image (microscopy sample)
     :param path_prediction: path of the segmented image (output of AxonDeepSeg)
+    :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
+                            if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
+                            if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :return: none.
     """
     
@@ -57,16 +60,16 @@ def launch_morphometrics_computation(path_img, path_prediction):
         path_folder = path_img.parent
 
         # Compute and save axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, path_folder)
+        stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
         save_axon_morphometrics(path_folder, stats_array)
 
         # Generate and save displays of axon morphometrics
-        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin)
+        fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=axon_shape)
         save_map_of_axon_diameters(path_folder, fig)
 
         # Compute and save aggregate morphometrics
         aggregate_metrics = get_aggregate_morphometrics(
-            pred_axon, pred_myelin, path_folder
+            pred_axon, pred_myelin, path_folder, axon_shape=axon_shape
         )
         write_aggregate_morphometrics(path_folder, aggregate_metrics)
 
@@ -85,11 +88,16 @@ def main(argv=None):
 
     ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics will be stored',
                                                               default="axon_morphometrics")
-
+    ap.add_argument('-a', '--axonshape', required=False, help='Axon shape: circle \n' +
+                                                              '\t    ellipse \n' +
+                                                              'For computing morphometrics, axon shape can either be a circle or an ellipse', 
+                                                              default="circle")
+    
     # Processing the arguments
     args = vars(ap.parse_args(argv))
     path_target_list = [Path(p) for p in args["imgpath"]]
     filename = str(args["filename"])
+    axon_shape = str(args["axonshape"])
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -159,7 +167,7 @@ def main(argv=None):
                          )
             
             # Compute statistics
-            stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm)
+            stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape)
 
             for stats in stats_array:
 
