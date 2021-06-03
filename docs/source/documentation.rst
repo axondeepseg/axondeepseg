@@ -318,6 +318,11 @@ The script to launch in called **axondeepseg_morphometrics**. It has several arg
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path (that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the morphometrics computation.
 
+-a AXONSHAPE       Axon shape
+                    **circle:** Axon shape is considered as circle. In this case, diameter is computed using equivalent diameter. 
+                    **ellipse:** Axon shape is considered as an ellipse. In this case, diameter is computed using ellipse minor axis.
+                    The default axon shape is set to **circle**.
+
 -f FILENAME         Name of the excel file in which the morphometrics will be stored.
                     The excel file extension can either be **.xlsx** or **.csv**.
                     If name of the excel file is not provided, the morphometrics will be saved as **axon_morphometrics.xlsx**.
@@ -326,7 +331,7 @@ Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
 
-    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -f axon_morphometrics 
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle -f axon_morphometrics 
 
 This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
 
@@ -340,8 +345,15 @@ This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
 
     ...
 
-.. NOTE :: If name of the excel file is not provided using the `-f` flag of the CLI, the morphometrics will be saved as the original image name with suffix "axon_morphometrics.xlsx". However, if custom filename is provided, then the morphometrics will be saved as the original image name with suffix "custom filename".
+.. NOTE 1:: If name of the excel file is not provided using the `-f` flag of the CLI, the morphometrics will be saved as the original image name with suffix "axon_morphometrics.xlsx". However, if custom filename is provided, then the morphometrics will be saved as the original image name with suffix "custom filename".
    ::
+.. NOTE 2:: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
+           For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon. ::
+           
+           If you wish to treat axon shape as an ellipse, you can set the  **-a** argument to be **ellipse**.
+           When axon shape is set to ellipse, the calculation of the diameter is based on ellipse minor axis::
+            
+            axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
 
 Morphometrics of a specific image from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -368,7 +380,6 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'image_axon_morphometr
     ---- image_seg-myelin.png
     ---- image_axon_morphometrics.xlsx
     ---- pixel_size_in_micrometer.txt
-
 
 Morphometrics of all the images present in folder(s)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -408,13 +419,46 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics
     ---- image2_seg-myelin.png
     ---- image2_axon_morphometrics.xlsx
     
-    ---- pixel_size_in_micrometer.txt
+    ---- pixel_size_in_micrometer.txt 
+    
+Axon Shape: Circle vs Ellipse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Circle 
+^^^^^^
+**Usage** ::
+
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a circle
+
+**Studies using Circle as axon shape:**
+
+* Duval et al: https://pubmed.ncbi.nlm.nih.gov/30326296/
+* Salini et al: https://www.frontiersin.org/articles/10.3389/fnana.2017.00129/full
+
+Ellipse
+^^^^^^^
+**Usage** ::
+
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
+
+**Studies using Ellipse as axon shape:**
+
+* Payne et al: https://pubmed.ncbi.nlm.nih.gov/21381867/
+* Payne et al: https://pubmed.ncbi.nlm.nih.gov/22879411/
+* Fehily et al: https://pubmed.ncbi.nlm.nih.gov/30702755/
+
+
+.. NOTE :: In the literature, both equivalent diameter and ellipse minor axis are used to compute the morphometrics. 
+           Thus, depending on the usecase, the user is advised to choose axon shape accordingly.
+           
 
 
 Morphometrics file
 ~~~~~~~~~~~~~~~~~~
 
-The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_.
+The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_. 
+
+By default for axon shape, that is, `circle`, the equivalent diameter is used. For `ellipse` axon shape, minor axis is used as the diameter. The equivalent diameter is defined as the diameter of a circle with the same area as the region. 
 
 .. list-table::
    :widths: 20 80
@@ -427,7 +471,7 @@ The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following 
    * - y0
      - Axon Y centroid position in pixels.
    * - gratio
-     - Ratio between the axon equivalent diameter and the axon+myelin (fiber) equivalent diameter (`gratio = axon_diameter / axonmyelin_diameter`). Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+     - Ratio between the axon diameter and the axon+myelin (fiber) diameter (`gratio = axon_diameter / axonmyelin_diameter`).
    * - axon_area
      - Area of the axon region in :math:`{\mu}`\ m\ :sup:`2`\ .
    * - axon_perimeter
@@ -435,9 +479,9 @@ The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following 
    * - myelin_area
      - Difference between axon+myelin (fiber) area and axon area in :math:`{\mu}`\ m\ :sup:`2`\ .
    * - axon_diameter
-     - Equivalent diameter of the axon in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+     - Diameter of the axon in :math:`{\mu}`\ m. 
    * - myelin_thickness
-     - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m. Note that the equivalent diameter is defined as the diameter of a circle with the same area as the region.
+     - Half of the difference between the axon+myelin (fiber) diameter and the axon diameter in :math:`{\mu}`\ m.
    * - axonmyelin_area
      - Area of the axon+myelin (fiber) region in :math:`{\mu}`\ m\ :sup:`2`\ .
    * - axonmyelin_perimeter
