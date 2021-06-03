@@ -43,6 +43,28 @@ class TestCore(object):
         pred_myelin_path = self.test_folder_path / ('image' + str(myelin_suffix))
         self.pred_myelin = imageio_imread(pred_myelin_path, as_gray=True)
 
+        # simulated image of axon myelin where axon shape is circle; `plane angle = 0`
+        self.path_sim_image_circle = (
+            self.testPath /
+            '__test_files__' /
+            '__test_simulated_axons__' /
+            'SimulatedAxons_shape_circle.png'
+        )
+
+        self.image_sim = SimulateAxons()
+
+        self.image_sim.generate_axon(axon_radius=50, center=[100, 100], gratio=0.9, plane_angle=0)
+        self.image_sim.generate_axon(axon_radius=45, center=[200, 200], gratio=0.8, plane_angle=0)
+        self.image_sim.generate_axon(axon_radius=40, center=[300, 300], gratio=0.7, plane_angle=0)
+        self.image_sim.generate_axon(axon_radius=35, center=[400, 400], gratio=0.6, plane_angle=0)
+        self.image_sim.generate_axon(axon_radius=30, center=[520, 520], gratio=0.5, plane_angle=0)
+        self.image_sim.generate_axon(axon_radius=23, center=[630, 630], gratio=0.4, plane_angle=0)
+        self.image_sim.generate_axon(axon_radius=18, center=[725, 725], gratio=0.3, plane_angle=0)
+        self.image_sim.generate_axon(axon_radius=12, center=[830, 830], gratio=0.2, plane_angle=0)
+        self.image_sim.generate_axon(axon_radius=6, center=[920, 920], gratio=0.1, plane_angle=0)
+
+        self.image_sim.save(self.path_sim_image_circle)
+
         self.tmpDir = self.fullPath / '__tmp__'
         if not self.tmpDir.exists():
             self.tmpDir.mkdir()
@@ -50,6 +72,9 @@ class TestCore(object):
     def teardown(self):
         if self.tmpDir.exists():
             shutil.rmtree(self.tmpDir)
+        
+        if self.path_sim_image_circle.exists():
+            self.path_sim_image_circle.unlink()
 
     # --------------get_pixelsize tests-------------- #
     @pytest.mark.unit
@@ -118,7 +143,7 @@ class TestCore(object):
             self.testPath /
             '__test_files__' /
             '__test_simulated_axons__' /
-            'SimulatedAxons.png'
+            'SimulatedAxons_shape_circle.png'
         )
 
         gratio_sim = np.array([
@@ -166,7 +191,7 @@ class TestCore(object):
             self.testPath /
             '__test_files__' /
             '__test_simulated_axons__' /
-            'SimulatedAxons.png'
+            'SimulatedAxons_shape_circle.png'
             )
 
         prediction = imageio_imread(path_pred, as_gray=True)
@@ -193,21 +218,8 @@ class TestCore(object):
             self.testPath /
             '__test_files__' /
             '__test_simulated_axons__' /
-            'SimulatedAxons_circle_test_perimeter.png'
+            'SimulatedAxons_shape_circle.png'
         )    
-        
-        image_sim = SimulateAxons()
-        image_sim.generate_axon(axon_radius=50, center=[100, 100], gratio=0.9, plane_angle=0)
-        image_sim.generate_axon(axon_radius=45, center=[200, 200], gratio=0.8, plane_angle=0)
-        image_sim.generate_axon(axon_radius=40, center=[300, 300], gratio=0.7, plane_angle=0)
-        image_sim.generate_axon(axon_radius=35, center=[400, 400], gratio=0.6, plane_angle=0)
-        image_sim.generate_axon(axon_radius=30, center=[520, 520], gratio=0.5, plane_angle=0)
-        image_sim.generate_axon(axon_radius=23, center=[640, 640], gratio=0.4, plane_angle=0)
-        image_sim.generate_axon(axon_radius=18, center=[725, 725], gratio=0.3, plane_angle=0)
-        image_sim.generate_axon(axon_radius=12, center=[830, 830], gratio=0.2, plane_angle=0)
-        image_sim.generate_axon(axon_radius=6, center=[920, 920], gratio=0.1, plane_angle=0)
-
-        image_sim.save(image_sim_path)
 
         axon_diam_sim = np.array([
                                     100,
@@ -248,21 +260,8 @@ class TestCore(object):
             self.testPath /
             '__test_files__' /
             '__test_simulated_axons__' /
-            'SimulatedAxons_circle_test_perimeter.png'
+            'SimulatedAxons_shape_circle.png'
         )    
-        
-        image_sim = SimulateAxons()
-        image_sim.generate_axon(axon_radius=50, center=[100, 100], gratio=0.9, plane_angle=0)
-        image_sim.generate_axon(axon_radius=45, center=[200, 200], gratio=0.8, plane_angle=0)
-        image_sim.generate_axon(axon_radius=40, center=[300, 300], gratio=0.7, plane_angle=0)
-        image_sim.generate_axon(axon_radius=35, center=[400, 400], gratio=0.6, plane_angle=0)
-        image_sim.generate_axon(axon_radius=30, center=[520, 520], gratio=0.5, plane_angle=0)
-        image_sim.generate_axon(axon_radius=23, center=[640, 640], gratio=0.4, plane_angle=0)
-        image_sim.generate_axon(axon_radius=18, center=[725, 725], gratio=0.3, plane_angle=0)
-        image_sim.generate_axon(axon_radius=12, center=[830, 830], gratio=0.2, plane_angle=0)
-        image_sim.generate_axon(axon_radius=6, center=[920, 920], gratio=0.1, plane_angle=0)
-
-        image_sim.save(image_sim_path)
 
         axon_diam_sim = np.array([
                                     100,
