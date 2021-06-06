@@ -644,14 +644,14 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
         # Generate and load the index image
-        original_image_name = (axon_mask_overlay.name).split("_axon")[0]
+        original_image_name = (axon_mask_overlay.name).split("-axon")[0]
 
         index_outfile = Path(pathname).parents[0] / (original_image_name + str(index_suffix))
         ads_utils.imwrite(index_outfile, index_image_array)
         self.load_png_image_from_path(index_outfile, is_mask=False, colormap="yellow")
 
         # Generate the colored image with indexes
-        axon_array, myelin_array = postprocessing.remove_intersection(axon_array, myelin_array)
+        axon_array, myelin_array = postprocessing.remove_intersection(axon_array//255, myelin_array//255)
         axonmyelin_image = axon_array * params.intensity["axon"] + myelin_array * params.intensity["myelin"]
         axonmyelin_outfile = self.ads_temp_dir / axonmyelin_suffix
         ads_utils.imwrite(axonmyelin_outfile, axonmyelin_image)
