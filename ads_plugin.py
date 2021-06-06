@@ -22,7 +22,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, axonmyelin_index_suffix
 
 import math
 from scipy import ndimage as ndi
@@ -160,7 +160,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         compute_morphometrics_button.SetToolTip(
             wx.ToolTip(
                 "Calculates and saves the morphometrics to an excel and csv file. "
-                "Shows the numbers of the axons at the coordinates specified in the morphometrics file."
+                "Shows the indexes of the axons at the coordinates specified in the morphometrics file."
             )
         )
         sizer_h.Add(compute_morphometrics_button, flag=wx.SHAPED, proportion=1)
@@ -602,8 +602,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     )
 
         # Compute statistics
-        stats_array, number_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
-                                             pixel_size=pixel_size, return_numbers_image=True)
+        stats_array, index_image_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
+                                             pixel_size=pixel_size, return_index_image=True)
         for stats in stats_array:
 
             x = np.append(x,
@@ -643,10 +643,23 @@ class ADScontrol(ctrlpanel.ControlPanel):
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
+        # Generate and load the index image
+        original_image_name = (axon_mask_overlay.name).split("_axon")[0]
 
-        number_outfile = Path(pathname).parents[0] / "numbers.png"
-        ads_utils.imwrite(number_outfile, number_array)
-        self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
+        index_outfile = Path(pathname).parents[0] / (original_image_name + str(index_suffix))
+        ads_utils.imwrite(index_outfile, index_image_array)
+        self.load_png_image_from_path(index_outfile, is_mask=False, colormap="yellow")
+
+        # Generate the colored image with indexes
+        axon_array, myelin_array = postprocessing.remove_intersection(axon_array, myelin_array)
+        axonmyelin_image = axon_array * params.intensity["axon"] + myelin_array * params.intensity["myelin"]
+        axonmyelin_outfile = self.ads_temp_dir / axonmyelin_suffix
+        ads_utils.imwrite(axonmyelin_outfile, axonmyelin_image)
+        postprocessing.generate_and_save_colored_image_with_index_numbers(
+            filename= Path(pathname).parents[0] / (original_image_name + str(axonmyelin_index_suffix)),
+            axonmyelin_image_path= axonmyelin_outfile,
+            index_image_array=index_image_array
+        )
 
         return
 
