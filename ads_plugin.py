@@ -110,7 +110,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
     def __init__(self, ortho, *args, **kwargs):
         """
         This function initializes the control panel. It generates the widgets and adds them to the panel. It also sets
-        the initial position of the panel to the left
+        the initial position of the panel to the left.
         :param ortho: This is used to access the ortho ops in order to turn off the X and Y canvas as well as the cursor
         """
         ctrlpanel.ControlPanel.__init__(self, ortho, *args, **kwargs)
