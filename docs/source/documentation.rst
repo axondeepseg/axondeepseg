@@ -209,7 +209,7 @@ To use AxonDeepSeg, you must first activate the virtual environment if it isn't 
 Example dataset
 ---------------
 
-You can demo the AxonDeepSeg by downloading the test data available `here <https://github.com/axondeepseg/data-example/archive/refs/tags/r20210616.zip>`_. It contains two SEM test samples and one TEM test sample.
+You can demo the AxonDeepSeg by downloading the test data available `here <https://api.github.com/repos/axondeepseg/data-example/zipball>`_. It contains two SEM test samples and one TEM test sample.
 
 Segmentation
 ------------
