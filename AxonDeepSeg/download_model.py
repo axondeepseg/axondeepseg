@@ -47,7 +47,7 @@ def download_model(destination = None):
         shutil.rmtree(str(model_seg_pns_bf_destination))
 
     shutil.move(folder_name_SEM_model.joinpath("default_SEM_model"), str(sem_destination))
-    shutil.move(folder_name_TEM_model.joinpath('default_TEM_model'), str(tem_destination))
+    shutil.move(folder_name_TEM_model.joinpath("default_TEM_model"), str(tem_destination))
     shutil.move(folder_name_OM_model.joinpath("model_seg_pns_bf"), str(model_seg_pns_bf_destination))
 
     # remove temporary folders
