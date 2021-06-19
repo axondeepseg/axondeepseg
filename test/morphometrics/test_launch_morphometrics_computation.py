@@ -105,7 +105,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_main_cli_successfully_outputs_index_and_colored_image(self):
         expected_outut_images_filenames = \
-            [self.dataPath / "image_IMAGE_index.png", self.dataPath / "image_AXONMYELIN_index.png"]
+            [self.dataPath / "image_image_index.png", self.dataPath / "image_axonmyelin_index.png"]
         pathImg = self.dataPath / 'image.png'
 
         self.morphometricsFile = "axon_morphometrics.csv"

@@ -33,8 +33,6 @@ import openpyxl
 import pandas as pd
 import imageio
 
-from AxonDeepSeg.morphometrics.compute_morphometrics import *
-
 VERSION = "0.2.17"
 
 
@@ -602,7 +600,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     )
 
         # Compute statistics
-        stats_array, index_image_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
+        stats_array, index_image_array = compute_morphs.get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
                                              pixel_size=pixel_size, return_index_image=True)
         for stats in stats_array:
 
