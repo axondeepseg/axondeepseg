@@ -3,10 +3,10 @@
 import pytest
 from pathlib import Path
 import numpy as np
+from PIL import Image
 
 from AxonDeepSeg import ads_utils
 from AxonDeepSeg import postprocessing
-
 
 class TestCore(object):
     def setup(self):
@@ -79,3 +79,26 @@ class TestCore(object):
             mean_axon_diameter_in_pixels=6
         )
         assert np.array_equal(expected_image, obtained_image)
+
+    @pytest.mark.unit
+    def test_generate_and_save_colored_image_with_index_numbers_saves_the_correct_image(self):
+        # Load the test images/variables
+        expected_image = np.asarray(Image.open(self.test_files_path / "test_axonmyelin_index.png"))
+        output_image_path = self.test_files_path / "output_axonmyelin_index.png"
+        axonmyelin_image_path = self.test_files_path / "test_axonmyelin.png"
+        axonmyelin_image = ads_utils.imread(axonmyelin_image_path)
+        # Attempt to recreate the test image
+        index_array =  postprocessing.generate_axon_numbers_image(
+            centroid_index=np.array([0]),
+            x0_array=[axonmyelin_image.shape[1]//2],
+            y0_array=[axonmyelin_image.shape[0]//2],
+            image_size=axonmyelin_image.shape
+        )
+        postprocessing.generate_and_save_colored_image_with_index_numbers(
+            filename=output_image_path,
+            axonmyelin_image_path=axonmyelin_image_path,
+            index_image_array=index_array
+        )
+        # Load the created image and compare it to the expected image
+        output_image = np.asarray(Image.open(output_image_path))
+        assert np.array_equal(output_image, expected_image)
