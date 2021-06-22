@@ -1,7 +1,7 @@
 from AxonDeepSeg.ads_utils import convert_path, download_data
 from pathlib import Path
 import shutil
-import requests
+from os import listdir
 
 
 def download_model(destination = None):
@@ -15,17 +15,11 @@ def download_model(destination = None):
         tem_destination = destination / "default_TEM_model"
         model_seg_pns_bf_destination = destination / "model_seg_pns_bf"
 
-    # retrieve latest release identifier from github API
-    response_TEM = requests.get("https://api.github.com/repos/axondeepseg/default-TEM-model/releases/latest")
-    folder_name_TEM_model = Path("default-TEM-model-"+str(response_TEM.json()['tag_name']))
-    response_SEM = requests.get("https://api.github.com/repos/axondeepseg/default-SEM-model/releases/latest")
-    folder_name_SEM_model = Path("default-SEM-model-"+str(response_SEM.json()['tag_name']))
-    response_OM = requests.get("https://api.github.com/repos/axondeepseg/model-seg-pns-bf/releases/latest")
-    folder_name_OM_model = Path("model-seg-pns-bf-"+str(response_OM.json()['tag_name']))
+    url_TEM_model = "https://github.com/axondeepseg/default-TEM-model/archive/refs/tags/r20210615.zip" 
+    url_SEM_model = "https://github.com/axondeepseg/default-SEM-model/archive/refs/tags/r20210615.zip" 
+    url_model_seg_pns_bf = "https://github.com/axondeepseg/model-seg-pns-bf/archive/refs/tags/r20210615.zip"
 
-    url_TEM_model = "https://github.com/axondeepseg/default-TEM-model/archive/refs/tags/"+str(response_TEM.json()['tag_name'])+".zip" 
-    url_SEM_model = "https://github.com/axondeepseg/default-SEM-model/archive/refs/tags/"+str(response_SEM.json()['tag_name'])+".zip" 
-    url_model_seg_pns_bf = "https://github.com/axondeepseg/model-seg-pns-bf/archive/refs/tags/"+str(response_OM.json()['tag_name'])+".zip"
+    files_before = listdir()
 
     if (
         not download_data(url_TEM_model) and not download_data(url_SEM_model) and not download_data(url_model_seg_pns_bf)
@@ -35,6 +29,14 @@ def download_model(destination = None):
         print(
             "ERROR: Data was not succesfully downloaded and unzipped- please check your link and filename and try again."
         )
+
+    files_after = listdir()
+
+    # retrieving unknown model folder names
+    model_folders = list(set(files_after)-set(files_before))
+    folder_name_TEM_model = ''.join([x for x in model_folders if 'TEM' in x])
+    folder_name_SEM_model = ''.join([x for x in model_folders if 'SEM' in x])
+    folder_name_OM_model = ''.join([x for x in model_folders if 'pns-bf' in x])
 
     if sem_destination.exists():
         print('SEM model folder already existed - deleting old one.')
@@ -46,9 +48,9 @@ def download_model(destination = None):
         print('Bright Field Optical Microscopy model folder already existed - deleting old one')
         shutil.rmtree(str(model_seg_pns_bf_destination))
 
-    shutil.move(folder_name_SEM_model.joinpath("default_SEM_model"), str(sem_destination))
-    shutil.move(folder_name_TEM_model.joinpath("default_TEM_model"), str(tem_destination))
-    shutil.move(folder_name_OM_model.joinpath("model_seg_pns_bf"), str(model_seg_pns_bf_destination))
+    shutil.move(Path(folder_name_SEM_model).joinpath("default_SEM_model"), str(sem_destination))
+    shutil.move(Path(folder_name_TEM_model).joinpath("default_TEM_model"), str(tem_destination))
+    shutil.move(Path(folder_name_OM_model).joinpath("model_seg_pns_bf"), str(model_seg_pns_bf_destination))
 
     # remove temporary folders
     shutil.rmtree(folder_name_TEM_model)
