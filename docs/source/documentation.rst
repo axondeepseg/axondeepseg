@@ -209,7 +209,7 @@ To use AxonDeepSeg, you must first activate the virtual environment if it isn't 
 Example dataset
 ---------------
 
-You can demo the AxonDeepSeg by downloading the test data available `here <https://osf.io/rtbwc/download>`_. It contains two SEM test samples and one TEM test sample.
+You can demo the AxonDeepSeg by downloading the test data available `here <https://api.github.com/repos/axondeepseg/data-example/zipball>`_. It contains two SEM test samples and one TEM test sample.
 
 Segmentation
 ------------
@@ -333,18 +333,21 @@ Before computing the morphometrics of an image, make sure it has been segmented 
 
     axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle -f axon_morphometrics 
 
-This generates a **'axon_morphometrics.xlsx'** file in the image directory::
+This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
 
     --image1_sem/
     ---- 77.png
     ---- 77_seg-axon.png
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
+    ---- 77_axon_morphometrics.xlsx
     ---- pixel_size_in_micrometer.txt
-    ---- axon_morphometrics.xlsx
+
     ...
 
-.. NOTE :: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
+.. NOTE 1:: If name of the excel file is not provided using the `-f` flag of the CLI, the morphometrics will be saved as the original image name with suffix "axon_morphometrics.xlsx". However, if custom filename is provided, then the morphometrics will be saved as the original image name with suffix "custom filename".
+   ::
+.. NOTE 2:: By default, AxonDeepSeg treats axon shape as **circle** and the calculation of the diameter is based on the axon area of the mask. 
            For each axons, the equivalent diameter is computed, which is the diameter of a circle with the same area as the axon. ::
            
            If you wish to treat axon shape as an ellipse, you can set the  **-a** argument to be **ellipse**.
@@ -352,21 +355,22 @@ This generates a **'axon_morphometrics.xlsx'** file in the image directory::
             
             axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
 
-Morphometrics of images from multiple folders
+Morphometrics of a specific image from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argumument of the CLI separated by space. For instance, to compute morphometrics of the images present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
+To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argument of the CLI separated by space. For instance, to compute morphometrics of the image **'77.png'** and **'image.png'** present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** respectively of the test dataset, use the following command::
 
     axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png test_segmentation/test_sem_image/image2_sem/image.png
 
-This will generate **'axon_morphometrics.xlsx'** file in each of folders:: 
+This will generate **'77_axon_morphometrics.xlsx'** and **'image_axon_morphometrics.xlsx'** files in the **'image1_sem'** and **'image2_sem'** folders:: 
 
     --image1_sem/
     ---- 77.png
     ---- 77_seg-axon.png
     ---- 77_seg-axonmyelin.png
     ---- 77_seg-myelin.png
+    ---- 77_axon_morphometrics.xlsx
     ---- pixel_size_in_micrometer.txt
-    ---- axon_morphometrics.xlsx
+
     ...
 
     --image2_sem/
@@ -374,8 +378,48 @@ This will generate **'axon_morphometrics.xlsx'** file in each of folders::
     ---- image_seg-axon.png
     ---- image_seg-axonmyelin.png
     ---- image_seg-myelin.png
+    ---- image_axon_morphometrics.xlsx
     ---- pixel_size_in_micrometer.txt
-    ---- axon_morphometrics.xlsx
+
+Morphometrics of all the images present in folder(s)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To compute the morphometrics of batches of images present in folder(s), input the path of the directories using the **-i** argument separated by space. For example, the morphometrics files of the images present in the directories  **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** are computed using the following CLI command::
+
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem test_segmentation/test_sem_image/image2_sem
+ 
+This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics.xlsx'** morphometrics files in the **'image1_sem'** directory. And, the **'image_axon_morphometrics.xlsx'** and **'image2_axon_morphometrics.xlsx'** morphometrics files are generated in the **'image2_sem'** directory:: 
+
+    --image1_sem/
+    ---- 77.png
+    ---- 77_seg-axon.png
+    ---- 77_seg-axonmyelin.png
+    ---- 77_seg-myelin.png
+    ---- 77_axon_morphometrics.xlsx
+
+    ---- 78.png
+    ---- 78_seg-axon.png
+    ---- 78_seg-axonmyelin.png
+    ---- 78_seg-myelin.png
+    ---- 78_axon_morphometrics.xlsx
+
+    ---- pixel_size_in_micrometer.txt
+
+    ...
+
+    --image2_sem/
+    ---- image.png
+    ---- image_seg-axon.png
+    ---- image_seg-axonmyelin.png
+    ---- image_seg-myelin.png
+    ---- image_axon_morphometrics.xlsx
+
+    ---- image2.png
+    ---- image2_seg-axon.png
+    ---- image2_seg-axonmyelin.png
+    ---- image2_seg-myelin.png
+    ---- image2_axon_morphometrics.xlsx
+    
+    ---- pixel_size_in_micrometer.txt 
     
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
