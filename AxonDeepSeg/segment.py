@@ -221,7 +221,7 @@ def generate_config_dict(path_to_config_file):
 def generate_resolution(type_acquisition, model_input_size):
     '''
     Generates the resolution to use related to the trained modeL.
-    :param type_acquisition: String, "SEM" or "TEM"
+    :param type_acquisition: String, "SEM", "TEM" or "OM"
     :param model_input_size: String or Int, the size of the input.
     :return: Float, the resolution of the model.
     '''
