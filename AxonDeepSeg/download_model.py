@@ -1,7 +1,6 @@
 from AxonDeepSeg.ads_utils import convert_path, download_data
 from pathlib import Path
 import shutil
-from os import listdir
 
 
 def download_model(destination = None):
@@ -19,7 +18,7 @@ def download_model(destination = None):
     url_SEM_model = "https://github.com/axondeepseg/default-SEM-model/archive/refs/tags/r20210615.zip" 
     url_model_seg_pns_bf = "https://github.com/axondeepseg/model-seg-pns-bf/archive/refs/tags/r20210615.zip"
 
-    files_before = listdir()
+    files_before = list(Path.cwd().iterdir())
 
     if (
         not download_data(url_TEM_model) and not download_data(url_SEM_model) and not download_data(url_model_seg_pns_bf)
@@ -30,13 +29,13 @@ def download_model(destination = None):
             "ERROR: Data was not succesfully downloaded and unzipped- please check your link and filename and try again."
         )
 
-    files_after = listdir()
+    files_after = list(Path.cwd().iterdir())
 
     # retrieving unknown model folder names
     model_folders = list(set(files_after)-set(files_before))
-    folder_name_TEM_model = ''.join([x for x in model_folders if 'TEM' in x])
-    folder_name_SEM_model = ''.join([x for x in model_folders if 'SEM' in x])
-    folder_name_OM_model = ''.join([x for x in model_folders if 'pns-bf' in x])
+    folder_name_TEM_model = ''.join([str(x) for x in model_folders if 'TEM' in str(x)])
+    folder_name_SEM_model = ''.join([str(x) for x in model_folders if 'SEM' in str(x)])
+    folder_name_OM_model = ''.join([str(x) for x in model_folders if 'pns-bf' in str(x)])
 
     if sem_destination.exists():
         print('SEM model folder already existed - deleting old one.')
