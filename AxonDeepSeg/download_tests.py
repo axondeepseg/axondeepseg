@@ -15,10 +15,10 @@ def download_tests(destination = None):
     if (
         not download_data(url_tests)
     ) == 1:
-        print("Test data downloaded and unzipped succesfully.")
+        print("Test data downloaded and unzipped successfully.")
     else:
         print(
-            "ERROR: Test data was not succesfully downloaded and unzipped- please check your link and filename and try again."
+            "ERROR: Test data was not successfully downloaded and unzipped- please check your link and filename and try again."
         )
 
     if test_files_destination.exists():
