@@ -32,7 +32,6 @@ def download_tests(destination=None):
         print('Test files folder already existed - deleting old one.')
         shutil.rmtree(str(test_files_destination))
 
-    print(str(Path(folder_name_test_files).joinpath("__test_files__")))
     shutil.move(Path(folder_name_test_files).joinpath("__test_files__"), str(test_files_destination))
 
     # remove temporary folder
