@@ -5,6 +5,8 @@ import argparse
 from argparse import RawTextHelpFormatter
 from matplotlib import image
 import sys
+import os
+from tqdm import tqdm
 
 # Scientific modules imports
 import numpy as np
@@ -20,7 +22,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 write_aggregate_morphometrics 
                                                             )
 import AxonDeepSeg.ads_utils as ads
-from config import axon_suffix, myelin_suffix, axonmyelin_suffix, index_suffix, axonmyelin_index_suffix
+from config import axon_suffix, myelin_suffix, axonmyelin_suffix, morph_suffix, index_suffix, axonmyelin_index_suffix
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing
 
@@ -88,7 +90,7 @@ def main(argv=None):
     ap.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image.')
 
     ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics will be stored',
-                                                              default="axon_morphometrics")
+                                                              default=morph_suffix)
     ap.add_argument('-a', '--axonshape', required=False, help='Axon shape: circle \n' +
                                                               '\t    ellipse \n' +
                                                               'For computing morphometrics, axon shape can either be a circle or an ellipse', 
@@ -108,28 +110,42 @@ def main(argv=None):
                         ".tiff",
                         ".png"
                         )
+    
+    flag_morp_batch = False # True, if batch moprhometrics is to computed else False
+    target_list = []        # list of image paths for batch morphometrics computations
 
-    for current_path_target in path_target_list:
+    for dir_iter in path_target_list:
+        if dir_iter.is_dir(): # batch morphometrics
+            flag_morp_batch = True
+            target_list += [Path(dir_iter / path_target) for path_target in os.listdir(dir_iter)  \
+                                if Path(path_target).suffix.lower() in validExtensions and not path_target.endswith(str(axon_suffix)) \
+                                and not path_target.endswith(str(myelin_suffix)) and not path_target.endswith(str(axonmyelin_suffix)) \
+                                and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
+    
+    if flag_morp_batch: # If flag_morph_batch = True, set the path_target_list to target_list.
+        path_target_list = target_list
+
+    for current_path_target in tqdm(path_target_list):
         if current_path_target.suffix.lower() in validExtensions:
-
+            
             # load the axon mask
             if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
                 pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
             else: 
-                print("ERROR: Segmented axon mask is not present in the image folder. ",
-                              "Please check that the axon mask is located in the image folder. ",
-                              "If it is not present, perform segmentation of the image first using ADS."
-                      )
+                print(f"ERROR: Segmented axon mask for image: `{str(current_path_target)}` is not present in the image folder. ",
+                            "Please check that the axon mask is located in the image folder. ",
+                            "If it is not present, perform segmentation of the image first using ADS.\n"
+                    )
                 sys.exit(3)
 
             # load myelin mask    
             if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
                 pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
             else: 
-                print("ERROR: Segmented myelin mask is not present in the image folder. ",
-                              "Please check that the myelin mask is located in the image folder. ",
-                              "If it is not present, perform segmentation of the image first using ADS."
-                      )
+                print(f"ERROR: Segmented myelin mask for image: `{str(current_path_target)}` is not present in the image folder. ",
+                            "Please check that the myelin mask is located in the image folder. ",
+                            "If it is not present, perform segmentation of the image first using ADS.\n"
+                    )
                 sys.exit(3)
 
             if args["sizepixel"] is not None:
@@ -144,10 +160,10 @@ def main(argv=None):
                     psm = float(resolution_file.read())
                 else:
 
-                    print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-                                  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                                  "containing the pixel size value."
-                          )
+                    print(f"ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file for image: `{str(current_path_target)}` in the image folder. ",
+                                "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
+                                "containing the pixel size value.\n"
+                        )
                     sys.exit(3)
 
             x = np.array([], dtype=[
@@ -165,7 +181,7 @@ def main(argv=None):
                                         ('eccentricity', 'f4'),
                                         ('orientation', 'f4')
                                     ]
-                         )
+                        )
             
             # Compute statistics
 
@@ -192,16 +208,18 @@ def main(argv=None):
                         dtype=x.dtype)
                     )
 
+            morph_filename = current_path_target.stem + "_" + filename
+
             # save the current contents in the file
-            if not (filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
-                filename = filename + '.xlsx' 
+            if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
+                morph_filename = morph_filename + '.xlsx' 
             try:
                 # Export to excel
-                if filename.endswith('.xlsx'):
-                    pd.DataFrame(x).to_excel(current_path_target.parent / filename)
+                if morph_filename.endswith('.xlsx'):
+                    pd.DataFrame(x).to_excel(current_path_target.parent / morph_filename)
                 # Export to csv    
                 else: 
-                    pd.DataFrame(x).to_csv(current_path_target.parent / filename)
+                    pd.DataFrame(x).to_csv(current_path_target.parent / morph_filename)
 
                 # Generate the index image
                 indexes_outfile = current_path_target.parent /(str(current_path_target.with_suffix("")) +
@@ -215,9 +233,9 @@ def main(argv=None):
                     index_image_array=index_image_array
                 )
                     
-                print(f"Morphometrics file: {filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
+                print(f"Morphometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
-                print("Cannot save morphometrics data in file '%s'." % filename)
+                print("Cannot save morphometrics data in file '%s'." % morph_filename)
 
         else: 
             print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
