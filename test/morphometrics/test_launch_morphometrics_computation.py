@@ -11,7 +11,7 @@ import sys
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, index_suffix, axonmyelin_index_suffix
 
 
 class TestCore(object):
@@ -107,7 +107,7 @@ class TestCore(object):
     @pytest.mark.unit
     def test_main_cli_successfully_outputs_index_and_colored_image(self):
         expected_outut_images_filenames = \
-            [self.dataPath / "image_image_index.png", self.dataPath / "image_axonmyelin_index.png"]
+            [self.dataPath / ("image" + str(index_suffix)), self.dataPath / ("image" + str(axonmyelin_index_suffix))]
         pathImg = self.dataPath / 'image.png'
 
         self.morphometricsFile = "axon_morphometrics.csv"
