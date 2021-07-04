@@ -702,6 +702,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Generate and load the index image
         original_image_name = (axon_mask_overlay.name).split("-axon")[0]
+        original_image_name = original_image_name.split("_seg")[0]
 
         index_outfile = Path(pathname).parents[0] / (original_image_name + str(index_suffix))
         ads_utils.imwrite(index_outfile, index_image_array)
