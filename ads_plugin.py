@@ -22,7 +22,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, axonmyelin_index_suffix
 
 import math
 from scipy import ndimage as ndi
@@ -33,9 +33,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-from AxonDeepSeg.morphometrics.compute_morphometrics import *
-
-VERSION = "0.2.17"
+VERSION = "0.2.18"
 
 class ADSsettings:
     """
@@ -227,7 +225,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         compute_morphometrics_button.SetToolTip(
             wx.ToolTip(
                 "Calculates and saves the morphometrics to an excel and csv file. "
-                "Shows the numbers of the axons at the coordinates specified in the morphometrics file."
+                "Shows the indexes of the axons at the coordinates specified in the morphometrics file."
             )
         )
         sizer_h.Add(compute_morphometrics_button, flag=wx.SHAPED, proportion=1)
@@ -661,7 +659,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     )
 
         # Compute statistics
-        stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=pixel_size)
+        stats_array, index_image_array = compute_morphs.get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
+                                             pixel_size=pixel_size, return_index_image=True)
         for stats in stats_array:
 
             x = np.append(x,
@@ -701,17 +700,24 @@ class ADScontrol(ctrlpanel.ControlPanel):
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
-        # Create the axon coordinate array
-        mean_diameter_in_pixel = np.average(x['axon_diam']) / pixel_size
-        axon_indexes = np.arange(x.size)
-        number_array = postprocessing.generate_axon_numbers_image(axon_indexes, x['x0'], x['y0'],
-                                                                  tuple(reversed(axon_array.shape)),
-                                                                  mean_diameter_in_pixel)
+        # Generate and load the index image
+        original_image_name = (axon_mask_overlay.name).split("-axon")[0]
+        original_image_name = original_image_name.split("_seg")[0]
 
-        # Load the axon coordinate image into FSLeyes
-        number_outfile = self.ads_temp_dir / "numbers.png"
-        ads_utils.imwrite(number_outfile, number_array)
-        self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
+        index_outfile = Path(pathname).parents[0] / (original_image_name + str(index_suffix))
+        ads_utils.imwrite(index_outfile, index_image_array)
+        self.load_png_image_from_path(index_outfile, is_mask=False, colormap="yellow")
+
+        # Generate the colored image with indexes
+        axon_array, myelin_array = postprocessing.remove_intersection(axon_array//255, myelin_array//255)
+        axonmyelin_image = axon_array * params.intensity["axon"] + myelin_array * params.intensity["myelin"]
+        axonmyelin_outfile = self.ads_temp_dir / axonmyelin_suffix
+        ads_utils.imwrite(axonmyelin_outfile, axonmyelin_image)
+        postprocessing.generate_and_save_colored_image_with_index_numbers(
+            filename= Path(pathname).parents[0] / (original_image_name + str(axonmyelin_index_suffix)),
+            axonmyelin_image_path= axonmyelin_outfile,
+            index_image_array=index_image_array
+        )
 
         return
 

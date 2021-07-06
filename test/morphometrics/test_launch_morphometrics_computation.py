@@ -11,7 +11,7 @@ import sys
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, index_suffix, axonmyelin_index_suffix
 
 
 class TestCore(object):
@@ -103,6 +103,20 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', (morph_suffix.stem + '.csv')])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
+
+    @pytest.mark.unit
+    def test_main_cli_successfully_outputs_index_and_colored_image(self):
+        expected_outut_images_filenames = \
+            [self.dataPath / ("image" + str(index_suffix)), self.dataPath / ("image" + str(axonmyelin_index_suffix))]
+        pathImg = self.dataPath / 'image.png'
+
+        self.morphometricsFile = "axon_morphometrics.csv"
+        self.morphometricsPath = self.dataPath / self.morphometricsFile
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', 'axon_morphometrics.csv'])
+
+        assert expected_outut_images_filenames[0].exists() and expected_outut_images_filenames[1].exists()
 
     @pytest.mark.unit
     def test_main_cli_runs_succesfully_with_valid_inputs_for_custom_morphometrics_file_name(self):
@@ -243,4 +257,3 @@ class TestCore(object):
         ads.imwrite(str(pathAxon), axonMask)
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
-    
