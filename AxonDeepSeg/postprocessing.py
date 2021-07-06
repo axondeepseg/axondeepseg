@@ -135,3 +135,23 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size, 
     image_array = np.asarray(number_image)
 
     return image_array.astype(np.uint8)
+
+def generate_and_save_colored_image_with_index_numbers(filename, axonmyelin_image_path, index_image_array):
+    """
+    This function generates an RGB image with the axons in blue and myelin in red with the axon indexes overlayed on
+    top of the image.
+    :param filename: The name of the colored image that will be saved
+    :type filename: String or Path
+    :param axonmyelin_image_path: The path a grayscale axonmyelin mask
+    :type axonmyelin_image_path: String or Path
+    :param index_image_array: The array containing the index image
+    :type index_image_array: 2D Numpy array
+    """
+    seg = Image.open(axonmyelin_image_path)
+    index_image = Image.fromarray(index_image_array)
+    colored_image = ImageOps.colorize(seg, black="black", white="blue", mid="red",
+                                      blackpoint=AxonDeepSeg.params.intensity["background"],
+                                      whitepoint=AxonDeepSeg.params.intensity["axon"],
+                                      midpoint=AxonDeepSeg.params.intensity["myelin"])
+    colored_image.paste(index_image, mask=index_image)
+    colored_image.save(filename)
