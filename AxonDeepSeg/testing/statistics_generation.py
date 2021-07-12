@@ -14,7 +14,6 @@ import pandas as pd
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg.testing.segmentation_scoring import pw_dice
-from AxonDeepSeg.config_tools import rec_update
 
 def metrics_classic_wrapper(path_model_folder, path_images_folder, resampled_resolution, overlap_value=25,
                             statistics_filename='model_statistics_validation.json',
