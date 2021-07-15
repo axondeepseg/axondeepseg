@@ -10,7 +10,6 @@ import numpy as np
 
 # AxonDeepSeg imports
 from AxonDeepSeg.testing.segmentation_scoring import pw_dice
-from AxonDeepSeg.apply_model import axon_segmentation
 import AxonDeepSeg.ads_utils as ads
 import AxonDeepSeg.ads_utils
 from config import axonmyelin_suffix
