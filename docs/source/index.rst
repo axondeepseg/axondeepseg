@@ -19,7 +19,7 @@ AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It i
 
 * AxonDeepSeg pipeline:
 
-.. image:: image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig1.png
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig1.png
    :scale: 35 %
    :alt: alternate text
    :align: center
