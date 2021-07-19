@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.9
-  - fsleyes=0.33.1
+  - fsleyes
   - h5py=2.10.0
   - numpy
   - scipy
