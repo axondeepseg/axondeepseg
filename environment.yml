@@ -2,7 +2,7 @@ name: ads_venv
 channels:
   - conda-forge
 dependencies:
-  - python=3.9
+  - python=3.8
   - fsleyes
   - h5py=2.10.0
   - numpy
