@@ -2,7 +2,6 @@
 
 import json
 from pathlib import Path
-import tensorflow as tf
 import pandas as pd
 
 import pytest
@@ -58,7 +57,7 @@ class TestCore(object):
     @pytest.mark.integration
     def test_metrics_single_wrapper_runs_successfully_and_outfile_exists(self):
         # reset the tensorflow graph for new training
-        tf.reset_default_graph()
+        #tf.reset_default_graph()
 
         path_model_folder = self.modelPath
         path_images_folder = self.imagesPath
@@ -80,7 +79,7 @@ class TestCore(object):
     @pytest.mark.integration
     def test_metrics_classic_wrapper_runs_successfully_and_outfile_exists(self):
         # reset the tensorflow graph for new training
-        tf.reset_default_graph()
+        #tf.reset_default_graph()
 
         path_model_folder = self.modelPath
         path_images_folder = self.imagesPath
