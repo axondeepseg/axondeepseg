@@ -27,3 +27,4 @@ dependencies:
   - pip:
     - opencv-contrib-python
     - opencv-python-headless
+    - ivadomed==2.7.4
