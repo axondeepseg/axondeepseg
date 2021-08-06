@@ -16,7 +16,7 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
-
+        self.output_filename = 'axon_myelin_mask.png'
         self.path_folder = (
             self.testPath /
             '__test_files__' /
@@ -24,8 +24,8 @@ class TestCore(object):
             )
 
     def teardown(self):
-        if (self.path_folder / 'axon_myelin_mask.png').is_file():
-            (self.path_folder / 'axon_myelin_mask.png').unlink()
+        if (self.path_folder / self.output_filename ).is_file():
+            (self.path_folder / self.output_filename ).unlink()
 
     # --------------merge_masks tests-------------- #
     @pytest.mark.unit
@@ -35,12 +35,12 @@ class TestCore(object):
 
         path_myelin = self.path_folder / ('image' + str(myelin_suffix))
 
-        expectedFilePath = self.path_folder / 'axon_myelin_mask.png'
+        expectedFilePath = self.path_folder / self.output_filename 
 
         if expectedFilePath.is_file():
             expectedFilePath.unlink()
 
-        both = merge_masks(str(path_axon), str(path_myelin))
+        both = merge_masks(str(path_axon), str(path_myelin), str(self.output_filename))
 
         assert expectedFilePath.is_file()
         assert np.array_equal(both, imageio.imread(expectedFilePath))

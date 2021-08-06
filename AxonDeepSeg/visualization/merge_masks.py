@@ -5,7 +5,7 @@ import numpy as np
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
 
-def merge_masks(path_axon, path_myelin):
+def merge_masks(path_axon, path_myelin, output_filename):
     # If string, convert to Path objects
     path_axon = convert_path(path_axon)
 
@@ -18,6 +18,6 @@ def merge_masks(path_axon, path_myelin):
     path_folder = path_axon.parent
 
     # save the masks
-    ads.imwrite(path_folder / 'axon_myelin_mask.png', both)
+    ads.imwrite(path_folder / output_filename), both)
 
     return both
