@@ -24,4 +24,8 @@ def axon_segmentation(
 
     imed_inference.pred_to_png(nii_lst, target_lst, str(Path(input_filenames[0]).parent / Path(input_filenames[0]).stem))
 
-    merge_masks(Path(path_acquisitions_folders) / 'image_seg-axon-manual_pred.png', Path(path_acquisitions_folders) / 'image_seg-myelin-manual_pred.png', Path(path_acquisitions_folders) / (Path(input_filenames[0]).stem) + str(axonmyelin_suffix)))
+    merge_masks(
+        Path(path_acquisitions_folders) / 'image_seg-axon-manual_pred.png',
+        Path(path_acquisitions_folders) / 'image_seg-myelin-manual_pred.png', 
+        Path(path_acquisitions_folders) / (Path(input_filenames[0]).stem) + str(axonmyelin_suffix)
+        )
