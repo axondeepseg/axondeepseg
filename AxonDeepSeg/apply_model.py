@@ -27,5 +27,5 @@ def axon_segmentation(
     merge_masks(
         Path(path_acquisitions_folders) / 'image_seg-axon-manual_pred.png',
         Path(path_acquisitions_folders) / 'image_seg-myelin-manual_pred.png', 
-        Path(path_acquisitions_folders) / (Path(input_filenames[0]).stem) + str(axonmyelin_suffix)
+        Path(path_acquisitions_folders) / (Path(input_filenames[0]).stem + Path(str(axonmyelin_suffix)))
         )
