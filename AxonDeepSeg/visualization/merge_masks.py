@@ -18,6 +18,6 @@ def merge_masks(path_axon, path_myelin, output_filename):
     path_folder = path_axon.parent
 
     # save the masks
-    ads.imwrite(path_folder / output_filename), both)
+    ads.imwrite(path_folder / output_filename, both)
 
     return both
