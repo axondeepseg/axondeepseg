@@ -39,7 +39,7 @@ def download_model(destination = None):
     folder_name_TEM_model = ''.join([str(x) for x in model_folders if 'TEM' in str(x)])
     folder_name_SEM_model = ''.join([str(x) for x in model_folders if 'SEM' in str(x)])
     folder_name_OM_model = ''.join([str(x) for x in model_folders if 'pns-bf' in str(x)])
-    folder_name_SEM_ivadomed_model = ''.join([str(x) for x in model_folders if 'SEM_ivadomed' in str(x)])
+    folder_name_SEM_ivadomed_model = ''.join([str(x) for x in model_folders if 'rat_axon' in str(x)])
 
     if sem_destination.exists():
         print('SEM model folder already existed - deleting old one.')
