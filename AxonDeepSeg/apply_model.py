@@ -1,3 +1,5 @@
+from pathlib import Path
+
 # AxonDeepSeg imports
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.visualization import merge_masks
