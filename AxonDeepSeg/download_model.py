@@ -19,7 +19,7 @@ def download_model(destination = None):
     url_TEM_model = "https://github.com/axondeepseg/default-TEM-model/archive/refs/tags/r20210615.zip" 
     url_SEM_model = "https://github.com/axondeepseg/default-SEM-model/archive/refs/tags/r20210615.zip" 
     url_model_seg_pns_bf = "https://github.com/axondeepseg/model-seg-pns-bf/archive/refs/tags/r20210615.zip"
-    url_model_seg_rat_axon_myelin_sem = "https://github.com/axondeepseg/model_seg_rat_axon-myelin_sem/archive/refs/r20210805.zip"
+    url_model_seg_rat_axon_myelin_sem = "https://github.com/axondeepseg/model_seg_rat_axon-myelin_sem/archive/refs/tags/r20210805.zip"
 
     files_before = list(Path.cwd().iterdir())
 
