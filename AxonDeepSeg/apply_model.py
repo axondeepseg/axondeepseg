@@ -23,7 +23,7 @@ def axon_segmentation(
     nii_lst, target_lst = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
 
     imed_inference.pred_to_png(nii_lst, target_lst, str(Path(input_filenames[0]).parent / Path(input_filenames[0]).stem))
-
+    print(Path(path_acquisitions_folders) / (Path(input_filenames[0]).stem + str(axonmyelin_suffix)))
     merge_masks(
         Path(path_acquisitions_folders) / 'image_seg-axon-manual_pred.png',
         Path(path_acquisitions_folders) / 'image_seg-myelin-manual_pred.png', 
