@@ -24,23 +24,46 @@ from AxonDeepSeg.ads_utils import convert_path
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 # Global variables
-SEM_DEFAULT_MODEL_NAME = "default_SEM_model"
-TEM_DEFAULT_MODEL_NAME = "default_TEM_model"
-OM_MODEL_NAME = "model_seg_pns_bf"
+SEM_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_sem"
 
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
 default_SEM_path = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
-default_TEM_path = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
-model_seg_pns_bf_path = MODELS_PATH / OM_MODEL_NAME
-default_overlap = 25
 
 # Definition of the functions
 
-def segment_image(path_testing_image, path_model,
-                  overlap_value, config, resolution_model,
-                  acquired_resolution = None, verbosity_level=0):
+def generate_default_parameters(type_acquisition, new_path):
+    '''
+    Generates the parameters used for segmentation for the default model corresponding to the type_model acquisition.
+    :param type_model: String, the type of model to get the parameters from.
+    :param new_path: Path to the model to use.
+    :return: the config dictionary.
+    '''
+    
+    # If string, convert to Path objects
+    new_path = convert_path(new_path)
+
+    # Building the path of the requested model if it exists and was supplied, else we load the default model.
+    if type_acquisition == 'SEM':
+        if (new_path is not None) and new_path.exists():
+            path_model = new_path
+        else:
+            path_model = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
+    else:
+        if (new_path is not None) and new_path.exists():
+            path_model = new_path
+        else:
+            path_model = MODELS_PATH / OM_MODEL_NAME
+
+    return path_model
+
+def segment_image(
+                path_testing_image,
+                path_model,
+                overlap_value,
+                acquired_resolution = None
+                ):
 
     '''
     Segment the image located at the path_testing_image location.

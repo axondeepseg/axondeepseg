@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from AxonDeepSeg.segment import (
+                                    generate_default_parameters,
                                     segment_folders, 
                                     segment_image
                                 )
@@ -22,7 +23,7 @@ class TestCore(object):
             self.projectPath /
             'AxonDeepSeg' /
             'models' /
-            'default_SEM_model'
+            'model_seg_rat_axon-myelin_sem'
             )
 
         self.imageFolderPath = (
@@ -135,14 +136,11 @@ class TestCore(object):
         # Since segment_folders should have already run, the output files
         # should already exist, which this test tests for.
 
-        path_model, config = generate_default_parameters('SEM', str(self.modelPath))
+        path_model = generate_default_parameters('SEM', str(self.modelPath))
 
-        overlap_value = 25
-        resolution_model = generate_resolution('SEM', 512)
+        overlap_value = [48,48]
 
         outputFiles = [
-            'image' + str(axon_suffix),
-            'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix)
             ]
 
@@ -153,10 +151,7 @@ class TestCore(object):
             path_testing_image=str(self.imagePath),
             path_model=str(path_model),
             overlap_value=overlap_value,
-            config=config,
-            resolution_model=resolution_model,
-            acquired_resolution=0.37,
-            verbosity_level=2
+            acquired_resolution=0.13,
             )
 
         for fileName in outputFiles:
