@@ -1,3 +1,4 @@
+
 # Segmentation script
 # -------------------
 # This script lets the user segment automatically one or many images based on the segmentation models: SEM,
@@ -62,8 +63,8 @@ def segment_image(
                 path_testing_image,
                 path_model,
                 overlap_value,
-                acquired_resolution = None
-                ):
+                acquired_resolution = None,
+                verbosity_level = 0):
 
     '''
     Segment the image located at the path_testing_image location.
@@ -92,18 +93,12 @@ def segment_image(
         # Get type of model we are using
         selected_model = path_model.name
 
- 
-
         img_name_original = acquisition_name.stem
 
         # Performing the segmentation
-
-        axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[acquisition_name],
-                          path_model_folder=path_model, config_dict=config, ckpt_name='model',
-                          inference_batch_size=1, overlap_value=overlap_value,
-                          resampled_resolutions=resolution_model, verbosity_level=verbosity_level,
-                          acquired_resolution=acquired_resolution,
-                          prediction_proba_activate=False, write_mode=True)
+        axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[str(path_acquisition / acquisition_name)],
+                          path_model_folder=path_model, overlap_value=overlap_value,
+                          acquired_resolution=acquired_resolution)
 
         if verbosity_level >= 1:
             print(("Image {0} segmented.".format(path_testing_image)))

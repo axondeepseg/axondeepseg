@@ -19,7 +19,9 @@ def axon_segmentation(
     path_model=path_model_folder
     input_filenames = acquisitions_filenames
     options = {"pixel_size": acquired_resolution, "overlap_2D":overlap_value, "binarize_maxpooling": True}
-
+    print(options)
+    print(str(path_model))
+    print(input_filenames)
     nii_lst, target_lst = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
 
     imed_inference.pred_to_png(nii_lst, target_lst, str(Path(input_filenames[0]).parent / Path(input_filenames[0]).stem))

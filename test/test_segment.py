@@ -68,12 +68,12 @@ class TestCore(object):
             'image2' + str(axonmyelin_suffix)
             ]
 
-        for fileName in outputFiles:
-            if (imageFolderPath / fileName).exists():
-                (imageFolderPath / fileName).unlink()
+        #for fileName in outputFiles:
+        #    if (imageFolderPath / fileName).exists():
+        #        (imageFolderPath / fileName).unlink()
 
-            if (imageFolderPathWithPixelSize / fileName).exists():
-                (imageFolderPathWithPixelSize / fileName).unlink()
+        #    if (imageFolderPathWithPixelSize / fileName).exists():
+        #        (imageFolderPathWithPixelSize / fileName).unlink()
 
     # --------------segment_folders tests-------------- #
     @pytest.mark.integration
@@ -143,15 +143,13 @@ class TestCore(object):
         outputFiles = [
             'image' + str(axonmyelin_suffix)
             ]
-
-        for fileName in outputFiles:
-            assert (self.imageFolderPath / fileName).exists()
-
+        print(str(self.imagePath))
+        print(str(path_model))
         segment_image(
             path_testing_image=str(self.imagePath),
             path_model=str(path_model),
             overlap_value=overlap_value,
-            acquired_resolution=0.13,
+            acquired_resolution=0.37,
             )
 
         for fileName in outputFiles:
