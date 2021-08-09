@@ -23,11 +23,10 @@ class TestCore(object):
             self.tmpPath.mkdir()
         print(self.tmpPath)
 
-        self.sem_model_path = (
+        self.ivado_model_path = (
             self.tmpPath /
-            'default_SEM_model'
+            'model_seg_rat_axon-myelin_sem'
             )
-        print(self.sem_model_path)
 
     def teardown(self):
         # Get the directory where this current file is saved
@@ -45,12 +44,12 @@ class TestCore(object):
     # --------------download_models tests-------------- #
     @pytest.mark.unit
     def test_download_models_works(self):
-        assert not self.sem_model_path.exists()
-        print(self.sem_model_path.absolute())
+        assert not self.ivado_model_path.exists()
 
         download_model(self.tmpPath)
 
-        assert self.sem_model_path.exists()
+        assert self.ivado_model_path.exists()
+
 
     @pytest.mark.unit
     def test_redownload_models_multiple_times_works(self):
