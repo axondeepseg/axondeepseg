@@ -79,7 +79,7 @@ class TestCore(object):
                 (imageFolderPathWithPixelSize / fileName).unlink()
 
     # --------------segment_folders tests-------------- #
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_segment_folders_creates_expected_files(self):
         path_model = generate_default_parameters('SEM', str(self.modelPath))
 
@@ -102,24 +102,24 @@ class TestCore(object):
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
 
-    @pytest.mark.integration
+    @pytest.mark.single
     def test_segment_folders_runs_with_relative_path(self):
 
-        path_model, config = generate_default_parameters('SEM', str(self.modelPath))
+        path_model = generate_default_parameters('SEM', str(self.modelPath))
 
-        overlap_value = 25
-        resolution_model = generate_resolution('SEM', 512)
+        overlap_value = [48,48]
 
         outputFiles = [
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix)
             ]
+
 
         segment_folders(
             path_testing_images_folder=str(self.relativeImageFolderPath),
             path_model=str(path_model),
             overlap_value=overlap_value,
-            config=config,
-            resolution_model=resolution_model,
             acquired_resolution=0.37,
             verbosity_level=2
             )
@@ -135,10 +135,11 @@ class TestCore(object):
         overlap_value = [48,48]
 
         outputFiles = [
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix)
             ]
-        print(str(self.imagePath))
-        print(str(path_model))
+
         segment_image(
             path_testing_image=str(self.imagePath),
             path_model=str(path_model),
