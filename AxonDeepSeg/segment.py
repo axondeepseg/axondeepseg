@@ -222,7 +222,7 @@ def main(argv=None):
     args = vars(ap.parse_args(argv))
     type_ = str(args["type"])
     verbosity_level = int(args["verbose"])
-    overlap_value = int(args["overlap"])
+    overlap_value = [int(args["overlap"]), int(args["overlap"])]
     if args["sizepixel"] is not None:
         psm = float(args["sizepixel"])
     else:
@@ -231,8 +231,7 @@ def main(argv=None):
     new_path = Path(args["model"]) if args["model"] else None 
 
     # Preparing the arguments to axon_segmentation function
-    path_model, config = generate_default_parameters(type_, new_path)
-    resolution_model = generate_resolution(type_, config["trainingset_patchsize"])
+    path_model = generate_default_parameters(type_, new_path)
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -280,22 +279,16 @@ def main(argv=None):
                         raise e
 
                 image_size = [height, width]
-                minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
 
-                if psm < minimum_resolution:
-                    print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, psm),
-                          "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
-                          "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(psm * min(image_size) / resolution_model)),
-                          "Image file location: {0}".format(current_path_target)
-                    )
-
-                    sys.exit(2)
 
                 # Performing the segmentation over the image
-                segment_image(current_path_target, path_model, overlap_value, config,
-                            resolution_model,
-                            acquired_resolution=psm,
-                            verbosity_level=verbosity_level)
+                segment_image(
+                    path_testing_images_folder=current_path_target,
+                    path_model=path_model,
+                    overlap_value=overlap_value,
+                    acquired_resolution=psm,
+                    verbosity_level=verbosity_level
+                    )
 
                 print("Segmentation finished.")
 
@@ -324,10 +317,13 @@ def main(argv=None):
                     sys.exit(3)
 
             # Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
-            segment_folders(current_path_target, path_model, overlap_value, config,
-                        resolution_model,
-                            acquired_resolution=psm,
-                            verbosity_level=verbosity_level)
+            segment_folders(
+                path_testing_images_folder=current_path_target,
+                path_model=path_model,
+                overlap_value=overlap_value,
+                acquired_resolution=psm,
+                verbosity_level=verbosity_level
+                )
 
             print("Segmentation finished.")
 

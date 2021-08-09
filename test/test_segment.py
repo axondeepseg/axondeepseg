@@ -102,7 +102,7 @@ class TestCore(object):
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_segment_folders_runs_with_relative_path(self):
 
         path_model = generate_default_parameters('SEM', str(self.modelPath))
@@ -163,7 +163,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_with_overlap_value(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37", '--overlap', '25'])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37", '--overlap', '48'])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 

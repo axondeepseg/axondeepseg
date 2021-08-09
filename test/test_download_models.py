@@ -29,16 +29,6 @@ class TestCore(object):
             )
         print(self.sem_model_path)
 
-        self.tem_model_path = (
-            self.tmpPath /
-            'default_TEM_model'
-            )
-            
-        self.bf_model_path = (
-            self.tmpPath /
-            'model_seg_pns_bf'
-            )
-
     def teardown(self):
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
@@ -56,15 +46,11 @@ class TestCore(object):
     @pytest.mark.unit
     def test_download_models_works(self):
         assert not self.sem_model_path.exists()
-        assert not self.tem_model_path.exists()
-        assert not self.bf_model_path.exists()
         print(self.sem_model_path.absolute())
 
         download_model(self.tmpPath)
 
         assert self.sem_model_path.exists()
-        assert self.tem_model_path.exists()
-        assert self.bf_model_path.exists()
 
     @pytest.mark.unit
     def test_redownload_models_multiple_times_works(self):
