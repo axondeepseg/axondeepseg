@@ -31,6 +31,7 @@ MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
 default_SEM_path = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
+default_overlap = 48
 
 # Definition of the functions
 
@@ -187,17 +188,13 @@ def main(argv=None):
     requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    requiredName.add_argument('-t', '--type', required=True, choices=['SEM','TEM', 'OM'], help='Type of acquisition to segment. \n'+
-                                                                                        'SEM: scanning electron microscopy samples. \n'+
-                                                                                        'TEM: transmission electron microscopy samples. \n'+
-                                                                                        'OM: optical microscopy samples')
+    requiredName.add_argument('-t', '--type', required=True, choices=['SEM'], help='Type of acquisition to segment. \n'+
+                                                                                        'SEM: scanning electron microscopy samples.')
     requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
                                                                                 'where the image(s) to segment is/are located.')
 
     ap.add_argument("-m", "--model", required=False, help='Folder where the model is located. \n'+
-                                                          'The default SEM model path is: \n'+str(default_SEM_path)+'\n'+
-                                                          'The default TEM model path is: \n'+str(default_TEM_path)+'\n'+
-                                                          'The default OM model path is: \n'+str(model_seg_pns_bf_path)+'\n')
+                                                          'The default SEM model path is: \n'+str(default_SEM_path))
     ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
                                                               'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
                                                               'file needs to be added to the image folder path. The pixel size \n'+
@@ -215,7 +212,7 @@ def main(argv=None):
                                                             'but also increase the segmentation time. \n'+
                                                             'Default value: '+str(default_overlap)+'\n'+
                                                             'Recommended range of values: [10-100]. \n',
-                                                            default=25)
+                                                            default=default_overlap)
     ap._action_groups.reverse()
 
     # Processing the arguments
@@ -268,22 +265,10 @@ def main(argv=None):
                         )
                         sys.exit(3)
 
-                # Check that image size is large enough for given resolution to reach minimum patch size after resizing.
-
-                try:
-                    height, width, _ = ads.imread(str(current_path_target)).shape
-                except:
-                    try:
-                        height, width = ads.imread(str(current_path_target)).shape
-                    except Exception as e:
-                        raise e
-
-                image_size = [height, width]
-
 
                 # Performing the segmentation over the image
                 segment_image(
-                    path_testing_images_folder=current_path_target,
+                    path_testing_image=current_path_target,
                     path_model=path_model,
                     overlap_value=overlap_value,
                     acquired_resolution=psm,

@@ -176,20 +176,6 @@ class TestCore(object):
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
     @pytest.mark.exceptionhandling
-    def test_main_cli_handles_exception_for_too_small_resolution_due_to_min_resampled_patch_size(self):
-
-        image_size = [436, 344] # of self.imagePath
-        default_SEM_resolution = 0.1
-        default_SEM_patch_size = 512
-
-        minimum_resolution = default_SEM_patch_size * default_SEM_resolution / min(image_size)
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", str(round(0.99*minimum_resolution,3))])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
-
-    @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_missing_resolution_size(self):
 
         # Make sure that the test folder doesn't have a file named pixel_size_in_micrometer.txt
@@ -215,20 +201,6 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPathWithPixelSize), "-v", "2"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.exceptionhandling
-    def test_main_cli_handles_exception_for_too_small_resolution_due_to_min_resampled_patch_size_for_folder_input(self):
-
-        image_size = [436, 344]  # of self.imagePath
-        default_SEM_resolution = 0.1
-        default_SEM_patch_size = 512
-
-        minimum_resolution = default_SEM_patch_size * default_SEM_resolution / min(image_size)
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "2", "-s", str(round(0.99*minimum_resolution,3))])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
 
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_missing_resolution_size_for_folder_input(self):
