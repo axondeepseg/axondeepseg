@@ -63,26 +63,27 @@ class TestCore(object):
             'image' + str(axon_suffix),
             'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix),
-            'image2' + str(axon_suffix),
-            'image2' + str(myelin_suffix),
-            'image2' + str(axonmyelin_suffix)
+            'image.nii.gz',
+            'image_2' + str(axon_suffix),
+            'image_2' + str(myelin_suffix),
+            'image_2' + str(axonmyelin_suffix),
+            'image_2.nii.gz'
             ]
 
-        #for fileName in outputFiles:
-        #    if (imageFolderPath / fileName).exists():
-        #        (imageFolderPath / fileName).unlink()
+        for fileName in outputFiles:
 
-        #    if (imageFolderPathWithPixelSize / fileName).exists():
-        #        (imageFolderPathWithPixelSize / fileName).unlink()
+            if (imageFolderPath / fileName).exists():
+                (imageFolderPath / fileName).unlink()
+
+            if (imageFolderPathWithPixelSize / fileName).exists():
+                (imageFolderPathWithPixelSize / fileName).unlink()
 
     # --------------segment_folders tests-------------- #
-    @pytest.mark.integration
+    @pytest.mark.single
     def test_segment_folders_creates_expected_files(self):
+        path_model = generate_default_parameters('SEM', str(self.modelPath))
 
-        path_model, config = generate_default_parameters('SEM', str(self.modelPath))
-
-        overlap_value = 25
-        resolution_model = generate_resolution('SEM', 512)
+        overlap_value = [48,48]
 
         outputFiles = [
             'image' + str(axon_suffix),
@@ -90,15 +91,10 @@ class TestCore(object):
             'image' + str(axonmyelin_suffix)
             ]
 
-        for fileName in outputFiles:
-            assert not (self.imageFolderPath / fileName).exists()
-
         segment_folders(
             path_testing_images_folder=str(self.imageFolderPath),
             path_model=str(path_model),
             overlap_value=overlap_value,
-            config=config,
-            resolution_model=resolution_model,
             acquired_resolution=0.37,
             verbosity_level=2
             )
@@ -115,8 +111,6 @@ class TestCore(object):
         resolution_model = generate_resolution('SEM', 512)
 
         outputFiles = [
-            'image' + str(axon_suffix),
-            'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix)
             ]
 

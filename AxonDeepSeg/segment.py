@@ -110,7 +110,7 @@ def segment_image(
     return None
 
 def segment_folders(path_testing_images_folder, path_model,
-                    overlap_value, config, resolution_model,
+                    overlap_value, 
                     acquired_resolution = None,
                     verbosity_level=0):
     '''
@@ -134,7 +134,7 @@ def segment_folders(path_testing_images_folder, path_model,
     # Update list of images to segment by selecting only image files (not already segmented or not masks)
     img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
                  and (not str(file).endswith((str(axonmyelin_suffix), str(axon_suffix), str(myelin_suffix),'mask.png')))]
-
+    print(img_files)
     # Pre-processing: convert to png if not already done and adapt to model contrast
     for file_ in tqdm(img_files, desc="Segmentation..."):
         print(path_testing_images_folder / file_)
@@ -147,16 +147,6 @@ def segment_folders(path_testing_images_folder, path_model,
                 raise e
 
         image_size = [height, width]
-        minimum_resolution = config["trainingset_patchsize"] * resolution_model / min(image_size)
-
-        if acquired_resolution < minimum_resolution:
-            print("EXCEPTION: The size of one of the images ({0}x{1}) is too small for the provided pixel size ({2}).\n".format(height, width, acquired_resolution),
-                  "The image size must be at least {0}x{0} after resampling to a resolution of {1} to create standard sized patches.\n".format(config["trainingset_patchsize"], resolution_model),
-                  "One of the dimensions of the image has a size of {0} after resampling to that resolution.\n".format(round(acquired_resolution * min(image_size) / resolution_model)),
-                  "Image file location: {0}".format(str(path_testing_images_folder / file_))
-            )
-
-            sys.exit(2)
 
         selected_model = path_model.name
 
@@ -166,15 +156,13 @@ def segment_folders(path_testing_images_folder, path_model,
         img_name_original = file_.stem
 
         acquisition_name = file_.name
-
-        axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[acquisition_name],
-                              path_model_folder=path_model, config_dict=config, ckpt_name='model',
-                              inference_batch_size=1, overlap_value=overlap_value,
-                              acquired_resolution=acquired_resolution,
-                              verbosity_level=verbosity_level,
-                              resampled_resolutions=resolution_model, prediction_proba_activate=False,
-                              write_mode=True)
-
+       
+        print(path_testing_images_folder)
+        print(acquisition_name)
+        print(acquired_resolution)
+        axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
+                  path_model_folder=path_model, overlap_value=overlap_value,
+                  acquired_resolution=acquired_resolution)
         if verbosity_level >= 1:
             tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
