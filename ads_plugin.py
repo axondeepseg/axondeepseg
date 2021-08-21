@@ -19,7 +19,9 @@ from pathlib import Path
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
-from AxonDeepSeg.segment import segment_image
+from AxonDeepSeg.segment import 
+
+
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, axonmyelin_index_suffix
@@ -418,11 +420,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
             config_network = json.loads(fd.read())
 
         segment_image(
-                      image_path,
-                      model_path,
-                      self.settings.overlap_value,
-                      config_network,
-                      resolution,
+                      path_testing_image=image_path,
+                      path_model=model_path,
+                      overlap_value=[self.settings.overlap_value, self.settings.overlap_value],
                       acquired_resolution=pixel_size_float * self.settings.zoom_factor,
                       verbosity_level=3
                       )
