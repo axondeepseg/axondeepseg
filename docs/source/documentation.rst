@@ -133,7 +133,7 @@ Graphical User Interface (GUI) (optional)
 
 AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if need to).
 
-.. image:: _static/GUI_image.png
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/GUI_image.png
 
 Launch FSLeyes ::
 
@@ -560,21 +560,21 @@ These options and detailed procedures are described in the section below "Manual
 
 Here are examples of an image, a good manual mask and a bad manual mask.
 
-.. figure:: _static/image_example.png
+.. figure:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/image_example.png
     :width: 750px
     :align: center
     :alt: Image example
 
     Image example
 
-.. figure:: _static/good_mask_example.png
+.. figure:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/good_mask_example.png
     :width: 750px
     :align: center
     :alt: Good manual mask example
 
     Good manual mask example
 
-.. figure:: _static/bad_mask_example.png
+.. figure:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/bad_mask_example.png
     :width: 750px
     :align: center
     :alt: Bad manual mask example
