@@ -160,7 +160,11 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 stats['myelin_area'] = myelin_area
                 stats['axonmyelin_area'] = axonmyelin_area
                 stats['axonmyelin_perimeter'] = axonmyelin_perimeter
-                stats['gratio'] = (axon_diam / 2) / (axon_diam / 2 + myelin_thickness)
+                try:
+                    stats['gratio'] = (axon_diam / 2) / (axon_diam / 2 + myelin_thickness)
+                except ZeroDivisionError:
+                    print(f"ZeroDivisionError: skipping element {idx}.")
+                    stats['gratio'] = float('NaN')
 
             else:
                 print(
