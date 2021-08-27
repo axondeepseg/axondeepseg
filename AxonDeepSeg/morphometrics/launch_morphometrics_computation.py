@@ -216,10 +216,10 @@ def main(argv=None):
             try:
                 # Export to excel
                 if morph_filename.endswith('.xlsx'):
-                    pd.DataFrame(x).to_excel(current_path_target.parent / morph_filename)
+                    pd.DataFrame(x).to_excel(current_path_target.parent / morph_filename, na_rep='NaN')
                 # Export to csv    
                 else: 
-                    pd.DataFrame(x).to_csv(current_path_target.parent / morph_filename)
+                    pd.DataFrame(x).to_csv(current_path_target.parent / morph_filename, na_rep='NaN')
 
                 # Generate the index image
                 indexes_outfile = current_path_target.parent /(str(current_path_target.with_suffix("")) +
