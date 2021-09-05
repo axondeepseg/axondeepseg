@@ -77,8 +77,8 @@ class ADSsettings:
 
         # Add the zoom factor to the settings menu
         sizer_zoom_factor = wx.BoxSizer(wx.HORIZONTAL)
-        zoom_factor_tooltip = wx.ToolTip("When applying the model, the acquired resolution of the image will be "
-                                         "multiplied by this number.")
+        zoom_factor_tooltip = wx.ToolTip("When applying the model, the pixel size of the image will be "
+                                         "multiplied by this number. The zoom factor does not affect the computation of morphometrics.")
         sizer_zoom_factor.Add(wx.StaticText(self.settings_frame, label="Zoom factor: "))
         self.zoom_factor_spinCtrlDouble = wx.SpinCtrlDouble(self.settings_frame, initial=self.zoom_factor, inc=0.0001)
         self.zoom_factor_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_zoom_factor_changed)
