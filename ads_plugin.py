@@ -90,8 +90,8 @@ class ADSsettings:
         axon_shape_choices = ["circle", "ellipse"]
         sizer_axon_shape = wx.BoxSizer(wx.HORIZONTAL)
         axon_shape_tooltip = wx.ToolTip('Select what is the shape of the axons that will be considered when computing '
-                                        'the morphometrics. "circle" will use the mean diameter of the axons. '
-                                        '"ellipse" will use minor axis of the axons.')
+                                        'the morphometrics. "circle" will use the equivalent diameter (diameter of a circle with the same area as the axon). '
+                                        '"ellipse" will use minor axis of a fitted ellipse as diameter.')
         sizer_axon_shape.Add(wx.StaticText(self.settings_frame, label="Axon shape: "))
         self.axon_shape_combobox = wx.ComboBox(
             self.settings_frame,
