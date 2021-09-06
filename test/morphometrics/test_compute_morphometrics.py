@@ -43,6 +43,12 @@ class TestCore(object):
         pred_myelin_path = self.test_folder_path / ('image' + str(myelin_suffix))
         self.pred_myelin = imageio_imread(pred_myelin_path, as_gray=True)
 
+        # Image to test NaN output
+        bad_pred_axon_path = self.test_folder_path / ('invalid_gratio' + str(axon_suffix))
+        self.bad_pred_axon = imageio_imread(bad_pred_axon_path, as_gray=True)
+        bad_pred_myelin_path = self.test_folder_path / ('invalid_gratio' + str(myelin_suffix))
+        self.bad_pred_myelin = imageio_imread(bad_pred_myelin_path, as_gray=True)
+
         # simulated image of axon myelin where axon shape is circle; `plane angle = 0`
         self.path_sim_image_circle = (
             self.testPath /
@@ -174,6 +180,16 @@ class TestCore(object):
         print("The values are ", stats_array[1]['gratio'], stats_array[1]['axon_diam'], stats_array[1]['myelin_thickness'])    
     
         assert stats_array[1]['gratio'] == pytest.approx(0.78, rel=0.01)
+
+    @pytest.mark.unit
+    def test_get_axon_morphometrics_with_invalid_gratio_with_axon_as_ellipse(self):
+        stats_array = get_axon_morphometrics(
+            self.bad_pred_axon,
+            str(self.test_folder_path),
+            im_myelin=self.bad_pred_myelin,
+            axon_shape=self.axon_shape
+            )
+        assert np.isnan(stats_array[0]['gratio'])
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons(self):
