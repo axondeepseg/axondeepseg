@@ -27,6 +27,6 @@ dependencies:
   - pip:
     - opencv-contrib-python
     - opencv-python-headless
-    - git+git://github.com/ivadomed/ivadomed.git@master
     - torch==1.5.0
     - torchvision==0.6.0
+    - ivadomed==2.8.0
