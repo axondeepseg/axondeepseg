@@ -100,6 +100,11 @@ Once your virtual environment is installed and activated, install the AxonDeepSe
 
 .. WARNING :: When re-installing the application, the ``default_SEM_model``, ``default_TEM_model`` and ``model_seg_pns_bf`` folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
+.. raw:: html
+
+   <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+     <iframe width="700" height="394" src="https://youtu.be/7RwZihR0HWk" frameborder="0" allowfullscreen></iframe>
+
 Testing the installation
 ------------------------
 .. WARNING :: Ensure that the virtual environment is activated.
@@ -151,7 +156,7 @@ In case, you find trouble installing FSLeyes plugin for ADS you could refer the 
 .. raw:: html
 
    <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
-     <iframe width="700" height="394" src="https://www.youtube.com/embed/qzWeG5vaVyo" frameborder="0" allowfullscreen></iframe>
+     <iframe width="700" height="394" src="https://youtu.be/ImElcp9_k6Y" frameborder="0" allowfullscreen></iframe>
 
 
 .. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
