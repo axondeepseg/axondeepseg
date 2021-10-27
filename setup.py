@@ -49,7 +49,7 @@ setup(
                         'data_test/*'],
     },
     extras_require={
-        'docs': ['sphinx>=1.6',
+        'docs': ['sphinx==4.2.0',
                  'sphinx_rtd_theme>=0.2.4',
                  'recommonmark'],
     },
