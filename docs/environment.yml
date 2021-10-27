@@ -1,0 +1,11 @@
+# File: docs/environment.yaml
+
+name: docs
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - sphinx==4.2.0
+  - pip:
+    - sphinx_rtd_theme>=0.2.4
+    - recommonmark
