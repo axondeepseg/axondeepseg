@@ -28,7 +28,10 @@ dependencies:
   - Keras-Preprocessing
   - albumentations=0.3.0
   - openpyxl
+  - sphinx=4.2.0
   - pip
   - pip:
     - opencv-contrib-python
     - opencv-python-headless
+    - sphinx_rtd_theme>=0.2.4
+    - recommonmark
