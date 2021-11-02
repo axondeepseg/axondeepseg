@@ -10,11 +10,5 @@ sphinx:
   configuration: documentation/source/conf.py
   fail_on_warning: false
 
-python:
-  version: 3.7
-  install:
-    - requirements: documentation/source/requirements.txt
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
+conda:
+  environment: docs/environment.yml
