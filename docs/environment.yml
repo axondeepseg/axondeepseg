@@ -6,6 +6,5 @@ channels:
   - defaults
 dependencies:
   - sphinx==4.2.0
-  - pip:
-    - sphinx_rtd_theme>=0.2.4
-    - recommonmark
+  - sphinx_rtd_theme>=0.2.4
+  - recommonmark
