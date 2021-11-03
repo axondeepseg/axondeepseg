@@ -48,11 +48,6 @@ setup(
                         'models/default_TEM_model/*',
                         'data_test/*'],
     },
-    extras_require={
-        'docs': ['sphinx>=1.6',
-                 'sphinx_rtd_theme>=0.2.4',
-                 'recommonmark'],
-    },
     include_package_data=True,
     entry_points={
         'console_scripts': [
