@@ -102,7 +102,7 @@ Once your virtual environment is installed and activated, install the AxonDeepSe
 
 .. raw:: html
 
-   <iframe width="560" height="315" src="https://www.youtube.com/embed/7RwZihR0HWk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   <iframe width="700" height="394" src="https://www.youtube.com/embed/7RwZihR0HWk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 
@@ -156,7 +156,7 @@ In case, you find trouble installing FSLeyes plugin for ADS you could refer the 
 
 .. raw:: html
 
-   <iframe width="560" height="315" src="https://www.youtube.com/embed/ImElcp9_k6Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   <iframe width="700" height="394" src="https://www.youtube.com/embed/ImElcp9_k6Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 .. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
