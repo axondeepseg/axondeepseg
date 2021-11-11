@@ -8,10 +8,10 @@ def download_model(destination = None):
     tem_release_version = 'r20211111'
     
     if destination is None:
-        sem_destination = Path("AxonDeepSeg/models/default_SEM_model")
+        sem_destination = Path("AxonDeepSeg/models/model_seg_rat_axon-myelin_sem")
         tem_destination = Path("AxonDeepSeg/models/default_TEM_model")
     else:
-        sem_destination = destination / "default_SEM_model"
+        sem_destination = destination / "model_seg_rat_axon-myelin_sem"
         tem_destination = destination / "default_TEM_model"
 
     url_sem_destination = "https://github.com/axondeepseg/default-SEM-model/archive/refs/tags/" + sem_release_version + ".zip"

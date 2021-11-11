@@ -26,8 +26,8 @@ from AxonDeepSeg.ads_utils import convert_path
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 # Global variables
-SEM_DEFAULT_MODEL_NAME = "default_SEM_model"
-TEM_DEFAULT_MODEL_NAME = "default_SEM_model"
+SEM_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_sem"
+TEM_DEFAULT_MODEL_NAME = "default_TEM_model"
 
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)

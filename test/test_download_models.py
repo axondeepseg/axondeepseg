@@ -25,7 +25,7 @@ class TestCore(object):
 
         self.sem_model_path = (
             self.tmpPath /
-            'default_SEM_model'
+            'model_seg_rat_axon-myelin_sem'
             )
 
     def teardown(self):

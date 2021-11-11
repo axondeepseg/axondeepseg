@@ -23,7 +23,7 @@ class TestCore(object):
             self.projectPath /
             'AxonDeepSeg' /
             'models' /
-            'default_SEM_model'
+            'model_seg_rat_axon-myelin_sem'
             )
 
         self.imageFolderPath = (
