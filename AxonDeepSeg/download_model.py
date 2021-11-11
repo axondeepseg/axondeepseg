@@ -9,7 +9,7 @@ def download_model(destination = None):
     else:
         sem_destination = destination / "default_SEM_model"
 
-    url_sem_destination = "https://github.com/axondeepseg/default_SEM_model/archive/refs/tags/r20211111.zip"
+    url_sem_destination = "https://github.com/axondeepseg/default-SEM-model/archive/refs/tags/r20211111.zip"
 
     files_before = list(Path.cwd().iterdir())
 
