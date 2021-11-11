@@ -9,6 +9,7 @@ import math
 import numpy as np
 from scipy import ndimage as ndi
 from skimage import measure, morphology
+from skimage.segmentation import watershed
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -99,7 +100,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
             im_centroid[ind_centroid[0][i], ind_centroid[1][i]] = i + 1
 
         # Watershed segmentation of axonmyelin using distance map
-        im_axonmyelin_label = morphology.watershed(-distance, im_centroid, mask=im_axonmyelin)
+        im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
 
