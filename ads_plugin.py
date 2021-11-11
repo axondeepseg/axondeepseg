@@ -35,7 +35,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-VERSION = "0.2.18"
+VERSION = "0.2.19"
 
 class ADSsettings:
     """
@@ -56,6 +56,7 @@ class ADSsettings:
         self.use_custom_resolution = False  # Unused
         self.custom_resolution = 0.07  # Unused
         self.zoom_factor = 1.0
+        self.axon_shape = "circle"
 
     def on_settings_button(self, event):
         """
@@ -67,19 +68,43 @@ class ADSsettings:
 
         # Add the overlap value to the settings menu
         sizer_overlap_value = wx.BoxSizer(wx.HORIZONTAL)
+        overlap_value_tooltip = wx.ToolTip("Represents the number of pixels that overlap two patches of the image when "
+                                           "applying the prediction model")
         sizer_overlap_value.Add(wx.StaticText(self.settings_frame, label="Overlap value (pixels): "))
         self.overlap_value_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=100, initial=self.overlap_value)
         self.overlap_value_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_overlap_value_changed)
+        self.overlap_value_spinCtrl.SetToolTip(overlap_value_tooltip)
         sizer_overlap_value.Add(self.overlap_value_spinCtrl, flag=wx.SHAPED, proportion=1)
         frame_sizer_h.Add(sizer_overlap_value)
 
         # Add the zoom factor to the settings menu
         sizer_zoom_factor = wx.BoxSizer(wx.HORIZONTAL)
+        zoom_factor_tooltip = wx.ToolTip("When applying the model, the pixel size of the image will be "
+                                         "multiplied by this number. The zoom factor does not affect the computation of morphometrics.")
         sizer_zoom_factor.Add(wx.StaticText(self.settings_frame, label="Zoom factor: "))
         self.zoom_factor_spinCtrlDouble = wx.SpinCtrlDouble(self.settings_frame, initial=self.zoom_factor, inc=0.0001)
         self.zoom_factor_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_zoom_factor_changed)
+        self.zoom_factor_spinCtrlDouble.SetToolTip(zoom_factor_tooltip)
         sizer_zoom_factor.Add(self.zoom_factor_spinCtrlDouble, flag=wx.SHAPED, proportion=1)
         frame_sizer_h.Add(sizer_zoom_factor)
+
+        # Add the axon shape selection
+        axon_shape_choices = ["circle", "ellipse"]
+        sizer_axon_shape = wx.BoxSizer(wx.HORIZONTAL)
+        axon_shape_tooltip = wx.ToolTip('Select what is the shape of the axons that will be considered when computing '
+                                        'the morphometrics. "circle" will use the equivalent diameter (diameter of a circle with the same area as the axon). '
+                                        '"ellipse" will use minor axis of a fitted ellipse as diameter.')
+        sizer_axon_shape.Add(wx.StaticText(self.settings_frame, label="Axon shape: "))
+        self.axon_shape_combobox = wx.ComboBox(
+            self.settings_frame,
+            choices=axon_shape_choices,
+            size=(100, 20),
+            value=self.axon_shape
+        )
+        self.axon_shape_combobox.Bind(wx.EVT_COMBOBOX, self.on_axon_shape_combobox_item_selected)
+        self.axon_shape_combobox.SetToolTip(axon_shape_tooltip)
+        sizer_axon_shape.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_axon_shape)
 
         # Add the done button
         sizer_done_button = wx.BoxSizer(wx.HORIZONTAL)
@@ -96,6 +121,9 @@ class ADSsettings:
 
     def on_zoom_factor_changed(self, event):
         self.zoom_factor = self.zoom_factor_spinCtrlDouble.GetValue()
+
+    def on_axon_shape_combobox_item_selected(self, event):
+        self.axon_shape = self.axon_shape_combobox.GetStringSelection()
 
     def on_done_button(self, event):
         # TODO: make sure every setting is saved
@@ -660,7 +688,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Compute statistics
         stats_array, index_image_array = compute_morphs.get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
-                                             pixel_size=pixel_size, return_index_image=True)
+                                                                               pixel_size=pixel_size,
+                                                                               axon_shape=self.settings.axon_shape,
+                                                                               return_index_image=True)
         for stats in stats_array:
 
             x = np.append(x,
