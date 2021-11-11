@@ -23,9 +23,9 @@ class TestCore(object):
             self.tmpPath.mkdir()
         print(self.tmpPath)
 
-        self.ivado_model_path = (
+        self.sem_model_path = (
             self.tmpPath /
-            'default-SEM-model'
+            'default_SEM_model'
             )
 
     def teardown(self):
@@ -44,11 +44,11 @@ class TestCore(object):
     # --------------download_models tests-------------- #
     @pytest.mark.unit
     def test_download_models_works(self):
-        assert not self.ivado_model_path.exists()
+        assert not self.sem_model_path.exists()
 
         download_model(self.tmpPath)
 
-        assert self.ivado_model_path.exists()
+        assert self.sem_model_path.exists()
 
 
     @pytest.mark.unit

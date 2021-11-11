@@ -25,7 +25,7 @@ def integrity_test():
         # input parameters
 
         path = Path('folder_name') / 'file_name'
-        model_name = 'default-SEM-model'
+        model_name = 'default_SEM_model'
         path_model = dir_path / 'models' / model_name
         path_testing = path_model / 'data_test'
         image = Path("image.png")

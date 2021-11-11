@@ -29,4 +29,4 @@ dependencies:
     - opencv-python-headless
     - torch==1.5.0
     - torchvision==0.6.0
-    - ivadomed==2.8.0
+    - ivadomed
