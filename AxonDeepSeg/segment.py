@@ -8,6 +8,7 @@
 
 # Imports
 
+from os import error
 import sys
 from pathlib import Path
 
@@ -55,11 +56,13 @@ def generate_default_parameters(type_acquisition, new_path):
             path_model = new_path
         else:
             path_model = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
-    else:
+    elif type_acquisition == 'TEM':
         if (new_path is not None) and new_path.exists():
             path_model = new_path
         else:
-            path_model = MODELS_PATH / OM_MODEL_NAME
+            path_model = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
+    else:
+        raise ValueError
 
     return path_model
 
