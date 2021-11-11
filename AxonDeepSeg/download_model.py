@@ -29,7 +29,7 @@ def download_model(destination = None):
 
     # retrieving unknown model folder names
     model_folders = list(set(files_after)-set(files_before))
-    folder_name_SEM_model = ''.join([str(x) for x in model_folders if 'rat_axon' in str(x)])
+    folder_name_SEM_model = ''.join([str(x) for x in model_folders if 'SEM' in str(x)])
 
     if sem_destination.exists():
         print('SEM model folder already existed - deleting old one')
