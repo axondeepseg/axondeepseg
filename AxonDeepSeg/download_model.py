@@ -9,10 +9,10 @@ def download_model(destination = None):
     
     if destination is None:
         sem_destination = Path("AxonDeepSeg/models/model_seg_rat_axon-myelin_sem")
-        tem_destination = Path("AxonDeepSeg/models/default_TEM_model")
+        tem_destination = Path("AxonDeepSeg/models/model_seg_mouse_axon-myelin_tem")
     else:
         sem_destination = destination / "model_seg_rat_axon-myelin_sem"
-        tem_destination = destination / "default_TEM_model"
+        tem_destination = destination / "model_seg_mouse_axon-myelin_tem"
 
     url_sem_destination = "https://github.com/axondeepseg/default-SEM-model/archive/refs/tags/" + sem_release_version + ".zip"
     url_tem_destination = "https://github.com/axondeepseg/default-TEM-model/archive/refs/tags/" + tem_release_version + ".zip"
