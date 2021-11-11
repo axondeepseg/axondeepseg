@@ -33,12 +33,14 @@ def download_model(destination = None):
 
     if sem_destination.exists():
         print('SEM model folder already existed - deleting old one')
+        print('1')
         shutil.rmtree(str(sem_destination))
-    
+        print('2')
+    print('3')
     shutil.move(Path("default-SEM-model-" + sem_release_version).joinpath("model_seg_rat_axon-myelin_sem"), str(sem_destination))
-
+    print('4')
     # remove temporary folders
     shutil.rmtree(folder_name_SEM_model)
-
+    print('5')
 def main(argv=None):
     download_model()
