@@ -29,18 +29,17 @@ def download_model(destination = None):
 
     # retrieving unknown model folder names
     model_folders = list(set(files_after)-set(files_before))
-    folder_name_SEM_model = ''.join([str(x) for x in model_folders if 'SEM' in str(x)])
+    folder_name_SEM_model = Path("default-SEM-model-" + sem_release_version)
 
     if sem_destination.exists():
         print('SEM model folder already existed - deleting old one')
-        print('1')
         shutil.rmtree(str(sem_destination))
-        print('2')
-    print('3')
-    shutil.move(Path("default-SEM-model-" + sem_release_version).joinpath("model_seg_rat_axon-myelin_sem"), str(sem_destination))
-    print('4')
+        
+
+    shutil.move(folder_name_SEM_model.joinpath("model_seg_rat_axon-myelin_sem"), str(sem_destination))
+
     # remove temporary folders
     shutil.rmtree(folder_name_SEM_model)
-    print('5')
+
 def main(argv=None):
     download_model()
