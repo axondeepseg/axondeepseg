@@ -35,7 +35,7 @@ def download_model(destination = None):
         print('SEM model folder already existed - deleting old one')
         shutil.rmtree(str(sem_destination))
     
-    shutil.move(Path("default_SEM_model-" + sem_release_version).joinpath("model_seg_rat_axon-myelin_sem"), str(sem_destination))
+    shutil.move(Path("default-SEM-model-" + sem_release_version).joinpath("model_seg_rat_axon-myelin_sem"), str(sem_destination))
 
     # remove temporary folders
     shutil.rmtree(folder_name_SEM_model)
