@@ -25,7 +25,7 @@ class TestCore(object):
 
         self.ivado_model_path = (
             self.tmpPath /
-            'model_seg_rat_axon-myelin_sem'
+            'default-SEM-model'
             )
 
     def teardown(self):
