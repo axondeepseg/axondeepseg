@@ -14,12 +14,12 @@ import pandas as pd
 
 # AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
-                                                                get_axon_morphometrics, 
-                                                                save_axon_morphometrics,  
+                                                                get_axon_morphometrics,
+                                                                save_axon_morphometrics,
                                                                 draw_axon_diameter,
                                                                 save_map_of_axon_diameters,
                                                                 get_aggregate_morphometrics,
-                                                                write_aggregate_morphometrics 
+                                                                write_aggregate_morphometrics
                                                             )
 import AxonDeepSeg.ads_utils as ads
 from config import axon_suffix, myelin_suffix, axonmyelin_suffix, morph_suffix, index_suffix, axonmyelin_index_suffix
@@ -39,7 +39,7 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
                             if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :return: none.
     """
-    
+
     # If string, convert to Path objects
     path_img = convert_path(path_img)
     path_prediction = convert_path(path_prediction)
@@ -93,9 +93,9 @@ def main(argv=None):
                                                               default=morph_suffix)
     ap.add_argument('-a', '--axonshape', required=False, help='Axon shape: circle \n' +
                                                               '\t    ellipse \n' +
-                                                              'For computing morphometrics, axon shape can either be a circle or an ellipse', 
+                                                              'For computing morphometrics, axon shape can either be a circle or an ellipse',
                                                               default="circle")
-    
+
     # Processing the arguments
     args = vars(ap.parse_args(argv))
     path_target_list = [Path(p) for p in args["imgpath"]]
@@ -110,7 +110,7 @@ def main(argv=None):
                         ".tiff",
                         ".png"
                         )
-    
+
     flag_morp_batch = False # True, if batch moprhometrics is to computed else False
     target_list = []        # list of image paths for batch morphometrics computations
 
@@ -121,27 +121,27 @@ def main(argv=None):
                                 if Path(path_target).suffix.lower() in validExtensions and not path_target.endswith(str(axon_suffix)) \
                                 and not path_target.endswith(str(myelin_suffix)) and not path_target.endswith(str(axonmyelin_suffix)) \
                                 and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
-    
+
     if flag_morp_batch: # If flag_morph_batch = True, set the path_target_list to target_list.
         path_target_list = target_list
 
     for current_path_target in tqdm(path_target_list):
         if current_path_target.suffix.lower() in validExtensions:
-            
+
             # load the axon mask
             if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
                 pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
-            else: 
+            else:
                 print(f"ERROR: Segmented axon mask for image: `{str(current_path_target)}` is not present in the image folder. ",
                             "Please check that the axon mask is located in the image folder. ",
                             "If it is not present, perform segmentation of the image first using ADS.\n"
                     )
                 sys.exit(3)
 
-            # load myelin mask    
+            # load myelin mask
             if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
                 pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
-            else: 
+            else:
                 print(f"ERROR: Segmented myelin mask for image: `{str(current_path_target)}` is not present in the image folder. ",
                             "Please check that the myelin mask is located in the image folder. ",
                             "If it is not present, perform segmentation of the image first using ADS.\n"
@@ -167,22 +167,22 @@ def main(argv=None):
                     sys.exit(3)
 
             x = np.array([], dtype=[
-                                        ('x0', 'f4'),
-                                        ('y0', 'f4'),
+                                        ('x0 (px)', 'f4'),
+                                        ('y0 (px)', 'f4'),
                                         ('gratio', 'f4'),
-                                        ('axon_area', 'f4'),
-                                        ('axon_perimeter', 'f4'),
-                                        ('myelin_area', 'f4'),
-                                        ('axon_diam', 'f4'),
-                                        ('myelin_thickness', 'f4'),
-                                        ('axonmyelin_area', 'f4'),
-                                        ('axonmyelin_perimeter', 'f4'),
+                                        ('axon_area (um\u00b2)', 'f4'), # unicode for ^2
+                                        ('axon_perimeter (um)', 'f4'),
+                                        ('myelin_area (um\u00b2)', 'f4'),
+                                        ('axon_diam (um)', 'f4'),
+                                        ('myelin_thickness (um)', 'f4'),
+                                        ('axonmyelin_area (um\u00b2)', 'f4'),
+                                        ('axonmyelin_perimeter (um)', 'f4'),
                                         ('solidity', 'f4'),
                                         ('eccentricity', 'f4'),
                                         ('orientation', 'f4')
                                     ]
                         )
-            
+
             # Compute statistics
 
             stats_array, index_image_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape, return_index_image=True)
@@ -212,13 +212,13 @@ def main(argv=None):
 
             # save the current contents in the file
             if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
-                morph_filename = morph_filename + '.xlsx' 
+                morph_filename = morph_filename + '.xlsx'
             try:
                 # Export to excel
                 if morph_filename.endswith('.xlsx'):
                     pd.DataFrame(x).to_excel(current_path_target.parent / morph_filename)
-                # Export to csv    
-                else: 
+                # Export to csv
+                else:
                     pd.DataFrame(x).to_csv(current_path_target.parent / morph_filename)
 
                 # Generate the index image
@@ -232,14 +232,14 @@ def main(argv=None):
                     axonmyelin_image_path=str(current_path_target.with_suffix("")) + str(axonmyelin_suffix),
                     index_image_array=index_image_array
                 )
-                    
+
                 print(f"Morphometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
                 print("Cannot save morphometrics data in file '%s'." % morph_filename)
 
-        else: 
+        else:
             print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
-            break    
+            break
     sys.exit(0)
 
 
