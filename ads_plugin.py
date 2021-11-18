@@ -670,19 +670,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         x = np.array([], dtype=[
-                                ('x0', 'f4'),
-                                ('y0', 'f4'),
-                                ('gratio','f4'),
-                                ('axon_area','f4'),
-                                ('axon_perimeter','f4'),
-                                ('myelin_area','f4'),
-                                ('axon_diam','f4'),
-                                ('myelin_thickness','f4'),
-                                ('axonmyelin_area','f4'),
-                                ('axonmyelin_perimeter','f4'),
-                                ('solidity','f4'),
-                                ('eccentricity','f4'),
-                                ('orientation','f4')
+                                ('x0 (px)', 'f4'),
+                                ('y0 (px)', 'f4'),
+                                ('gratio', 'f4'),
+                                ('axon_area (um\u00b2)', 'f4'), # unicode for ^2
+                                ('axon_perimeter (um)', 'f4'),
+                                ('myelin_area (um\u00b2)', 'f4'),
+                                ('axon_diam (um)', 'f4'),
+                                ('myelin_thickness (um)', 'f4'),
+                                ('axonmyelin_area (um\u00b2)', 'f4'),
+                                ('axonmyelin_perimeter (um)', 'f4'),
+                                ('solidity', 'f4'),
+                                ('eccentricity', 'f4'),
+                                ('orientation', 'f4')
                             ]
                     )
 
@@ -696,19 +696,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
             x = np.append(x,
                 np.array(
                     [(
-                    stats['x0'],
-                    stats['y0'],
-                    stats['gratio'],
-                    stats['axon_area'],
-                    stats['axon_perimeter'],
-                    stats['myelin_area'],
-                    stats['axon_diam'],
-                    stats['myelin_thickness'],
-                    stats['axonmyelin_area'],
-                    stats['axonmyelin_perimeter'],
-                    stats['solidity'],
-                    stats['eccentricity'],
-                    stats['orientation']
+                        ('x0 (px)', 'f4'),
+                        ('y0 (px)', 'f4'),
+                        ('gratio', 'f4'),
+                        ('axon_area (um\u00b2)', 'f4'), # unicode for ^2
+                        ('axon_perimeter (um)', 'f4'),
+                        ('myelin_area (um\u00b2)', 'f4'),
+                        ('axon_diam (um)', 'f4'),
+                        ('myelin_thickness (um)', 'f4'),
+                        ('axonmyelin_area (um\u00b2)', 'f4'),
+                        ('axonmyelin_perimeter (um)', 'f4'),
+                        ('solidity', 'f4'),
+                        ('eccentricity', 'f4'),
+                        ('orientation', 'f4')
                     )],
                     dtype=x.dtype)
                 )
