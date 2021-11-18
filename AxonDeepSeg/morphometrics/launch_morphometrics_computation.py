@@ -3,7 +3,7 @@
 from pathlib import Path
 import argparse
 from argparse import RawTextHelpFormatter
-from matplotlib import imagej
+from matplotlib import image
 import sys
 import os
 from tqdm import tqdm
