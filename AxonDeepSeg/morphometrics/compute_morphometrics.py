@@ -156,11 +156,19 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 # Perimeter of axonmyelin instance (outer perimeter of myelin) in micrometers
                 axonmyelin_perimeter = prop_axonmyelin.perimeter * pixelsize
 
-                stats['myelin_thickness'] = myelin_thickness
-                stats['myelin_area'] = myelin_area
-                stats['axonmyelin_area'] = axonmyelin_area
-                stats['axonmyelin_perimeter'] = axonmyelin_perimeter
-                stats['gratio'] = (axon_diam / 2) / (axon_diam / 2 + myelin_thickness)
+                try:
+                    stats['gratio'] = (axon_diam / 2) / (axon_diam / 2 + myelin_thickness)
+                    stats['myelin_thickness'] = myelin_thickness
+                    stats['myelin_area'] = myelin_area
+                    stats['axonmyelin_area'] = axonmyelin_area
+                    stats['axonmyelin_perimeter'] = axonmyelin_perimeter
+                except ZeroDivisionError:
+                    print(f"ZeroDivisionError caught on invalid object #{idx}.")
+                    stats['gratio'] = float('NaN')
+                    stats['myelin_thickness'] = float('NaN')
+                    stats['myelin_area'] = float('NaN')
+                    stats['axonmyelin_area'] = float('NaN')
+                    stats['axonmyelin_perimeter'] = float('NaN')
 
             else:
                 print(
