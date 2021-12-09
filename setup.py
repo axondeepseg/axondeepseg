@@ -46,7 +46,7 @@ setup(
     package_data={
         "AxonDeepSeg": ['models/default_SEM_model/*',
                         'models/default_TEM_model/*',
-                        'models/default_OM_modal/*'
+                        'models/default_OM_model/*'
                         'data_test/*'],
     },
     include_package_data=True,
