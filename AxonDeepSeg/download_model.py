@@ -4,7 +4,7 @@ import shutil
 
 
 def download_model(destination = None):
-    sem_release_version = 'r20211111v2'
+    sem_release_version = 'r20211111v3'
     tem_release_version = 'r20211111v3'
     om_release_version = 'r20211209'
     
