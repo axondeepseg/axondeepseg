@@ -27,6 +27,14 @@ class TestCore(object):
             self.tmpPath /
             'model_seg_rat_axon-myelin_sem'
             )
+        self.tem_model_path = (
+            self.tmpPath /
+            'model_seg_mouse_axon-myelin_tem'
+            )
+        self.om_model_path = (
+            self.tmpPath /
+            'model_seg_rat_axon-myelin_bf'
+            )
 
     def teardown(self):
         # Get the directory where this current file is saved
@@ -45,11 +53,14 @@ class TestCore(object):
     @pytest.mark.unit
     def test_download_models_works(self):
         assert not self.sem_model_path.exists()
+        assert not self.tem_model_path.exists()
+        assert not self.om_model_path.exists()
 
         download_model(self.tmpPath)
 
         assert self.sem_model_path.exists()
-
+        assert self.tem_model_path.exists()
+        assert self.om_model_path.exists()
 
     @pytest.mark.unit
     def test_redownload_models_multiple_times_works(self):
