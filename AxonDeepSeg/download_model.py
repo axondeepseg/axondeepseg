@@ -6,7 +6,7 @@ import shutil
 def download_model(destination = None):
     sem_release_version = 'r20211209v2'
     tem_release_version = 'r20211111v3'
-    om_release_version = 'r20211209'
+    om_release_version = 'r20211210'
     
     if destination is None:
         sem_destination = Path("AxonDeepSeg/models/model_seg_rat_axon-myelin_sem")
