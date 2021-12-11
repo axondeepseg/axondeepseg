@@ -194,7 +194,7 @@ class TestCore(object):
             im_myelin=self.bad_pred_myelin,
             axon_shape=self.axon_shape
             )
-        assert np.isnan(stats_array[0]['gratio'])
+        assert stats_array[0]['gratio']==0
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons(self):
