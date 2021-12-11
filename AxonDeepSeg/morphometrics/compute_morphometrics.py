@@ -136,7 +136,13 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                  'axon_perimeter': axon_perimeter,
                  'solidity': solidity,
                  'eccentricity': eccentricity,
-                 'orientation': orientation}
+                 'orientation': orientation, 
+                 'gratio': float('NaN'),
+                 'myelin_thickness': float('NaN'),
+                 'myelin_area': float('NaN'),
+                 'axonmyelin_area': float('NaN'),
+                 'axonmyelin_perimeter': float('NaN')
+                 }
 
         # Deal with myelin
         if im_myelin is not None:
