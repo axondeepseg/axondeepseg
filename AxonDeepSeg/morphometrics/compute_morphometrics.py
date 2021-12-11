@@ -137,11 +137,11 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                  'solidity': solidity,
                  'eccentricity': eccentricity,
                  'orientation': orientation, 
-                 'gratio': float('NaN'),
-                 'myelin_thickness': float('NaN'),
-                 'myelin_area': float('NaN'),
-                 'axonmyelin_area': float('NaN'),
-                 'axonmyelin_perimeter': float('NaN')
+                 'gratio': 0,
+                 'myelin_thickness': 0,
+                 'myelin_area': 0,
+                 'axonmyelin_area': 0,
+                 'axonmyelin_perimeter': 0
                  }
 
         # Deal with myelin
@@ -171,11 +171,11 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     stats['axonmyelin_perimeter'] = axonmyelin_perimeter
                 except ZeroDivisionError:
                     print(f"ZeroDivisionError caught on invalid object #{idx}.")
-                    stats['gratio'] = float('NaN')
-                    stats['myelin_thickness'] = float('NaN')
-                    stats['myelin_area'] = float('NaN')
-                    stats['axonmyelin_area'] = float('NaN')
-                    stats['axonmyelin_perimeter'] = float('NaN')
+                    stats['gratio'] = 0
+                    stats['myelin_thickness'] = 0
+                    stats['myelin_area'] = 0
+                    stats['axonmyelin_area'] = 0
+                    stats['axonmyelin_perimeter'] = 0
 
             else:
                 print(

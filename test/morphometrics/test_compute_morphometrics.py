@@ -151,7 +151,12 @@ class TestCore(object):
                         'axonmyelin_perimeter',
                         'solidity',
                         'eccentricity',
-                        'orientation'
+                        'orientation',
+                        'gratio',
+                        'myelin_thickness',
+                        'myelin_area',
+                        'axonmyelin_area',
+                        'axonmyelin_perimeter'
                         }
 
         stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
