@@ -19,7 +19,7 @@ from pathlib import Path
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
-from AxonDeepSeg.segment import 
+from AxonDeepSeg.segment import segment_image
 
 
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
@@ -35,7 +35,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-VERSION = "0.2.19"
+VERSION = "0.2.20"
 
 class ADSsettings:
     """
@@ -366,11 +366,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_mask = params.intensity['binary'] * np.array(myelin_mask, dtype=np.uint8)
 
         # Load the masks into FSLeyes
-        axon_outfile = self.ads_temp_dir / (image_name + "-axon.png")
+        axon_outfile = self.ads_temp_dir / (image_name + "-axon-manual_pred.png")
         ads_utils.imwrite(axon_outfile, axon_mask)
         self.load_png_image_from_path(axon_outfile, is_mask=True, colormap="blue")
 
-        myelin_outfile = self.ads_temp_dir / (image_name + "-myelin.png")
+        myelin_outfile = self.ads_temp_dir / (image_name + "-myelin-manual_pred.png")
         ads_utils.imwrite(myelin_outfile, myelin_mask)
         self.load_png_image_from_path(myelin_outfile, is_mask=True, colormap="red")
 
@@ -442,18 +442,13 @@ class ADScontrol(ctrlpanel.ControlPanel):
             resolution_file = open((image_directory / "pixel_size_in_micrometer.txt").__str__(), 'r')
             pixel_size_float = float(resolution_file.read())
 
-        # Load model configs and apply prediction
-        model_configfile = model_path / "config_network.json"
-        with open(model_configfile.__str__(), "r") as fd:
-            config_network = json.loads(fd.read())
-
         segment_image(
-                      path_testing_image=image_path,
-                      path_model=model_path,
-                      overlap_value=[self.settings.overlap_value, self.settings.overlap_value],
-                      acquired_resolution=pixel_size_float * self.settings.zoom_factor,
-                      verbosity_level=3
-                      )
+                path_testing_image=image_path,
+                path_model=model_path,
+                overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
+                acquired_resolution=pixel_size_float * self.settings.zoom_factor,
+                verbosity_level=3
+                )
 
         # The axon_segmentation function creates the segmentation masks and stores them as PNG files in the same folder
         # as the original image file.
@@ -529,7 +524,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_array = axon_array * params.intensity['binary']
 
 
-        image_name = myelin_mask_overlay.name[:-len("_seg-myelin")]
+        image_name = myelin_mask_overlay.name[:-len("_seg-myelin-manual_pred")]
 
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
 
@@ -610,7 +605,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         axon_corr_array = np.flipud(axon_extracted_array)
         axon_corr_array = params.intensity['binary'] * np.rot90(axon_corr_array, k=1, axes=(1, 0))
-        file_name = self.ads_temp_dir / (myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png")
+        file_name = self.ads_temp_dir / (myelin_mask_overlay.name[:-len("-myelin-manual_pred")] + "-axon-manual_pred-corr.png")
         ads_utils.imwrite(filename=file_name, img=axon_corr_array)
         self.load_png_image_from_path(file_name, is_mask=True, colormap="blue")
 
@@ -731,7 +726,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
         # Generate and load the index image
-        original_image_name = (axon_mask_overlay.name).split("-axon")[0]
+        original_image_name = (axon_mask_overlay.name).split("-axon-manual_pred")[0]
         original_image_name = original_image_name.split("_seg")[0]
 
         index_outfile = Path(pathname).parents[0] / (original_image_name + str(index_suffix))
@@ -897,6 +892,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 and (not an_overlay.name.endswith("-Myelin"))
                 and (not an_overlay.name.endswith("-Axon"))
                 and (not an_overlay.name.endswith("-axon"))
+                and (not an_overlay.name.endswith("-axon-manual_pred"))
+                and (not an_overlay.name.endswith("-myelin-manual_pred"))
             ):
                 n_found_overlays = n_found_overlays + 1
                 image_overlay = an_overlay
@@ -925,7 +922,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if (an_overlay.name.endswith("-axon")) or (an_overlay.name.endswith("-Axon")):
+            if (an_overlay.name.endswith("-axon")) or (an_overlay.name.endswith("-Axon")) or (an_overlay.name.endswith("-axon-manual_pred")):
                 n_found_overlays = n_found_overlays + 1
                 axon_overlay = an_overlay
 
@@ -953,7 +950,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if (an_overlay.name.endswith("-axon-corr")) or (an_overlay.name.endswith("-Axon-corr")):
+            if (an_overlay.name.endswith("-axon-corr")) or (an_overlay.name.endswith("-Axon-corr")) or (an_overlay.name.endswith("-axon-manual_pred-corr")):
                 n_found_overlays = n_found_overlays + 1
                 axon_overlay = an_overlay
 
@@ -980,7 +977,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if (an_overlay.name.endswith("-myelin")) or (an_overlay.name.endswith("-Myelin")):
+            if (an_overlay.name.endswith("-myelin")) or (an_overlay.name.endswith("-Myelin")) or (an_overlay.name.endswith("-myelin-manual_pred")):
                 n_found_overlays = n_found_overlays + 1
                 myelin_overlay = an_overlay
 
