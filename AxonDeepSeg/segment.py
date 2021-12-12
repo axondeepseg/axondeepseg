@@ -28,14 +28,14 @@ from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_sem"
 TEM_DEFAULT_MODEL_NAME = "model_seg_mouse_axon-myelin_tem"
-OM_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_bf"
+BF_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_bf"
 
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
 default_SEM_path = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
 default_TEM_path = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
-default_OM_path = MODELS_PATH / OM_DEFAULT_MODEL_NAME
+default_BF_path = MODELS_PATH / BF_DEFAULT_MODEL_NAME
 
 default_overlap = 48
 
@@ -63,11 +63,11 @@ def generate_default_parameters(type_acquisition, new_path):
             path_model = new_path
         else:
             path_model = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
-    elif type_acquisition == 'OM':
+    elif type_acquisition == 'BF':
         if (new_path is not None) and new_path.exists():
             path_model = new_path
         else:
-            path_model = MODELS_PATH / OM_DEFAULT_MODEL_NAME
+            path_model = MODELS_PATH / BF_DEFAULT_MODEL_NAME
     else:
         raise ValueError
 
@@ -201,7 +201,7 @@ def main(argv=None):
     requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    requiredName.add_argument('-t', '--type', required=True, choices=['SEM', 'TEM', 'OM'], help='Type of acquisition to segment. \n'+
+    requiredName.add_argument('-t', '--type', required=True, choices=['SEM', 'TEM', 'BF'], help='Type of acquisition to segment. \n'+
                                                                                         'SEM: scanning electron microscopy samples.')
     requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
                                                                                 'where the image(s) to segment is/are located.')
