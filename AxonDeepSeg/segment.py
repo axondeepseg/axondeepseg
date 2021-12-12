@@ -86,8 +86,7 @@ def segment_image(
     :param path_model: where to access the model
     :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
     border effects but more time to perform the segmentation.
-    :param config: dict containing the configuration of the network
-    :param resolution_model: the resolution the model was trained on.
+    :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -134,8 +133,7 @@ def segment_folders(path_testing_images_folder, path_model,
     :param path_model: where to access the model.
     :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
     border effects but more time to perform the segmentation.
-    :param config: dict containing the configuration of the network
-    :param resolution_model: the resolution the model was trained on.
+    :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -202,7 +200,9 @@ def main(argv=None):
 
     # Setting the arguments of the segmentation
     requiredName.add_argument('-t', '--type', required=True, choices=['SEM', 'TEM', 'BF'], help='Type of acquisition to segment. \n'+
-                                                                                        'SEM: scanning electron microscopy samples.')
+                                                                                        'SEM: scanning electron microscopy samples. \n'+
+                                                                                        'TEM: transmission electron microscopy samples. \n' +
+                                                                                        'BF: Bright-field microscopy samples.')
     requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
                                                                                 'where the image(s) to segment is/are located.')
 
