@@ -61,6 +61,27 @@ def floodfill_axons(axon_array, myelin_array):
     axon_extracted_array = axon_extracted_array.astype(np.uint8)
     return axon_extracted_array
 
+def fill_myelin_holes(myelin_array):
+    """
+    This function uses the fill_small_holes function from scikit-image to fill closed myelin objects with the axon mask.
+    The maximum area of an axon is defined as 10% of the image's size.
+    :param myelin_array: the binary array corresponding to the myelin mask
+    :return: the binary axon array corresponding to the axon mask after the floodfill
+    """
+    # Get the dimensions of the image
+    image_dims = myelin_array.shape
+
+    # Define the maximum axon area as 10% of the image's size
+    maximum_axon_area = 0.1 * image_dims[0] * image_dims[1]
+
+    #Fill the myelin array
+    filled_array = morphology.remove_small_holes(myelin_array.astype(np.bool), area_threshold=maximum_axon_area)
+    filled_array = filled_array.astype(np.uint8)
+
+    #Extract the axon array
+    axon_extracted_array = filled_array-myelin_array
+    return axon_extracted_array
+
 def remove_intersection(mask_1, mask_2, priority=1, return_overlap=False):
     """
     This function removes the overlap between two masks on one of those two masks depending on the priority parameter.
