@@ -23,7 +23,6 @@ def axon_segmentation(
     :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel size of the acquired images.
-    :param acquired_resolution: isotropic pixel size of the acquired images.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
