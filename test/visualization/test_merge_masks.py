@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from AxonDeepSeg.visualization.merge_masks import merge_masks
-from config import axon_suffix, myelin_suffix
+from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 
 
 class TestCore(object):
@@ -16,7 +16,7 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
-        self.output_filename = 'axon_myelin_mask.png'
+        self.output_filename =  Path('image' + str(axonmyelin_suffix))
         self.path_folder = (
             self.testPath /
             '__test_files__' /
