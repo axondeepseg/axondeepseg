@@ -171,11 +171,11 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     stats['axonmyelin_perimeter'] = axonmyelin_perimeter
                 except ZeroDivisionError:
                     print(f"ZeroDivisionError caught on invalid object #{idx}.")
-                    stats['gratio'] = 0
-                    stats['myelin_thickness'] = 0
-                    stats['myelin_area'] = 0
-                    stats['axonmyelin_area'] = 0
-                    stats['axonmyelin_perimeter'] = 0
+                    stats['gratio'] = np.nan
+                    stats['myelin_thickness'] = np.nan
+                    stats['myelin_area'] = np.nan
+                    stats['axonmyelin_area'] = np.nan
+                    stats['axonmyelin_perimeter'] = np.nan
 
             else:
                 print(
