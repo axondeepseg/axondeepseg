@@ -30,7 +30,7 @@ def axon_segmentation(
 
     path_model=path_model_folder
     input_filenames = acquisitions_filenames
-    options = {"pixel_size": [acquired_resolution, acquired_resolution], "overlap_2D":overlap_value, "binarize_maxpooling": True}
+    options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um", "overlap_2D": overlap_value, "binarize_maxpooling": True}
 
     # IVADOMED automated segmentation
     nii_lst, target_lst = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
