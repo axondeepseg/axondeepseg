@@ -99,6 +99,7 @@ jobs:
           COVERALLS_PARALLEL: true
         run: |
           pip install coveralls
+          conda config --set remote_read_timeout_secs 6000
           pytest . -v --cov AxonDeepSeg/ --cov-report term-missing
           coveralls --service=github
 
