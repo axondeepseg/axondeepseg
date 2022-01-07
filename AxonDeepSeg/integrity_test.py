@@ -36,7 +36,6 @@ def integrity_test():
 
         # Read the ground truth mask and the obtained segmentation mask
         mask = ads.imread(path_testing / 'mask.png')
-
         pred = ads.imread(path_testing / (image.stem + str(axonmyelin_suffix)))
 
         # Generate separate axon and myelin masks of the segmentation output
