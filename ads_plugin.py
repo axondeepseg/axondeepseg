@@ -51,7 +51,7 @@ class ADSsettings:
         self.ads_control = ads_control
 
         # Declare the settings used
-        self.overlap_value = 25
+        self.overlap_value = 48
         self.model_resolution = 0.01  # Unused
         self.use_custom_resolution = False  # Unused
         self.custom_resolution = 0.07  # Unused

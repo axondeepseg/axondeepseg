@@ -2,7 +2,7 @@
 # Segmentation script
 # -------------------
 # This script lets the user segment automatically one or many images based on the segmentation models: SEM,
-# TEM or OM.
+# TEM or BF.
 #
 # Maxime Wabartha - 2017-08-30
 
@@ -146,7 +146,7 @@ def segment_folders(path_testing_images_folder, path_model,
     # Update list of images to segment by selecting only image files (not already segmented or not masks)
     img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
                  and (not str(file).endswith((str(axonmyelin_suffix), str(axon_suffix), str(myelin_suffix),'mask.png')))]
-    print(img_files)
+
     # Pre-processing: convert to png if not already done and adapt to model contrast
     for file_ in tqdm(img_files, desc="Segmentation..."):
         print(path_testing_images_folder / file_)
@@ -169,9 +169,6 @@ def segment_folders(path_testing_images_folder, path_model,
 
         acquisition_name = file_.name
        
-        print(path_testing_images_folder)
-        print(acquisition_name)
-        print(acquired_resolution)
         axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
                   path_model_folder=path_model, overlap_value=overlap_value,
                   acquired_resolution=acquired_resolution)
