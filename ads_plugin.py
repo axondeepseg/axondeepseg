@@ -366,11 +366,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_mask = params.intensity['binary'] * np.array(myelin_mask, dtype=np.uint8)
 
         # Load the masks into FSLeyes
-        axon_outfile = self.ads_temp_dir / (image_name + "-axon-manual_pred.png")
+        axon_outfile = self.ads_temp_dir / (image_name + "-axon.png")
         ads_utils.imwrite(axon_outfile, axon_mask)
         self.load_png_image_from_path(axon_outfile, is_mask=True, colormap="blue")
 
-        myelin_outfile = self.ads_temp_dir / (image_name + "-myelin-manual_pred.png")
+        myelin_outfile = self.ads_temp_dir / (image_name + "-myelin.png")
         ads_utils.imwrite(myelin_outfile, myelin_mask)
         self.load_png_image_from_path(myelin_outfile, is_mask=True, colormap="red")
 
@@ -524,7 +524,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_array = axon_array * params.intensity['binary']
 
 
-        image_name = myelin_mask_overlay.name[:-len("_seg-myelin-manual_pred")]
+        image_name = myelin_mask_overlay.name.split("-myelin")[0]
 
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
 
@@ -726,7 +726,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
 
         # Generate and load the index image
-        original_image_name = (axon_mask_overlay.name).split("-axon-manual_pred")[0]
+        original_image_name = (axon_mask_overlay.name).split("-axon")[0]
         original_image_name = original_image_name.split("_seg")[0]
 
         index_outfile = Path(pathname).parents[0] / (original_image_name + str(index_suffix))
