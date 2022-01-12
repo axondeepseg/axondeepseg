@@ -1,6 +1,17 @@
 Changelog
 ===============================================================================
 
+## Version 4.0.0 - 2022-01-12
+[View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.2.0...v4.0.0)
+
+**FEATURE**
+
+ - Integrate IVADOMED into project [View pull request](https://github.com/neuropoly/axondeepseg/pull/547)
+
+**INSTALLATION**
+
+ - Added Mac M1 compatibility  [View pull request](https://github.com/neuropoly/axondeepseg/pull/547)
+
 ## Version 3.2.0 - 2020-10-16
 [View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.0...v3.2.0)
 
