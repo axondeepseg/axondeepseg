@@ -10,6 +10,7 @@ import numpy as np
 
 # AxonDeepSeg imports
 from AxonDeepSeg.testing.segmentation_scoring import pw_dice
+from AxonDeepSeg.apply_model import axon_segmentation
 import AxonDeepSeg.ads_utils as ads
 import AxonDeepSeg.ads_utils
 from config import axonmyelin_suffix
@@ -24,24 +25,14 @@ def integrity_test():
         # input parameters
 
         path = Path('folder_name') / 'file_name'
-        model_name = 'default_SEM_model'
+        model_name = 'model_seg_rat_axon-myelin_sem'
         path_model = dir_path / 'models' / model_name
         path_testing = path_model / 'data_test'
-        path_configfile = path_model / 'config_network.json'
         image = Path("image.png")
-
-        # Read the configuration file 
-        print('Reading test configuration file.')
-        if not path_model.exists():
-            path_model.mkdir(parents=True)
-
-        with open(path_configfile, 'r') as fd:
-            config_network = json.loads(fd.read())
-
 
         # Launch the axon and myelin segmentation on test image sample provided in the installation
         print('Computing the segmentation of axon and myelin on test image.')
-        prediction = axon_segmentation([path_testing], [str(image)], path_model, config_network, prediction_proba_activate=True, verbosity_level=4)
+        axon_segmentation(path_testing, [str(path_testing / image)], path_model, overlap_value=[48,48], acquired_resolution=0.13)
 
         # Read the ground truth mask and the obtained segmentation mask
         mask = ads.imread(path_testing / 'mask.png')

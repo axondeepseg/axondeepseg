@@ -8,7 +8,8 @@ from string import Template
 import math
 import numpy as np
 from scipy import ndimage as ndi
-from skimage import measure, morphology
+from skimage import measure
+from skimage.segmentation import watershed
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -99,7 +100,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
             im_centroid[ind_centroid[0][i], ind_centroid[1][i]] = i + 1
 
         # Watershed segmentation of axonmyelin using distance map
-        im_axonmyelin_label = morphology.watershed(-distance, im_centroid, mask=im_axonmyelin)
+        im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
 
@@ -135,7 +136,13 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                  'axon_perimeter': axon_perimeter,
                  'solidity': solidity,
                  'eccentricity': eccentricity,
-                 'orientation': orientation}
+                 'orientation': orientation, 
+                 'gratio': np.nan,
+                 'myelin_thickness': np.nan,
+                 'myelin_area': np.nan,
+                 'axonmyelin_area': np.nan,
+                 'axonmyelin_perimeter': np.nan
+                 }
 
         # Deal with myelin
         if im_myelin is not None:
@@ -164,11 +171,11 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     stats['axonmyelin_perimeter'] = axonmyelin_perimeter
                 except ZeroDivisionError:
                     print(f"ZeroDivisionError caught on invalid object #{idx}.")
-                    stats['gratio'] = float('NaN')
-                    stats['myelin_thickness'] = float('NaN')
-                    stats['myelin_area'] = float('NaN')
-                    stats['axonmyelin_area'] = float('NaN')
-                    stats['axonmyelin_perimeter'] = float('NaN')
+                    stats['gratio'] = np.nan
+                    stats['myelin_thickness'] = np.nan
+                    stats['myelin_area'] = np.nan
+                    stats['axonmyelin_area'] = np.nan
+                    stats['axonmyelin_perimeter'] = np.nan
 
             else:
                 print(
