@@ -219,7 +219,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 **Optional arguments:**
 
--m MODEL            Folder where the model is located. 
+-m MODEL            Folder where the model is located, if different from the default model.
                     The default SEM model path is **model_seg_rat_axon-myelin_sem**. 
                     The default TEM model path is **model_seg_mouse_axon-myelin_tem**.
                     The default BF model path is **model_seg_rat_axon-myelin_bf**.
