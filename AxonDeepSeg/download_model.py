@@ -48,7 +48,7 @@ def download_model(destination = None):
        shutil.rmtree(str(tem_destination))      
 
     if bf_destination.exists():
-       print('OM model folder already existed - deleting old one')
+       print('BF model folder already existed - deleting old one')
        shutil.rmtree(str(bf_destination))
 
     shutil.move(folder_name_SEM_model.joinpath("model_seg_rat_axon-myelin_sem"), str(sem_destination))
