@@ -21,7 +21,7 @@ In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it 
 
     conda search python
 
-If a list of available Python versions are displayed and versions >=3.7.0 are available, you may skip to the next section (git).
+If a list of available Python versions are displayed and versions >=3.8.0 are available, you may skip to the next section (git).
 
 Linux
 ~~~~~
@@ -121,8 +121,6 @@ This integrity test automatically performs the axon and myelin segmentation of a
 
     * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
 
-.. NOTE :: For some users, the test may fail because Keras is using Theano backend instead of Tensorflow. In that case, you will see the line ``Using Theano backend.`` when launching ``axondeepseg_test``. To fix this issue, add the line ``export KERAS_BACKEND="tensorflow"`` at the end of the ``<your_conda_install_location>\envs\<your_environment_name>/etc/conda/activate.d/keras_activate.sh`` file, then deactivate and reactivate your environment. The test should print ``Using Tensorflow backend.`` and pass.
-
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
 
@@ -177,7 +175,7 @@ The three models are described below:
 
 * A SEM model, that works at a resolution of 0.1 micrometer per pixel.
 * A TEM model, that works at a resolution of 0.01 micrometer per pixel.
-* A OM model, that works at a resolution of 0.1 micrometer per pixel.
+* A BF (bright-field) model, that works at a resolution of 0.1 micrometer per pixel.
 
 Using AxonDeepSeg
 =================
