@@ -220,9 +220,6 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 **Optional arguments:**
 
 -m MODEL            Folder where the model is located, if different from the default model.
-                    The default SEM model path is **model_seg_rat_axon-myelin_sem**. 
-                    The default TEM model path is **model_seg_mouse_axon-myelin_tem**.
-                    The default BF model path is **model_seg_rat_axon-myelin_bf**.
 
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
