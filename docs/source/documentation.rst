@@ -490,6 +490,11 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 * `02-morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/04-morphometrics_extraction.ipynb>`_:
     Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, ...), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, ...), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.
 
+.. NOTE ::
+     To open a notebook, go to the notebooks/ subfolder of AxonDeepSeg and launch a particular notebook as follows::
+         cd notebooks
+         jupyter notebook name_of_the_notebook.ipynb 
+
 .. WARNING ::
    The current models available for segmentation are trained for patches of 256x256 pixels for SEM and 512x512 pixels for TEM and BF. This means that your input image(s) should be at least 256x256 or 512x512 pixels in size **after the resampling to the target pixel size of the model you are using to segment**. 
 
