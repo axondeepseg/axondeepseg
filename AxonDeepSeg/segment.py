@@ -203,7 +203,7 @@ def main(argv=None):
     requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
                                                                                 'where the image(s) to segment is/are located.')
 
-    ap.add_argument("-m", "--model", required=False, help='Folder where the model is located.')
+    ap.add_argument("-m", "--model", required=False, help='Folder where the model is located, if different from the default model.')
     ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
                                                               'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
                                                               'file needs to be added to the image folder path. The pixel size \n'+
