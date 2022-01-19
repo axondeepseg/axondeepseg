@@ -28,6 +28,18 @@ def axon_segmentation(
     :return: Nothing.
     '''
 
+    # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
+    if acquired_resolution == None:
+        if (path_acquisitions_folders / 'pixel_size_in_micrometer.txt').exists():
+            resolutions_file = open(path_acquisitions_folders / 'pixel_size_in_micrometer.txt', 'r')
+            str_resolution = [float(file_.read()) for file_ in resolutions_file]
+            acquired_resolution = float(str_resolution[0])
+        else:
+            exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
+                            "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file " \
+                            "containing the pixel size value."
+            raise Exception(exception_msg)
+
     path_model=path_model_folder
     input_filenames = acquisitions_filenames
     options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um", "overlap_2D": overlap_value, "binarize_maxpooling": True}
