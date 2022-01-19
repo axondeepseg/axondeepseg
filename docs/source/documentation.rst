@@ -147,6 +147,7 @@ In FSLeyes, do the following:
 - Click on ``file -> load plugin``
 - Select ``ads_plugin.py`` (found in AxonDeepSeg folder)
 - When asked ``Install permanently`` click on ``yes``.
+- Close FSLeyes and re-open it.
 
 From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
 
