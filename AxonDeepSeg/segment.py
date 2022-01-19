@@ -199,7 +199,7 @@ def main(argv=None):
     requiredName.add_argument('-t', '--type', required=True, choices=['SEM', 'TEM', 'BF'], help='Type of acquisition to segment. \n'+
                                                                                         'SEM: scanning electron microscopy samples. \n'+
                                                                                         'TEM: transmission electron microscopy samples. \n' +
-                                                                                        'BF: Bright-field microscopy samples.')
+                                                                                        'BF: bright-field microscopy samples.')
     requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
                                                                                 'where the image(s) to segment is/are located.')
 
