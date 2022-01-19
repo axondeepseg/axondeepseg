@@ -412,7 +412,7 @@ Circle
 ^^^^^^
 **Usage** ::
 
-    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a circle
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle
 
 **Studies using Circle as axon shape:**
 
@@ -423,7 +423,7 @@ Ellipse
 ^^^^^^^
 **Usage** ::
 
-    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
+    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
 
 **Studies using Ellipse as axon shape:**
 
