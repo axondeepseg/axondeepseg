@@ -493,6 +493,7 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
 
 .. NOTE ::
      To open a notebook, go to the notebooks/ subfolder of AxonDeepSeg and launch a particular notebook as follows::
+     
          cd notebooks
          jupyter notebook name_of_the_notebook.ipynb 
 
