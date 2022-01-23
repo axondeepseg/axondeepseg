@@ -725,7 +725,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 pathname = pathname + ".xlsx"
             try:
                 # Export to excel
-                pd.DataFrame(x).to_excel(pathname)
+                pd.DataFrame(x).to_excel(pathname, na_rep='NaN')
 
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
