@@ -662,6 +662,24 @@ class TestCore(object):
         with pytest.raises(IOError):
             load_axon_morphometrics(str(nonExistingFolder))
 
+    # --------------check consistency with reference morphometrics-------------- #
+    @pytest.mark.unit
+    def test_morphometrics_consistency(self):
+        path_morphometrics_reference = Path(
+            self.testPath /
+            '__test_files__' /
+            '__test_demo_files__' /
+            '__morphometrics__'
+        )
+
+        reference_stats_array = load_axon_morphometrics(str(path_morphometrics_reference))
+        new_stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), im_myelin=self.pred_myelin)
+
+        for row_ref, row_new in zip(reference_stats_array, new_stats_array):
+            if any(math.isnan(val) for val in row_ref.values()) == False and any(math.isnan(val) for val in row_new.values()) == False:
+                assert np.array_equal(row_ref, row_new)
+
+
     # --------------draw_axon_diameter tests-------------- #
     @pytest.mark.unit
     def test_draw_axon_diameter_creates_file_in_expected_location(self):
