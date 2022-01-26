@@ -676,8 +676,9 @@ class TestCore(object):
         new_stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), im_myelin=self.pred_myelin)
 
         for row_ref, row_new in zip(reference_stats_array, new_stats_array):
-            if any(math.isnan(val) for val in row_ref.values()) == False and any(math.isnan(val) for val in row_new.values()) == False:
-                assert np.array_equal(row_ref, row_new)
+            row_ref_vals = np.array(list(row_ref.values()))
+            row_new_vals = np.array(list(row_new.values()))
+            assert np.allclose(row_ref_vals, row_new_vals, rtol=0, atol=1e-6, equal_nan=True)
 
 
     # --------------draw_axon_diameter tests-------------- #
