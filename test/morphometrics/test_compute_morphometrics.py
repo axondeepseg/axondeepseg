@@ -678,7 +678,7 @@ class TestCore(object):
         for row_ref, row_new in zip(reference_stats_array, new_stats_array):
             row_ref_vals = np.array(list(row_ref.values()))
             row_new_vals = np.array(list(row_new.values()))
-            assert np.allclose(row_ref_vals, row_new_vals, rtol=0, atol=1e-6, equal_nan=True)
+            assert np.allclose(row_ref_vals, row_new_vals, rtol=0, atol=1e-11, equal_nan=True)
 
 
     # --------------draw_axon_diameter tests-------------- #
