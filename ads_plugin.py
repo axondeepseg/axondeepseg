@@ -605,7 +605,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         axon_corr_array = np.flipud(axon_extracted_array)
         axon_corr_array = params.intensity['binary'] * np.rot90(axon_corr_array, k=1, axes=(1, 0))
-        file_name = self.ads_temp_dir / (myelin_mask_overlay.name[:-len("-myelin-manual_pred")] + "-axon-manual_pred-corr.png")
+        file_name = self.ads_temp_dir / (myelin_mask_overlay.name[:-len("-myelin")] + "-axon-corr.png")
         ads_utils.imwrite(filename=file_name, img=axon_corr_array)
         self.load_png_image_from_path(file_name, is_mask=True, colormap="blue")
 
@@ -892,8 +892,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 and (not an_overlay.name.endswith("-Myelin"))
                 and (not an_overlay.name.endswith("-Axon"))
                 and (not an_overlay.name.endswith("-axon"))
-                and (not an_overlay.name.endswith("-axon-manual_pred"))
-                and (not an_overlay.name.endswith("-myelin-manual_pred"))
+                and (not an_overlay.name.endswith("-axon"))
+                and (not an_overlay.name.endswith("-myelin"))
             ):
                 n_found_overlays = n_found_overlays + 1
                 image_overlay = an_overlay
@@ -922,7 +922,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if (an_overlay.name.endswith("-axon")) or (an_overlay.name.endswith("-Axon")) or (an_overlay.name.endswith("-axon-manual_pred")):
+            if (an_overlay.name.endswith("-axon")) or (an_overlay.name.endswith("-Axon")) or (an_overlay.name.endswith("-axon")):
                 n_found_overlays = n_found_overlays + 1
                 axon_overlay = an_overlay
 
@@ -950,7 +950,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if (an_overlay.name.endswith("-axon-corr")) or (an_overlay.name.endswith("-Axon-corr")) or (an_overlay.name.endswith("-axon-manual_pred-corr")):
+            if (an_overlay.name.endswith("-axon-corr")) or (an_overlay.name.endswith("-Axon-corr")) or (an_overlay.name.endswith("-axon-corr")):
                 n_found_overlays = n_found_overlays + 1
                 axon_overlay = an_overlay
 
@@ -977,7 +977,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if (an_overlay.name.endswith("-myelin")) or (an_overlay.name.endswith("-Myelin")) or (an_overlay.name.endswith("-myelin-manual_pred")):
+            if (an_overlay.name.endswith("-myelin")) or (an_overlay.name.endswith("-Myelin")) or (an_overlay.name.endswith("-myelin")):
                 n_found_overlays = n_found_overlays + 1
                 myelin_overlay = an_overlay
 

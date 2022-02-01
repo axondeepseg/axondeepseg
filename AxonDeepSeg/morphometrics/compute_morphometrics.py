@@ -75,7 +75,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
     # Label each axon object
     im_axon_label = measure.label(im_axon)
     # Measure properties for each axon object
-    axon_objects = measure.regionprops(im_axon_label, coordinates='xy')
+    axon_objects = measure.regionprops(im_axon_label)
 
     # Deal with myelin mask
     if im_myelin is not None:
@@ -102,7 +102,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         # Watershed segmentation of axonmyelin using distance map
         im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
         # Measure properties of each axonmyelin object
-        axonmyelin_objects = measure.regionprops(im_axonmyelin_label, coordinates='xy')
+        axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
 
     # Create list of the exiting labels
     if im_myelin is not None:

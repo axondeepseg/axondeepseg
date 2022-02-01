@@ -45,8 +45,10 @@ def axon_segmentation(
     options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um", "overlap_2D": overlap_value, "binarize_maxpooling": True}
 
     # IVADOMED automated segmentation
-    nii_lst, target_lst = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
+    nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
     
+    target_lst = [str(axon_suffix), str(myelin_suffix)]
+
     imed_inference.pred_to_png(nii_lst, target_lst, str(Path(input_filenames[0]).parent / Path(input_filenames[0]).stem))
     if verbosity_level >= 1:
         print(Path(path_acquisitions_folders) / (Path(input_filenames[0]).stem + str(axonmyelin_suffix)))
