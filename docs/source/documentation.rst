@@ -505,7 +505,7 @@ Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
    **Option:** If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).
 
 Manual correction of segmentation masks
----------------------------------------
+=======================================
 
 If the segmentation with AxonDeepSeg does not give optimal results, you can try one of the following options:
 
@@ -521,6 +521,11 @@ If the segmentation with AxonDeepSeg does not give optimal results, you can try 
 * To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`_).
 * If you are making correction on an existing segmentation mask, note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). You can then manually correct the myelin mask and create a corrected axon+myelin mask.
 * For a detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
+
+Training Models
+===============
+
+To train your own model for use in AxonDeepSeg, please refer to the `IVADOMED documentation <https://ivadomed.org/tutorials/two_class_microscopy_seg_2d_unet.html>`_ on model training for two-class microscopy images.
 
 Help
 ====
