@@ -170,7 +170,7 @@ Known issues
 GPU Support
 -----------
 
-If you have a compatible NVIDIA GPU card that supports CUDA11 and with the right driver installed, running the following command after installing AxonDeepSeg will install the necessary ``torch`` and ``torchvision` versions for GPU use of AxonDeepSeg:
+If you have a compatible NVIDIA GPU card that supports CUDA11 and with the right driver installed, running the following command after installing AxonDeepSeg will install the necessary ``torch`` and ``torchvision`` versions for GPU use of AxonDeepSeg::
 
     pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 --find-links https://download.pytorch.org/whl/torch_stable.html
 
