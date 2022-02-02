@@ -210,11 +210,8 @@ def main(argv=None):
                                                               'in that file will be used for the segmentation.',
                                                               default=None)
     ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
-                                                            '0 (default) : Displays the progress bar for the segmentation. \n'+
-                                                            '1: Also displays the path of the image(s) being segmented. \n'+
-                                                            '2: Also displays the information about the prediction step \n'+
-                                                            '   for the segmentation of current sample. \n'+
-                                                            '3: Also displays the patch number being processed in the current sample.',
+                                                            '0 (default) : Quiet mode. Shows minimal information on the terminal. \n'+
+                                                            '1: Developer mode. Shows more information on the terminal, useful for debugging.',
                                                             default=0)
     ap.add_argument('--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
                                                             'Higher values of overlap can improve the segmentation at patch borders, \n'+
