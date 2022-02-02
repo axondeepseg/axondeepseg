@@ -892,8 +892,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 and (not an_overlay.name.endswith("-Myelin"))
                 and (not an_overlay.name.endswith("-Axon"))
                 and (not an_overlay.name.endswith("-axon"))
-                and (not an_overlay.name.endswith("-axon"))
-                and (not an_overlay.name.endswith("-myelin"))
             ):
                 n_found_overlays = n_found_overlays + 1
                 image_overlay = an_overlay
