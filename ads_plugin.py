@@ -950,7 +950,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if (an_overlay.name.endswith("-axon-corr")) or (an_overlay.name.endswith("-Axon-corr")) or (an_overlay.name.endswith("-axon-corr")):
+            if (an_overlay.name.endswith("-axon-corr")) or (an_overlay.name.endswith("-Axon-corr")):
                 n_found_overlays = n_found_overlays + 1
                 axon_overlay = an_overlay
 
