@@ -975,7 +975,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             return None
 
         for an_overlay in visible_overlay_list:
-            if (an_overlay.name.endswith("-myelin")) or (an_overlay.name.endswith("-Myelin")) or (an_overlay.name.endswith("-myelin")):
+            if (an_overlay.name.endswith("-myelin")) or (an_overlay.name.endswith("-Myelin")):
                 n_found_overlays = n_found_overlays + 1
                 myelin_overlay = an_overlay
 
