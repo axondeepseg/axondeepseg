@@ -524,7 +524,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_array = axon_array * params.intensity['binary']
 
 
-        image_name = myelin_mask_overlay.name.split("-myelin")[0]
+        image_name = myelin_mask_overlay.name.split("_seg")[0]
 
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
 
