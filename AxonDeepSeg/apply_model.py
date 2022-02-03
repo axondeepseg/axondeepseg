@@ -36,7 +36,7 @@ def axon_segmentation(
             acquired_resolution = float(str_resolution)
         else:
             exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
-                            "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file " \
+                            "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
                             "containing the pixel size value."
             raise Exception(exception_msg)
 
