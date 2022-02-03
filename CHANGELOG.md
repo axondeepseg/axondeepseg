@@ -51,7 +51,6 @@ Changelog
  -  Fixed Notebooks and Binder links in doc[View pull request](https://github.com/neuropoly/axondeepseg/pull/413)
  - Move test files to OSF, add download functionality [View pull request](https://github.com/neuropoly/axondeepseg/pull/373)
  - Add postprocessing tests [View pull request](https://github.com/neuropoly/axondeepseg/pull/365)
- - Changed all instances of imageio_imread by ads_utils.imread [View pull request](https://github.com/neuropoly/axondeepseg/pull/584)
 
 **FEATURE**
 
