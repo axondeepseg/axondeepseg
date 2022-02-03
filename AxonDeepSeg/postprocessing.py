@@ -80,13 +80,13 @@ def remove_intersection(mask_1, mask_2, priority=1, return_overlap=False):
     if priority not in [1, 2]:
         raise Exception("Parameter priority can only be 1 or 2")
 
-    array_1 = mask_1.astype(np.bool)
-    array_2 = mask_2.astype(np.bool)
+    array_1 = mask_1.astype(bool)
+    array_2 = mask_2.astype(bool)
     intersection = (array_1 & array_2).astype(np.uint8)
 
-    if priority is 1:
+    if priority == 1:
         mask_2 = mask_2 - intersection
-    if priority is 2:
+    if priority == 2:
         mask_1 = mask_1 - intersection
 
     if return_overlap is True:

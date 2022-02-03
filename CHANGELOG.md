@@ -1,6 +1,24 @@
 Changelog
 ===============================================================================
 
+## Version 4.0.0 - 2022-02-03
+[View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.3.0...v4.0.0)
+
+**NOTICE**
+ - Due to the change in implementations on an upgraded dependency (skimage v0.14.2 -> v0.18.3), the morphometrics values "solidity" and "orientation" differ from values produced by AxonDeepSeg v3.x. "solidity" values produced can vary slightly due to numerical precision in algorithmic changes in skimage (on the order of 1%), a the convention for "orientation" changed from "rc" to "xy", leading to a difference in value by pi/2. See this issue for more details: https://github.com/neuropoly/axondeepseg/issues/589
+
+**BUG** 
+ - Fix NaNs not appearing when generating morphometrics with the GUI [View pull request](https://github.com/neuropoly/axondeepseg/pull/592)
+ 
+**FEATURE**
+
+ - Integrate IVADOMED into project [View pull request](https://github.com/neuropoly/axondeepseg/pull/547)
+ - Changed all instances of imageio_imread by ads_utils.imread [View pull request](https://github.com/neuropoly/axondeepseg/pull/5927)
+
+**INSTALLATION**
+
+ - Added Mac M1 compatibility  [View pull request](https://github.com/neuropoly/axondeepseg/pull/547)
+
 ## Version 3.3.0 - 2022-01-14
 [View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.2.0...v3.3.0)
 
@@ -33,7 +51,6 @@ Changelog
  -  Fixed Notebooks and Binder links in doc[View pull request](https://github.com/neuropoly/axondeepseg/pull/413)
  - Move test files to OSF, add download functionality [View pull request](https://github.com/neuropoly/axondeepseg/pull/373)
  - Add postprocessing tests [View pull request](https://github.com/neuropoly/axondeepseg/pull/365)
-
 
 **FEATURE**
 
@@ -70,6 +87,7 @@ Changelog
  - Change how ADS dependencies are installed [View pull request](https://github.com/neuropoly/axondeepseg/pull/452)
  - Add PR template [View pull request](https://github.com/neuropoly/axondeepseg/pull/467)
  - Remove old config file (set_config) [View pull request](https://github.com/neuropoly/axondeepseg/pull/456)
+
 
 ## Version 3.2.0 - 2020-10-16
 [View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.0...v3.2.0)
