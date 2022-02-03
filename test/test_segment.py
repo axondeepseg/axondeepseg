@@ -155,7 +155,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37"])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -163,7 +163,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_with_overlap_value(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2", "-s", "0.37", '--overlap', '48'])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37", '--overlap', '48'])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -171,7 +171,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_with_pixel_size_file(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePathWithPixelSize), "-v", "2"])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePathWithPixelSize), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -182,7 +182,7 @@ class TestCore(object):
         assert not (self.imageFolderPath / 'pixel_size_in_micrometer.txt').exists()
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "2"])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
 
@@ -190,7 +190,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "2", "-s", "0.37"])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "1", "-s", "0.37"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -198,7 +198,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input_with_pixel_size_file(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPathWithPixelSize), "-v", "2"])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPathWithPixelSize), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -209,6 +209,6 @@ class TestCore(object):
         assert not (self.imageFolderPath / 'pixel_size_in_micrometer.txt').exists()
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "2"])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
