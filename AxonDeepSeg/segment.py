@@ -209,7 +209,7 @@ def main(argv=None):
                                                               'file needs to be added to the image folder path. The pixel size \n'+
                                                               'in that file will be used for the segmentation.',
                                                               default=None)
-    ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,4)), help='Verbosity level. \n'+
+    ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,2)), help='Verbosity level. \n'+
                                                             '0 (default) : Quiet mode. Shows minimal information on the terminal. \n'+
                                                             '1: Developer mode. Shows more information on the terminal, useful for debugging.',
                                                             default=0)
