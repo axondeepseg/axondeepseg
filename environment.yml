@@ -15,7 +15,7 @@ dependencies:
   - mpld3
   - tqdm
   - requests
-  - pillow=8.4.0 
+  - pillow!=9.0.0
   - imageio
   - pytest
   - pytest-cov
