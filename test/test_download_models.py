@@ -25,18 +25,15 @@ class TestCore(object):
 
         self.sem_model_path = (
             self.tmpPath /
-            'default_SEM_model'
+            'model_seg_rat_axon-myelin_sem'
             )
-        print(self.sem_model_path)
-
         self.tem_model_path = (
             self.tmpPath /
-            'default_TEM_model'
+            'model_seg_mouse_axon-myelin_tem'
             )
-            
         self.bf_model_path = (
             self.tmpPath /
-            'model_seg_pns_bf'
+            'model_seg_rat_axon-myelin_bf'
             )
 
     def teardown(self):
@@ -58,7 +55,6 @@ class TestCore(object):
         assert not self.sem_model_path.exists()
         assert not self.tem_model_path.exists()
         assert not self.bf_model_path.exists()
-        print(self.sem_model_path.absolute())
 
         download_model(self.tmpPath)
 
