@@ -40,6 +40,17 @@ class TestCore(object):
         assert np.array_equal(after_ff_obtained_axon_mask, after_ff_expected_axon_mask)
 
     @pytest.mark.unit
+    def test_fill_myelin_holes_returns_expected_arrays(self):
+        # We can reuse the data from the floodfill since the goal of these two tools is the same
+        _, before_fill_myelin_mask = \
+            ads_utils.extract_axon_and_myelin_masks_from_image_data(self.before_floodfill_image)
+        after_fill_expected_axon_mask, _ = \
+            ads_utils.extract_axon_and_myelin_masks_from_image_data(self.after_floodfill_image)
+        after_fill_obtained_axon_mask = postprocessing.fill_myelin_holes(before_fill_myelin_mask)
+
+        assert np.array_equal(after_fill_obtained_axon_mask, after_fill_expected_axon_mask)
+
+    @pytest.mark.unit
     def test_remove_intersection_returns_expected_arrays(self):
         mask1_in = np.zeros((3, 3))
         mask1_in[:, 0:2] = 1

@@ -589,19 +589,15 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
-        axon_mask_overlay = self.get_visible_axon_overlay()
 
         if myelin_mask_overlay == None:
             return
-        if axon_mask_overlay == None:
-            return
-
-        # Extract the data from the overlays
+        
+        # Extract the data from the overlay
         myelin_array = myelin_mask_overlay[:, :, 0]
-        axon_array = axon_mask_overlay[:, :, 0]
 
-        # Perform the floodfill operation
-        axon_extracted_array = postprocessing.floodfill_axons(axon_array, myelin_array)
+        # Perform the fill_small_holes operation
+        axon_extracted_array = postprocessing.fill_myelin_holes(myelin_array)
 
         axon_corr_array = np.flipud(axon_extracted_array)
         axon_corr_array = params.intensity['binary'] * np.rot90(axon_corr_array, k=1, axes=(1, 0))
