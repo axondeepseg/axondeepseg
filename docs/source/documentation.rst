@@ -520,7 +520,7 @@ If the segmentation with AxonDeepSeg does not give optimal results, you can try 
 * In FSLeyes, you can make corrections on the myelin segmentation mask using the Edit mode in **Tools > Edit mode**.
 * Then, use the **Fill Axons** function to automatically fill the axons and create a corrected axon+myelin mask.
 * For a detailed procedure, please consult the following link: `Manual correction with FSLeyes <https://docs.google.com/document/d/1S8i96cJyWZogsMw4RrlQYwglcOWd3HrM5bpTOJE4RBQ/edit>`_.
-* As a reference, you can find more informtations about the FSLeyes Edit mode in the `user guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/editing_images.html>`_.
+* As a reference, you can find more informtations about the FSLeyes Edit mode in the `user guide <https://open.win.ox.ac.uk/pages/fsl/fsleyes/fsleyes/userdoc/editing_images.html>`_.
 
 **Option 2: manual labelling with GIMP software**
 
