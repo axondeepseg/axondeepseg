@@ -32,4 +32,4 @@ dependencies:
     - torchvision==0.9.1+cpu; sys_platform != "darwin"
     - torch==1.8.1;sys_platform == "darwin"
     - torchvision==0.9.1; sys_platform == "darwin"
-    - ivadomed==2.9.3
+    - ivadomed==2.9.4
