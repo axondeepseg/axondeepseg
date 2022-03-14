@@ -52,9 +52,6 @@ class ADSsettings:
 
         # Declare the settings used
         self.overlap_value = 48
-        self.model_resolution = 0.01  # Unused
-        self.use_custom_resolution = False  # Unused
-        self.custom_resolution = 0.07  # Unused
         self.zoom_factor = 1.0
         self.axon_shape = "circle"
 
@@ -380,9 +377,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         selected in the combobox. The segmentation masks are then loaded into FSLeyes
         """
 
-        # Declare the default resolution of the model
-        resolution = 0.1
-
         # Get the image name and directory
         image_overlay = self.get_visible_image_overlay()
         if self.get_visible_image_overlay() == None:
@@ -419,10 +413,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         else:
             self.show_message("Please select a model")
             return
-
-        # If the TEM model is selected, modify the resolution
-        if "TEM" in selected_model.upper():
-            resolution = 0.01
 
         # Check if the pixel size txt file exist in the imageDirPath
         pixel_size_exists = (image_directory / "pixel_size_in_micrometer.txt").exists()
