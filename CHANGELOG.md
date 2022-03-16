@@ -1,6 +1,94 @@
 Changelog
 ===============================================================================
 
+## Version 4.0.0 - 2022-02-03
+[View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.3.0...v4.0.0)
+
+**NOTICE**
+ - Due to the change in implementations on an upgraded dependency (skimage v0.14.2 -> v0.18.3), the morphometrics values "solidity" and "orientation" differ from values produced by AxonDeepSeg v3.x. "solidity" values produced can vary slightly due to numerical precision in algorithmic changes in skimage (on the order of 1%), a the convention for "orientation" changed from "rc" to "xy", leading to a difference in value by pi/2. See this issue for more details: https://github.com/neuropoly/axondeepseg/issues/589
+
+**BUG** 
+ - Fix NaNs not appearing when generating morphometrics with the GUI [View pull request](https://github.com/neuropoly/axondeepseg/pull/592)
+ 
+**FEATURE**
+
+ - Integrate IVADOMED into project [View pull request](https://github.com/neuropoly/axondeepseg/pull/547)
+ - Changed all instances of imageio_imread by ads_utils.imread [View pull request](https://github.com/neuropoly/axondeepseg/pull/5927)
+
+**INSTALLATION**
+
+ - Added Mac M1 compatibility  [View pull request](https://github.com/neuropoly/axondeepseg/pull/547)
+
+## Version 3.3.0 - 2022-01-14
+[View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.2.0...v3.3.0)
+
+**BUG**
+
+ - Fix morphometrics error with ellipse axon shape [View pull request](https://github.com/neuropoly/axondeepseg/pull/558)
+ - Fix patches2im_overlap when width = height  [View pull request](https://github.com/neuropoly/axondeepseg/pull/510)
+ - Patch myelin thickness calculation [View pull request](https://github.com/neuropoly/axondeepseg/pull/449)
+ - Bug fix due to h5py package version in fsleyes [View pull request](https://github.com/neuropoly/axondeepseg/pull/392)
+ - Pin h5py~=2.10.0 as a workaround for upstream Keras/TensorFlow issues [View pull request](https://github.com/neuropoly/axondeepseg/pull/382)
+ - Resolve bug that makes TEM data not segment well with multiple files [View pull request](https://github.com/neuropoly/axondeepseg/pull/370)
+
+**ENHANCEMENT**
+
+ - Added the axon shape selection in the GUI (take two) [View pull request](https://github.com/neuropoly/axondeepseg/pull/541)
+ - Generate numbers image with CLI  [View pull request](https://github.com/neuropoly/axondeepseg/pull/519)
+ - Refactor the code for the settings menu [View pull request](https://github.com/neuropoly/axondeepseg/pull/507)
+ - Add Optical Microscopy model in notebooks [View pull request](https://github.com/neuropoly/axondeepseg/pull/530)
+ - Add perimeter to morphometrics[View pull request](https://github.com/neuropoly/axondeepseg/pull/501)
+ - Add CLI support to generate morphometrics file. [View pull request](https://github.com/neuropoly/axondeepseg/pull/434)
+ - Replaced rcParams with font_manager to find the font [View pull request](https://github.com/neuropoly/axondeepseg/pull/491)
+ - Remove wildcard imports [View pull request](https://github.com/neuropoly/axondeepseg/pull/487)
+ - Migration to GitHub Actions [View pull request](https://github.com/neuropoly/axondeepseg/pull/479)
+ - Change the name of -o flag to -overlap flag  [View pull request](https://github.com/neuropoly/axondeepseg/pull/474)
+ - Add a model to .gitignore [View pull request](https://github.com/neuropoly/axondeepseg/pull/471)
+ - Change the default name for saving the morphometrics file [View pull request](https://github.com/neuropoly/axondeepseg/pull/472)
+ - Use pathlib in the ads_plugin instead of os.path [View pull request](https://github.com/neuropoly/axondeepseg/pull/448)
+ - Integrate Simeon's model with FSLeyes and CLI [View pull request](https://github.com/neuropoly/axondeepseg/pull/457)
+ - Fix Naming Convention [View pull request](https://github.com/neuropoly/axondeepseg/pull/441)
+ -  Fixed Notebooks and Binder links in doc[View pull request](https://github.com/neuropoly/axondeepseg/pull/413)
+ - Move test files to OSF, add download functionality [View pull request](https://github.com/neuropoly/axondeepseg/pull/373)
+ - Add postprocessing tests [View pull request](https://github.com/neuropoly/axondeepseg/pull/365)
+
+**FEATURE**
+
+ - Implement Batch morphometrics for images present in directory/directories [View pull request](https://github.com/neuropoly/axondeepseg/pull/518)
+ - Implement Ellipse Minor Axis as Diameter [View pull request](https://github.com/neuropoly/axondeepseg/pull/399)
+ - Add a settings menu to the FSLeyes plugin  [View pull request](https://github.com/neuropoly/axondeepseg/pull/462)
+ - Add Axon mask simulator [View pull request](https://github.com/neuropoly/axondeepseg/pull/179)
+
+**DOCUMENTATION**
+
+ - Update Youtube video links [View pull request](https://github.com/neuropoly/axondeepseg/pull/574)
+ - Apply RTD fix to make builds pass again  [View pull request](https://github.com/neuropoly/axondeepseg/pull/578)
+ - Update figure link  [View pull request](https://github.com/neuropoly/axondeepseg/pull/575)
+ - Migrate images to new repo [View pull request](https://github.com/neuropoly/axondeepseg/pull/543)
+ - Change link [View pull request](https://github.com/neuropoly/axondeepseg/pull/535)
+ - Add description of morphometrics columns headings [View pull request](https://github.com/neuropoly/axondeepseg/pull/516)
+ - Add a reference to Readme.md [View pull request](https://github.com/neuropoly/axondeepseg/pull/500)
+ - Update the documentation for installing the GPU compatible version of ADS [View pull request](https://github.com/neuropoly/axondeepseg/pull/490)
+ - Add tutorial video link in RTD  [View pull request](https://github.com/neuropoly/axondeepseg/pull/493)
+ - Fix docs for optical microscopy model [View pull request](https://github.com/neuropoly/axondeepseg/pull/485)
+ - Documentation updates  [View pull request](https://github.com/neuropoly/axondeepseg/pull/433)
+ - Fix new changelog display in RTD  [View pull request](https://github.com/neuropoly/axondeepseg/pull/388)
+ - Add zoomed window on masks examples in RTD  [View pull request](https://github.com/neuropoly/axondeepseg/pull/386)
+ - Remove PyPI install instructions from RTD [View pull request](https://github.com/neuropoly/axondeepseg/pull/376)
+ - Fix youtube video link in RTD [View pull request](https://github.com/neuropoly/axondeepseg/pull/379)
+
+**INSTALLATION**
+
+ - Link the test_files to GitHub [View pull request](https://github.com/neuropoly/axondeepseg/pull/534)
+ - Download models from Github repo [View pull request](https://github.com/neuropoly/axondeepseg/pull/533)
+ - Generate images synthetically in tests [View pull request](https://github.com/neuropoly/axondeepseg/pull/520)
+ - Change install to one env file & update docs  [View pull request](https://github.com/neuropoly/axondeepseg/pull/484)
+ - Refactor AxonDeepSeg/models directory and update .gitignore [View pull request](https://github.com/neuropoly/axondeepseg/pull/476)
+ - Change how ADS dependencies are installed [View pull request](https://github.com/neuropoly/axondeepseg/pull/452)
+ - Add PR template [View pull request](https://github.com/neuropoly/axondeepseg/pull/467)
+ - Remove old config file (set_config) [View pull request](https://github.com/neuropoly/axondeepseg/pull/456)
+
+
 ## Version 3.2.0 - 2020-10-16
 [View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.0...v3.2.0)
 

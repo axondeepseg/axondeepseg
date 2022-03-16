@@ -10,7 +10,6 @@ from skimage import transform
 from skimage.filters import gaussian
 
 # AxonDeepSeg imports
-from AxonDeepSeg.apply_model import axon_segmentation
 import AxonDeepSeg.ads_utils
 
 def add_additive_gaussian_noise(img,mu=0,sigma=10):

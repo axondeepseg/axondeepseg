@@ -20,6 +20,8 @@ from pathlib import Path
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.segment import segment_image
+
+
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, axonmyelin_index_suffix
@@ -33,7 +35,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-VERSION = "0.2.19"
+VERSION = "0.2.20"
 
 class ADSsettings:
     """
@@ -49,10 +51,7 @@ class ADSsettings:
         self.ads_control = ads_control
 
         # Declare the settings used
-        self.overlap_value = 25
-        self.model_resolution = 0.01  # Unused
-        self.use_custom_resolution = False  # Unused
-        self.custom_resolution = 0.07  # Unused
+        self.overlap_value = 48
         self.zoom_factor = 1.0
         self.axon_shape = "circle"
 
@@ -378,12 +377,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         selected in the combobox. The segmentation masks are then loaded into FSLeyes
         """
 
-        # Declare the default resolution of the model
-        resolution = 0.1
-
         # Get the image name and directory
         image_overlay = self.get_visible_image_overlay()
-        if self.get_visible_image_overlay() is None:
+        if self.get_visible_image_overlay() == None:
             return
 
         n_loaded_images = self.png_image_name.__len__()
@@ -394,7 +390,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 image_name = self.png_image_name[i]
                 image_directory = self.image_dir_path[i]
 
-        if (image_name is None) or (image_directory is None):
+        if (image_name == None) or (image_directory == None):
             self.show_message(
                 "Couldn't find the path to the loaded image. "
                 "Please use the plugin's image loader to import the image you wish to segment. "
@@ -418,15 +414,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
             self.show_message("Please select a model")
             return
 
-        # If the TEM model is selected, modify the resolution
-        if "TEM" in selected_model.upper():
-            resolution = 0.01
-
         # Check if the pixel size txt file exist in the imageDirPath
         pixel_size_exists = (image_directory / "pixel_size_in_micrometer.txt").exists()
 
         # if it doesn't exist, ask the user to input the pixel size
-        if pixel_size_exists is False:
+        if pixel_size_exists == False:
             with wx.TextEntryDialog(
                     self, "Enter the pixel size in micrometer", value="0.07"
             ) as text_entry:
@@ -440,20 +432,13 @@ class ADScontrol(ctrlpanel.ControlPanel):
             resolution_file = open((image_directory / "pixel_size_in_micrometer.txt").__str__(), 'r')
             pixel_size_float = float(resolution_file.read())
 
-        # Load model configs and apply prediction
-        model_configfile = model_path / "config_network.json"
-        with open(model_configfile.__str__(), "r") as fd:
-            config_network = json.loads(fd.read())
-
         segment_image(
-                      image_path,
-                      model_path,
-                      self.settings.overlap_value,
-                      config_network,
-                      resolution,
-                      acquired_resolution=pixel_size_float * self.settings.zoom_factor,
-                      verbosity_level=3
-                      )
+                path_testing_image=image_path,
+                path_model=model_path,
+                overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
+                acquired_resolution=pixel_size_float * self.settings.zoom_factor,
+                verbosity_level=3
+                )
 
         # The axon_segmentation function creates the segmentation masks and stores them as PNG files in the same folder
         # as the original image file.
@@ -475,11 +460,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Find the visible myelin and axon masks
         axon_mask_overlay = self.get_corrected_axon_overlay()
-        if axon_mask_overlay is None:
+        if axon_mask_overlay == None:
             axon_mask_overlay = self.get_visible_axon_overlay()
         myelin_mask_overlay = self.get_visible_myelin_overlay()
 
-        if (axon_mask_overlay is None) or (myelin_mask_overlay is None):
+        if (axon_mask_overlay == None) or (myelin_mask_overlay == None):
             return
 
         # Ask the user where to save the segmentation
@@ -529,7 +514,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_array = axon_array * params.intensity['binary']
 
 
-        image_name = myelin_mask_overlay.name[:-len("_seg-myelin")]
+        image_name = myelin_mask_overlay.name.split("_seg")[0]
 
         myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
 
@@ -548,7 +533,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_mask_overlay = self.get_visible_axon_overlay()
         myelin_mask_overlay = self.get_visible_myelin_overlay()
 
-        if (axon_mask_overlay is None) or (myelin_mask_overlay is None):
+        if (axon_mask_overlay == None) or (myelin_mask_overlay == None):
             return
 
         # Extract the data from the overlays
@@ -562,7 +547,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # If a watershed mask already exists, remove it.
         for an_overlay in self.overlayList:
-            if (self.most_recent_watershed_mask_name is not None) and (
+            if (self.most_recent_watershed_mask_name != None) and (
                 an_overlay.name == self.most_recent_watershed_mask_name
             ):
                 self.overlayList.remove(an_overlay)
@@ -594,19 +579,15 @@ class ADScontrol(ctrlpanel.ControlPanel):
         """
         # Find the visible myelin and axon mask
         myelin_mask_overlay = self.get_visible_myelin_overlay()
-        axon_mask_overlay = self.get_visible_axon_overlay()
 
-        if myelin_mask_overlay is None:
+        if myelin_mask_overlay == None:
             return
-        if axon_mask_overlay is None:
-            return
-
-        # Extract the data from the overlays
+        
+        # Extract the data from the overlay
         myelin_array = myelin_mask_overlay[:, :, 0]
-        axon_array = axon_mask_overlay[:, :, 0]
 
-        # Perform the floodfill operation
-        axon_extracted_array = postprocessing.floodfill_axons(axon_array, myelin_array)
+        # Perform the fill_small_holes operation
+        axon_extracted_array = postprocessing.fill_myelin_holes(myelin_array)
 
         axon_corr_array = np.flipud(axon_extracted_array)
         axon_corr_array = params.intensity['binary'] * np.rot90(axon_corr_array, k=1, axes=(1, 0))
@@ -635,11 +616,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Find the visible myelin and axon masks
         axon_mask_overlay = self.get_corrected_axon_overlay()
-        if axon_mask_overlay is None:
+        if axon_mask_overlay == None:
             axon_mask_overlay = self.get_visible_axon_overlay()
         myelin_mask_overlay = self.get_visible_myelin_overlay()
 
-        if (axon_mask_overlay is None) or (myelin_mask_overlay is None):
+        if (axon_mask_overlay == None) or (myelin_mask_overlay == None):
             return
 
         # store the data of the masks in variables as numpy arrays.
@@ -725,7 +706,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 pathname = pathname + ".xlsx"
             try:
                 # Export to excel
-                pd.DataFrame(x).to_excel(pathname)
+                pd.DataFrame(x).to_excel(pathname, na_rep='NaN')
 
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
@@ -772,7 +753,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Measure properties for each axon object
         axon_objects = measure.regionprops(im_axon_label)
         # Deal with myelin mask
-        if im_myelin is not None:
+        if im_myelin != None:
             # sum axon and myelin masks
             im_axonmyelin = im_axon + im_myelin
             # Compute distance between each pixel and the background. Note: this distance is calculated from the im_axon,
@@ -797,7 +778,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             im_axonmyelin_label = morphology.watershed(
                 -distance, im_centroid, mask=im_axonmyelin
             )
-            if return_centroids is True:
+            if return_centroids == True:
                 return im_axonmyelin_label, ind_centroid
             else:
                 return im_axonmyelin_label
@@ -826,7 +807,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Open the 2D image
         img_png2D = ads_utils.imread(image_path)
 
-        if is_mask is True:
+        if is_mask == True:
             img_png2D = img_png2D // params.intensity['binary']  # Segmentation masks should be binary
 
         # Flip the image on the Y axis so that the morphometrics file shows the right coordinates
@@ -849,7 +830,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         ]
 
         # Display the overlay
-        if add_to_overlayList is True:
+        if add_to_overlayList == True:
             self.overlayList.append(img_overlay)
             opts = self.displayCtx.getOpts(img_overlay)
             opts.cmap = colormap
@@ -866,7 +847,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         visible_overlay_list = []
         for an_overlay in self.overlayList:
             an_overlay_display = self.displayCtx.getDisplay(an_overlay)
-            if an_overlay_display.enabled is True:
+            if an_overlay_display.enabled == True:
                 visible_overlay_list.append(an_overlay)
 
         return visible_overlay_list
@@ -882,11 +863,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         image_overlay = None
         n_found_overlays = 0
 
-        if visible_overlay_list.__len__() is 0:
+        if visible_overlay_list.__len__() == 0:
             self.show_message("No overlays are displayed")
             return None
 
-        if visible_overlay_list.__len__() is 1:
+        if visible_overlay_list.__len__() == 1:
             return visible_overlay_list[0]
 
         for an_overlay in visible_overlay_list:
@@ -904,7 +885,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         if n_found_overlays > 1:
             self.show_message("More than one microscopy image has been found")
             return None
-        if n_found_overlays is 0:
+        if n_found_overlays == 0:
             self.show_message("No visible microscopy image has been found")
             return None
 
@@ -920,7 +901,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_overlay = None
         n_found_overlays = 0
 
-        if visible_overlay_list.__len__() is 0:
+        if visible_overlay_list.__len__() == 0:
             self.show_message("No overlays are displayed")
             return None
 
@@ -932,7 +913,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         if n_found_overlays > 1:
             self.show_message("More than one axon mask has been found")
             return None
-        if n_found_overlays is 0:
+        if n_found_overlays == 0:
             self.show_message("No visible axon mask has been found")
             return None
 
@@ -948,7 +929,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         axon_overlay = None
         n_found_overlays = 0
 
-        if visible_overlay_list.__len__() is 0:
+        if visible_overlay_list.__len__() == 0:
             self.show_message("No overlays are displayed")
             return None
 
@@ -960,7 +941,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         if n_found_overlays > 1:
             self.show_message("More than one corrected axon mask has been found")
             return None
-        if n_found_overlays is 0:
+        if n_found_overlays == 0:
             return None
 
         return axon_overlay
@@ -975,7 +956,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         myelin_overlay = None
         n_found_overlays = 0
 
-        if visible_overlay_list.__len__() is 0:
+        if visible_overlay_list.__len__() == 0:
             self.show_message("No overlays are displayed")
             return None
 
@@ -987,7 +968,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         if n_found_overlays > 1:
             self.show_message("More than one myelin mask has been found")
             return None
-        if n_found_overlays is 0:
+        if n_found_overlays == 0:
             self.show_message("No visible myelin mask has been found")
             return None
 
@@ -1022,7 +1003,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Check if the plugin file exists
         plugin_file_exists = plugin_file.exists()
 
-        if plugin_file_exists is False:
+        if plugin_file_exists == False:
             return
 
         # Check the version of the plugin
@@ -1040,7 +1021,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 if not (lines == version_line):
                     plugin_is_up_to_date = False
 
-        if (version_found is False) or (plugin_is_up_to_date is False):
+        if (version_found == False) or (plugin_is_up_to_date == False):
             message = (
                 "A more recent version of the AxonDeepSeg plugin was found in your AxonDeepSeg installation folder. "
                 "You will need to replace the current FSLeyes plugin which the new one. "
