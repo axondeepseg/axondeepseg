@@ -219,6 +219,10 @@ def main(argv=None):
                                                             'Default value: '+str(default_overlap)+'\n'+
                                                             'Recommended range of values: [10-100]. \n',
                                                             default=default_overlap)
+    ap.add_argument("-z", "--zoom", required=False, help='Zoom factor to adjust the acquired pixel size of the image(s). \n'+
+                                                            'The pixel size used for the segmentation will be the product of the \n'+
+                                                            'specified pixel size and the zoom factor.',
+                                                            default=None)
     ap._action_groups.reverse()
 
     # Processing the arguments
@@ -232,6 +236,10 @@ def main(argv=None):
         psm = None
     path_target_list = [Path(p) for p in args["imgpath"]]
     new_path = Path(args["model"]) if args["model"] else None 
+    if args["zoom"] is not None:
+        zoom_factor = float(args["zoom"])
+    else:
+        zoom_factor = 1.0
 
     # Preparing the arguments to axon_segmentation function
     path_model = generate_default_parameters(type_, new_path)
@@ -277,7 +285,7 @@ def main(argv=None):
                     path_testing_image=current_path_target,
                     path_model=path_model,
                     overlap_value=overlap_value,
-                    acquired_resolution=psm,
+                    acquired_resolution=psm * zoom_factor,
                     verbosity_level=verbosity_level
                     )
 
@@ -312,7 +320,7 @@ def main(argv=None):
                 path_testing_images_folder=current_path_target,
                 path_model=path_model,
                 overlap_value=overlap_value,
-                acquired_resolution=psm,
+                acquired_resolution=psm * zoom_factor,
                 verbosity_level=verbosity_level
                 )
 
