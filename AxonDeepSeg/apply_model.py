@@ -50,7 +50,6 @@ def axon_segmentation(
         nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
     except RuntimeError as err:
         px_size = options["pixel_size"][0]
-        model_name = Path(path_model).name
         model_json = list(Path(path_model).glob('*.json'))
         with open(str(model_json[0]), 'r') as param_file:
             params = json.load(param_file)
