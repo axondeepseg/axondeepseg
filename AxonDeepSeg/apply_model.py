@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 # AxonDeepSeg imports
 import AxonDeepSeg.ads_utils as ads
@@ -45,7 +46,26 @@ def axon_segmentation(
     options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um", "overlap_2D": overlap_value, "binarize_maxpooling": True}
 
     # IVADOMED automated segmentation
-    nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
+    try:
+        nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
+    except RuntimeError as err:
+        px_size = options["pixel_size"][0]
+        model_name = Path(path_model).name
+        model_json = list(Path(path_model).glob('*.json'))
+        with open(str(model_json[0]), 'r') as param_file:
+            params = json.load(param_file)
+            length_2D = params["default_model"]["length_2D"][0]
+            model_res = params["transformation"]["Resample"]["wspace"]*1000
+        for file in input_filenames:
+            img = ads.imread(file)
+            resampled = [size * px_size / model_res for size in img.shape]
+            for r in resampled:
+                if r < length_2D:
+                    raise RuntimeError(
+                        f"The image size must be at least {length_2D}x{length_2D} after resampling to a resolution "
+                        f"of {model_res} um/pixels to create standard sized patches. One of the dimensions of the " 
+                        f"image has a size of {int(r)} after resampling to that resolution.") from err
+        raise
     
     target_lst = [str(axon_suffix), str(myelin_suffix)]
 
