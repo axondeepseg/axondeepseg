@@ -219,9 +219,9 @@ def main(argv=None):
                                                             'Default value: '+str(default_overlap)+'\n'+
                                                             'Recommended range of values: [10-100]. \n',
                                                             default=default_overlap)
-    ap.add_argument("-z", "--zoom", required=False, help='Zoom factor to adjust the acquired pixel size of the image(s). \n'+
-                                                            'The pixel size used for the segmentation will be the product of the \n'+
-                                                            'specified pixel size and the zoom factor.',
+    ap.add_argument("-z", "--zoom", required=False, help='Zoom factor. \n'+
+                                                            'When applying the model, the pixel size of the image will be \n'+
+                                                            'multiplied by this number.',
                                                             default=None)
     ap._action_groups.reverse()
 
