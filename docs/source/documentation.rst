@@ -240,6 +240,9 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 --overlap           Overlap value (in pixels) of the patches when doing the segmentation. 
                     Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 48. Recommended range of values: [10-100]. 
 
+-z ZOOM             Zoom factor.
+                    When applying the model, the pixel size of the image will be multiplied by this number.
+
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
 
@@ -287,6 +290,13 @@ To segment images that are located in different folders, specify the path to the
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
+Segment an image using a zoom factor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes, the quality of the segmentation can be improved by tweaking the pixel size so that your data's resampled resolution, for example, better matches the model's input resolution. 
+This is why we provide the **-z** argument, which lets you specify a zoom factor to adjust your pixel size. Note that this option also works for multiple images or multiple folders. For example, a pixel size of 0.07 with a zoom factor of 2.0 will provide a pixel size of 0.14 to the model before running inference::
+
+    axondeepseg -t TEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -z 2.0
 
 Morphometrics
 -------------
