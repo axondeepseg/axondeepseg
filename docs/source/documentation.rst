@@ -290,13 +290,15 @@ To segment images that are located in different folders, specify the path to the
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
-Segment an image using a zoom factor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Segment images using a zoom factor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes, the quality of the segmentation can be improved by tweaking the pixel size so that your data's resampled resolution, for example, better matches the model's input resolution. 
-This is why we provide the **-z** argument, which lets you specify a zoom factor to adjust your pixel size. Note that this option also works for multiple images or multiple folders. For example, a pixel size of 0.07 with a zoom factor of 2.0 will provide a pixel size of 0.14 to the model before running inference::
+This is why we provide the **-z** argument, which lets you specify a zoom factor to adjust your pixel size. Note that this option also works for multiple images or multiple folders. 
 
-    axondeepseg -t TEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -z 2.0
+For example, a pixel size of 0.07 with a zoom factor of 2.0 will provide a pixel size of 0.14 to the model before running inference::
+
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -z 2.0
 
 Morphometrics
 -------------
@@ -306,7 +308,7 @@ You can generate morphometrics using AxonDeepSeg via the command line interface.
 Syntax
 ~~~~~~
 
-The script to launch in called **axondeepseg_morphometrics**. It has several arguments.
+The script to launch is called **axondeepseg_morphometrics**. It has several arguments.
 
 **Required arguments:**
 
