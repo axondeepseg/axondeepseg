@@ -182,9 +182,9 @@ Existing models
 Three models are available and shipped together with the installation package, so you don't need to install them separately.
 The three models are described below:
 
-* A SEM model, that works at a resolution of 0.1 micrometer per pixel.
-* A TEM model, that works at a resolution of 0.01 micrometer per pixel.
-* A BF (bright-field) model, that works at a resolution of 0.1 micrometer per pixel.
+* A SEM model, that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
+* A TEM model, that works at a resolution of 0.01 micrometer per pixel. For more information, please visit the `TEM model repository <https://github.com/axondeepseg/default-TEM-model>`_.
+* A BF (bright-field) model, that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `BF model repository <https://github.com/axondeepseg/default-BF-model>`_.
 
 Using AxonDeepSeg
 =================
