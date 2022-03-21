@@ -58,12 +58,14 @@ def axon_segmentation(
         for file in input_filenames:
             img = ads.imread(file)
             resampled = [size * px_size / model_res for size in img.shape]
-            for r in resampled:
-                if r < length_2D:
-                    raise RuntimeError(
-                        f"The image size must be at least {length_2D}x{length_2D} after resampling to a resolution "
-                        f"of {model_res} um/pixels to create standard sized patches. One of the dimensions of the " 
-                        f"image has a size of {int(r)} after resampling to that resolution.") from err
+            smallest_dim = sorted(resampled)[0]
+            if smallest_dim < length_2D:
+                min_zoom = length_2D / smallest_dim
+                msg = (f"The image size must be at least {length_2D}x{length_2D} after resampling to a resolution " 
+                    f"of {model_res} um/pixels to create standard sized patches. \nOne of the dimensions of the "
+                    f"image has a size of {int(smallest_dim)} after resampling to that resolution. \n"
+                    f"Please use a zoom factor greater or equal to {min_zoom:.2f} to successfully apply this model.")
+                raise RuntimeError(msg) from err
         raise
     
     target_lst = [str(axon_suffix), str(myelin_suffix)]
