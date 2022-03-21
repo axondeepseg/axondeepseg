@@ -78,6 +78,7 @@ def segment_image(
                 path_model,
                 overlap_value,
                 acquired_resolution = None,
+                zoom_factor = 1.0,
                 verbosity_level = 0):
 
     '''
@@ -87,6 +88,7 @@ def segment_image(
     :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
+    :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -109,9 +111,10 @@ def segment_image(
         img_name_original = acquisition_name.stem
 
         # Performing the segmentation
-        axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[str(path_acquisition / acquisition_name)],
+        axon_segmentation(path_acquisitions_folders=path_acquisition,
+                          acquisitions_filenames=[str(path_acquisition / acquisition_name)],
                           path_model_folder=path_model, overlap_value=overlap_value,
-                          acquired_resolution=acquired_resolution)
+                          acquired_resolution=acquired_resolution*zoom_factor)
 
         if verbosity_level >= 1:
             print(("Image {0} segmented.".format(path_testing_image)))
@@ -125,6 +128,7 @@ def segment_image(
 def segment_folders(path_testing_images_folder, path_model,
                     overlap_value, 
                     acquired_resolution = None,
+                    zoom_factor = 1.0,
                     verbosity_level=0):
     '''
     Segments the images contained in the image folders located in the path_testing_images_folder.
@@ -134,6 +138,7 @@ def segment_folders(path_testing_images_folder, path_model,
     :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
+    :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -169,9 +174,10 @@ def segment_folders(path_testing_images_folder, path_model,
 
         acquisition_name = file_.name
        
-        axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
-                  path_model_folder=path_model, overlap_value=overlap_value,
-                  acquired_resolution=acquired_resolution)
+        axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
+                          acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
+                          path_model_folder=path_model, overlap_value=overlap_value,
+                          acquired_resolution=acquired_resolution*zoom_factor)
         if verbosity_level >= 1:
             tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
@@ -285,7 +291,8 @@ def main(argv=None):
                     path_testing_image=current_path_target,
                     path_model=path_model,
                     overlap_value=overlap_value,
-                    acquired_resolution=psm * zoom_factor,
+                    acquired_resolution=psm,
+                    zoom_factor=zoom_factor,
                     verbosity_level=verbosity_level
                     )
 
@@ -320,7 +327,8 @@ def main(argv=None):
                 path_testing_images_folder=current_path_target,
                 path_model=path_model,
                 overlap_value=overlap_value,
-                acquired_resolution=psm * zoom_factor,
+                acquired_resolution=psm,
+                zoom_factor=zoom_factor,
                 verbosity_level=verbosity_level
                 )
 

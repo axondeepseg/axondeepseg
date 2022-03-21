@@ -436,7 +436,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 path_testing_image=image_path,
                 path_model=model_path,
                 overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
-                acquired_resolution=pixel_size_float * self.settings.zoom_factor,
+                acquired_resolution=pixel_size_float,
+                zoom_factor=self.settings.zoom_factor,
                 verbosity_level=3
                 )
 
