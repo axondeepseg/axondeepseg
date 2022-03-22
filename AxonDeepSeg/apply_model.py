@@ -49,6 +49,7 @@ def axon_segmentation(
     try:
         nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
     except RuntimeError as err:
+        # check minimum patch size requirement
         px_size = options["pixel_size"][0]
         model_json = list(Path(path_model).glob('*.json'))
         with open(str(model_json[0]), 'r') as param_file:
@@ -64,7 +65,7 @@ def axon_segmentation(
                 msg = (f"The image size must be at least {length_2D}x{length_2D} after resampling to a resolution " 
                     f"of {model_res} um/pixels to create standard sized patches. \nOne of the dimensions of the "
                     f"image has a size of {int(smallest_dim)} after resampling to that resolution. \n"
-                    f"Please use a zoom factor greater or equal to {min_zoom:.2f} to successfully apply this model.")
+                    f"Please use a zoom factor greater or equal to {min_zoom:.2f} using the `-z` option to successfully apply this model.")
                 raise RuntimeError(msg) from err
         raise
     
