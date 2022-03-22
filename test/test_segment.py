@@ -212,3 +212,11 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_patch_size_too_small(self):
+
+        with pytest.raises(RuntimeError) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-s", "0.05"])
+
+        assert "The image size must be at least" in str(pytest_wrapped_e.value)
