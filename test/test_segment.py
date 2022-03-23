@@ -229,7 +229,7 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_main_cli_throws_error_for_too_small_image_without_zoom(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -237,7 +237,7 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 4)
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_main_cli_runs_succesfully_with_too_small_image_with_zoom(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -245,7 +245,7 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_main_cli_throws_error_with_folder_containing_too_small_image_without_zoom(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -253,7 +253,7 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 4)
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_main_cli_runs_succesfully_with_folder_containing_too_small_image_with_zoom(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
