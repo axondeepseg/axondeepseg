@@ -8,6 +8,8 @@
 
 # Imports
 
+from math import ceil
+import os
 from os import error
 import sys
 from pathlib import Path
@@ -17,6 +19,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 from tqdm import tqdm
 import pkg_resources
+from PIL import Image
 
 # AxonDeepSeg imports
 import AxonDeepSeg
@@ -73,6 +76,32 @@ def generate_default_parameters(type_acquisition, new_path):
 
     return path_model
 
+def get_model_native_resolution_and_patch(path_model):
+    '''
+    Get the native resolution of the model, ie. the resolution that segmented images will get resampled to.
+    Also, get the patch size.
+    :param path_model: model directory
+    :return: model_resolution, patch_size
+    '''
+    resolution_unit_conversion_factor = 1e3 # IVADOMED uses a native mm resolution, whereas ADS uses um
+    
+    model_json = [pos_json for pos_json in os.listdir(path_model) if pos_json.endswith('.json')]
+    model = json.load(open(path_model / model_json[0]))
+
+    model_resolution = [model['transformation']['Resample']['wspace'], model['transformation']['Resample']['hspace']]
+    model_resolution[0] = model_resolution [0] * resolution_unit_conversion_factor
+    model_resolution[1] = model_resolution [1] * resolution_unit_conversion_factor
+    
+    patch_size = [model['default_model']['length_2D'][0], model['default_model']['length_2D'][1]]
+
+    if model_resolution[0] == model_resolution[1]: #isotropic pixels
+        model_resolution = model_resolution[0]
+
+    if patch_size[0] == patch_size[1]: #isotropic pixels
+        patch_size = patch_size[0]
+
+    return model_resolution, patch_size
+
 def segment_image(
                 path_testing_image,
                 path_model,
@@ -109,6 +138,33 @@ def segment_image(
         selected_model = path_model.name
 
         img_name_original = acquisition_name.stem
+
+        # Get the model's native resolution
+        model_resolution, patch_size = get_model_native_resolution_and_patch(path_model)
+
+        # Check that the resampled image will be of sufficient size, and if not throw an error.
+        im = Image.open(path_testing_image)
+        w, h = im.size
+
+        w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
+        h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
+
+        if w_resampled < patch_size or h_resampled < patch_size:
+            if w<=h:
+                minimum_zoom_factor = patch_size*model_resolution/(w*acquired_resolution)
+            else:
+                minimum_zoom_factor = patch_size*model_resolution/(h*acquired_resolution)
+
+            # Round to 1 decimal, always up.
+            minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
+
+            print("ERROR: Due to your given image size, resolution, and zoom factor, the resampled image is smaller than",
+                   "the patch size during segmentation. To resolve this, please set a zoom factor greater than ",
+                   str(minimum_zoom_factor), ".",
+                   "To do this on the command line, call the segmentation with the -z flag, i.e. ",
+                   "-z ", str(minimum_zoom_factor),
+            )
+            sys.exit(4)
 
         # Performing the segmentation
         axon_segmentation(path_acquisitions_folders=path_acquisition,
@@ -152,6 +208,9 @@ def segment_folders(path_testing_images_folder, path_model,
     img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
                  and (not str(file).endswith((str(axonmyelin_suffix), str(axon_suffix), str(myelin_suffix),'mask.png')))]
 
+     # Get the model's native resolution
+    model_resolution, patch_size = get_model_native_resolution_and_patch(path_model)
+
     # Pre-processing: convert to png if not already done and adapt to model contrast
     for file_ in tqdm(img_files, desc="Segmentation..."):
         print(path_testing_images_folder / file_)
@@ -174,6 +233,32 @@ def segment_folders(path_testing_images_folder, path_model,
 
         acquisition_name = file_.name
        
+
+        # Check that the resampled image will be of sufficient size, and if not throw an error.
+        h, w = image_size
+
+        w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
+        h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
+
+        if w_resampled < patch_size or h_resampled < patch_size:
+            if w<=h:
+                minimum_zoom_factor = patch_size*model_resolution/(w*acquired_resolution)
+            else:
+                minimum_zoom_factor = patch_size*model_resolution/(h*acquired_resolution)
+
+            # Round to 1 decimal, always up.
+            minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
+
+            print("ERROR: Due to your given image size, resolution, and zoom factor, at least one image, ", 
+                   str(path_testing_images_folder / file_),
+                   ", is smaller than",
+                   "the patch size after it is resampled during segmentation. To resolve this, please set a zoom factor greater than ",
+                   str(minimum_zoom_factor), ".",
+                   "To do this on the command line, call the segmentation with the -z flag, i.e. ",
+                   "-z ", str(minimum_zoom_factor),
+            )
+            sys.exit(4)
+
         axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
                           acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
                           path_model_folder=path_model, overlap_value=overlap_value,
@@ -248,7 +333,7 @@ def main(argv=None):
         zoom_factor = 1.0
 
     # Preparing the arguments to axon_segmentation function
-    path_model = generate_default_parameters(type_, new_path)
+    path_model= generate_default_parameters(type_, new_path)
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -263,7 +348,7 @@ def main(argv=None):
     for current_path_target in path_target_list:
 
         if not current_path_target.is_dir():
-
+            print(current_path_target)
             if current_path_target.suffix.lower() in validExtensions:
 
                 # Handle cases if no resolution is provided on the CLI
@@ -284,6 +369,8 @@ def main(argv=None):
                                       "containing the pixel size value."
                         )
                         sys.exit(3)
+
+                # Check that the resampled resolution results in an image large enough for patching
 
 
                 # Performing the segmentation over the image

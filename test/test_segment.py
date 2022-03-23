@@ -54,6 +54,12 @@ class TestCore(object):
     
         self.imageZoomPathWithPixelSize = self.imageZoomFolderPathWithPixelSize / 'image.png'
 
+        self.imageZoomFolderWithPixelSize = (
+            self.testPath /
+            '__test_files__' /
+            '__test_segment_folder_zoom__'
+            )
+
         self.statsFilename = 'model_statistics_validation.json'
 
     @classmethod
@@ -229,12 +235,28 @@ class TestCore(object):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomPathWithPixelSize), "-v", "1"])
 
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 4)
 
     @pytest.mark.single
     def test_main_cli_runs_succesfully_with_too_small_image_with_zoom(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomPathWithPixelSize), "-v", "1", "-z", "1.2"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.single
+    def test_main_cli_throws_error_with_folder_containing_too_small_image_without_zoom(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 4)
+
+    @pytest.mark.single
+    def test_main_cli_runs_succesfully_with_folder_containing_too_small_image_with_zoom(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1", "-z", "1.2"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
