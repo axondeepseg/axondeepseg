@@ -89,8 +89,8 @@ def get_model_native_resolution_and_patch(path_model):
     model = json.load(open(path_model / model_json[0]))
 
     model_resolution = [model['transformation']['Resample']['wspace'], model['transformation']['Resample']['hspace']]
-    model_resolution[0] = model_resolution [0] * resolution_unit_conversion_factor
-    model_resolution[1] = model_resolution [1] * resolution_unit_conversion_factor
+    model_resolution[0] = model_resolution[0] * resolution_unit_conversion_factor
+    model_resolution[1] = model_resolution[1] * resolution_unit_conversion_factor
     
     patch_size = [model['default_model']['length_2D'][0], model['default_model']['length_2D'][1]]
 
