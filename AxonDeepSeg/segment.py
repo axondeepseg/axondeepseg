@@ -348,7 +348,7 @@ def main(argv=None):
     for current_path_target in path_target_list:
 
         if not current_path_target.is_dir():
-            print(current_path_target)
+
             if current_path_target.suffix.lower() in validExtensions:
 
                 # Handle cases if no resolution is provided on the CLI
