@@ -333,7 +333,7 @@ def main(argv=None):
         zoom_factor = 1.0
 
     # Preparing the arguments to axon_segmentation function
-    path_model= generate_default_parameters(type_, new_path)
+    path_model = generate_default_parameters(type_, new_path)
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -369,8 +369,6 @@ def main(argv=None):
                                       "containing the pixel size value."
                         )
                         sys.exit(3)
-
-                # Check that the resampled resolution results in an image large enough for patching
 
 
                 # Performing the segmentation over the image
