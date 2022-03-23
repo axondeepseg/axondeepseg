@@ -42,7 +42,17 @@ class TestCore(object):
             '__test_files__' /
             '__test_segment_files_with_pixel_size__'
             )
+
         self.imagePathWithPixelSize = self.imageFolderPathWithPixelSize / 'image.png'
+
+
+        self.imageZoomFolderPathWithPixelSize = (
+            self.testPath /
+            '__test_files__' /
+            '__test_segment_zoom__'
+            )
+    
+        self.imageZoomPathWithPixelSize = self.imageZoomFolderPathWithPixelSize / 'image.png'
 
         self.statsFilename = 'model_statistics_validation.json'
 
@@ -212,3 +222,19 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+    @pytest.mark.single
+    def test_main_cli_throws_error_for_too_small_image_without_zoom(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomPathWithPixelSize), "-v", "1"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+    @pytest.mark.single
+    def test_main_cli_runs_succesfully_with_too_small_image_with_zoom(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomPathWithPixelSize), "-v", "1", "-z", "1.2"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
