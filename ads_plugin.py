@@ -445,8 +445,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
         except SystemExit as err:
             if err.code == 4:
                 self.show_message(
-                    "Patch size is too small. Please take a look at your terminal for the minimum zoom "
-                    "factor to use (option available in the Settings menu)."
+                    "Resampled image smaller than model's patch size. Please take a look at your terminal "
+                    "for the minimum zoom factor value to use (option available in the Settings menu)."
                 ) 
             return
 
