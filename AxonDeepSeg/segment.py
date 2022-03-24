@@ -19,7 +19,6 @@ import argparse
 from argparse import RawTextHelpFormatter
 from tqdm import tqdm
 import pkg_resources
-from PIL import Image
 
 # AxonDeepSeg imports
 import AxonDeepSeg
@@ -156,8 +155,8 @@ def segment_image(
         model_resolution, patch_size = get_model_native_resolution_and_patch(path_model)
 
         # Check that the resampled image will be of sufficient size, and if not throw an error.
-        im = Image.open(path_testing_image)
-        w, h = im.size
+        im = ads.imread(path_testing_image)
+        w, h = im.shape
 
         w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
         h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
