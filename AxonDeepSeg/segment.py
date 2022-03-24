@@ -127,6 +127,19 @@ def segment_image(
     path_testing_image = convert_path(path_testing_image)
     path_model = convert_path(path_model)
 
+    # Get pixel size from file, if needed
+    # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
+    if acquired_resolution == None:
+        if (Path(path_testing_image.parents[0]) / 'pixel_size_in_micrometer.txt').exists():
+            resolutions_file = open(Path(path_testing_image.parents[0]) / 'pixel_size_in_micrometer.txt', 'r')
+            str_resolution = float(resolutions_file.read())
+            acquired_resolution = float(str_resolution)
+        else:
+            exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
+                            "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
+                            "containing the pixel size value."
+            raise Exception(exception_msg)
+
     if path_testing_image.exists():
 
         # Extracting the image name and its folder path from the total path.
@@ -169,8 +182,8 @@ def segment_image(
         # Performing the segmentation
         axon_segmentation(path_acquisitions_folders=path_acquisition,
                           acquisitions_filenames=[str(path_acquisition / acquisition_name)],
-                          path_model_folder=path_model, overlap_value=overlap_value,
-                          acquired_resolution=acquired_resolution*zoom_factor)
+                          path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
+                          overlap_value=overlap_value)
 
         if verbosity_level >= 1:
             print(("Image {0} segmented.".format(path_testing_image)))
@@ -213,6 +226,20 @@ def segment_folders(path_testing_images_folder, path_model,
 
     # Pre-processing: convert to png if not already done and adapt to model contrast
     for file_ in tqdm(img_files, desc="Segmentation..."):
+
+        # Get pixel size from file, if needed
+        # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
+        if acquired_resolution == None:
+            if (path_testing_images_folder / 'pixel_size_in_micrometer.txt').exists():
+                resolutions_file = open(path_testing_images_folder / 'pixel_size_in_micrometer.txt', 'r')
+                str_resolution = float(resolutions_file.read())
+                acquired_resolution = float(str_resolution)
+            else:
+                exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
+                                "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
+                                "containing the pixel size value."
+                raise Exception(exception_msg)
+
         print(path_testing_images_folder / file_)
         try:
             height, width, _ = ads.imread(str(path_testing_images_folder / file_)).shape
@@ -261,8 +288,8 @@ def segment_folders(path_testing_images_folder, path_model,
 
         axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
                           acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
-                          path_model_folder=path_model, overlap_value=overlap_value,
-                          acquired_resolution=acquired_resolution*zoom_factor)
+                          path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
+                          overlap_value=overlap_value)
         if verbosity_level >= 1:
             tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 

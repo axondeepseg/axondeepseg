@@ -140,6 +140,25 @@ class TestCore(object):
             verbosity_level=2
             )
 
+    @pytest.mark.integration
+    def test_segment_folders_creates_expected_files_without_acq_res_input(self):
+        path_model = generate_default_parameters('SEM', str(self.modelPath))
+
+        overlap_value = [48,48]
+
+        outputFiles = [
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
+            ]
+
+        segment_folders(
+            path_testing_images_folder=str(self.imageFolderPathWithPixelSize),
+            path_model=str(path_model),
+            overlap_value=overlap_value,
+            verbosity_level=2
+            )
+
     # --------------segment_image tests-------------- #
     @pytest.mark.integration
     def test_segment_image_creates_runs_successfully(self):
@@ -165,6 +184,26 @@ class TestCore(object):
 
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
+
+    @pytest.mark.integration
+    def test_segment_image_creates_runs_successfully_without_acq_res_input(self):
+        # It should work because there exists a pixel file
+
+        path_model = generate_default_parameters('SEM', str(self.modelPath))
+
+        overlap_value = [48,48]
+
+        outputFiles = [
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
+            ]
+        
+        segment_image(
+            path_testing_image=str(self.imagePathWithPixelSize),
+            path_model=str(path_model),
+            overlap_value=overlap_value
+            )
 
     # --------------main (cli) tests-------------- #
     @pytest.mark.integration
@@ -196,7 +235,7 @@ class TestCore(object):
 
         # Make sure that the test folder doesn't have a file named pixel_size_in_micrometer.txt
         assert not (self.imageFolderPath / 'pixel_size_in_micrometer.txt').exists()
-
+    
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1"])
 
