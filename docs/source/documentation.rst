@@ -241,7 +241,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
                     Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 48. Recommended range of values: [10-100]. 
 
 -z ZOOM             Zoom factor.
-                    When applying the model, the pixel size of the image will be multiplied by this number.
+                    When applying the model, the size of the segmentation patches relative to the image size will change according to this factor.
 
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
@@ -293,12 +293,14 @@ To segment images that are located in different folders, specify the path to the
 Segment images using a zoom factor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sometimes, the quality of the segmentation can be improved by tweaking the pixel size so that your data's resampled resolution, for example, better matches the model's input resolution. 
-This is why we provide the **-z** argument, which lets you specify a zoom factor to adjust your pixel size. Note that this option also works for multiple images or multiple folders. 
+Sometimes, the quality of the segmentation can be improved by changing the size of the segmentation patches so that, for example, the size of the axons within the segmentation patches are closer to the size that they were during the training of the model. 
+This is why we provide the **-z** argument, which lets you specify a zoom factor to adjust the segmentation patch sizes relative to the image size. Note that this option also works for multiple images or multiple folders. 
 
-For example, a pixel size of 0.07 with a zoom factor of 2.0 will provide a pixel size of 0.14 to the model before running inference::
+For example, using a zoom value of 2.0 will make the patches 2x smaller relative to the image ::
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -z 2.0
+
+Using the zoom factor can also be useful when your image size is too small for a given resolution, as our segmentation models resample images to a standard pixel size. Using the zoom factor effectively enlarges your image so that the patches can then fit inside it. If you encounter this issue but have not set a zoom factor, an error message will appear informing you of the minimum zoom factor you should use.
 
 Morphometrics
 -------------
