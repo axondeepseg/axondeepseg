@@ -184,7 +184,7 @@ The three models are described below:
 
 * **SEM** model (*model_seg_rat_axon-myelin_sem*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
 * **TEM** model (*model_seg_mouse_axon-myelin_tem*), that works at a resolution of 0.01 micrometer per pixel. For more information, please visit the `TEM model repository <https://github.com/axondeepseg/default-TEM-model>`_.
-* **BF** (bright-field) model (*model_seg_rat_axon-myelin_bf*, formerly known as *model_seg_pns_bf*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `BF model repository <https://github.com/axondeepseg/default-BF-model>`_.
+* **BF** (bright-field) model (*model_seg_rat_axon-myelin_bf*, formerly called *model_seg_pns_bf*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `BF model repository <https://github.com/axondeepseg/default-BF-model>`_.
 
 Using AxonDeepSeg
 =================
@@ -236,7 +236,8 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
 
--v VERBOSITY        Verbosity level. 
+-v VERBOSITY        
+                    Verbosity level. 
 
                         **0** (default): Quiet mode. Shows minimal information on the terminal.
 
