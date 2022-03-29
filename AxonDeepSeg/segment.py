@@ -93,11 +93,15 @@ def get_model_native_resolution_and_patch(path_model):
     
     patch_size = [model['default_model']['length_2D'][0], model['default_model']['length_2D'][1]]
 
-    if model_resolution[0] == model_resolution[1]: #isotropic pixels
-        model_resolution = model_resolution[0]
+    try:
+        if model_resolution[0] == model_resolution[1]: #isotropic pixels
+            model_resolution = model_resolution[0]
 
-    if patch_size[0] == patch_size[1]: #isotropic pixels
-        patch_size = patch_size[0]
+        if patch_size[0] == patch_size[1]: #isotropic pixels
+            patch_size = patch_size[0]
+    except TypeError:
+        exception_msg = "ERROR: This model uses an anisotropic resolution, which AxonDeepSeg does not yet support."
+        raise Exception(exception_msg)
 
     return model_resolution, patch_size
 
