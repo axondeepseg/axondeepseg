@@ -182,9 +182,9 @@ Existing models
 Three models are available and shipped together with the installation package, so you don't need to install them separately.
 The three models are described below:
 
-* A SEM model (model_seg_rat_axon-myelin_sem), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
-* A TEM model (model_seg_mouse_axon-myelin_tem), that works at a resolution of 0.01 micrometer per pixel. For more information, please visit the `TEM model repository <https://github.com/axondeepseg/default-TEM-model>`_.
-* A BF (bright-field) model (model_seg_rat_axon-myelin_bf), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `BF model repository <https://github.com/axondeepseg/default-BF-model>`_.
+* **SEM** model (*model_seg_rat_axon-myelin_sem*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
+* **TEM** model (*model_seg_mouse_axon-myelin_tem*), that works at a resolution of 0.01 micrometer per pixel. For more information, please visit the `TEM model repository <https://github.com/axondeepseg/default-TEM-model>`_.
+* **BF** (bright-field) model (*model_seg_rat_axon-myelin_bf*, formerly known as *model_seg_pns_bf*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `BF model repository <https://github.com/axondeepseg/default-BF-model>`_.
 
 Using AxonDeepSeg
 =================
@@ -219,8 +219,11 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 -t MODALITY            
                     Type of acquisition to segment.
+
                     SEM: scanning electron microscopy samples. 
+
                     TEM: transmission electron microscopy samples.
+
                     BF: bright field optical microscopy samples.
 
 -i IMGPATH
@@ -234,7 +237,9 @@ The script to launch is called **axondeepseg**. It takes several arguments:
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
 
 -v VERBOSITY        Verbosity level. 
+
                     **0** (default): Quiet mode. Shows minimal information on the terminal.
+
                     **1**: Developer mode. Shows more information on the terminal, useful for debugging.. 
 
 --overlap           Overlap value (in pixels) of the patches when doing the segmentation. 
