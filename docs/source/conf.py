@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 import AxonDeepSeg
 
 with open('index.rst', 'a') as index_file:
-    index_file.writelines(['\n\n', 'TESTING DIS', '===========', 'texte ligne 3', 'texte ligne 4'])
+    index_file.writelines(['\n\n', 'TESTING DIS', '\n', '===========','\n', 'texte ligne 3','\n', 'texte ligne 4'])
 
 # -- General configuration ------------------------------------------------
 
