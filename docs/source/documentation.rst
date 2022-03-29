@@ -220,11 +220,11 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 -t MODALITY            
                     Type of acquisition to segment.
 
-                    SEM: scanning electron microscopy samples. 
+                        **SEM**: scanning electron microscopy samples. 
 
-                    TEM: transmission electron microscopy samples.
+                        **TEM**: transmission electron microscopy samples.
 
-                    BF: bright field optical microscopy samples.
+                        **BF**: bright field optical microscopy samples.
 
 -i IMGPATH
                     Path to the image to segment or path to the folder where the image(s) to segment is/are located.
@@ -238,9 +238,9 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 -v VERBOSITY        Verbosity level. 
 
-                    **0** (default): Quiet mode. Shows minimal information on the terminal.
+                        **0** (default): Quiet mode. Shows minimal information on the terminal.
 
-                    **1**: Developer mode. Shows more information on the terminal, useful for debugging.. 
+                        **1**: Developer mode. Shows more information on the terminal, useful for debugging.. 
 
 --overlap           Overlap value (in pixels) of the patches when doing the segmentation. 
                     Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 48. Recommended range of values: [10-100]. 
