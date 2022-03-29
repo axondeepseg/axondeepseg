@@ -238,8 +238,7 @@ def main(argv=None):
                     
                 print(f"Morphometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
-                print("Cannot save morphometrics data in file '%s'." % morph_filename)
-                raise
+                print(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
 
         else: 
             print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
