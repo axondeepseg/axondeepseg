@@ -22,6 +22,13 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 import AxonDeepSeg
 
+with open('index.rst', 'a') as index_file:
+    index_file.write("""
+    TESTING DIS
+    ===========
+    
+    hello""")
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
