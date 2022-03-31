@@ -16,6 +16,7 @@ from PIL import Image, ImageDraw, ImageOps
 import scipy.misc
 import json
 from pathlib import Path
+import sys
 
 import AxonDeepSeg
 from AxonDeepSeg.apply_model import axon_segmentation
@@ -432,13 +433,22 @@ class ADScontrol(ctrlpanel.ControlPanel):
             resolution_file = open((image_directory / "pixel_size_in_micrometer.txt").__str__(), 'r')
             pixel_size_float = float(resolution_file.read())
 
-        segment_image(
-                path_testing_image=image_path,
-                path_model=model_path,
-                overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
-                acquired_resolution=pixel_size_float * self.settings.zoom_factor,
-                verbosity_level=3
-                )
+        try:
+            segment_image(
+                    path_testing_image=image_path,
+                    path_model=model_path,
+                    overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
+                    acquired_resolution=pixel_size_float,
+                    zoom_factor=self.settings.zoom_factor,
+                    verbosity_level=3
+                    )
+        except SystemExit as err:
+            if err.code == 4:
+                self.show_message(
+                    "Resampled image smaller than model's patch size. Please take a look at your terminal "
+                    "for the minimum zoom factor value to use (option available in the Settings menu)."
+                ) 
+            return
 
         # The axon_segmentation function creates the segmentation masks and stores them as PNG files in the same folder
         # as the original image file.
