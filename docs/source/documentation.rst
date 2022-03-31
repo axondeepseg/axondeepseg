@@ -7,7 +7,7 @@ AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University o
 
 Installation
 ============
-The following sections will help you install all the tools you need to run AxonDeepSeg.
+The following sections will help you install all the tools you need to run  AxonDeepSeg.
 
 .. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system. However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
   
