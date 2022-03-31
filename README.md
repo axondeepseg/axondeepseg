@@ -1,5 +1,5 @@
 <img src="https://github.com/neuropoly/axondeepseg/blob/master/docs/source/_static/logo_ads-alpha.png" width="385">
-
+ 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb)
 [![Build Status](https://github.com/neuropoly/axondeepseg/actions/workflows/run_tests.yaml/badge.svg)](https://github.com/neuropoly/axondeepseg/actions/workflows/run_tests.yaml)
 [![Documentation Status](https://readthedocs.org/projects/axondeepseg/badge/?version=stable)](http://axondeepseg.readthedocs.io/en/latest/?badge=latest)
