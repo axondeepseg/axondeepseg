@@ -285,12 +285,12 @@ class TestCore(object):
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
     @pytest.mark.integration
-    def test_main_cli_throws_error_with_folder_containing_too_small_image_without_zoom(self):
+    def test_main_cli_doesnt_throws_error_with_folder_containing_too_small_image_without_zoom(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1"])
 
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 4)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
     @pytest.mark.integration
     def test_main_cli_runs_succesfully_with_folder_containing_too_small_image_with_zoom(self):

@@ -281,22 +281,21 @@ def segment_folders(path_testing_images_folder, path_model,
             # Round to 1 decimal, always up.
             minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
 
-            print("ERROR: Due to your given image size, resolution, and zoom factor, at least one image, ", 
+            print("Skipping image: Due to your given image size, resolution, and zoom factor, the image ", 
                    str(path_testing_images_folder / file_),
-                   ", is smaller than",
-                   "the patch size after it is resampled during segmentation. To resolve this, please set a zoom factor greater than ",
-                   str(minimum_zoom_factor), ".",
+                   " is smaller than the patch size after it is resampled during segmentation. ",
+                   "To resolve this, please set a zoom factor greater than ",
+                   str(minimum_zoom_factor), " for this image on a re-run.",
                    "To do this on the command line, call the segmentation with the -z flag, i.e. ",
                    "-z ", str(minimum_zoom_factor),
             )
-            sys.exit(4)
-
-        axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
-                          acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
-                          path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
-                          overlap_value=overlap_value)
-        if verbosity_level >= 1:
-            tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
+        else:
+            axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
+                            acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
+                            path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
+                            overlap_value=overlap_value)
+            if verbosity_level >= 1:
+                tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
 
 
