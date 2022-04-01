@@ -8,6 +8,8 @@
 
 # Imports
 
+from math import ceil
+import os
 from os import error
 import sys
 from pathlib import Path
@@ -73,11 +75,44 @@ def generate_default_parameters(type_acquisition, new_path):
 
     return path_model
 
+def get_model_native_resolution_and_patch(path_model):
+    '''
+    Get the native resolution of the model, ie. the resolution that segmented images will get resampled to.
+    Also, get the patch size.
+    :param path_model: model directory
+    :return: model_resolution, patch_size
+    '''
+    resolution_unit_conversion_factor = 1e3 # IVADOMED uses a native mm resolution, whereas ADS uses um
+    
+    model_json = [pos_json for pos_json in os.listdir(path_model) if pos_json.endswith('.json')]
+    model = json.load(open(path_model / model_json[0]))
+
+    model_resolution = [model['transformation']['Resample']['wspace'], model['transformation']['Resample']['hspace']]
+    model_resolution[0] = model_resolution[0] * resolution_unit_conversion_factor
+    model_resolution[1] = model_resolution[1] * resolution_unit_conversion_factor
+    
+    patch_size = [model['default_model']['length_2D'][0], model['default_model']['length_2D'][1]]
+    
+    exception_msg = "This model uses an anisotropic resolution, which AxonDeepSeg does not yet support."
+
+    if model_resolution[0] == model_resolution[1]: #isotropic pixels
+        model_resolution = model_resolution[0]
+    else:
+        raise Exception(exception_msg)
+
+    if patch_size[0] == patch_size[1]: #isotropic pixels
+        patch_size = patch_size[0]
+    else:
+        raise Exception(exception_msg)
+
+    return model_resolution, patch_size
+
 def segment_image(
                 path_testing_image,
                 path_model,
                 overlap_value,
                 acquired_resolution = None,
+                zoom_factor = 1.0,
                 verbosity_level = 0):
 
     '''
@@ -87,6 +122,7 @@ def segment_image(
     :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
+    :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -95,6 +131,19 @@ def segment_image(
     # If string, convert to Path objects
     path_testing_image = convert_path(path_testing_image)
     path_model = convert_path(path_model)
+
+    # Get pixel size from file, if needed
+    # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
+    if acquired_resolution == None:
+        if (Path(path_testing_image.parents[0]) / 'pixel_size_in_micrometer.txt').exists():
+            resolutions_file = open(Path(path_testing_image.parents[0]) / 'pixel_size_in_micrometer.txt', 'r')
+            str_resolution = float(resolutions_file.read())
+            acquired_resolution = float(str_resolution)
+        else:
+            exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
+                            "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
+                            "containing the pixel size value."
+            raise Exception(exception_msg)
 
     if path_testing_image.exists():
 
@@ -108,10 +157,38 @@ def segment_image(
 
         img_name_original = acquisition_name.stem
 
+        # Get the model's native resolution
+        model_resolution, patch_size = get_model_native_resolution_and_patch(path_model)
+
+        # Check that the resampled image will be of sufficient size, and if not throw an error.
+        im = ads.imread(path_testing_image)
+        w, h = im.shape
+
+        w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
+        h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
+
+        if w_resampled < patch_size or h_resampled < patch_size:
+            if w<=h:
+                minimum_zoom_factor = patch_size*model_resolution/(w*acquired_resolution)
+            else:
+                minimum_zoom_factor = patch_size*model_resolution/(h*acquired_resolution)
+
+            # Round to 1 decimal, always up.
+            minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
+
+            print("ERROR: Due to your given image size, resolution, and zoom factor, the resampled image is smaller than",
+                   "the patch size during segmentation. To resolve this, please set a zoom factor greater than ",
+                   str(minimum_zoom_factor), ".",
+                   "To do this on the command line, call the segmentation with the -z flag, i.e. ",
+                   "-z ", str(minimum_zoom_factor),
+            )
+            sys.exit(4)
+
         # Performing the segmentation
-        axon_segmentation(path_acquisitions_folders=path_acquisition, acquisitions_filenames=[str(path_acquisition / acquisition_name)],
-                          path_model_folder=path_model, overlap_value=overlap_value,
-                          acquired_resolution=acquired_resolution)
+        axon_segmentation(path_acquisitions_folders=path_acquisition,
+                          acquisitions_filenames=[str(path_acquisition / acquisition_name)],
+                          path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
+                          overlap_value=overlap_value)
 
         if verbosity_level >= 1:
             print(("Image {0} segmented.".format(path_testing_image)))
@@ -125,6 +202,7 @@ def segment_image(
 def segment_folders(path_testing_images_folder, path_model,
                     overlap_value, 
                     acquired_resolution = None,
+                    zoom_factor = 1.0,
                     verbosity_level=0):
     '''
     Segments the images contained in the image folders located in the path_testing_images_folder.
@@ -134,6 +212,7 @@ def segment_folders(path_testing_images_folder, path_model,
     :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
+    :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -147,8 +226,25 @@ def segment_folders(path_testing_images_folder, path_model,
     img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
                  and (not str(file).endswith((str(axonmyelin_suffix), str(axon_suffix), str(myelin_suffix),'mask.png')))]
 
+     # Get the model's native resolution
+    model_resolution, patch_size = get_model_native_resolution_and_patch(path_model)
+
     # Pre-processing: convert to png if not already done and adapt to model contrast
     for file_ in tqdm(img_files, desc="Segmentation..."):
+
+        # Get pixel size from file, if needed
+        # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
+        if acquired_resolution == None:
+            if (path_testing_images_folder / 'pixel_size_in_micrometer.txt').exists():
+                resolutions_file = open(path_testing_images_folder / 'pixel_size_in_micrometer.txt', 'r')
+                str_resolution = float(resolutions_file.read())
+                acquired_resolution = float(str_resolution)
+            else:
+                exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
+                                "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
+                                "containing the pixel size value."
+                raise Exception(exception_msg)
+
         print(path_testing_images_folder / file_)
         try:
             height, width, _ = ads.imread(str(path_testing_images_folder / file_)).shape
@@ -169,11 +265,37 @@ def segment_folders(path_testing_images_folder, path_model,
 
         acquisition_name = file_.name
        
-        axon_segmentation(path_acquisitions_folders=path_testing_images_folder, acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
-                  path_model_folder=path_model, overlap_value=overlap_value,
-                  acquired_resolution=acquired_resolution)
-        if verbosity_level >= 1:
-            tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
+
+        # Check that the resampled image will be of sufficient size, and if not throw an error.
+        h, w = image_size
+
+        w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
+        h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
+
+        if w_resampled < patch_size or h_resampled < patch_size:
+            if w<=h:
+                minimum_zoom_factor = patch_size*model_resolution/(w*acquired_resolution)
+            else:
+                minimum_zoom_factor = patch_size*model_resolution/(h*acquired_resolution)
+
+            # Round to 1 decimal, always up.
+            minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
+
+            print("Skipping image: Due to your given image size, resolution, and zoom factor, the image ", 
+                   str(path_testing_images_folder / file_),
+                   " is smaller than the patch size after it is resampled during segmentation. ",
+                   "To resolve this, please set a zoom factor greater than ",
+                   str(minimum_zoom_factor), " for this image on a re-run.",
+                   "To do this on the command line, call the segmentation with the -z flag, i.e. ",
+                   "-z ", str(minimum_zoom_factor),
+            )
+        else:
+            axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
+                            acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
+                            path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
+                            overlap_value=overlap_value)
+            if verbosity_level >= 1:
+                tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
 
 
@@ -219,6 +341,10 @@ def main(argv=None):
                                                             'Default value: '+str(default_overlap)+'\n'+
                                                             'Recommended range of values: [10-100]. \n',
                                                             default=default_overlap)
+    ap.add_argument("-z", "--zoom", required=False, help='Zoom factor. \n'+
+                                                            'When applying the model, the pixel size of the image will be \n'+
+                                                            'multiplied by this number.',
+                                                            default=None)
     ap._action_groups.reverse()
 
     # Processing the arguments
@@ -232,6 +358,10 @@ def main(argv=None):
         psm = None
     path_target_list = [Path(p) for p in args["imgpath"]]
     new_path = Path(args["model"]) if args["model"] else None 
+    if args["zoom"] is not None:
+        zoom_factor = float(args["zoom"])
+    else:
+        zoom_factor = 1.0
 
     # Preparing the arguments to axon_segmentation function
     path_model = generate_default_parameters(type_, new_path)
@@ -278,6 +408,7 @@ def main(argv=None):
                     path_model=path_model,
                     overlap_value=overlap_value,
                     acquired_resolution=psm,
+                    zoom_factor=zoom_factor,
                     verbosity_level=verbosity_level
                     )
 
@@ -313,6 +444,7 @@ def main(argv=None):
                 path_model=path_model,
                 overlap_value=overlap_value,
                 acquired_resolution=psm,
+                zoom_factor=zoom_factor,
                 verbosity_level=verbosity_level
                 )
 

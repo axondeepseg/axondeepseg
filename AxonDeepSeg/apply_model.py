@@ -11,8 +11,8 @@ def axon_segmentation(
                     path_acquisitions_folders, 
                     acquisitions_filenames,
                     path_model_folder,
+                    acquired_resolution,
                     overlap_value=[48,48],
-                    acquired_resolution=None,
                     verbosity_level = 0
                     ):
     '''
@@ -28,17 +28,7 @@ def axon_segmentation(
     :return: Nothing.
     '''
 
-    # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
-    if acquired_resolution == None:
-        if (path_acquisitions_folders / 'pixel_size_in_micrometer.txt').exists():
-            resolutions_file = open(path_acquisitions_folders / 'pixel_size_in_micrometer.txt', 'r')
-            str_resolution = float(resolutions_file.read())
-            acquired_resolution = float(str_resolution)
-        else:
-            exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
-                            "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
-                            "containing the pixel size value."
-            raise Exception(exception_msg)
+
 
     path_model=path_model_folder
     input_filenames = acquisitions_filenames
