@@ -18,6 +18,9 @@ import raven
 import imageio
 import numpy as np
 
+from config import valid_extensions
+
+
 DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
 # raven function override - do not modify unless needed if raven version is
@@ -254,7 +257,18 @@ def convert_path(object_path):
 def imread(filename, bitdepth=8):
     """ Read image and convert it to desired bitdepth without truncation.
     """
-    if 'tif' in str(filename):
+
+    # Convert to Path
+    filename = Path(filename)
+
+    file_ext = filename.suffix
+
+    # Check that file extension is valid
+    if file_ext not in valid_extensions:
+        raise IOError('File must have one of the valid extensions: ', valid_extensions)
+
+    # Load image
+    if str(file_ext) in ['.tif', '.tiff']:
         raw_img = imageio.imread(filename, format='tiff-pil')
         if len(raw_img.shape) > 2:
             raw_img = imageio.imread(filename, format='tiff-pil', as_gray=True)

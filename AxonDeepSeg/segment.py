@@ -25,7 +25,7 @@ import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import convert_path
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, valid_extensions
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_sem"
@@ -366,21 +366,12 @@ def main(argv=None):
     # Preparing the arguments to axon_segmentation function
     path_model = generate_default_parameters(type_, new_path)
 
-    # Tuple of valid file extensions
-    validExtensions = (
-                        ".jpeg",
-                        ".jpg",
-                        ".tif",
-                        ".tiff",
-                        ".png"
-                        )
-
     # Going through all paths passed into arguments
     for current_path_target in path_target_list:
 
         if not current_path_target.is_dir():
 
-            if current_path_target.suffix.lower() in validExtensions:
+            if current_path_target.suffix.lower() in valid_extensions:
 
                 # Handle cases if no resolution is provided on the CLI
                 if psm == None:
