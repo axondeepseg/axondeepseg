@@ -261,7 +261,7 @@ def imread(filename, bitdepth=8):
     # Convert to Path
     filename = Path(filename)
 
-    file_ext = filename.suffix
+    file_ext = filename.suffix.lower()
 
     # Check that file extension is valid
     if file_ext not in valid_extensions:
