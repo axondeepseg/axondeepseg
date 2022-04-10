@@ -26,6 +26,13 @@ class TestCore(object):
             'model_seg_rat_axon-myelin_sem'
             )
 
+        self.modelPathTEM = (
+            self.projectPath /
+            'AxonDeepSeg' /
+            'models' /
+            'model_seg_mouse_axon-myelin_tem'
+            )
+
         self.imageFolderPath = (
             self.testPath /
             '__test_files__' /
@@ -58,6 +65,15 @@ class TestCore(object):
             self.testPath /
             '__test_files__' /
             '__test_segment_folder_zoom__'
+            )
+
+        self.image16bitTIFGray = (
+            self.testPath /
+            '__test_files__' /
+            '__test_16b_file__' /
+            'raw' /
+            'data1' /
+            'image.tif'
             )
 
         self.statsFilename = 'model_statistics_validation.json'
@@ -184,6 +200,23 @@ class TestCore(object):
 
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
+
+    @pytest.mark.integration
+    def test_segment_image_creates_runs_successfully_for_16bit_TIF_gray_file(self):
+
+        path_model = generate_default_parameters('TEM', str(self.modelPathTEM))
+
+        overlap_value = [48,48]
+
+        try:
+            segment_image(
+                path_testing_image=str(self.image16bitTIFGray),
+                path_model=str(path_model),
+                overlap_value=overlap_value,
+                zoom_factor=1.9
+                )
+        except:
+            pytest.fail("Image segmentation failed for 16bit TIF grayscale file.")
 
     @pytest.mark.integration
     def test_segment_image_creates_runs_successfully_without_acq_res_input(self):
