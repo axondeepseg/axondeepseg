@@ -182,9 +182,9 @@ Existing models
 Three models are available and shipped together with the installation package, so you don't need to install them separately.
 The three models are described below:
 
-* A SEM model, that works at a resolution of 0.1 micrometer per pixel.
-* A TEM model, that works at a resolution of 0.01 micrometer per pixel.
-* A BF (bright-field) model, that works at a resolution of 0.1 micrometer per pixel.
+* **SEM** model (*model_seg_rat_axon-myelin_sem*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
+* **TEM** model (*model_seg_mouse_axon-myelin_tem*), that works at a resolution of 0.01 micrometer per pixel. For more information, please visit the `TEM model repository <https://github.com/axondeepseg/default-TEM-model>`_.
+* **BF** (bright-field) model (*model_seg_rat_axon-myelin_bf*, formerly called *model_seg_pns_bf*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `BF model repository <https://github.com/axondeepseg/default-BF-model>`_.
 
 Using AxonDeepSeg
 =================
@@ -219,9 +219,12 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 -t MODALITY            
                     Type of acquisition to segment.
-                    SEM: scanning electron microscopy samples. 
-                    TEM: transmission electron microscopy samples.
-                    BF: bright field optical microscopy samples.
+
+                        **SEM**: scanning electron microscopy samples. 
+
+                        **TEM**: transmission electron microscopy samples.
+
+                        **BF**: bright field optical microscopy samples.
 
 -i IMGPATH
                     Path to the image to segment or path to the folder where the image(s) to segment is/are located.
@@ -233,12 +236,18 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 -s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
                     If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
 
--v VERBOSITY        Verbosity level. 
-                    **0** (default): Quiet mode. Shows minimal information on the terminal.
-                    **1**: Developer mode. Shows more information on the terminal, useful for debugging.. 
+-v VERBOSITY        
+                    Verbosity level. 
+
+                        **0** (default): Quiet mode. Shows minimal information on the terminal.
+
+                        **1**: Developer mode. Shows more information on the terminal, useful for debugging.. 
 
 --overlap           Overlap value (in pixels) of the patches when doing the segmentation. 
                     Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 48. Recommended range of values: [10-100]. 
+
+-z ZOOM             Zoom factor.
+                    When applying the model, the size of the segmentation patches relative to the image size will change according to this factor.
 
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
@@ -287,6 +296,17 @@ To segment images that are located in different folders, specify the path to the
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
+Segment images using a zoom factor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes, the quality of the segmentation can be improved by changing the size of the segmentation patches so that, for example, the size of the axons within the segmentation patches are closer to the size that they were during the training of the model. 
+This is why we provide the **-z** argument, which lets you specify a zoom factor to adjust the segmentation patch sizes relative to the image size. Note that this option also works for multiple images or multiple folders. 
+
+For example, using a zoom value of 2.0 will make the patches 2x smaller relative to the image ::
+
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -z 2.0
+
+Using the zoom factor can also be useful when your image size is too small for a given resolution, as our segmentation models resample images to a standard pixel size. Using the zoom factor effectively enlarges your image so that the patches can then fit inside it. If you encounter this issue but have not set a zoom factor, an error message will appear informing you of the minimum zoom factor you should use.
 
 Morphometrics
 -------------
@@ -296,7 +316,7 @@ You can generate morphometrics using AxonDeepSeg via the command line interface.
 Syntax
 ~~~~~~
 
-The script to launch in called **axondeepseg_morphometrics**. It has several arguments.
+The script to launch is called **axondeepseg_morphometrics**. It has several arguments.
 
 **Required arguments:**
 

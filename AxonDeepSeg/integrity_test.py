@@ -32,7 +32,7 @@ def integrity_test():
 
         # Launch the axon and myelin segmentation on test image sample provided in the installation
         print('Computing the segmentation of axon and myelin on test image.')
-        axon_segmentation(path_testing, [str(path_testing / image)], path_model, overlap_value=[48,48], acquired_resolution=0.13)
+        axon_segmentation(path_testing, [str(path_testing / image)], path_model, acquired_resolution=0.13, overlap_value=[48,48])
 
         # Read the ground truth mask and the obtained segmentation mask
         mask = ads.imread(path_testing / 'mask.png')

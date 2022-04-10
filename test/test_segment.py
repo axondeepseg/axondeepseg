@@ -42,7 +42,23 @@ class TestCore(object):
             '__test_files__' /
             '__test_segment_files_with_pixel_size__'
             )
+
         self.imagePathWithPixelSize = self.imageFolderPathWithPixelSize / 'image.png'
+
+
+        self.imageZoomFolderPathWithPixelSize = (
+            self.testPath /
+            '__test_files__' /
+            '__test_segment_zoom__'
+            )
+    
+        self.imageZoomPathWithPixelSize = self.imageZoomFolderPathWithPixelSize / 'image.png'
+
+        self.imageZoomFolderWithPixelSize = (
+            self.testPath /
+            '__test_files__' /
+            '__test_segment_folder_zoom__'
+            )
 
         self.statsFilename = 'model_statistics_validation.json'
 
@@ -124,6 +140,25 @@ class TestCore(object):
             verbosity_level=2
             )
 
+    @pytest.mark.integration
+    def test_segment_folders_creates_expected_files_without_acq_res_input(self):
+        path_model = generate_default_parameters('SEM', str(self.modelPath))
+
+        overlap_value = [48,48]
+
+        outputFiles = [
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
+            ]
+
+        segment_folders(
+            path_testing_images_folder=str(self.imageFolderPathWithPixelSize),
+            path_model=str(path_model),
+            overlap_value=overlap_value,
+            verbosity_level=2
+            )
+
     # --------------segment_image tests-------------- #
     @pytest.mark.integration
     def test_segment_image_creates_runs_successfully(self):
@@ -144,11 +179,31 @@ class TestCore(object):
             path_testing_image=str(self.imagePath),
             path_model=str(path_model),
             overlap_value=overlap_value,
-            acquired_resolution=0.37,
+            acquired_resolution=0.37
             )
 
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
+
+    @pytest.mark.integration
+    def test_segment_image_creates_runs_successfully_without_acq_res_input(self):
+        # It should work because there exists a pixel file
+
+        path_model = generate_default_parameters('SEM', str(self.modelPath))
+
+        overlap_value = [48,48]
+
+        outputFiles = [
+            'image' + str(axon_suffix),
+            'image' + str(myelin_suffix),
+            'image' + str(axonmyelin_suffix)
+            ]
+        
+        segment_image(
+            path_testing_image=str(self.imagePathWithPixelSize),
+            path_model=str(path_model),
+            overlap_value=overlap_value
+            )
 
     # --------------main (cli) tests-------------- #
     @pytest.mark.integration
@@ -180,7 +235,7 @@ class TestCore(object):
 
         # Make sure that the test folder doesn't have a file named pixel_size_in_micrometer.txt
         assert not (self.imageFolderPath / 'pixel_size_in_micrometer.txt').exists()
-
+    
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1"])
 
@@ -212,3 +267,35 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+    @pytest.mark.integration
+    def test_main_cli_throws_error_for_too_small_image_without_zoom(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomPathWithPixelSize), "-v", "1"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 4)
+
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_with_too_small_image_with_zoom(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomPathWithPixelSize), "-v", "1", "-z", "1.2"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.integration
+    def test_main_cli_doesnt_throws_error_with_folder_containing_too_small_image_without_zoom(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_with_folder_containing_too_small_image_with_zoom(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1", "-z", "1.2"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
