@@ -24,7 +24,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
 import AxonDeepSeg.ads_utils as ads
 from config import axon_suffix, myelin_suffix, axonmyelin_suffix, morph_suffix, index_suffix, axonmyelin_index_suffix
 from AxonDeepSeg.ads_utils import convert_path
-from AxonDeepSeg import postprocessing
+from AxonDeepSeg import postprocessing, params
 
 
 def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle"):
@@ -166,22 +166,7 @@ def main(argv=None):
                         )
                     sys.exit(3)
 
-            x = np.array([], dtype=[
-                                        ('x0 (px)', 'f4'),
-                                        ('y0 (px)', 'f4'),
-                                        ('gratio', 'f4'),
-                                        ('axon_area (um\u00b2)', 'f4'), # unicode for ^2
-                                        ('axon_perimeter (um)', 'f4'),
-                                        ('myelin_area (um\u00b2)', 'f4'),
-                                        ('axon_diam (um)', 'f4'),
-                                        ('myelin_thickness (um)', 'f4'),
-                                        ('axonmyelin_area (um\u00b2)', 'f4'),
-                                        ('axonmyelin_perimeter (um)', 'f4'),
-                                        ('solidity', 'f4'),
-                                        ('eccentricity', 'f4'),
-                                        ('orientation', 'f4')
-                                    ]
-                        )
+            x = params.column_names
 
             # Compute statistics
 
