@@ -25,7 +25,7 @@ from AxonDeepSeg.segment import segment_image
 
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, axonmyelin_index_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, axonmyelin_index_suffix, valid_extensions
 
 import math
 from scipy import ndimage as ndi
@@ -313,7 +313,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Check if the image format is valid
         image_extension = in_file.suffix
-        valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
