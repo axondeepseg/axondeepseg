@@ -687,19 +687,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
             x = np.append(x,
                 np.array(
                     [(
-                        ('x0 (px)', 'f4'),
-                        ('y0 (px)', 'f4'),
-                        ('gratio', 'f4'),
-                        ('axon_area (um\u00b2)', 'f4'), # unicode for ^2
-                        ('axon_perimeter (um)', 'f4'),
-                        ('myelin_area (um\u00b2)', 'f4'),
-                        ('axon_diam (um)', 'f4'),
-                        ('myelin_thickness (um)', 'f4'),
-                        ('axonmyelin_area (um\u00b2)', 'f4'),
-                        ('axonmyelin_perimeter (um)', 'f4'),
-                        ('solidity', 'f4'),
-                        ('eccentricity', 'f4'),
-                        ('orientation', 'f4')
+                        stats['x0'],
+                        stats['y0'],
+                        stats['gratio'],
+                        stats['axon_area'],
+                        stats['axon_perimeter'],
+                        stats['myelin_area'],
+                        stats['axon_diam'],
+                        stats['myelin_thickness'],
+                        stats['axonmyelin_area'],
+                        stats['axonmyelin_perimeter'],
+                        stats['solidity'],
+                        stats['eccentricity'],
+                        stats['orientation']
                     )],
                     dtype=x.dtype)
                 )
