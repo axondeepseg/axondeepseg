@@ -345,7 +345,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Check if the image format is valid
         image_extension = in_file.suffix
-        valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
