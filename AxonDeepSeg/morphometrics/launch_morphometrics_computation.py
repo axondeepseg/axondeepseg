@@ -223,7 +223,7 @@ def main(argv=None):
 
                 # Generate the index image
                 if str(current_path_target) == str(current_path_target.parts[-1]):
-                    outfile_basename = current_path_target.parent / str(current_path_target.with_suffix(""))
+                    outfile_basename = str(current_path_target.parent / str(current_path_target.with_suffix("")))
                 else:
                     # in case current_path_target already contains the parent directory
                     outfile_basename = str(current_path_target.with_suffix(""))
