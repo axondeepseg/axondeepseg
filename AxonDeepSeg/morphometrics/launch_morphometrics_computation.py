@@ -222,20 +222,23 @@ def main(argv=None):
                     pd.DataFrame(x).to_csv(current_path_target.parent / morph_filename, na_rep='NaN')
 
                 # Generate the index image
-                indexes_outfile = current_path_target.parent /(str(current_path_target.with_suffix("")) +
-                                                              str(index_suffix))
-                ads.imwrite(indexes_outfile, index_image_array)
+                if str(current_path_target) == str(current_path_target.parts[-1]):
+                    outfile_basename = current_path_target.parent / str(current_path_target.with_suffix(""))
+                else:
+                    # in case current_path_target already contains the parent directory
+                    outfile_basename = str(current_path_target.with_suffix(""))
+
+                ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
                 # Generate the colored image
                 postprocessing.generate_and_save_colored_image_with_index_numbers(
-                    filename=current_path_target.parent /(str(current_path_target.with_suffix("")) +
-                                                          str(axonmyelin_index_suffix)),
+                    filename=outfile_basename + str(axonmyelin_index_suffix),
                     axonmyelin_image_path=str(current_path_target.with_suffix("")) + str(axonmyelin_suffix),
                     index_image_array=index_image_array
                 )
 
                 print(f"Morphometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
-                print("Cannot save morphometrics data in file '%s'." % morph_filename)
+                print(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
 
         else:
             print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
