@@ -1,9 +1,11 @@
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
-from subprocess import check_call
+from subprocess import check_call, run
+import atexit
 
 from codecs import open
 from os import path
+import re
 
 import AxonDeepSeg
 
@@ -14,6 +16,13 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+def update_ivadomed():
+    """Ivadomed is a pip package: needs manual update"""
+    with open('environment.yml', 'r') as env_file:
+        lines = env_file.read()
+        ivadomed_version = re.search("ivadomed==\d+.\d+.\d+", lines)
+        run(["pip", "install", ivadomed_version.group()])
+
 class PostDevelopCommand(develop):
     """Post-installation for installation mode."""
     def run(self):
@@ -21,6 +30,7 @@ class PostDevelopCommand(develop):
         develop.run(self)
         check_call("download_models")
         check_call("download_tests")
+        atexit.register(update_ivadomed)
 
 
 
@@ -30,7 +40,7 @@ setup(
     version=AxonDeepSeg.__version__,
     description='Python tool for automatic axon and myelin segmentation',
     long_description=long_description,
-    url='https://github.com/neuropoly/axondeepseg',
+    url='https://github.com/axondeepseg/axondeepseg',
     author='NeuroPoly Lab, Polytechnique Montreal',
     author_email='neuropoly@googlegroups.com',
     license='MIT',
