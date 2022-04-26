@@ -5,6 +5,7 @@ import atexit
 
 from codecs import open
 from os import path
+import platform
 import re
 
 import AxonDeepSeg
@@ -20,8 +21,14 @@ def update_ivadomed():
     """Ivadomed is a pip package: needs manual update"""
     with open('environment.yml', 'r') as env_file:
         lines = env_file.read()
-        ivadomed_version = re.search("ivadomed==\d+.\d+.\d+", lines)
-        run(["pip", "install", ivadomed_version.group()])
+        ivadomed_version = re.search(r"ivadomed==\d+\.\d+\.\d+", lines).group()
+        if platform.system() == "Darwin":
+            torch_version = re.search(r"torch==\d+\.\d+\.\d+(?!\+)", lines).group()
+            torchvision_version = re.search(r"torchvision==\d+\.\d+\.\d+(?!\+)", lines).group()
+        else:
+            torch_version = re.search(r"torch==\d+\.\d+\.\d+\+cpu", lines).group()
+            torchvision_version = re.search(r"torchvision==\d+\.\d+\.\d+\+cpu", lines).group()
+        run(["pip", "install", ivadomed_version, torch_version, torchvision_version])
 
 class PostDevelopCommand(develop):
     """Post-installation for installation mode."""
