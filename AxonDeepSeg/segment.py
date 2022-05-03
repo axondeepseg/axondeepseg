@@ -23,6 +23,7 @@ import pkg_resources
 # AxonDeepSeg imports
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
+import AxonDeepSeg.zoom_factor_sweep as zfs
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import convert_path
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
@@ -346,7 +347,7 @@ def main(argv=None):
             'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
             'file needs to be added to the image folder path. The pixel size \n'+
             'in that file will be used for the segmentation.',
-            default=None,
+        default=None,
     )
     ap.add_argument(
         '-v', '--verbose', 
@@ -356,7 +357,7 @@ def main(argv=None):
         help='Verbosity level. \n'+
             '0 (default) : Quiet mode. Shows minimal information on the terminal. \n'+
             '1: Developer mode. Shows more information on the terminal, useful for debugging.',
-            default=0,
+        default=0,
     )
     ap.add_argument(
         '--overlap', 
@@ -367,7 +368,7 @@ def main(argv=None):
             'but also increase the segmentation time. \n'+
             'Default value: '+str(default_overlap)+'\n'+
             'Recommended range of values: [10-100]. \n',
-            default=default_overlap,
+        default=default_overlap,
     )
     ap.add_argument(
         "-z", "--zoom", 
@@ -375,7 +376,21 @@ def main(argv=None):
         help='Zoom factor. \n'+
             'When applying the model, the pixel size of the image will be \n'+
             'multiplied by this number.',
-            default=None,
+        default=None,
+    )
+    ap.add_argument(
+        "-r", "--sweeprange",
+        nargs=2,
+        metavar=('LOWER', 'UPPER'),
+        required=False,
+        help='Lower and upper bounds of zoom factor values to sweep.',
+        default=None,
+    )
+    ap.add_argument(
+        "-l", "--sweeplength",
+        required=False,
+        help='Number of zoom factor values to be computed by the sweep.',
+        default=None,
     )
     ap._action_groups.reverse()
 
@@ -395,6 +410,16 @@ def main(argv=None):
     else:
         zoom_factor = 1.0
 
+    # check for sweep mode
+    sweep_mode = False
+    if (args["sweeprange"] is not None) & (args["sweeplength"] is not None):
+        sweep_range = [float(args["sweeprange"][0]), float(args["sweeprange"][1])]
+        sweep_length = int(args["sweeplength"])
+        sweep_mode = True
+        if len(path_target_list) != 1:
+            print("ERROR: Please use a single image for zoom factor sweeps.")
+            sys.exit(5)
+
     # Preparing the arguments to axon_segmentation function
     path_model = generate_default_parameters(type_, new_path)
 
@@ -406,6 +431,7 @@ def main(argv=None):
                         ".tiff",
                         ".png"
                         )
+    
 
     # Going through all paths passed into arguments
     for current_path_target in path_target_list:
@@ -433,15 +459,24 @@ def main(argv=None):
                         )
                         sys.exit(3)
 
-
                 # Performing the segmentation over the image
-                segment_image(
-                    path_testing_image=current_path_target,
-                    path_model=path_model,
-                    overlap_value=overlap_value,
-                    acquired_resolution=psm,
-                    zoom_factor=zoom_factor,
-                    verbosity_level=verbosity_level
+                if sweep_mode:
+                    zfs.sweep(
+                        path_image=current_path_target,
+                        path_model=path_model,
+                        overlap_value=overlap_value,
+                        sweep_range=sweep_range,
+                        sweep_length=sweep_length,
+                        acquired_resolution=psm,
+                    )
+                else:
+                    segment_image(
+                        path_testing_image=current_path_target,
+                        path_model=path_model,
+                        overlap_value=overlap_value,
+                        acquired_resolution=psm,
+                        zoom_factor=zoom_factor,
+                        verbosity_level=verbosity_level
                     )
 
                 print("Segmentation finished.")
@@ -451,6 +486,9 @@ def main(argv=None):
                 break
 
         else:
+            if sweep_mode:
+                print("ERROR: Please use a single image for zoom factor sweeps.")
+                sys.exit(5)
 
             # Handle cases if no resolution is provided on the CLI
             if psm == None:

@@ -1,7 +1,7 @@
 # Successively segments an image with zoom factors within a given range
 
 from pathlib import Path
-from AxonDeepSeg.segment import segment_image
+import AxonDeepSeg.segment as ads_seg
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 
@@ -19,7 +19,7 @@ def sweep(
     :param path_model:          where to access the model
     :param overlap_value:       the number of pixels to be used for overlap when doing prediction. Higher
                                 value means less border effects but longer segmentation time.
-    :param sweep_range:         upper and lower bounds of the zoom factor range
+    :param sweep_range:         tuple with lower and upper bounds for the zoom factor range
     :param sweep_length:        number of equidistant zoom factor values to sample from the range
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :return: Nothing.
@@ -27,7 +27,7 @@ def sweep(
 
     lower_bound, upper_bound = sweep_range
     # create new directory to store segmentations
-    path_results = Path(path_image).parent.absolute() / 'sweep_results'
+    path_results = Path(path_image).parent.absolute() / f'{Path(path_image).stem}_sweep'
     path_results.mkdir(parents=True, exist_ok=True)
     path_seg_outputs = [
         Path(path_image).stem + str(axon_suffix),
@@ -37,7 +37,7 @@ def sweep(
 
     for i in range(sweep_length):
         zoom_factor = lower_bound + i * (upper_bound - lower_bound) / sweep_length
-        segment_image(
+        ads_seg.segment_image(
             path_image,
             path_model,
             overlap_value,
@@ -50,3 +50,4 @@ def sweep(
             path.rename(path_results / Path(path.stem + f'_zf-{zoom_factor}.png'))
 
         print(f"Done with zoom factor {zoom_factor}.")
+
