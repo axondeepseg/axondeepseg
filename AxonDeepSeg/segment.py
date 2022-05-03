@@ -318,33 +318,65 @@ def main(argv=None):
     requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    requiredName.add_argument('-t', '--type', required=True, choices=['SEM', 'TEM', 'BF'], help='Type of acquisition to segment. \n'+
-                                                                                        'SEM: scanning electron microscopy samples. \n'+
-                                                                                        'TEM: transmission electron microscopy samples. \n' +
-                                                                                        'BF: bright-field microscopy samples.')
-    requiredName.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image to segment or path to the folder \n'+
-                                                                                'where the image(s) to segment is/are located.')
-
-    ap.add_argument("-m", "--model", required=False, help='Folder where the model is located, if different from the default model.')
-    ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to segment, in micrometers. \n'+
-                                                              'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
-                                                              'file needs to be added to the image folder path. The pixel size \n'+
-                                                              'in that file will be used for the segmentation.',
-                                                              default=None)
-    ap.add_argument('-v', '--verbose', required=False, type=int, choices=list(range(0,2)), help='Verbosity level. \n'+
-                                                            '0 (default) : Quiet mode. Shows minimal information on the terminal. \n'+
-                                                            '1: Developer mode. Shows more information on the terminal, useful for debugging.',
-                                                            default=0)
-    ap.add_argument('--overlap', required=False, type=int, help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
-                                                            'Higher values of overlap can improve the segmentation at patch borders, \n'+
-                                                            'but also increase the segmentation time. \n'+
-                                                            'Default value: '+str(default_overlap)+'\n'+
-                                                            'Recommended range of values: [10-100]. \n',
-                                                            default=default_overlap)
-    ap.add_argument("-z", "--zoom", required=False, help='Zoom factor. \n'+
-                                                            'When applying the model, the pixel size of the image will be \n'+
-                                                            'multiplied by this number.',
-                                                            default=None)
+    requiredName.add_argument(
+        '-t','--type', 
+        required=True, 
+        choices=['SEM', 'TEM', 'BF'], 
+        help='Type of acquisition to segment. \n'+
+            'SEM: scanning electron microscopy samples. \n'+
+            'TEM: transmission electron microscopy samples. \n' +
+            'BF: bright-field microscopy samples.',
+    )
+    requiredName.add_argument(
+        '-i', '--imgpath', 
+        required=True, 
+        nargs='+', 
+        help='Path to the image to segment or path to the folder \n'+
+            'where the image(s) to segment is/are located.',
+    )
+    ap.add_argument(
+        "-m", "--model", 
+        required=False, 
+        help='Folder where the model is located, if different from the default model.',
+    )
+    ap.add_argument(
+        '-s', '--sizepixel', 
+        required=False, 
+        help='Pixel size of the image(s) to segment, in micrometers. \n'+
+            'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'+
+            'file needs to be added to the image folder path. The pixel size \n'+
+            'in that file will be used for the segmentation.',
+            default=None,
+    )
+    ap.add_argument(
+        '-v', '--verbose', 
+        required=False, 
+        type=int, 
+        choices=list(range(0,2)), 
+        help='Verbosity level. \n'+
+            '0 (default) : Quiet mode. Shows minimal information on the terminal. \n'+
+            '1: Developer mode. Shows more information on the terminal, useful for debugging.',
+            default=0,
+    )
+    ap.add_argument(
+        '--overlap', 
+        required=False, 
+        type=int, 
+        help='Overlap value (in pixels) of the patches when doing the segmentation. \n'+
+            'Higher values of overlap can improve the segmentation at patch borders, \n'+
+            'but also increase the segmentation time. \n'+
+            'Default value: '+str(default_overlap)+'\n'+
+            'Recommended range of values: [10-100]. \n',
+            default=default_overlap,
+    )
+    ap.add_argument(
+        "-z", "--zoom", 
+        required=False, 
+        help='Zoom factor. \n'+
+            'When applying the model, the pixel size of the image will be \n'+
+            'multiplied by this number.',
+            default=None,
+    )
     ap._action_groups.reverse()
 
     # Processing the arguments
