@@ -19,6 +19,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 from tqdm import tqdm
 import pkg_resources
+from loguru import logger
 
 # AxonDeepSeg imports
 import AxonDeepSeg
@@ -217,6 +218,9 @@ def segment_folders(path_testing_images_folder, path_model,
     process.
     :return: Nothing.
     '''
+    logfile = Path(path_testing_images_folder) / "axondeepseg.log"
+    logger.add(logfile, level='INFO')
+    logger.info(f'Logging initialized for segmentation of multiple images in "{logfile.parent.absolute()}".')
 
     # If string, convert to Path objects
     path_testing_images_folder = convert_path(path_testing_images_folder)
@@ -243,6 +247,7 @@ def segment_folders(path_testing_images_folder, path_model,
                 exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
                                 "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
                                 "containing the pixel size value."
+                logger.error(exception_msg)
                 raise Exception(exception_msg)
 
         print(path_testing_images_folder / file_)
@@ -281,14 +286,14 @@ def segment_folders(path_testing_images_folder, path_model,
             # Round to 1 decimal, always up.
             minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
 
-            print("Skipping image: Due to your given image size, resolution, and zoom factor, the image ", 
-                   str(path_testing_images_folder / file_),
-                   " is smaller than the patch size after it is resampled during segmentation. ",
-                   "To resolve this, please set a zoom factor greater than ",
-                   str(minimum_zoom_factor), " for this image on a re-run.",
-                   "To do this on the command line, call the segmentation with the -z flag, i.e. ",
-                   "-z ", str(minimum_zoom_factor),
-            )
+            warning_msg = "Skipping image: Due to your given image size, resolution, and zoom factor, the image " \
+                   f"{path_testing_images_folder / file_}" \
+                   " is smaller than the patch size after it is resampled during segmentation. " \
+                   "To resolve this, please set a zoom factor greater than " \
+                   f"{minimum_zoom_factor}  for this image on a re-run. " \
+                   "To do this on the command line, call the segmentation with the -z flag, i.e. " \
+                   f"-z {minimum_zoom_factor}"
+            logger.info(warning_msg)
         else:
             axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
                             acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
@@ -298,7 +303,7 @@ def segment_folders(path_testing_images_folder, path_model,
                 tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
 
-
+    logger.info("Segmentations done.")
     return None
 
 # Main loop
@@ -447,8 +452,6 @@ def main(argv=None):
                 zoom_factor=zoom_factor,
                 verbosity_level=verbosity_level
                 )
-
-            print("Segmentation finished.")
 
     sys.exit(0)
 
