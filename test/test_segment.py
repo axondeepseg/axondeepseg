@@ -121,7 +121,7 @@ class TestCore(object):
             'image' + str(axon_suffix),
             'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix),
-            'segment_folders.log',
+            'axondeepseg.log',
             ]
 
         segment_folders(
