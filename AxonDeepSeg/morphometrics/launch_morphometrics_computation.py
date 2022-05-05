@@ -7,6 +7,7 @@ from matplotlib import image
 import sys
 import os
 from tqdm import tqdm
+from loguru import logger
 
 # Scientific modules imports
 import numpy as np
@@ -114,6 +115,9 @@ def main(argv=None):
     flag_morp_batch = False # True, if batch moprhometrics is to computed else False
     target_list = []        # list of image paths for batch morphometrics computations
 
+    logger.add("axondeepseg.log", level='INFO')
+    logger.info(f'Logging initialized for morphometrics in "{os.getcwd()}".')
+
     for dir_iter in path_target_list:
         if dir_iter.is_dir(): # batch morphometrics
             flag_morp_batch = True
@@ -132,20 +136,20 @@ def main(argv=None):
             if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
                 pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
             else:
-                print(f"ERROR: Segmented axon mask for image: `{str(current_path_target)}` is not present in the image folder. ",
-                            "Please check that the axon mask is located in the image folder. ",
-                            "If it is not present, perform segmentation of the image first using ADS.\n"
-                    )
+                msg = f"ERROR: Segmented axon mask for image: `{str(current_path_target)}` is not present " \
+                    "in the image folder. Please check that the axon mask is located in the image folder. " \
+                    "If it is not present, perform segmentation of the image first using ADS.\n"
+                logger.error(msg)
                 sys.exit(3)
 
             # load myelin mask
             if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
                 pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
             else:
-                print(f"ERROR: Segmented myelin mask for image: `{str(current_path_target)}` is not present in the image folder. ",
-                            "Please check that the myelin mask is located in the image folder. ",
-                            "If it is not present, perform segmentation of the image first using ADS.\n"
-                    )
+                msg = f"ERROR: Segmented myelin mask for image: `{str(current_path_target)}` is not present " \
+                    "in the image folder. Please check that the myelin mask is located in the image folder. " \
+                    "If it is not present, perform segmentation of the image first using ADS.\n"
+                logger.error(msg)
                 sys.exit(3)
 
             if args["sizepixel"] is not None:
@@ -160,10 +164,10 @@ def main(argv=None):
                     psm = float(resolution_file.read())
                 else:
 
-                    print(f"ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file for image: `{str(current_path_target)}` in the image folder. ",
-                                "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                                "containing the pixel size value.\n"
-                        )
+                    msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file for " \
+                        f"image: `{str(current_path_target)}` in the image folder. Please provide a pixel size (using " \
+                        "argument -s), or add a pixel_size_in_micrometer.txt file containing the pixel size value.\n"
+                    logger.error(msg)
                     sys.exit(3)
 
             x = params.column_names
@@ -221,12 +225,15 @@ def main(argv=None):
                     index_image_array=index_image_array
                 )
 
-                print(f"Morphometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
+                logger.info("Morphometrics file: {} has been saved in the {} directory",
+                    morph_filename,
+                    str(current_path_target.parent.absolute()),
+                )
             except IOError:
-                print(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
+                logger.warning(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
 
         else:
-            print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
+            logger.warning("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
             break
     sys.exit(0)
 
