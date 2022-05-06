@@ -430,7 +430,6 @@ def main(argv=None):
                         ".tiff",
                         ".png"
                         )
-    
 
     # Going through all paths passed into arguments
     for current_path_target in path_target_list:
