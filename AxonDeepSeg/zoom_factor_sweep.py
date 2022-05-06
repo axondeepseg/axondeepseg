@@ -27,12 +27,12 @@ def sweep(
 
     lower_bound, upper_bound = sweep_range
     # create new directory to store segmentations
-    path_results = Path(path_image).parent.absolute() / f'{Path(path_image).stem}_sweep'
+    path_results = Path(path_image).parent.resolve() / f'{Path(path_image).stem}_sweep'
     path_results.mkdir(parents=True, exist_ok=True)
     path_seg_outputs = [
-        Path(path_image).stem + str(axon_suffix),
-        Path(path_image).stem + str(myelin_suffix),
-        Path(path_image).stem + str(axonmyelin_suffix),
+        Path(path_image.parent.resolve()) / (Path(path_image).stem + str(axon_suffix)),
+        Path(path_image.parent.resolve()) / (Path(path_image).stem + str(myelin_suffix)),
+        Path(path_image.parent.resolve()) / (Path(path_image).stem + str(axonmyelin_suffix)),
     ]
 
     for i in range(sweep_length):
