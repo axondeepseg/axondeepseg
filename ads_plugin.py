@@ -663,31 +663,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
         x = params.column_names
 
         # Compute statistics
-        stats_array, index_image_array = compute_morphs.get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
+        stats_dataframe, index_image_array = compute_morphs.get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
                                                                                pixel_size=pixel_size,
                                                                                axon_shape=self.settings.axon_shape,
                                                                                return_index_image=True)
-        for stats in stats_array:
-
-            x = np.append(x,
-                np.array(
-                    [(
-                        stats['x0'],
-                        stats['y0'],
-                        stats['gratio'],
-                        stats['axon_area'],
-                        stats['axon_perimeter'],
-                        stats['myelin_area'],
-                        stats['axon_diam'],
-                        stats['myelin_thickness'],
-                        stats['axonmyelin_area'],
-                        stats['axonmyelin_perimeter'],
-                        stats['solidity'],
-                        stats['eccentricity'],
-                        stats['orientation']
-                    )],
-                    dtype=x.dtype)
-                )
 
         with wx.FileDialog(self, "Save morphometrics file", wildcard="Excel files (*.xlsx)|*.xlsx",
                         defaultFile="axon_morphometrics.xlsx", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
@@ -701,7 +680,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 pathname = pathname + ".xlsx"
             try:
                 # Export to excel
-                pd.DataFrame(x).to_excel(pathname, na_rep='NaN')
+                stats_dataframe.to_excel(pathname, na_rep='NaN')
 
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
