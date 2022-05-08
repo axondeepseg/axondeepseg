@@ -10,6 +10,7 @@ import numpy as np
 from scipy import ndimage as ndi
 from skimage import measure
 from skimage.segmentation import watershed
+import pandas as pd
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -71,7 +72,6 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
     if (pixel_size is not None) and (path_folder is None):
         pixelsize = pixel_size
 
-    stats_array = np.empty(0)
     # Label each axon object
     im_axon_label = measure.label(im_axon)
     # Measure properties for each axon object
@@ -108,6 +108,9 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
     if im_myelin is not None:
         axonmyelin_labels_list = [axm.label for axm in axonmyelin_objects]
 
+    # Declare a DataFrame that will be used to store the result of the morphometrics
+    stats_dataframe = pd.DataFrame()
+
     # Loop across axon property and fill up dictionary with morphometrics of interest
     for prop_axon in axon_objects:
         # Centroid
@@ -129,8 +132,8 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         # Axon orientation angle
         orientation = prop_axon.orientation
         # Add metrics to list of dictionaries
-        stats = {'y0': y0,
-                 'x0': x0,
+        stats = {'x0': x0,
+                 'y0': y0,
                  'axon_diam': axon_diam,
                  'axon_area': axon_area,
                  'axon_perimeter': axon_perimeter,
@@ -182,27 +185,26 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     "WARNING: Myelin object not found for axon" +
                     "centroid [y:{0}, x:{1}]".format(y0, x0)
                     )
-
-        stats_array = np.append(stats_array, [stats], axis=0)
+        # Add the stats to the dataframe
+        if stats_dataframe.empty:
+            stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
+        else:
+            stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
 
     if return_index_image is True:
         # Extract the information required to generate the index image
-        x0_array = np.empty(0)
-        y0_array = np.empty(0)
-        diam_array = np.empty(0)
-        for entries in stats_array:
-            x0_array = np.append(x0_array, entries["x0"])
-            y0_array = np.append(y0_array, entries["y0"])
-            diam_array = np.append(diam_array, entries["axon_diam"])
+        x0_array = stats_dataframe["x0"].to_numpy()
+        y0_array = stats_dataframe["y0"].to_numpy()
+        diam_array = stats_dataframe["axon_diam"].to_numpy()
         # Create the axon coordinate array, then generate the image
         mean_diameter_in_pixel = np.average(diam_array) / pixelsize
-        axon_indexes = np.arange(stats_array.size)
+        axon_indexes = np.arange(stats_dataframe.shape[0])
         index_image_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
                                                                   tuple(reversed(im_axon.shape)),
                                                                   mean_diameter_in_pixel)
-        return stats_array, index_image_array
+        return stats_dataframe, index_image_array
 
-    return stats_array
+    return stats_dataframe
 
 
 def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
@@ -452,3 +454,13 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         print(("\nError: Could not save file \"{0}\" in "
                "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
         raise
+
+
+if __name__ == "__main__":
+    # This section is for testing purposes
+    from AxonDeepSeg import ads_utils
+    image_path = "C:\\Users\\Stoyan\\Desktop\\ADS\\generated_touching_myelin.png"
+    image_to_filter = ads_utils.imread(image_path)
+    axon_mask, myelin_mask = ads_utils.extract_axon_and_myelin_masks_from_image_data(image_to_filter)
+    morphs, b_image = get_axon_morphometrics(im_axon=axon_mask, im_myelin=myelin_mask, pixel_size=1.0, return_index_image=True)
+    print("Test")
