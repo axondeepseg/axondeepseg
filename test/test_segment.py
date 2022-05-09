@@ -109,6 +109,9 @@ class TestCore(object):
 
             if (imageFolderPathWithPixelSize / fileName).exists():
                 (imageFolderPathWithPixelSize / fileName).unlink()
+        
+        if Path('axondeepseg.log').exists():
+            Path('axondeepseg.log').unlink()
 
     # --------------segment_folders tests-------------- #
     @pytest.mark.integration
@@ -121,7 +124,6 @@ class TestCore(object):
             'image' + str(axon_suffix),
             'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix),
-            'axondeepseg.log',
             ]
 
         segment_folders(
@@ -189,7 +191,7 @@ class TestCore(object):
         outputFiles = [
             'image' + str(axon_suffix),
             'image' + str(myelin_suffix),
-            'image' + str(axonmyelin_suffix)
+            'image' + str(axonmyelin_suffix),
             ]
 
         segment_image(
@@ -333,3 +335,11 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1", "-z", "1.2"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.integration
+    def test_main_cli_creates_logfile(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37"])
+
+        assert Path('axondeepseg.log').exists()
