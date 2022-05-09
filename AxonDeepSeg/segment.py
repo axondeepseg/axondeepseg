@@ -416,7 +416,7 @@ def main(argv=None):
         sweep_range = [float(args["sweeprange"][0]), float(args["sweeprange"][1])]
         sweep_length = int(args["sweeplength"])
         if len(path_target_list) != 1:
-            print("ERROR: Please use a single image for zoom factor sweeps.")
+            print("ERROR: Please use a single image for zoom factor sweep.")
             sys.exit(5)
 
     # Preparing the arguments to axon_segmentation function
@@ -485,7 +485,7 @@ def main(argv=None):
 
         else:
             if sweep_mode:
-                print("ERROR: Please use a single image for zoom factor sweeps.")
+                print("ERROR: Please use a single image for zoom factor sweep.")
                 sys.exit(5)
 
             # Handle cases if no resolution is provided on the CLI
