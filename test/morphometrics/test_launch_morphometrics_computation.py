@@ -31,8 +31,9 @@ class TestCore(object):
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
 
-        if Path('axondeepseg.log').exists():
-            Path('axondeepseg.log').unlink()
+        logfile = self.testPath / 'axondeepseg.log'
+        if logfile.exists():
+            logfile.unlink()
 
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
