@@ -389,6 +389,7 @@ def main(argv=None):
     ap.add_argument(
         "-l", "--sweeplength",
         required=False,
+        type=int,
         help='Number of zoom factor values to be computed by the sweep.',
         default=None,
     )
