@@ -102,6 +102,8 @@ class TestCore(object):
             'image_2.nii.gz'
             ]
 
+        logfile = testPath / 'axondeepseg.log'
+
         for fileName in outputFiles:
 
             if (imageFolderPath / fileName).exists():
@@ -110,8 +112,8 @@ class TestCore(object):
             if (imageFolderPathWithPixelSize / fileName).exists():
                 (imageFolderPathWithPixelSize / fileName).unlink()
         
-        if Path('axondeepseg.log').exists():
-            Path('axondeepseg.log').unlink()
+        if logfile.exists():
+            logfile.unlink()
 
     # --------------segment_folders tests-------------- #
     @pytest.mark.integration
