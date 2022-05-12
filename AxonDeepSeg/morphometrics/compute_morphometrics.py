@@ -291,41 +291,61 @@ def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribu
         return False
 
 
-def save_axon_morphometrics(path_folder, stats_array):
+def save_axon_morphometrics(morphometrics_file, stats_dataframe):
     """
-    :param path_folder: absolute path of the sample and the segmentation folder
-    :param stats_array: list of dictionaries containing axon morphometrics
+    :param morphometrics_file: absolute path of file that will be saved (with the extension)
+    :param stats_dataframe: dataframe containing the morphometrics
     :return:
     """
     
     # If string, convert to Path objects
-    path_folder = convert_path(path_folder)
-    
+    morphometrics_file = convert_path(path_folder)
+    if morphometrics_file.suffix == "":
+        raise ValueError("Invalid file name. Please include its name and extension")
+
+    # TODO: swap columns, and adjust column names
+
     try:
-        np.save(str(path_folder / 'axonlist.npy'), stats_array)
+
+        if morphometrics_file.suffix.lower() == ".csv":  # Export to csv
+            stats_dataframe.to_csv(morphometrics_file, na_rep='NaN')
+        elif morphometrics_file.suffix.lower() == ".xlsx":  # Export to excel
+            stats_dataframe.to_excel(morphometrics_file, na_rep='NaN')
+        else: # Export to pickle
+            stats_dataframe.to_pickle(morphometrics_file)
     except IOError as e:
-        print(("\nError: Could not save file \"{0}\" in "
-               "directory \"{1}\".\n".format('axonlist.npy', path_folder)))
+        print(("\nError: Could not save file \"{0}\"\n".format(morphometrics_file)))
         raise
 
 
-def load_axon_morphometrics(path_folder):
+def load_axon_morphometrics(morphometrics_file):
     """
-    :param path_folder: absolute path of the sample and the segmentation folder
-    :return: stats_array: list of dictionaries containing axon morphometrics
+    :param morphometrics_file: absolute path of file containing the morphometrics (must be .csv, .xlsx or pickle format)
+    :return: stats_dataframe: dataframe containing the morphometrics
     """
     
     # If string, convert to Path objects
-    path_folder = convert_path(path_folder)
+    morphometrics_file = convert_path(morphometrics_file)
+
+    if morphometrics_file.suffix == "":
+        raise ValueError("File not specified. Please provide the full path of the file, including its extension")
+
+    # TODO: adjust column names
+    # TODO: check if the spreadsheet files have their index at 0
 
     try:
-        stats_array = np.load(str(path_folder / 'axonlist.npy'), allow_pickle=True)
+        #Use the appropriate loader depending on the extension
+        if morphometrics_file.suffix.lower() == ".csv":
+            stats_dataframe = pd.read_csv(morphometrics_file, na_values='NaN')
+        elif morphometrics_file.suffix.lower() == ".xlsx":
+            stats_dataframe = pd.read_excel(morphometrics_file, na_values='NaN')
+        else:
+            stats_dataframe = pd.read_pickle(morphometrics_file)
     except IOError as e:
-        print(("\nError: Could not load file \"{0}\" in "
-               "directory \"{1}\".\n".format('axonlist.npy', path_folder)))
+        print(("\nError: Could not load file \"{0}\"\n".format(morphometrics_file)))
         raise
     else:
-        return stats_array
+        return stats_dataframe
 
 
 def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape="circle"):
@@ -346,9 +366,8 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=
 
     path_folder = path_prediction.parent
 
-    stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
-    axon_diam_list = [d["axon_diam"] for d in stats_array]
-    axon_diam_array = np.asarray(axon_diam_list)
+    stats_dataframe = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
+    axon_diam_array = stats_dataframe["axon_diam"].to_numpy()
 
     labels = measure.label(pred_axon)
     axon_diam_display = np.zeros((np.shape(labels)[0], np.shape(labels)[1]))
@@ -413,8 +432,8 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape=
     gratio = math.sqrt(1 / (1 + (float(mvf) / float(avf))))
 
     # Get individual axons metrics and compute mean axon diameter
-    stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
-    axon_diam_list = [d["axon_diam"] for d in stats_array]
+    stats_dataframe = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
+    axon_diam_list = stats_dataframe["axon_diam"].to_list()
     mean_axon_diam = np.mean(axon_diam_list)
 
     # Estimate mean myelin diameter (axon+myelin diameter) by using
