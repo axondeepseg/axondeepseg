@@ -63,8 +63,8 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
         path_folder = path_img.parent
 
         # Compute and save axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
-        save_axon_morphometrics(path_folder, stats_array)
+        stats_dataframe = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
+        save_axon_morphometrics(path_folder / "morphometrics.pkl", stats_dataframe)
 
         # Generate and save displays of axon morphometrics
         fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=axon_shape)
