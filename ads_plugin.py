@@ -660,8 +660,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         pred_axon = pred > 200
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
-        x = params.column_names
-
         # Compute statistics
         stats_dataframe, index_image_array = compute_morphs.get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
                                                                                pixel_size=pixel_size,
@@ -679,8 +677,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             if not (pathname.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
                 pathname = pathname + ".xlsx"
             try:
-                # Export to excel
-                stats_dataframe.to_excel(pathname, na_rep='NaN')
+                compute_morphs.save_axon_morphometrics(pathname, stats_dataframe)
 
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
