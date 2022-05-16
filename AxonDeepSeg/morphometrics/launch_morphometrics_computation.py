@@ -166,8 +166,6 @@ def main(argv=None):
                         )
                     sys.exit(3)
 
-            x = params.column_names  ## TODO: Find out how to keep units
-
             # Compute statistics
 
             stats_dataframe, index_image_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape, return_index_image=True)
@@ -178,12 +176,7 @@ def main(argv=None):
             if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
                 morph_filename = morph_filename + '.xlsx'
             try:
-                # Export to excel
-                if morph_filename.endswith('.xlsx'):
-                    stats_dataframe.to_excel(current_path_target.parent / morph_filename, na_rep='NaN')
-                # Export to csv
-                else:
-                    stats_dataframe.to_csv(current_path_target.parent / morph_filename, na_rep='NaN')
+                save_axon_morphometrics(current_path_target.parent / morph_filename, stats_dataframe)
 
                 # Generate the index image
                 if str(current_path_target) == str(current_path_target.parts[-1]):
@@ -202,7 +195,7 @@ def main(argv=None):
 
                 print(f"Morphometrics file: {morph_filename} has been saved in the {str(current_path_target.parent.absolute())} directory")
             except IOError:
-                print(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
+                print(f"Cannot save morphometrics data or associated index images for file {current_path_target.parent / morph_filename}.")
 
         else:
             print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
