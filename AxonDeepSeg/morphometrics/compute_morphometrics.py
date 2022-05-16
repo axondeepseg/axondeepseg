@@ -17,7 +17,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from AxonDeepSeg.ads_utils import convert_path
-from AxonDeepSeg import postprocessing
+from AxonDeepSeg import postprocessing, params
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -186,6 +186,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     "centroid [y:{0}, x:{1}]".format(y0, x0)
                     )
         # Add the stats to the dataframe
+        # TODO: should I use float32 as a datatype?
         if stats_dataframe.empty:
             stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
         else:
@@ -290,33 +291,62 @@ def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribu
     else:
         return False
 
+def rearrange_column_names_for_saving(stats_dataframe):
+    """
+    This function rearranges the columns in the stats_dataframe to match the order and display names specified in
+    params.py.
+    :param stats_dataframe: the dataframe with the morphometrics data
+    :return: the dataframe with the ordered columns and units in the column names
+    """
+    # Reorder the columns
+    order_of_columns = []
+    columns_rename_dict = {}
+    for column in params.column_names_ordered:
+        if column.key_name in stats_dataframe.columns:
+            order_of_columns.append(column.key_name)
+            if column.display_name is not None:
+                columns_rename_dict[column.key_name] = column.display_name
+    for column in stats_dataframe.columns: # Add the remaining columns for which no unit or order was specified
+        if column not in order_of_columns:
+            order_of_columns.append(column)
+    stats_dataframe = stats_dataframe[order_of_columns]
+
+    # Add units or other details to the column names
+    stats_dataframe = stats_dataframe.rename(columns=columns_rename_dict)
+    return stats_dataframe
+
+def rename_column_names_after_loading(loaded_dataframe):
+    """
+    This function removes the units in the loaded_dataframe column names so that the dataframe can be used more easily
+    internally.
+    :param loaded_dataframe: The dataframe that was loaded, containing the morphometrics data
+    :return: the dataframe without the units in the column names
+    """
+    columns_rename_dict = {}
+    for column in params.column_names_ordered:
+        if (column.display_name is not None) and (column.display_name in loaded_dataframe.columns):
+            columns_rename_dict[column.display_name] = column.key_name
+    loaded_dataframe = loaded_dataframe.rename(columns=columns_rename_dict)
+    return loaded_dataframe
 
 def save_axon_morphometrics(morphometrics_file, stats_dataframe):
     """
     :param morphometrics_file: absolute path of file that will be saved (with the extension)
     :param stats_dataframe: dataframe containing the morphometrics
-    :return:
     """
     
     # If string, convert to Path objects
-    morphometrics_file = convert_path(path_folder)
+    morphometrics_file = convert_path(morphometrics_file)
     if morphometrics_file.suffix == "":
         raise ValueError("Invalid file name. Please include its name and extension")
 
-    # TODO: swap columns, and adjust column names
-
-    try:
-
-        if morphometrics_file.suffix.lower() == ".csv":  # Export to csv
-            stats_dataframe.to_csv(morphometrics_file, na_rep='NaN')
-        elif morphometrics_file.suffix.lower() == ".xlsx":  # Export to excel
-            stats_dataframe.to_excel(morphometrics_file, na_rep='NaN')
-        else: # Export to pickle
-            stats_dataframe.to_pickle(morphometrics_file)
-    except IOError as e:
-        print(("\nError: Could not save file \"{0}\"\n".format(morphometrics_file)))
-        raise
-
+    stats_dataframe = rearrange_column_names_for_saving(stats_dataframe)
+    if morphometrics_file.suffix.lower() == ".csv":  # Export to csv
+        stats_dataframe.to_csv(morphometrics_file, na_rep='NaN')
+    elif morphometrics_file.suffix.lower() == ".xlsx":  # Export to excel
+        stats_dataframe.to_excel(morphometrics_file, na_rep='NaN')
+    else:  # Export to pickle
+        stats_dataframe.to_pickle(morphometrics_file)
 
 def load_axon_morphometrics(morphometrics_file):
     """
@@ -330,9 +360,6 @@ def load_axon_morphometrics(morphometrics_file):
     if morphometrics_file.suffix == "":
         raise ValueError("File not specified. Please provide the full path of the file, including its extension")
 
-    # TODO: adjust column names
-    # TODO: check if the spreadsheet files have their index at 0
-
     try:
         #Use the appropriate loader depending on the extension
         if morphometrics_file.suffix.lower() == ".csv":
@@ -344,8 +371,15 @@ def load_axon_morphometrics(morphometrics_file):
     except IOError as e:
         print(("\nError: Could not load file \"{0}\"\n".format(morphometrics_file)))
         raise
-    else:
-        return stats_dataframe
+
+    stats_dataframe = rename_column_names_after_loading(stats_dataframe)
+    # with csv and excel files, they often will have an "unnamed" column because of the indexes saved with the dataframe
+    # we remove it here
+    for column in stats_dataframe.columns:
+        if "unnamed" in column.lower():
+            stats_dataframe = stats_dataframe.drop(columns=column)
+
+    return stats_dataframe
 
 
 def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape="circle"):
@@ -482,4 +516,7 @@ if __name__ == "__main__":
     image_to_filter = ads_utils.imread(image_path)
     axon_mask, myelin_mask = ads_utils.extract_axon_and_myelin_masks_from_image_data(image_to_filter)
     morphs, b_image = get_axon_morphometrics(im_axon=axon_mask, im_myelin=myelin_mask, pixel_size=1.0, return_index_image=True)
+    save_path = "C:\\Users\\Stoyan\\PycharmProjects\\ads_project5\\morphs_save.xlsx"
+    save_axon_morphometrics(save_path, morphs)
+    morphs2 = load_axon_morphometrics(save_path)
     print("Test")
