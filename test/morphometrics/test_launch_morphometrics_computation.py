@@ -36,7 +36,7 @@ class TestCore(object):
     def test_launch_morphometrics_computation_saves_expected_files(self):
         expectedFiles = {'aggregate_morphometrics.txt',
                          'AxonDeepSeg_map-axondiameter.png',
-                         'axonlist.npy'
+                         'morphometrics.pkl'
                          }
 
         pathImg = self.dataPath / 'image.png'
@@ -53,7 +53,7 @@ class TestCore(object):
     def test_launch_morphometrics_computation_saves_expected_files_with_axon_as_ellipse(self):
         expectedFiles = {'aggregate_morphometrics.txt',
                          'AxonDeepSeg_map-axondiameter.png',
-                         'axonlist.npy'
+                         'morphometrics.pkl'
                          }
 
         pathImg = self.dataPath / 'image.png'
