@@ -8,6 +8,7 @@ import shutil
 import numpy as np
 import pandas as pd
 from AxonDeepSeg import ads_utils as ads
+from AxonDeepSeg import params
 import pytest
 
 # AxonDeepSeg imports
@@ -15,6 +16,8 @@ from AxonDeepSeg.visualization.simulate_axons import SimulateAxons
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 get_pixelsize,
                                                                 get_axon_morphometrics,
+                                                                rearrange_column_names_for_saving,
+                                                                rename_column_names_after_loading,
                                                                 save_axon_morphometrics,
                                                                 load_axon_morphometrics,
                                                                 draw_axon_diameter,
@@ -652,6 +655,47 @@ class TestCore(object):
         with pytest.raises(FileNotFoundError):
             load_axon_morphometrics(nonExistingFolder / "dummy_name.pkl")
 
+    @pytest.mark.unit
+    def test_rearrange_column_names_for_saving_returns_columns_in_expected_order(self):
+        dummy_dict = {}
+        initial_columns = []
+        expected_columns = []
+        obtained_columns = []
+
+        for column_name in params.column_names_ordered:
+            if column_name.display_name is not None:
+                name_to_use = column_name.display_name
+            else:
+                name_to_use = column_name.key_name
+            dummy_dict[column_name.key_name] = 0.0
+            expected_columns.append(name_to_use)
+            initial_columns.append(column_name.key_name)
+
+        dummy_df = pd.DataFrame(dummy_dict, index=[0])
+        random.shuffle(initial_columns)
+        dummy_df = dummy_df[initial_columns]
+        obtained_columns = rearrange_column_names_for_saving(dummy_df).columns.to_list()
+
+        assert expected_columns == obtained_columns
+
+    @pytest.mark.unit
+    def test_rename_column_names_after_loading_returns_renamed_columns(self):
+        dummy_dict = {}
+        expected_columns = []
+        obtained_columns = []
+
+        for column_name in params.column_names_ordered:
+            if column_name.display_name is not None:
+                name_to_use = column_name.display_name
+            else:
+                name_to_use = column_name.key_name
+            dummy_dict[name_to_use] = 0.0
+            expected_columns.append(column_name.key_name)
+
+        dummy_df = pd.DataFrame(dummy_dict, index=[0])
+        obtained_columns = rename_column_names_after_loading(dummy_df).columns.to_list()
+        assert expected_columns.sort() == obtained_columns.sort()
+
     # --------------check consistency with reference morphometrics-------------- #
     @pytest.mark.unit
     def test_morphometrics_consistency(self):
@@ -659,16 +703,17 @@ class TestCore(object):
             self.testPath /
             '__test_files__' /
             '__test_demo_files__' /
-            '__morphometrics__'
+            '__morphometrics__' /
+            'reference_morphometrics.pkl'
         )
 
-        reference_stats_array = load_axon_morphometrics(str(path_morphometrics_reference))
-        new_stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), im_myelin=self.pred_myelin)
+        reference_stats_dataframe = load_axon_morphometrics(str(path_morphometrics_reference))
+        new_stats_dataframe = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), im_myelin=self.pred_myelin)
 
-        for row_ref, row_new in zip(reference_stats_array, new_stats_array):
-            row_ref_vals = np.array(list(row_ref.values()))
-            row_new_vals = np.array(list(row_new.values()))
-            assert np.allclose(row_ref_vals, row_new_vals, rtol=0, atol=1e-11, equal_nan=True)
+        for column in reference_stats_dataframe:
+            column_ref_vals = reference_stats_dataframe[column].to_numpy()
+            column_new_vals = new_stats_dataframe[column].to_numpy()
+            assert np.allclose(column_ref_vals, column_new_vals, rtol=0, atol=1e-11, equal_nan=True)
 
 
     # --------------draw_axon_diameter tests-------------- #
@@ -791,8 +836,3 @@ class TestCore(object):
 
         with pytest.raises(IOError):
             write_aggregate_morphometrics(str(nonExistingFolder), aggregate_metrics)
-
-
-if __name__ == '__main__':
-    T = TestCore()
-    T.setup()
