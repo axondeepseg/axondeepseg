@@ -190,7 +190,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     "centroid [y:{0}, x:{1}]".format(y0, x0)
                     )
         # Add the stats to the dataframe
-        # TODO: should I use float32 as a datatype?
+        # Question: should we use float32 as a datatype?
         if stats_dataframe.empty:
             stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
         else:
@@ -511,16 +511,3 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         print(("\nError: Could not save file \"{0}\" in "
                "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
         raise
-
-
-if __name__ == "__main__":
-    # This section is for testing purposes
-    from AxonDeepSeg import ads_utils
-    image_path = "C:\\Users\\Stoyan\\Desktop\\ADS\\generated_touching_myelin.png"
-    image_to_filter = ads_utils.imread(image_path)
-    axon_mask, myelin_mask = ads_utils.extract_axon_and_myelin_masks_from_image_data(image_to_filter)
-    morphs, b_image = get_axon_morphometrics(im_axon=axon_mask, im_myelin=myelin_mask, pixel_size=1.0, return_index_image=True)
-    save_path = "C:\\Users\\Stoyan\\PycharmProjects\\ads_project5\\morphs_save.xlsx"
-    save_axon_morphometrics(save_path, morphs)
-    morphs2 = load_axon_morphometrics(save_path)
-    print("Test")
