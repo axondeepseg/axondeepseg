@@ -144,6 +144,15 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
         # Deal with myelin
         if im_myelin is not None:
+            # Delcare the statistics to add for the myelin and add them to the stats dictionary
+            myelin_stats = {
+                'gratio': np.nan,
+                'myelin_thickness': np.nan,
+                'myelin_area': np.nan,
+                'axonmyelin_area': np.nan,
+                'axonmyelin_perimeter': np.nan
+            }
+            stats.update(myelin_stats)
             # Find label of axonmyelin corresponding to axon centroid
             label_axonmyelin = im_axonmyelin_label[int(y0), int(x0)]
 
