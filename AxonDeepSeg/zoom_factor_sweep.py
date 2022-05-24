@@ -1,9 +1,22 @@
 # Successively segments an image with zoom factors within a given range
 
 from pathlib import Path
+from math import ceil
+
 import AxonDeepSeg.segment as ads_seg
+from AxonDeepSeg import ads_utils
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
+def get_minimum_zoom_factor(path_img, path_model, acquired_resolution):
+    # Get the model's native resolution
+    model_resolution, patch_size = ads_seg.get_model_native_resolution_and_patch(path_model)
+    im = ads_utils.imread(path_img)
+
+    minimum_zoom_factor = patch_size * model_resolution / (min(im.shape) * acquired_resolution)
+    # Round to 1 decimal, always up.
+    minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
+
+    return minimum_zoom_factor
 
 def sweep(
     path_image,
@@ -35,8 +48,15 @@ def sweep(
         Path(path_image.parent.resolve()) / (Path(path_image).stem + str(axonmyelin_suffix)),
     ]
 
+    min_zoom_factor = get_minimum_zoom_factor(path_image, path_model, acquired_resolution)
+    invalid_lower_bound = False
+
     for i in range(sweep_length):
         zoom_factor = lower_bound + i * (upper_bound - lower_bound) / sweep_length
+        if zoom_factor <= min_zoom_factor:
+            invalid_lower_bound = True
+            continue
+
         ads_seg.segment_image(
             path_image,
             path_model,
@@ -50,4 +70,10 @@ def sweep(
             path.rename(path_results / Path(path.stem + f'_zf-{zoom_factor}.png'))
 
         print(f"Done with zoom factor {zoom_factor}.")
+
+    if invalid_lower_bound:
+        warning = f"WARNING: The range specified contained invalid zoom factor values, so the lower bound "\
+            "was adjusted. Less than {sweep_length} zoom factor values were processed."
+        print(warning_msg)
+
 
