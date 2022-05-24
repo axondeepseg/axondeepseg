@@ -72,8 +72,8 @@ def sweep(
         print(f"Done with zoom factor {zoom_factor}.")
 
     if invalid_lower_bound:
-        warning = f"WARNING: The range specified contained invalid zoom factor values, so the lower bound "\
-            "was adjusted. Less than {sweep_length} zoom factor values were processed."
+        warning_msg = "WARNING: The range specified contained invalid zoom factor values, so the lower bound "\
+            f"was adjusted. Less than {sweep_length} zoom factor values were processed."
         print(warning_msg)
 
 
