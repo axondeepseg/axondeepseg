@@ -240,4 +240,5 @@ def main(argv=None):
 
 # Calling the script
 if __name__ == '__main__':
-    main()
+    with logger.catch():
+        main()
