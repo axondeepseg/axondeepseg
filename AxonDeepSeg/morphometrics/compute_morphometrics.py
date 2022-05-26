@@ -144,7 +144,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
         # Deal with myelin
         if im_myelin is not None:
-            # Delcare the statistics to add for the myelin and add them to the stats dictionary
+            # Declare the statistics to add for the myelin and add them to the stats dictionary
             myelin_stats = {
                 'gratio': np.nan,
                 'myelin_thickness': np.nan,
