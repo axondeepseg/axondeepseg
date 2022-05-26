@@ -193,7 +193,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         if stats_dataframe.empty:
             stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
         else:
-            stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0], ignore_index=True)
+            stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
 
     if return_index_image is True:
         # Extract the information required to generate the index image
