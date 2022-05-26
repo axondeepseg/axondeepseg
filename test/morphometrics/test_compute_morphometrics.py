@@ -713,7 +713,7 @@ class TestCore(object):
         for column in reference_stats_dataframe:
             column_ref_vals = reference_stats_dataframe[column].to_numpy()
             column_new_vals = new_stats_dataframe[column].to_numpy()
-            assert np.allclose(column_ref_vals, column_new_vals, rtol=0.003, equal_nan=True)
+            assert np.allclose(column_ref_vals, column_new_vals, rtol=0, atol=1e-11, equal_nan=True)
 
 
     # --------------draw_axon_diameter tests-------------- #
