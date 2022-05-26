@@ -32,4 +32,5 @@ dependencies:
     - torchvision==0.9.1+cpu; sys_platform != "darwin"
     - torch==1.8.1;sys_platform == "darwin"
     - torchvision==0.9.1; sys_platform == "darwin"
+    - protobuf==3.20.1
     - ivadomed==2.9.5
