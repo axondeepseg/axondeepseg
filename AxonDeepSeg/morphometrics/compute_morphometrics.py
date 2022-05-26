@@ -190,11 +190,10 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     "centroid [y:{0}, x:{1}]".format(y0, x0)
                     )
         # Add the stats to the dataframe
-        # Question: should we use float32 as a datatype?
         if stats_dataframe.empty:
-            stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
+            stats_dataframe = pd.DataFrame(stats, index=[0], dtype=np.float32) # First iteration
         else:
-            stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
+            stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0], dtype=np.float32)], ignore_index=True)
 
     if return_index_image is True:
         # Extract the information required to generate the index image
@@ -367,9 +366,9 @@ def load_axon_morphometrics(morphometrics_file):
     try:
         #Use the appropriate loader depending on the extension
         if morphometrics_file.suffix.lower() == ".csv":
-            stats_dataframe = pd.read_csv(morphometrics_file, na_values='NaN')
+            stats_dataframe = pd.read_csv(morphometrics_file, na_values='NaN', dtype=np.float32)
         elif morphometrics_file.suffix.lower() == ".xlsx":
-            stats_dataframe = pd.read_excel(morphometrics_file, na_values='NaN')
+            stats_dataframe = pd.read_excel(morphometrics_file, na_values='NaN', dtype=np.float32)
         else:
             stats_dataframe = pd.read_pickle(morphometrics_file)
     except IOError as e:
