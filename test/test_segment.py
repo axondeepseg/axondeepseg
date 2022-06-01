@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -43,6 +44,7 @@ class TestCore(object):
         )
 
         self.imagePath = self.imageFolderPath / 'image.png'
+        self.otherImagePath = self.imageFolderPath / 'image_2.png'
 
         self.imageFolderPathWithPixelSize = (
             self.testPath /
@@ -109,6 +111,11 @@ class TestCore(object):
 
             if (imageFolderPathWithPixelSize / fileName).exists():
                 (imageFolderPathWithPixelSize / fileName).unlink()
+
+        sweepFolder = imageFolderPathWithPixelSize / 'image_sweep'
+
+        if sweepFolder.exists():
+            shutil.rmtree(sweepFolder)
 
     # --------------segment_folders tests-------------- #
     @pytest.mark.integration
@@ -332,3 +339,44 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1", "-z", "1.2"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.integration
+    def test_main_cli_zoom_factor_sweep_creates_expected_files(self):
+        
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(
+                ["-t", "SEM", "-i", str(self.imageFolderPathWithPixelSize / 'image.png'), "-r", "1", "1.4", "-l", "2"]
+            )
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+        sweepFolder = self.imageFolderPathWithPixelSize / 'image_sweep'
+
+        # strip the '.png' from the suffixes
+        suffixes = [s[:-4] for s in [str(axon_suffix), str(myelin_suffix), str(axonmyelin_suffix)]]
+        expectedOutputParts = [(s, zf) for s in suffixes for zf in [1.0, 1.2]]
+        expectedFiles = [f"image{part[0]}_zf-{part[1]}.png" for part in expectedOutputParts]
+
+        assert sweepFolder.exists()
+        for file in expectedFiles:
+            assert (sweepFolder / file).exists()
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_zoom_factor_sweep_throws_error_multiple_images(self):
+        
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(
+                ["-t", "SEM", "-i", str(self.imagePath), str(self.otherImagePath), "-r", "1", "1.4", "-l", "4"]
+            )
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 5)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_zoom_factor_sweep_throws_error_folder_with_multiple_images(self):
+        
+        badFolder = str(self.imageFolderPathWithPixelSize)
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", badFolder, "-r", "1", "1.4", "-l", "4"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 5)
