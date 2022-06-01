@@ -315,8 +315,9 @@ def main(argv=None):
     Main loop.
     :return: Exit code.
         0: Success
-        2: Invalid argument value
         3: Missing value or file
+        4: Invalid acquired resolution
+        5: Too many input files
     '''
     logger.add("axondeepseg.log", level='INFO', enqueue=True)
     logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__}")
