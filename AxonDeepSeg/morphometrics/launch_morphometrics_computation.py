@@ -64,8 +64,8 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
         path_folder = path_img.parent
 
         # Compute and save axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
-        save_axon_morphometrics(path_folder, stats_array)
+        stats_dataframe = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
+        save_axon_morphometrics(path_folder / "morphometrics.pkl", stats_dataframe)
 
         # Generate and save displays of axon morphometrics
         fig = draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=axon_shape)
@@ -170,32 +170,9 @@ def main(argv=None):
                     logger.error(msg)
                     sys.exit(3)
 
-            x = params.column_names
-
             # Compute statistics
 
-            stats_array, index_image_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape, return_index_image=True)
-
-            for stats in stats_array:
-
-                x = np.append(x, np.array(
-                        [(
-                            stats['x0'],
-                            stats['y0'],
-                            stats['gratio'],
-                            stats['axon_area'],
-                            stats['axon_perimeter'],
-                            stats['myelin_area'],
-                            stats['axon_diam'],
-                            stats['myelin_thickness'],
-                            stats['axonmyelin_area'],
-                            stats['axonmyelin_perimeter'],
-                            stats['solidity'],
-                            stats['eccentricity'],
-                            stats['orientation']
-                        )],
-                        dtype=x.dtype)
-                    )
+            stats_dataframe, index_image_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape, return_index_image=True)
 
             morph_filename = current_path_target.stem + "_" + filename
 
@@ -203,12 +180,7 @@ def main(argv=None):
             if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
                 morph_filename = morph_filename + '.xlsx'
             try:
-                # Export to excel
-                if morph_filename.endswith('.xlsx'):
-                    pd.DataFrame(x).to_excel(current_path_target.parent / morph_filename, na_rep='NaN')
-                # Export to csv    
-                else: 
-                    pd.DataFrame(x).to_csv(current_path_target.parent / morph_filename, na_rep='NaN')
+                save_axon_morphometrics(current_path_target.parent / morph_filename, stats_dataframe)
 
                 # Generate the index image
                 if str(current_path_target) == str(current_path_target.parts[-1]):
