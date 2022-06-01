@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from math import ceil
+from loguru import logger
 
 import AxonDeepSeg.segment as ads_seg
 from AxonDeepSeg import ads_utils
@@ -69,11 +70,11 @@ def sweep(
             path = Path(path_seg)
             path.rename(path_results / Path(path.stem + f'_zf-{zoom_factor}.png'))
 
-        print(f"Done with zoom factor {zoom_factor}.")
+        logger.info(f"Done with zoom factor {zoom_factor}.")
 
     if invalid_lower_bound:
         warning_msg = "WARNING: The range specified contained invalid zoom factor values, so the lower bound "\
             f"was adjusted. Less than {sweep_length} zoom factor values were processed."
-        print(warning_msg)
+        logger.warning(warning_msg)
 
 
