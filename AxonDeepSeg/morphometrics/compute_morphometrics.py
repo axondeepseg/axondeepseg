@@ -361,7 +361,7 @@ def load_axon_morphometrics(morphometrics_file):
         else:
             stats_dataframe = pd.read_pickle(morphometrics_file)
     except IOError as e:
-        print(("\nError: Could not load file \"{0}\"\n".format(morphometrics_file)))
+        logger.error(f"Error: Could not load file {str(morphometrics_file)}")
         raise
 
     stats_dataframe = rename_column_names_after_loading(stats_dataframe)
@@ -496,6 +496,6 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         with open(path_folder / 'aggregate_morphometrics.txt', 'w') as text_file:
             text_file.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
     except IOError as e:
-        print(("\nError: Could not save file \"{0}\" in "
-               "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
+        msg = f"Error: Could not save file \"aggregate_morphometrics.txt\" in directory \"{path_folder}\"."
+        logger.error(msg)
         raise
