@@ -314,9 +314,9 @@ Segment an image using a range of zoom factors
 As mentioned above, choosing an appropriate zoom factor can enhance the quality of your segmentations. To facilitate the process of finding the best zoom value, we provide a feature that sweeps a range of zoom factors. 
 To use the zoom factor sweep on a single image, you can adjust the range of values to sweep using the **-r** argument and the number of equidistant values to sample within this range using the **-l** argument. The lower bound of the range is inclusive whereas the upper bound is exclusive.
 
-For example, using a range of 1 to 2 and a length of 5 on the **'77.png'** image will create a folder called **'77_sweep'** containing segmentations for zoom factors 1.0, 1.2, 1.4, 1.6 and 1.8::
+For example, using a range of 0.5 to 3 and a length of 5 on the the **'77.png'** image image will create a folder called **'77_sweep'** in that folder containing segmentations for zoom factors 0.5, 1.0, 1.5, 2.0, and 2.5::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -r 1.0 2.0 -l 5
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.13 -r 0.5 3.0 -l 5 
 
 Morphometrics
 -------------
