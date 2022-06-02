@@ -101,7 +101,8 @@ class TestCore(object):
             'image_2' + str(axon_suffix),
             'image_2' + str(myelin_suffix),
             'image_2' + str(axonmyelin_suffix),
-            'image_2.nii.gz'
+            'image_2.nii.gz',
+            'axondeepseg.log'
             ]
 
         logfile = testPath / 'axondeepseg.log'
@@ -344,14 +345,6 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1", "-z", "1.2"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_creates_logfile(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37"])
-
-        assert Path('axondeepseg.log').exists()
     
     @pytest.mark.integration
     def test_main_cli_zoom_factor_sweep_creates_expected_files(self):
@@ -393,3 +386,20 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", badFolder, "-r", "1", "1.4", "-l", "4"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 5)
+
+    @pytest.mark.integration
+    def test_main_cli_creates_logfile(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37"])
+
+        assert Path('axondeepseg.log').exists()
+
+    @pytest.mark.integration
+    def test_main_cli_creates_logfile_in_working_directory(self, monkeypatch: pytest.MonkeyPatch):
+        
+        monkeypatch.chdir(self.imageFolderPath)
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", "image.png", "-s", "0.37"])
+        
+        assert Path(self.imageFolderPath / "axondeepseg.log").exists()
