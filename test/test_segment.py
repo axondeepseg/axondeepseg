@@ -2,6 +2,8 @@
 
 from pathlib import Path
 import shutil
+import tempfile
+import os
 
 import pytest
 
@@ -101,8 +103,7 @@ class TestCore(object):
             'image_2' + str(axon_suffix),
             'image_2' + str(myelin_suffix),
             'image_2' + str(axonmyelin_suffix),
-            'image_2.nii.gz',
-            'axondeepseg.log'
+            'image_2.nii.gz'
             ]
 
         logfile = testPath / 'axondeepseg.log'
@@ -396,10 +397,14 @@ class TestCore(object):
         assert Path('axondeepseg.log').exists()
 
     @pytest.mark.integration
-    def test_main_cli_creates_logfile_in_working_directory(self, monkeypatch: pytest.MonkeyPatch):
+    def test_main_cli_creates_logfile_in_working_directory(self):
         
-        monkeypatch.chdir(self.imageFolderPath)
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", "image.png", "-s", "0.37"])
-        
-        assert Path(self.imageFolderPath / "axondeepseg.log").exists()
+        saved_dir = Path.cwd()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.chdir(tmpdir)
+            with pytest.raises(SystemExit) as pytest_wrapped_e:
+                AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-s", "0.37"])
+
+            logfile = Path(tmpdir) / 'axondeepseg.log'
+            assert logfile.exists()
+            os.chdir(saved_dir)
