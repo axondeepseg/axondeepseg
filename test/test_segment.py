@@ -395,16 +395,3 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37"])
 
         assert Path('axondeepseg.log').exists()
-
-    @pytest.mark.integration
-    def test_main_cli_creates_logfile_in_working_directory(self):
-        
-        saved_dir = Path.cwd()
-        with tempfile.TemporaryDirectory() as tmpdir:
-            os.chdir(tmpdir)
-            with pytest.raises(SystemExit) as pytest_wrapped_e:
-                AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-s", "0.37"])
-
-            logfile = Path(tmpdir) / 'axondeepseg.log'
-            assert logfile.exists()
-            os.chdir(saved_dir)
