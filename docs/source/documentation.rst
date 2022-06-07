@@ -510,6 +510,8 @@ By default for axon shape, that is, `circle`, the equivalent diameter is used. F
      - Eccentricity of the ellipse that has the same second-moments as the axon region.
    * - orientation
      - Angle between the 0th axis (rows) and the major axis of the ellipse that has the same second moments as the axon region.
+   * - border_touching
+     - Flag indicating if the axonmyelin objects touches the image border
 
 Jupyter notebooks
 -----------------
