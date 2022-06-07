@@ -319,7 +319,7 @@ def main(argv=None):
         4: Invalid acquired resolution
         5: Too many input files
     '''
-    logger.add("axondeepseg.log", level='INFO', enqueue=True)
+    logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
     logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__}")
 
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
