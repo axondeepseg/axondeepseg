@@ -10,7 +10,7 @@ def download_tests(destination=None):
         destination = convert_path(destination)
         test_files_destination = destination / "__test_files__"
 
-    url_tests = "https://github.com/axondeepseg/data-testing/archive/refs/tags/r20220607a.zip"  
+    url_tests = "https://github.com/axondeepseg/data-testing/archive/refs/tags/r20220522a.zip"  
     files_before = list(Path.cwd().iterdir())
 
     if (
