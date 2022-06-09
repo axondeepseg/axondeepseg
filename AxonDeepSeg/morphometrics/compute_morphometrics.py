@@ -152,7 +152,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 'myelin_area': np.nan,
                 'axonmyelin_area': np.nan,
                 'axonmyelin_perimeter': np.nan,
-                'border_touching': False
+                'image_border_touching': False
             }
             stats.update(myelin_stats)
             # Find label of axonmyelin corresponding to axon centroid
@@ -189,7 +189,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 # check if bounding box touches a border (partial axonmyelin object)
                 bbox = prop_axonmyelin.bbox
                 if 0 in bbox[:2] or bbox[2] == im_shape[0] or bbox[3] == im_shape[1]:
-                    stats['border_touching'] = True
+                    stats['image_border_touching'] = True
 
             else:
                 logger.warning(f"WARNING: Myelin object not found for axon centroid [y:{y0}, x:{x0}]")
