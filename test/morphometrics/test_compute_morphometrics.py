@@ -12,7 +12,8 @@ from AxonDeepSeg import params
 import pytest
 
 # AxonDeepSeg imports
-from AxonDeepSeg.visualization.simulate_axons import SimulateAxons
+from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
+from AxonDeepSeg.visualization.get_masks import get_masks
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 get_pixelsize,
                                                                 get_axon_morphometrics,
@@ -836,3 +837,48 @@ class TestCore(object):
 
         with pytest.raises(IOError):
             write_aggregate_morphometrics(str(nonExistingFolder), aggregate_metrics)
+
+    @pytest.mark.unit
+    def test_morphometrics_image_border_touching_flag_simulated_axons(self):
+        # Simulated image path
+        image_sim_path = Path(
+            self.testPath /
+            '__test_files__' /
+            '__test_simulated_axons__' /
+            'image_border_touching_simulation.png'
+        )
+
+        simulated = SimulateAxons()
+        # image border touching axon
+        x_pos = 100
+        y_pos = 100
+        axon_radius = 100
+        gratio = 0.6
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
+
+        simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
+
+        # complete axon
+        x_pos = 500
+        y_pos = 500
+        axon_radius = 40
+        gratio = 0.6
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
+
+        simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
+
+        simulated.save(image_sim_path)
+        img = ads.imread(image_sim_path)
+        axon, myelin = ads.extract_axon_and_myelin_masks_from_image_data(img)
+
+        stats_df = get_axon_morphometrics(
+            axon,
+            im_myelin=myelin,
+            pixel_size=0.1
+        )
+        
+        image_border_touching_col = stats_df["image_border_touching"].to_numpy()
+        assert np.array_equal(image_border_touching_col, [True, False])
+
+        if image_sim_path.exists():
+            image_sim_path.unlink()
