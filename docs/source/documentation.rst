@@ -289,6 +289,8 @@ Then, use the following command::
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/
 
+Please note that when using ``axondeepseg``, a file called *axondeepseg.log* will be saved in the current working directory. The console output will be saved in this file so you can review it later (useful to process large folders).
+
 Segment images from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -438,6 +440,8 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics
     ---- image2_axon_morphometrics.xlsx
     
     ---- pixel_size_in_micrometer.txt 
+
+Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
     
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

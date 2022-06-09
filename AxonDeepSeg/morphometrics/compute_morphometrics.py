@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from string import Template
-
+from loguru import logger
 
 # Scientific modules imports
 import math
@@ -33,14 +33,13 @@ def get_pixelsize(path_pixelsize_file):
         with open(path_pixelsize_file, "r") as text_file:
             pixelsize = float(text_file.read())
     except IOError as e:
-
-        print(("\nError: Could not open file \"{0}\" from "
-               "directory \"{1}\".\n".format(path_pixelsize_file, Path.cwd())))
+        msg = f"ERROR: Could not open file {path_pixelsize_file} from directory {Path.cwd()}."
+        logger.error(msg)
         raise
     except ValueError as e:
-        print(("\nError: Pixel size data in file \"{0}\" is not valid – must "
-               "be a plain text file with a single a numerical value (float) "
-               " on the fist line.".format(path_pixelsize_file)))
+        msg = f"ERROR: Pixel size data in file {path_pixelsize_file} is not valid - must be "\
+            "a plain text file with a single numerical value (float) on the first line."
+        logger.error(msg)
         raise
     else:
         return pixelsize
@@ -180,7 +179,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     stats['axonmyelin_area'] = axonmyelin_area
                     stats['axonmyelin_perimeter'] = axonmyelin_perimeter
                 except ZeroDivisionError:
-                    print(f"ZeroDivisionError caught on invalid object #{idx}.")
+                    logger.warning(f"ZeroDivisionError caught on invalid object #{idx}.")
                     stats['gratio'] = np.nan
                     stats['myelin_thickness'] = np.nan
                     stats['myelin_area'] = np.nan
@@ -193,10 +192,8 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     stats['border_touching'] = True
 
             else:
-                print(
-                    "WARNING: Myelin object not found for axon" +
-                    "centroid [y:{0}, x:{1}]".format(y0, x0)
-                    )
+                logger.warning(f"WARNING: Myelin object not found for axon centroid [y:{y0}, x:{x0}]")
+
         # Add the stats to the dataframe
         if stats_dataframe.empty:
             stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
@@ -275,20 +272,12 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
     checked = _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute)
     if checked is False:
         x_a, y_a = axon_object.centroid
-        data = {
-            "attribute": attribute,
-            "axon_label": axon_object.label,
-            "x_ax": x_a,
-            "y_ax": y_a,
-            "axonmyelin_label": axonmyelin_object.label,
-        }
-        
-        warning_msg = Template(
-            "Warning, axon #$axon_label at [y:$y_ax, x:$x_ax] and " +
-            "corresponding myelinated axon #$axonmyelin_label " +
-            "have unexpected measure values for $attribute attributest."
-            )
-        print(warning_msg.safe_substitute(data))
+        msg = (
+            f"WARNING: Axon {axon_object.label} at [y:{y_a}, x:{x_a}] and corresponding "
+            f"myelinated axon {axonmyelin_object.label} have unexpected measure values "
+            f"for {attribute} attribute."
+        )
+        logger.warning(msg)
 
 
 def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
@@ -380,7 +369,7 @@ def load_axon_morphometrics(morphometrics_file):
         else:
             stats_dataframe = pd.read_pickle(morphometrics_file)
     except IOError as e:
-        print(("\nError: Could not load file \"{0}\"\n".format(morphometrics_file)))
+        logger.error(f"Error: Could not load file {str(morphometrics_file)}")
         raise
 
     stats_dataframe = rename_column_names_after_loading(stats_dataframe)
@@ -515,6 +504,6 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         with open(path_folder / 'aggregate_morphometrics.txt', 'w') as text_file:
             text_file.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
     except IOError as e:
-        print(("\nError: Could not save file \"{0}\" in "
-               "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
+        msg = f"Error: Could not save file \"aggregate_morphometrics.txt\" in directory \"{path_folder}\"."
+        logger.error(msg)
         raise
