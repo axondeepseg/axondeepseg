@@ -31,6 +31,10 @@ class TestCore(object):
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
 
+        logfile = self.testPath / 'axondeepseg.log'
+        if logfile.exists():
+            logfile.unlink()
+
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
     def test_launch_morphometrics_computation_saves_expected_files(self):
@@ -263,3 +267,12 @@ class TestCore(object):
         ads.imwrite(str(pathAxon), axonMask)
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+    @pytest.mark.integration
+    def test_main_cli_creates_logfile(self):
+        pathImg = self.dataPath / 'image.png'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", str(morph_suffix)])
+
+        assert Path('axondeepseg.log').exists()
