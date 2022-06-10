@@ -6,14 +6,19 @@ import random
 import math
 import shutil
 import numpy as np
+import pandas as pd
 from AxonDeepSeg import ads_utils as ads
+from AxonDeepSeg import params
 import pytest
 
 # AxonDeepSeg imports
-from AxonDeepSeg.visualization.simulate_axons import SimulateAxons
+from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
+from AxonDeepSeg.visualization.get_masks import get_masks
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 get_pixelsize,
                                                                 get_axon_morphometrics,
+                                                                rearrange_column_names_for_saving,
+                                                                rename_column_names_after_loading,
                                                                 save_axon_morphometrics,
                                                                 load_axon_morphometrics,
                                                                 draw_axon_diameter,
@@ -133,69 +138,63 @@ class TestCore(object):
     # --------------get_axon_morphometrics tests-------------- #
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_type(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
-        assert isinstance(stats_array, np.ndarray)
+        stats_dataframe = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
+        assert isinstance(stats_dataframe, pd.DataFrame)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_returns_expected_type_with_axon_as_ellipse(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), axon_shape=self.axon_shape)
-        assert isinstance(stats_array, np.ndarray)
+        stats_dataframe = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), axon_shape=self.axon_shape)
+        assert isinstance(stats_dataframe, pd.DataFrame)
 
     @pytest.mark.unit
-    def test_get_axon_morphometrics_returns_expected_keys(self):
-        expectedKeys = {'y0',
-                        'x0',
-                        'axon_diam',
-                        'axon_area',
-                        'axon_perimeter',
-                        'axonmyelin_perimeter',
-                        'solidity',
-                        'eccentricity',
-                        'orientation',
-                        'gratio',
-                        'myelin_thickness',
-                        'myelin_area',
-                        'axonmyelin_area',
-                        'axonmyelin_perimeter'
-                        }
+    def test_get_axon_morphometrics_returns_expected_columns(self):
+        expected_columns = {'y0',
+                            'x0',
+                            'axon_diam',
+                            'axon_area',
+                            'axon_perimeter',
+                            'axonmyelin_perimeter',
+                            'solidity',
+                            'eccentricity',
+                            'orientation'
+                           }
 
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
+        stats_dataframe = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
-        for key in list(stats_array[0].keys()):
-            assert key in expectedKeys
+        for column in stats_dataframe.columns:
+            assert column in expected_columns
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask(self):
-        stats_array = get_axon_morphometrics(
+        stats_dataframe = get_axon_morphometrics(
             self.pred_axon,
             str(self.test_folder_path),
             im_myelin=self.pred_myelin
             )
-        print("The values are ", stats_array[1]['gratio'], stats_array[1]['axon_diam'], stats_array[1]['myelin_thickness'])
-        assert stats_array[1]['gratio'] == pytest.approx(0.74, rel=0.01)
+        print("The values are ", stats_dataframe['gratio'][1], stats_dataframe['axon_diam'][1], stats_dataframe['myelin_thickness'][1])
+        assert stats_dataframe['gratio'][1] == pytest.approx(0.74, rel=0.01)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_with_axon_as_ellipse(self):
-        stats_array = get_axon_morphometrics(
+        stats_dataframe = get_axon_morphometrics(
             self.pred_axon,
             str(self.test_folder_path),
             im_myelin=self.pred_myelin,
             axon_shape=self.axon_shape
             )
-        print("The values are ", stats_array[1]['gratio'], stats_array[1]['axon_diam'], stats_array[1]['myelin_thickness'])
+        print("The values are ", stats_dataframe['gratio'][1], stats_dataframe['axon_diam'][1], stats_dataframe['myelin_thickness'][1])
 
-        assert stats_array[1]['gratio'] == pytest.approx(0.78, rel=0.01)
+        assert stats_dataframe['gratio'][1] == pytest.approx(0.78, rel=0.01)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_invalid_gratio_with_axon_as_ellipse(self):
-        stats_array = get_axon_morphometrics(
+        stats_dataframe = get_axon_morphometrics(
             self.bad_pred_axon,
             str(self.test_folder_path),
             im_myelin=self.bad_pred_myelin,
             axon_shape=self.axon_shape
             )
-
-        assert np.isnan(stats_array[0]['gratio'])
+        assert np.isnan(stats_dataframe['gratio'][0])
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons(self):
@@ -238,12 +237,12 @@ class TestCore(object):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin)
+        stats_dataframe = get_axon_morphometrics(pred_axon, str(path_pred.parent), im_myelin=pred_myelin)
 
         for ii in range(0, len(gratio_sim)):
-            assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
-            assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
-            assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
+            assert stats_dataframe['gratio'][ii] == pytest.approx(gratio_sim[ii], rel=0.1)
+            assert stats_dataframe['axon_diam'][ii] == pytest.approx(axon_diam_sim[ii], rel=0.1)
+            assert stats_dataframe['myelin_thickness'][ii] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse_all_argument_varies(self):
@@ -293,12 +292,12 @@ class TestCore(object):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
+        stats_dataframe = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0, len(gratio_sim)):
-            assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
-            assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
-            assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
+            assert stats_dataframe['gratio'][ii] == pytest.approx(gratio_sim[ii], rel=0.1)
+            assert stats_dataframe['axon_diam'][ii] == pytest.approx(axon_diam_sim[ii], rel=0.1)
+            assert stats_dataframe['myelin_thickness'][ii] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse_gratio_varies(self):
@@ -339,13 +338,13 @@ class TestCore(object):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
+        stats_dataframe = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0, len(gratio_sim)):
 
-            assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
-            assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
-            assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
+            assert stats_dataframe['gratio'][ii] == pytest.approx(gratio_sim[ii], rel=0.1)
+            assert stats_dataframe['axon_diam'][ii] == pytest.approx(axon_diam_sim[ii], rel=0.1)
+            assert stats_dataframe['myelin_thickness'][ii] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse_plane_angle_varies(self):
@@ -394,12 +393,12 @@ class TestCore(object):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
+        stats_dataframe = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0, len(gratio_sim)):
-            assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
-            assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
-            assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
+            assert stats_dataframe['gratio'][ii] == pytest.approx(gratio_sim[ii], rel=0.1)
+            assert stats_dataframe['axon_diam'][ii] == pytest.approx(axon_diam_sim[ii], rel=0.1)
+            assert stats_dataframe['myelin_thickness'][ii] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_myelin_mask_simulated_axons_with_axon_as_ellipse_radius_varies(self):
@@ -451,12 +450,12 @@ class TestCore(object):
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
         # Compute axon morphometrics
-        stats_array = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
+        stats_dataframe = get_axon_morphometrics(pred_axon, str(self.image_sim_ellipse_path.parent), im_myelin=pred_myelin, axon_shape=self.axon_shape)
 
         for ii in range(0, len(gratio_sim)):
-            assert stats_array[ii]['gratio'] == pytest.approx(gratio_sim[ii], rel=0.1)
-            assert stats_array[ii]['axon_diam'] == pytest.approx(axon_diam_sim[ii], rel=0.1)
-            assert stats_array[ii]['myelin_thickness'] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
+            assert stats_dataframe['gratio'][ii] == pytest.approx(gratio_sim[ii], rel=0.1)
+            assert stats_dataframe['axon_diam'][ii] == pytest.approx(axon_diam_sim[ii], rel=0.1)
+            assert stats_dataframe['myelin_thickness'][ii] == pytest.approx(myelin_thickness_sim[ii], rel=0.1)
 
     @pytest.mark.unit
     def test_get_axon_morphometrics_with_unexpected_myelin_mask_simulated_axons(self):
@@ -471,13 +470,13 @@ class TestCore(object):
         pred_axon = pred > 200
         unexpected_pred_myelin = np.zeros(pred.shape)
 
-        stats_array = get_axon_morphometrics(
+        stats_dataframe = get_axon_morphometrics(
             pred_axon,
             str(path_pred.parent),
             im_myelin=unexpected_pred_myelin
             )
 
-        for axon_prop in stats_array:
+        for axon_index, axon_prop in stats_dataframe.iterrows():
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
@@ -488,14 +487,14 @@ class TestCore(object):
         pred_axon = pred > 200
         unexpected_pred_myelin = np.zeros(pred.shape)
 
-        stats_array = get_axon_morphometrics(
+        stats_dataframe = get_axon_morphometrics(
             pred_axon,
             str(self.image_sim_ellipse_path.parent),
             im_myelin=unexpected_pred_myelin,
             axon_shape=self.axon_shape
             )
 
-        for axon_prop in stats_array:
+        for axon_index, axon_prop in stats_dataframe.iterrows():
             assert axon_prop['myelin_thickness'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['myelin_area'] == pytest.approx(0.0, rel=0.01)
             assert axon_prop['gratio'] == pytest.approx(1.0, rel=0.01)
@@ -531,14 +530,14 @@ class TestCore(object):
         pred_axon = pred > 200
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
-        stats_array = get_axon_morphometrics(
+        stats_dataframe = get_axon_morphometrics(
             pred_axon,
             str(image_sim_path.parent),
             im_myelin=pred_myelin
             )
 
         for ii in range(0, len(axon_diam_sim)):
-            assert stats_array[ii]['axon_perimeter'] == pytest.approx(axon_perimeter_sim[ii], rel=0.1)
+            assert stats_dataframe['axon_perimeter'][ii] == pytest.approx(axon_perimeter_sim[ii], rel=0.1)
 
         if image_sim_path.exists():
             image_sim_path.unlink()
@@ -603,14 +602,14 @@ class TestCore(object):
         pred_axon = pred > 200
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
-        stats_array = get_axon_morphometrics(
+        stats_dataframe = get_axon_morphometrics(
             pred_axon,
             str(image_sim_path.parent),
             im_myelin=pred_myelin
             )
 
         for ii in range(0, len(gratio_sim)):
-            assert stats_array[ii]['axonmyelin_perimeter'] == pytest.approx(axonmyelin_perimeter_sim[ii], rel=0.1)
+            assert stats_dataframe['axonmyelin_perimeter'][ii] == pytest.approx(axonmyelin_perimeter_sim[ii], rel=0.1)
 
         if image_sim_path.exists():
             image_sim_path.unlink()
@@ -618,49 +617,85 @@ class TestCore(object):
     # --------------save and load _axon_morphometrics tests-------------- #
     @pytest.mark.unit
     def test_save_axon_morphometrics_creates_file_in_expected_location(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
-
-        save_axon_morphometrics(str(self.tmpDir), stats_array)
-
-        # Filename 'axonlist.npy' is hardcoded in `save_axon_morphometrics()`.
-        expectedFilePath = self.tmpDir / 'axonlist.npy'
-
+        stats_dataframe = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
+        save_axon_morphometrics(str(self.tmpDir / 'morphometrics.pkl'), stats_dataframe)
+        expectedFilePath = self.tmpDir / 'morphometrics.pkl'
         assert expectedFilePath.is_file()
 
     @pytest.mark.unit
     def test_save_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
-        stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
+        stats_dataframe = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path))
 
         nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
         nonExistingFolder = Path(nonExistingFolder)
 
         with pytest.raises(IOError):
-            save_axon_morphometrics(str(nonExistingFolder), stats_array)
+            save_axon_morphometrics(str(nonExistingFolder / "morphometrics.pkl"), stats_dataframe)
 
     @pytest.mark.unit
     def test_load_axon_morphometrics_returns_identical_var_as_was_saved(self):
-        original_stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), im_myelin=self.pred_myelin)
+        original_stats_dataframe = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), im_myelin=self.pred_myelin)
+        morphometrics_file_path = self.tmpDir / "morphometrics.pkl"
 
-        save_axon_morphometrics(str(self.tmpDir), original_stats_array)
+        save_axon_morphometrics(morphometrics_file_path, original_stats_dataframe)
 
-        # Load method only takes in a directory as an argument, expects that
-        # 'axonlist.npy' will be in directory.
-        loaded_stats_array = load_axon_morphometrics(str(self.tmpDir))
+        # Load method only takes in a file path as an argument and returns the loaded dataframe
+        loaded_stats_dataframe = load_axon_morphometrics(morphometrics_file_path)
 
-        # Because of the occasional presence in NaNs, which can't be compared well in our lists of dicts,
-        # loop through each row and skip the axons that are not well behaving.
-        for row_original, row_loaded in zip(original_stats_array, loaded_stats_array):
-            if any(math.isnan(val) for val in row_original.values()) == False and any(math.isnan(val) for val in row_loaded.values()) == False:
-                assert np.array_equal(row_loaded, row_original)
+        # Reorder the loaded dataframe so that the column order matches
+        loaded_stats_dataframe = loaded_stats_dataframe[original_stats_dataframe.columns]
+
+        assert original_stats_dataframe.equals(loaded_stats_dataframe)
 
     @pytest.mark.unit
-    def test_load_axon_morphometrics_throws_error_if_folder_doesnt_exist(self):
+    def test_load_axon_morphometrics_throws_error_if_file_doesnt_exist(self):
 
         nonExistingFolder = ''.join(random.choice(string.ascii_lowercase) for i in range(16))
         nonExistingFolder = Path(nonExistingFolder)
 
-        with pytest.raises(IOError):
-            load_axon_morphometrics(str(nonExistingFolder))
+        with pytest.raises(FileNotFoundError):
+            load_axon_morphometrics(nonExistingFolder / "dummy_name.pkl")
+
+    @pytest.mark.unit
+    def test_rearrange_column_names_for_saving_returns_columns_in_expected_order(self):
+        dummy_dict = {}
+        initial_columns = []
+        expected_columns = []
+        obtained_columns = []
+
+        for column_name in params.column_names_ordered:
+            if column_name.display_name is not None:
+                name_to_use = column_name.display_name
+            else:
+                name_to_use = column_name.key_name
+            dummy_dict[column_name.key_name] = 0.0
+            expected_columns.append(name_to_use)
+            initial_columns.append(column_name.key_name)
+
+        dummy_df = pd.DataFrame(dummy_dict, index=[0])
+        random.shuffle(initial_columns)
+        dummy_df = dummy_df[initial_columns]
+        obtained_columns = rearrange_column_names_for_saving(dummy_df).columns.to_list()
+
+        assert expected_columns == obtained_columns
+
+    @pytest.mark.unit
+    def test_rename_column_names_after_loading_returns_renamed_columns(self):
+        dummy_dict = {}
+        expected_columns = []
+        obtained_columns = []
+
+        for column_name in params.column_names_ordered:
+            if column_name.display_name is not None:
+                name_to_use = column_name.display_name
+            else:
+                name_to_use = column_name.key_name
+            dummy_dict[name_to_use] = 0.0
+            expected_columns.append(column_name.key_name)
+
+        dummy_df = pd.DataFrame(dummy_dict, index=[0])
+        obtained_columns = rename_column_names_after_loading(dummy_df).columns.to_list()
+        assert expected_columns.sort() == obtained_columns.sort()
 
     # --------------check consistency with reference morphometrics-------------- #
     @pytest.mark.unit
@@ -669,16 +704,17 @@ class TestCore(object):
             self.testPath /
             '__test_files__' /
             '__test_demo_files__' /
-            '__morphometrics__'
+            '__morphometrics__' /
+            'reference_morphometrics.pkl'
         )
 
-        reference_stats_array = load_axon_morphometrics(str(path_morphometrics_reference))
-        new_stats_array = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), im_myelin=self.pred_myelin)
+        reference_stats_dataframe = load_axon_morphometrics(str(path_morphometrics_reference))
+        new_stats_dataframe = get_axon_morphometrics(self.pred_axon, str(self.test_folder_path), im_myelin=self.pred_myelin)
 
-        for row_ref, row_new in zip(reference_stats_array, new_stats_array):
-            row_ref_vals = np.array(list(row_ref.values()))
-            row_new_vals = np.array(list(row_new.values()))
-            assert np.allclose(row_ref_vals, row_new_vals, rtol=0, atol=1e-11, equal_nan=True)
+        for column in reference_stats_dataframe:
+            column_ref_vals = reference_stats_dataframe[column].to_numpy()
+            column_new_vals = new_stats_dataframe[column].to_numpy()
+            assert np.allclose(column_ref_vals, column_new_vals, rtol=0, atol=1e-11, equal_nan=True)
 
 
     # --------------draw_axon_diameter tests-------------- #
@@ -801,3 +837,48 @@ class TestCore(object):
 
         with pytest.raises(IOError):
             write_aggregate_morphometrics(str(nonExistingFolder), aggregate_metrics)
+
+    @pytest.mark.unit
+    def test_morphometrics_image_border_touching_flag_simulated_axons(self):
+        # Simulated image path
+        image_sim_path = Path(
+            self.testPath /
+            '__test_files__' /
+            '__test_simulated_axons__' /
+            'image_border_touching_simulation.png'
+        )
+
+        simulated = SimulateAxons()
+        # image border touching axon
+        x_pos = 100
+        y_pos = 100
+        axon_radius = 100
+        gratio = 0.6
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
+
+        simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
+
+        # complete axon
+        x_pos = 500
+        y_pos = 500
+        axon_radius = 40
+        gratio = 0.6
+        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
+
+        simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
+
+        simulated.save(image_sim_path)
+        img = ads.imread(image_sim_path)
+        axon, myelin = ads.extract_axon_and_myelin_masks_from_image_data(img)
+
+        stats_df = get_axon_morphometrics(
+            axon,
+            im_myelin=myelin,
+            pixel_size=0.1
+        )
+        
+        image_border_touching_col = stats_df["image_border_touching"].to_numpy()
+        assert np.array_equal(image_border_touching_col, [True, False])
+
+        if image_sim_path.exists():
+            image_sim_path.unlink()

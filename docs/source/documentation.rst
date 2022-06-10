@@ -277,17 +277,19 @@ To segment multiple microscopy images of the same resolution that are located in
 
 To segment multiple images of the same folder and of the same resolution by using the **'pixel_size_in_micrometer.txt'** file in the folder (i.e. not specifying the pixel size as argument in the command), use the following folder structure::
 
-    --folder_with_samples/
-    ---- image_1.png
-    ---- image_2.png
-    ---- image_3.png
-    ---- ...
-    ---- pixel_size_in_micrometer.txt
-    ...
+    folder_with_samples/
+    ├── image_1.png
+    ├── image_2.png
+    ├── image_3.png
+    ├── ...
+    └── pixel_size_in_micrometer.txt
+
 
 Then, use the following command::
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/
+
+Please note that when using ``axondeepseg``, a file called *axondeepseg.log* will be saved in the current working directory. The console output will be saved in this file so you can review it later (useful to process large folders).
 
 Segment images from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -307,6 +309,16 @@ For example, using a zoom value of 2.0 will make the patches 2x smaller relative
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -z 2.0
 
 Using the zoom factor can also be useful when your image size is too small for a given resolution, as our segmentation models resample images to a standard pixel size. Using the zoom factor effectively enlarges your image so that the patches can then fit inside it. If you encounter this issue but have not set a zoom factor, an error message will appear informing you of the minimum zoom factor you should use.
+
+Segment an image using a range of zoom factors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As mentioned above, choosing an appropriate zoom factor can enhance the quality of your segmentations. To facilitate the process of finding the best zoom value, we provide a feature that sweeps a range of zoom factors. 
+To use the zoom factor sweep on a single image, you can adjust the range of values to sweep using the **-r** argument and the number of equidistant values to sample within this range using the **-l** argument. The lower bound of the range is inclusive whereas the upper bound is exclusive.
+
+For example, using a range of 0.5 to 3 and a length of 5 on the the **'77.png'** image image will create a folder called **'77_sweep'** in that folder containing segmentations for zoom factors 0.5, 1.0, 1.5, 2.0, and 2.5::
+
+    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.13 -r 0.5 3.0 -l 5 
 
 Morphometrics
 -------------
@@ -345,15 +357,13 @@ Before computing the morphometrics of an image, make sure it has been segmented 
 
 This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
 
-    --image1_sem/
-    ---- 77.png
-    ---- 77_seg-axon.png
-    ---- 77_seg-axonmyelin.png
-    ---- 77_seg-myelin.png
-    ---- 77_axon_morphometrics.xlsx
-    ---- pixel_size_in_micrometer.txt
-
-    ...
+    image1_sem/
+    ├── 77.png
+    ├── 77_seg-axon.png
+    ├── 77_seg-axonmyelin.png
+    ├── 77_seg-myelin.png
+    ├── 77_axon_morphometrics.xlsx
+    └── pixel_size_in_micrometer.txt
 
 .. NOTE 1:: If name of the excel file is not provided using the `-f` flag of the CLI, the morphometrics will be saved as the original image name with suffix "axon_morphometrics.xlsx". However, if custom filename is provided, then the morphometrics will be saved as the original image name with suffix "custom filename".
    ::
@@ -430,6 +440,8 @@ This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics
     ---- image2_axon_morphometrics.xlsx
     
     ---- pixel_size_in_micrometer.txt 
+
+Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
     
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -502,6 +514,8 @@ By default for axon shape, that is, `circle`, the equivalent diameter is used. F
      - Eccentricity of the ellipse that has the same second-moments as the axon region.
    * - orientation
      - Angle between the 0th axis (rows) and the major axis of the ellipse that has the same second moments as the axon region.
+   * - image_border_touching
+     - Flag indicating if the axonmyelin objects touches the image border
 
 Jupyter notebooks
 -----------------
