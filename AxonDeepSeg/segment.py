@@ -19,6 +19,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 from tqdm import tqdm
 import pkg_resources
+from loguru import logger
 
 # AxonDeepSeg imports
 import AxonDeepSeg
@@ -108,6 +109,7 @@ def get_model_native_resolution_and_patch(path_model):
 
     return model_resolution, patch_size
 
+@logger.catch
 def segment_image(
                 path_testing_image,
                 path_model,
@@ -144,6 +146,7 @@ def segment_image(
             exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
                             "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
                             "containing the pixel size value."
+            logger.error(exception_msg)
             raise Exception(exception_msg)
 
     if path_testing_image.exists():
@@ -177,12 +180,11 @@ def segment_image(
             # Round to 1 decimal, always up.
             minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
 
-            print("ERROR: Due to your given image size, resolution, and zoom factor, the resampled image is smaller than",
-                   "the patch size during segmentation. To resolve this, please set a zoom factor greater than ",
-                   str(minimum_zoom_factor), ".",
-                   "To do this on the command line, call the segmentation with the -z flag, i.e. ",
-                   "-z ", str(minimum_zoom_factor),
-            )
+            error_msg = "ERROR: Due to your given image size, resolution, and zoom factor, the resampled image is "\
+                        "smaller than the patch size during segmentation. To resolve this, please set a zoom factor "\
+                        f"greater than {str(minimum_zoom_factor)}. To do this on the command line, call the "\
+                        f"segmentation with the -z flag, i.e. -z {str(minimum_zoom_factor)}"
+            logger.error(error_msg)
             sys.exit(4)
 
         # Performing the segmentation
@@ -192,14 +194,15 @@ def segment_image(
                           overlap_value=overlap_value)
 
         if verbosity_level >= 1:
-            print(("Image {0} segmented.".format(path_testing_image)))
+            logger.info(f"Image {path_testing_image} segmented.")
 
 
     else:
-        print(("The path {0} does not exist.".format(path_testing_image)))
+        logger.warning(f"The path {path_testing_image} does not exist.")
 
     return None
 
+@logger.catch
 def segment_folders(path_testing_images_folder, path_model,
                     overlap_value, 
                     acquired_resolution = None,
@@ -218,6 +221,7 @@ def segment_folders(path_testing_images_folder, path_model,
     process.
     :return: Nothing.
     '''
+    logger.info(f'Starting segmentation of multiple images in "{Path(path_testing_images_folder).resolve()}".')
 
     # If string, convert to Path objects
     path_testing_images_folder = convert_path(path_testing_images_folder)
@@ -244,9 +248,10 @@ def segment_folders(path_testing_images_folder, path_model,
                 exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
                                 "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
                                 "containing the pixel size value."
+                logger.error(exception_msg)
                 raise Exception(exception_msg)
 
-        print(path_testing_images_folder / file_)
+        logger.info(f"Loading {path_testing_images_folder / file_}.")
         try:
             height, width, _ = ads.imread(str(path_testing_images_folder / file_)).shape
         except:
@@ -282,14 +287,14 @@ def segment_folders(path_testing_images_folder, path_model,
             # Round to 1 decimal, always up.
             minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
 
-            print("Skipping image: Due to your given image size, resolution, and zoom factor, the image ", 
-                   str(path_testing_images_folder / file_),
-                   " is smaller than the patch size after it is resampled during segmentation. ",
-                   "To resolve this, please set a zoom factor greater than ",
-                   str(minimum_zoom_factor), " for this image on a re-run.",
-                   "To do this on the command line, call the segmentation with the -z flag, i.e. ",
-                   "-z ", str(minimum_zoom_factor),
-            )
+            warning_msg = "Skipping image: Due to your given image size, resolution, and zoom factor, the image " \
+                   f"{path_testing_images_folder / file_}" \
+                   " is smaller than the patch size after it is resampled during segmentation. " \
+                   "To resolve this, please set a zoom factor greater than " \
+                   f"{minimum_zoom_factor}  for this image on a re-run. " \
+                   "To do this on the command line, call the segmentation with the -z flag, i.e. " \
+                   f"-z {minimum_zoom_factor}"
+            logger.info(warning_msg)
         else:
             axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
                             acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
@@ -299,7 +304,7 @@ def segment_folders(path_testing_images_folder, path_model,
                 tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
 
-
+    logger.info("Segmentations done.")
     return None
 
 # Main loop
@@ -310,10 +315,13 @@ def main(argv=None):
     Main loop.
     :return: Exit code.
         0: Success
-        2: Invalid argument value
         3: Missing value or file
+        4: Invalid acquired resolution
+        5: Too many input files
     '''
-    print(('AxonDeepSeg v.{}'.format(AxonDeepSeg.__version__)))
+    logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
+    logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__}")
+
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
     requiredName = ap.add_argument_group('required arguments')
@@ -417,7 +425,7 @@ def main(argv=None):
         sweep_range = [float(args["sweeprange"][0]), float(args["sweeprange"][1])]
         sweep_length = int(args["sweeplength"])
         if len(path_target_list) != 1:
-            print("ERROR: Please use a single image for zoom factor sweep.")
+            logger.error("Error: Please use a single image for zoom factor sweep.")
             sys.exit(5)
 
     # Preparing the arguments to axon_segmentation function
@@ -434,7 +442,10 @@ def main(argv=None):
 
     # Going through all paths passed into arguments
     for current_path_target in path_target_list:
-
+        
+        error_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt "\
+                    "file in image folder. Please provide a pixel size (using argument -s), or add a "\
+                    "pixel_size_in_micrometer.txt file containing the pixel size value."
         if not current_path_target.is_dir():
 
             if current_path_target.suffix.lower() in validExtensions:
@@ -449,13 +460,8 @@ def main(argv=None):
 
                         psm = float(resolution_file.read())
 
-
                     else:
-
-                        print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-                                      "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                                      "containing the pixel size value."
-                        )
+                        logger.error(error_msg)
                         sys.exit(3)
 
                 # Performing the segmentation over the image
@@ -478,15 +484,15 @@ def main(argv=None):
                         verbosity_level=verbosity_level
                     )
 
-                print("Segmentation finished.")
+                logger.info("Segmentation finished.")
 
             else:
-                print("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
+                logger.error("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
                 break
 
         else:
             if sweep_mode:
-                print("ERROR: Please use a single image for zoom factor sweep.")
+                logger.error("Error: Please use a single image for zoom factor sweep.")
                 sys.exit(5)
 
             # Handle cases if no resolution is provided on the CLI
@@ -500,11 +506,7 @@ def main(argv=None):
                     psm = float(resolution_file.read())
 
                 else:
-
-                    print("ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. ",
-                                  "Please provide a pixel size (using argument -s), or add a pixel_size_in_micrometer.txt file ",
-                                  "containing the pixel size value."
-                    )
+                    logger.error(error_msg)
                     sys.exit(3)
 
             # Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
@@ -517,10 +519,9 @@ def main(argv=None):
                 verbosity_level=verbosity_level
                 )
 
-            print("Segmentation finished.")
-
     sys.exit(0)
 
 # Calling the script
 if __name__ == '__main__':
-    main()
+    with logger.catch():
+        main()
