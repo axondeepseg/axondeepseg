@@ -82,26 +82,49 @@ def main(argv=None):
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
     # Setting the arguments of the saving the morphometrics in excel file
-    ap.add_argument('-s', '--sizepixel', required=False, help='Pixel size of the image(s) to compute morphometrics, in micrometers. \n' +
-                                                              'If no pixel size is specified, a pixel_size_in_micrometer.txt \n' +
-                                                              'file needs to be added to the image folder path. The pixel size \n' +
-                                                              'in that file will be used for the morphometrics computation.',
-                                                              default=None)
-
-    ap.add_argument('-i', '--imgpath', required=True, nargs='+', help='Path to the image.')
-
-    ap.add_argument('-f', '--filename', required=False,  help='Name of the excel file in which the morphometrics will be stored',
-                                                              default=morph_suffix)
-    ap.add_argument('-a', '--axonshape', required=False, help='Axon shape: circle \n' +
-                                                              '\t    ellipse \n' +
-                                                              'For computing morphometrics, axon shape can either be a circle or an ellipse',
-                                                              default="circle")
+    ap.add_argument(
+        '-s', '--sizepixel', 
+        required=False, 
+        help='Pixel size of the image(s) to compute morphometrics, in micrometers. \n'
+            + 'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'
+            + 'file needs to be added to the image folder path. The pixel size \n'
+            + 'in that file will be used for the morphometrics computation.',
+        default=None
+    )
+    ap.add_argument(
+        '-i', '--imgpath', 
+        required=True, 
+        nargs='+', 
+        help='Path to the image.'
+    )
+    ap.add_argument(
+        '-f', '--filename',
+        required=False, 
+        help='Name of the excel file in which the morphometrics will be stored',
+        default=morph_suffix
+    )
+    ap.add_argument(
+        '-a', '--axonshape',
+        required=False,
+        help='Axon shape: circle \n\t    ellipse \n'
+            + 'For computing morphometrics, axon shape can either be a circle or an ellipse',
+        default="circle"
+    )
+    ap.add_argument(
+        '-b', '--border-info',
+        required=False,
+        action='store_true',
+        help='Adds a flag indicating if the axonmyelin object touches a border along with the \n'
+            +'coordinates of its bounding box. Also saves an image with all bounding boxes \n'
+            +'overlayed onto it.'
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
     path_target_list = [Path(p) for p in args["imgpath"]]
     filename = str(args["filename"])
     axon_shape = str(args["axonshape"])
+    border_info_flag = args["border_info"]
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -112,7 +135,7 @@ def main(argv=None):
                         ".png"
                         )
 
-    flag_morp_batch = False # True, if batch moprhometrics is to computed else False
+    flag_morp_batch = False # True, if batch morphometrics is to be computed else False
     target_list = []        # list of image paths for batch morphometrics computations
 
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
