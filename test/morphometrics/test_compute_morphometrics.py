@@ -874,7 +874,8 @@ class TestCore(object):
         stats_df = get_axon_morphometrics(
             axon,
             im_myelin=myelin,
-            pixel_size=0.1
+            pixel_size=0.1,
+            return_border_info=True
         )
         
         image_border_touching_col = stats_df["image_border_touching"].to_numpy()

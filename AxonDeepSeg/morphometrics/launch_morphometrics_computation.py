@@ -195,7 +195,14 @@ def main(argv=None):
 
             # Compute statistics
 
-            stats_dataframe, index_image_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=psm, axon_shape=axon_shape, return_index_image=True)
+            stats_dataframe, index_image_array = get_axon_morphometrics(
+                im_axon=pred_axon, 
+                im_myelin=pred_myelin, 
+                pixel_size=psm, 
+                axon_shape=axon_shape, 
+                return_index_image=True,
+                return_border_info=border_info_flag
+            )
 
             morph_filename = current_path_target.stem + "_" + filename
 
