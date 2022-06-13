@@ -83,8 +83,8 @@ def main(argv=None):
 
     # Setting the arguments of the saving the morphometrics in excel file
     ap.add_argument(
-        '-s', '--sizepixel', 
-        required=False, 
+        '-s', '--sizepixel',
+        required=False,
         help='Pixel size of the image(s) to compute morphometrics, in micrometers. \n'
             + 'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'
             + 'file needs to be added to the image folder path. The pixel size \n'
@@ -92,14 +92,14 @@ def main(argv=None):
         default=None
     )
     ap.add_argument(
-        '-i', '--imgpath', 
-        required=True, 
-        nargs='+', 
+        '-i', '--imgpath',
+        required=True,
+        nargs='+',
         help='Path to the image.'
     )
     ap.add_argument(
         '-f', '--filename',
-        required=False, 
+        required=False,
         help='Name of the excel file in which the morphometrics will be stored',
         default=morph_suffix
     )
