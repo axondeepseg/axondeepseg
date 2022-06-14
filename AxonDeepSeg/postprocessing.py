@@ -180,7 +180,7 @@ def generate_and_save_colored_image_with_index_numbers(filename, axonmyelin_imag
     colored_image.save(filename)
 
 def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
-    im_axon, im_myelin = postprocessing.remove_intersection(im_axon, im_myelin)
+    im_axon, im_myelin = remove_intersection(im_axon, im_myelin)
     watershed_seg = get_watershed_segmentation(im_axon, im_myelin)
 
     #perform a floodfill at the coordinates passed in parameters
