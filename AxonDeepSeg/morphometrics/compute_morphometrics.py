@@ -62,7 +62,7 @@ def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
 
     # Create an image with axon centroids, which value corresponds to the value of the axon object
     im_centroid = np.zeros_like(im_axon, dtype='uint16')
-    for i in range(len(ind_centroid[0])):
+    for i in range(len(seed_points[0])):
         # Note: The value "i" corresponds to the label number of im_axon_label
         im_centroid[seed_points[0][i], seed_points[1][i]] = i + 1
 
@@ -108,7 +108,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
                         [int(props.centroid[1]) for props in axon_objects])
 
-        im_axon_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
+        im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
 
