@@ -350,7 +350,7 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
                     If name of the excel file is not provided, the morphometrics will be saved as **axon_morphometrics.xlsx**.
 
 -b                  Flag to extract additionnal bounding box information on axonmyelin objects.
-                    This will add a boolean value indicating if the axon touches one of the image border. It will also output every axon's bounding box (including its myelin). For more information about these columns, see the morphometrics file description below.
+                    Specifying this option ``-b`` flag will add a boolean value indicating if the axon touches one of the image border. It will also output every axon's bounding box (including its myelin). For more information, see the morphometrics file description in the subsection below.
 
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -520,13 +520,13 @@ By default for axon shape, that is, `circle`, the equivalent diameter is used. F
    * - image_border_touching
      - Flag indicating if the axonmyelin objects touches the image border
    * - bbox_min_y
-     - Coordinate of the minimum y value of the bounding box (in pixels). This bound is inclusive.
+     - Minimum y value of the bounding box (in pixels). This bound is inclusive.
    * - bbox_min_x
-     - Coordinate of the minimum x value of the bounding box (in pixels). This bound is inclusive.
+     - Minimum x value of the bounding box (in pixels). This bound is inclusive.
    * - bbox_max_y
-     - Coordinate of the maximum y value of the bounding box (in pixels). This bound is exclusive.
+     - Maximum y value of the bounding box (in pixels). This bound is exclusive.
    * - bbox_max_x
-     - Coordinate of the maximum x value of the bounding box (in pixels). This bound is exclusive.
+     - Maximum x value of the bounding box (in pixels). This bound is exclusive.
 
 Jupyter notebooks
 -----------------
