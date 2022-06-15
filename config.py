@@ -12,4 +12,18 @@ axonmyelin_index_suffix = Path('_axonmyelin_index.png') # Colored axonmyelin seg
 morph_suffix = Path('axon_morphometrics.xlsx')
 
 # List of valid image extensions
-valid_extensions = ['.png', '.tif', '.tiff', '.jpeg', '.jpg']
+valid_extensions = [
+    ".nii",
+    ".nii.gz",
+    ".ome.tif",
+    ".ome.tiff",
+    ".ome.tf2",
+    ".ome.tf8",
+    ".ome.btf",
+    ".tif",
+    ".tiff",
+    ".png",
+    ".jpg",
+    ".jpeg"
+    ]
+
