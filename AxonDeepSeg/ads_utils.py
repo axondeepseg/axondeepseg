@@ -225,7 +225,7 @@ def download_data(url_data):
     return 0
 
 def convert_path(object_path):
-    """ Convert path
+    """
     Convert path or list of paths to Path() objects.
     If None type, returns None.
 

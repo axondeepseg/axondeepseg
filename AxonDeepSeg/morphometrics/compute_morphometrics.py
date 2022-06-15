@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from string import Template
-
+from loguru import logger
 
 # Scientific modules imports
 import math
@@ -10,13 +10,14 @@ import numpy as np
 from scipy import ndimage as ndi
 from skimage import measure
 from skimage.segmentation import watershed
+import pandas as pd
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from AxonDeepSeg.ads_utils import convert_path
-from AxonDeepSeg import postprocessing
+from AxonDeepSeg import postprocessing, params
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -32,14 +33,13 @@ def get_pixelsize(path_pixelsize_file):
         with open(path_pixelsize_file, "r") as text_file:
             pixelsize = float(text_file.read())
     except IOError as e:
-
-        print(("\nError: Could not open file \"{0}\" from "
-               "directory \"{1}\".\n".format(path_pixelsize_file, Path.cwd())))
+        msg = f"ERROR: Could not open file {path_pixelsize_file} from directory {Path.cwd()}."
+        logger.error(msg)
         raise
     except ValueError as e:
-        print(("\nError: Pixel size data in file \"{0}\" is not valid – must "
-               "be a plain text file with a single a numerical value (float) "
-               " on the fist line.".format(path_pixelsize_file)))
+        msg = f"ERROR: Pixel size data in file {path_pixelsize_file} is not valid - must be "\
+            "a plain text file with a single numerical value (float) on the first line."
+        logger.error(msg)
         raise
     else:
         return pixelsize
@@ -71,11 +71,12 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
     if (pixel_size is not None) and (path_folder is None):
         pixelsize = pixel_size
 
-    stats_array = np.empty(0)
     # Label each axon object
     im_axon_label = measure.label(im_axon)
     # Measure properties for each axon object
     axon_objects = measure.regionprops(im_axon_label)
+
+    im_shape = im_axon.shape
 
     # Deal with myelin mask
     if im_myelin is not None:
@@ -108,6 +109,9 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
     if im_myelin is not None:
         axonmyelin_labels_list = [axm.label for axm in axonmyelin_objects]
 
+    # Declare a DataFrame that will be used to store the result of the morphometrics
+    stats_dataframe = pd.DataFrame()
+
     # Loop across axon property and fill up dictionary with morphometrics of interest
     for prop_axon in axon_objects:
         # Centroid
@@ -129,23 +133,28 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         # Axon orientation angle
         orientation = prop_axon.orientation
         # Add metrics to list of dictionaries
-        stats = {'y0': y0,
-                 'x0': x0,
+        stats = {'x0': x0,
+                 'y0': y0,
                  'axon_diam': axon_diam,
                  'axon_area': axon_area,
                  'axon_perimeter': axon_perimeter,
                  'solidity': solidity,
                  'eccentricity': eccentricity,
-                 'orientation': orientation, 
-                 'gratio': np.nan,
-                 'myelin_thickness': np.nan,
-                 'myelin_area': np.nan,
-                 'axonmyelin_area': np.nan,
-                 'axonmyelin_perimeter': np.nan
+                 'orientation': orientation
                  }
 
         # Deal with myelin
         if im_myelin is not None:
+            # Declare the statistics to add for the myelin and add them to the stats dictionary
+            myelin_stats = {
+                'gratio': np.nan,
+                'myelin_thickness': np.nan,
+                'myelin_area': np.nan,
+                'axonmyelin_area': np.nan,
+                'axonmyelin_perimeter': np.nan,
+                'image_border_touching': False
+            }
+            stats.update(myelin_stats)
             # Find label of axonmyelin corresponding to axon centroid
             label_axonmyelin = im_axonmyelin_label[int(y0), int(x0)]
 
@@ -170,39 +179,41 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     stats['axonmyelin_area'] = axonmyelin_area
                     stats['axonmyelin_perimeter'] = axonmyelin_perimeter
                 except ZeroDivisionError:
-                    print(f"ZeroDivisionError caught on invalid object #{idx}.")
+                    logger.warning(f"ZeroDivisionError caught on invalid object #{idx}.")
                     stats['gratio'] = np.nan
                     stats['myelin_thickness'] = np.nan
                     stats['myelin_area'] = np.nan
                     stats['axonmyelin_area'] = np.nan
                     stats['axonmyelin_perimeter'] = np.nan
 
-            else:
-                print(
-                    "WARNING: Myelin object not found for axon" +
-                    "centroid [y:{0}, x:{1}]".format(y0, x0)
-                    )
+                # check if bounding box touches a border (partial axonmyelin object)
+                bbox = prop_axonmyelin.bbox
+                if 0 in bbox[:2] or bbox[2] == im_shape[0] or bbox[3] == im_shape[1]:
+                    stats['image_border_touching'] = True
 
-        stats_array = np.append(stats_array, [stats], axis=0)
+            else:
+                logger.warning(f"WARNING: Myelin object not found for axon centroid [y:{y0}, x:{x0}]")
+
+        # Add the stats to the dataframe
+        if stats_dataframe.empty:
+            stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
+        else:
+            stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
 
     if return_index_image is True:
         # Extract the information required to generate the index image
-        x0_array = np.empty(0)
-        y0_array = np.empty(0)
-        diam_array = np.empty(0)
-        for entries in stats_array:
-            x0_array = np.append(x0_array, entries["x0"])
-            y0_array = np.append(y0_array, entries["y0"])
-            diam_array = np.append(diam_array, entries["axon_diam"])
+        x0_array = stats_dataframe["x0"].to_numpy()
+        y0_array = stats_dataframe["y0"].to_numpy()
+        diam_array = stats_dataframe["axon_diam"].to_numpy()
         # Create the axon coordinate array, then generate the image
         mean_diameter_in_pixel = np.average(diam_array) / pixelsize
-        axon_indexes = np.arange(stats_array.size)
+        axon_indexes = np.arange(stats_dataframe.shape[0])
         index_image_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
                                                                   tuple(reversed(im_axon.shape)),
                                                                   mean_diameter_in_pixel)
-        return stats_array, index_image_array
+        return stats_dataframe, index_image_array
 
-    return stats_array
+    return stats_dataframe
 
 
 def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
@@ -261,20 +272,12 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
     checked = _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute)
     if checked is False:
         x_a, y_a = axon_object.centroid
-        data = {
-            "attribute": attribute,
-            "axon_label": axon_object.label,
-            "x_ax": x_a,
-            "y_ax": y_a,
-            "axonmyelin_label": axonmyelin_object.label,
-        }
-        
-        warning_msg = Template(
-            "Warning, axon #$axon_label at [y:$y_ax, x:$x_ax] and " +
-            "corresponding myelinated axon #$axonmyelin_label " +
-            "have unexpected measure values for $attribute attributest."
-            )
-        print(warning_msg.safe_substitute(data))
+        msg = (
+            f"WARNING: Axon {axon_object.label} at [y:{y_a}, x:{x_a}] and corresponding "
+            f"myelinated axon {axonmyelin_object.label} have unexpected measure values "
+            f"for {attribute} attribute."
+        )
+        logger.warning(msg)
 
 
 def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
@@ -288,42 +291,95 @@ def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribu
     else:
         return False
 
-
-def save_axon_morphometrics(path_folder, stats_array):
+def rearrange_column_names_for_saving(stats_dataframe):
     """
-    :param path_folder: absolute path of the sample and the segmentation folder
-    :param stats_array: list of dictionaries containing axon morphometrics
-    :return:
+    This function rearranges the columns in the stats_dataframe to match the order and display names specified in
+    params.py.
+    :param stats_dataframe: the dataframe with the morphometrics data
+    :return: the dataframe with the ordered columns and units in the column names
+    """
+    # Reorder the columns
+    order_of_columns = []
+    columns_rename_dict = {}
+    for column in params.column_names_ordered:
+        if column.key_name in stats_dataframe.columns:
+            order_of_columns.append(column.key_name)
+            if column.display_name is not None:
+                columns_rename_dict[column.key_name] = column.display_name
+    for column in stats_dataframe.columns: # Add the remaining columns for which no unit or order was specified
+        if column not in order_of_columns:
+            order_of_columns.append(column)
+    stats_dataframe = stats_dataframe[order_of_columns]
+
+    # Add units or other details to the column names
+    stats_dataframe = stats_dataframe.rename(columns=columns_rename_dict)
+    return stats_dataframe
+
+def rename_column_names_after_loading(loaded_dataframe):
+    """
+    This function removes the units in the loaded_dataframe column names so that the dataframe can be used more easily
+    internally.
+    :param loaded_dataframe: The dataframe that was loaded, containing the morphometrics data
+    :return: the dataframe without the units in the column names
+    """
+    columns_rename_dict = {}
+    for column in params.column_names_ordered:
+        if (column.display_name is not None) and (column.display_name in loaded_dataframe.columns):
+            columns_rename_dict[column.display_name] = column.key_name
+    loaded_dataframe = loaded_dataframe.rename(columns=columns_rename_dict)
+    return loaded_dataframe
+
+def save_axon_morphometrics(morphometrics_file, stats_dataframe):
+    """
+    :param morphometrics_file: absolute path of file that will be saved (with the extension)
+    :param stats_dataframe: dataframe containing the morphometrics
     """
     
     # If string, convert to Path objects
-    path_folder = convert_path(path_folder)
-    
-    try:
-        np.save(str(path_folder / 'axonlist.npy'), stats_array)
-    except IOError as e:
-        print(("\nError: Could not save file \"{0}\" in "
-               "directory \"{1}\".\n".format('axonlist.npy', path_folder)))
-        raise
+    morphometrics_file = convert_path(morphometrics_file)
+    if morphometrics_file.suffix == "":
+        raise ValueError("Invalid file name. Please include its name and extension")
 
+    stats_dataframe = rearrange_column_names_for_saving(stats_dataframe)
+    if morphometrics_file.suffix.lower() == ".csv":  # Export to csv
+        stats_dataframe.to_csv(morphometrics_file, na_rep='NaN')
+    elif morphometrics_file.suffix.lower() == ".xlsx":  # Export to excel
+        stats_dataframe.to_excel(morphometrics_file, na_rep='NaN')
+    else:  # Export to pickle
+        stats_dataframe.to_pickle(morphometrics_file)
 
-def load_axon_morphometrics(path_folder):
+def load_axon_morphometrics(morphometrics_file):
     """
-    :param path_folder: absolute path of the sample and the segmentation folder
-    :return: stats_array: list of dictionaries containing axon morphometrics
+    :param morphometrics_file: absolute path of file containing the morphometrics (must be .csv, .xlsx or pickle format)
+    :return: stats_dataframe: dataframe containing the morphometrics
     """
     
     # If string, convert to Path objects
-    path_folder = convert_path(path_folder)
+    morphometrics_file = convert_path(morphometrics_file)
+
+    if morphometrics_file.suffix == "":
+        raise ValueError("File not specified. Please provide the full path of the file, including its extension")
 
     try:
-        stats_array = np.load(str(path_folder / 'axonlist.npy'), allow_pickle=True)
+        #Use the appropriate loader depending on the extension
+        if morphometrics_file.suffix.lower() == ".csv":
+            stats_dataframe = pd.read_csv(morphometrics_file, na_values='NaN')
+        elif morphometrics_file.suffix.lower() == ".xlsx":
+            stats_dataframe = pd.read_excel(morphometrics_file, na_values='NaN')
+        else:
+            stats_dataframe = pd.read_pickle(morphometrics_file)
     except IOError as e:
-        print(("\nError: Could not load file \"{0}\" in "
-               "directory \"{1}\".\n".format('axonlist.npy', path_folder)))
+        logger.error(f"Error: Could not load file {str(morphometrics_file)}")
         raise
-    else:
-        return stats_array
+
+    stats_dataframe = rename_column_names_after_loading(stats_dataframe)
+    # with csv and excel files, they often will have an "unnamed" column because of the indexes saved with the dataframe
+    # we remove it here
+    for column in stats_dataframe.columns:
+        if "unnamed" in column.lower():
+            stats_dataframe = stats_dataframe.drop(columns=column)
+
+    return stats_dataframe
 
 
 def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape="circle"):
@@ -344,9 +400,8 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=
 
     path_folder = path_prediction.parent
 
-    stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
-    axon_diam_list = [d["axon_diam"] for d in stats_array]
-    axon_diam_array = np.asarray(axon_diam_list)
+    stats_dataframe = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
+    axon_diam_array = stats_dataframe["axon_diam"].to_numpy()
 
     labels = measure.label(pred_axon)
     axon_diam_display = np.zeros((np.shape(labels)[0], np.shape(labels)[1]))
@@ -411,8 +466,8 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape=
     gratio = math.sqrt(1 / (1 + (float(mvf) / float(avf))))
 
     # Get individual axons metrics and compute mean axon diameter
-    stats_array = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
-    axon_diam_list = [d["axon_diam"] for d in stats_array]
+    stats_dataframe = get_axon_morphometrics(pred_axon, path_folder, axon_shape=axon_shape)
+    axon_diam_list = stats_dataframe["axon_diam"].to_list()
     mean_axon_diam = np.mean(axon_diam_list)
 
     # Estimate mean myelin diameter (axon+myelin diameter) by using
@@ -449,6 +504,6 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         with open(path_folder / 'aggregate_morphometrics.txt', 'w') as text_file:
             text_file.write('aggregate_metrics: ' + repr(aggregate_metrics) + '\n')
     except IOError as e:
-        print(("\nError: Could not save file \"{0}\" in "
-               "directory \"{1}\".\n".format('aggregate_morphometrics.txt', path_folder)))
+        msg = f"Error: Could not save file \"aggregate_morphometrics.txt\" in directory \"{path_folder}\"."
+        logger.error(msg)
         raise

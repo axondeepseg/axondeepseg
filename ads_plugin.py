@@ -25,7 +25,7 @@ from AxonDeepSeg.segment import segment_image
 
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg import postprocessing, params, ads_utils
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, axonmyelin_index_suffix
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, axonmyelin_index_suffix, valid_extensions
 
 import math
 from scipy import ndimage as ndi
@@ -313,7 +313,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Check if the image format is valid
         image_extension = in_file.suffix
-        valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
@@ -346,7 +345,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Check if the image format is valid
         image_extension = in_file.suffix
-        valid_extensions = [".png", ".tif", ".jpg", ".jpeg"]
         if image_extension not in valid_extensions:
             self.show_message("Invalid file extension")
             return
@@ -660,49 +658,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         pred_axon = pred > 200
         pred_myelin = np.logical_and(pred >= 50, pred <= 200)
 
-        x = np.array([], dtype=[
-                                ('x0', 'f4'),
-                                ('y0', 'f4'),
-                                ('gratio','f4'),
-                                ('axon_area','f4'),
-                                ('axon_perimeter','f4'),
-                                ('myelin_area','f4'),
-                                ('axon_diam','f4'),
-                                ('myelin_thickness','f4'),
-                                ('axonmyelin_area','f4'),
-                                ('axonmyelin_perimeter','f4'),
-                                ('solidity','f4'),
-                                ('eccentricity','f4'),
-                                ('orientation','f4')
-                            ]
-                    )
-
         # Compute statistics
-        stats_array, index_image_array = compute_morphs.get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
+        stats_dataframe, index_image_array = compute_morphs.get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin,
                                                                                pixel_size=pixel_size,
                                                                                axon_shape=self.settings.axon_shape,
                                                                                return_index_image=True)
-        for stats in stats_array:
-
-            x = np.append(x,
-                np.array(
-                    [(
-                    stats['x0'],
-                    stats['y0'],
-                    stats['gratio'],
-                    stats['axon_area'],
-                    stats['axon_perimeter'],
-                    stats['myelin_area'],
-                    stats['axon_diam'],
-                    stats['myelin_thickness'],
-                    stats['axonmyelin_area'],
-                    stats['axonmyelin_perimeter'],
-                    stats['solidity'],
-                    stats['eccentricity'],
-                    stats['orientation']
-                    )],
-                    dtype=x.dtype)
-                )
 
         with wx.FileDialog(self, "Save morphometrics file", wildcard="Excel files (*.xlsx)|*.xlsx",
                         defaultFile="axon_morphometrics.xlsx", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
@@ -715,8 +675,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
             if not (pathname.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
                 pathname = pathname + ".xlsx"
             try:
-                # Export to excel
-                pd.DataFrame(x).to_excel(pathname, na_rep='NaN')
+                compute_morphs.save_axon_morphometrics(pathname, stats_dataframe)
 
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
