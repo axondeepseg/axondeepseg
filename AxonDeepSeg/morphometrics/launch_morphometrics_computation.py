@@ -115,8 +115,7 @@ def main(argv=None):
         required=False,
         action='store_true',
         help='Adds a flag indicating if the axonmyelin object touches a border along with the \n'
-            +'coordinates of its bounding box. Also saves an image with all bounding boxes \n'
-            +'overlayed onto it.'
+            +'coordinates of its bounding box.'
     )
 
     # Processing the arguments
