@@ -895,7 +895,7 @@ class TestCore(object):
 
         bbox0 = [0, 0, 267, 267]
         bbox1 = [434, 434, 567, 567]
-        bbox_cols = ['bbox_min_row', 'bbox_min_col', 'bbox_max_row', 'bbox_max_col']
+        bbox_cols = ['bbox_min_y', 'bbox_min_x', 'bbox_max_y', 'bbox_max_x']
         bbox_computed = stats_df[bbox_cols].to_numpy()
         
         assert np.array_equal(bbox0, bbox_computed[0]) and np.array_equal(bbox1, bbox_computed[1])

@@ -193,10 +193,10 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     touching = 0 in bbox[:2] or bbox[2] == im_shape[0] or bbox[3] == im_shape[1]
                     border_info_stats = {
                         'image_border_touching': touching,
-                        'bbox_min_row': bbox[0],
-                        'bbox_min_col': bbox[1],
-                        'bbox_max_row': bbox[2],
-                        'bbox_max_col': bbox[3]
+                        'bbox_min_y': bbox[0],
+                        'bbox_min_x': bbox[1],
+                        'bbox_max_y': bbox[2],
+                        'bbox_max_x': bbox[3]
                     }
                     stats.update(border_info_stats)
 
