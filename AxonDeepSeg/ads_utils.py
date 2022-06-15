@@ -261,7 +261,9 @@ def imread(filename, bitdepth=8):
     # Convert to Path
     filename = Path(filename)
 
-    file_ext = filename.suffix.lower()
+    # Get list of all suffixes in file, join them into a string, and then 
+    # lowercase to set the file extention to check against valid extension.
+    file_ext = ''.join(filename.suffixes).lower()
 
     # Check that file extension is valid
     if file_ext not in valid_extensions:
