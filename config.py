@@ -13,8 +13,6 @@ morph_suffix = Path('axon_morphometrics.xlsx')
 
 # List of valid image extensions
 valid_extensions = [
-    ".nii",
-    ".nii.gz",
     ".ome.tif",
     ".ome.tiff",
     ".ome.tf2",
