@@ -180,12 +180,20 @@ def generate_and_save_colored_image_with_index_numbers(filename, axonmyelin_imag
     colored_image.save(filename)
 
 def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
+    """
+    Removes axonmyelin objects at the (x, y) coordinates passed as parameters
+    :param im_axon: Array: axon binary mask
+    :param im_myelin: Array: myelin binary mask
+    :param x0s: list of ints/floats: X coordinates of the axonmyelin object to be removed
+    :param y0s: list of ints/floats: Y coordinates of the axonmyelin object to be removed
+    :return: axon and myelin array with the axonmyelin objects removed
+    """
     im_axon, im_myelin = remove_intersection(im_axon, im_myelin)
     watershed_seg = get_watershed_segmentation(im_axon, im_myelin)
 
     #perform a floodfill at the coordinates passed in parameters
     for i in range(len(x0s)):
-        watershed_seg = segmentation.flood_fill(watershed_seg, (y0s[i], x0s[i]), 0)
+        watershed_seg = segmentation.flood_fill(watershed_seg, (int(y0s[i]), int(x0s[i])), 0)
 
     axonmyelin_extracted_array = (watershed_seg > 0).astype(np.uint8)
 
@@ -194,4 +202,12 @@ def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
     return axon_array, myelin_array
 
 def remove_single_axon_at_coordinate(im_axon, im_myelin, x0, y0):
+    """
+    Removes a single axonmyelin object at the (x0, y0) coordinates passed as parameters
+    :param im_axon: Array: axon binary mask
+    :param im_myelin: Array: myelin binary mask
+    :param x0: X coordinate of the axonmyelin object to be removed
+    :param y0: Y coordinate of the axonmyelin object to be removed
+    :return: axon and myelin array with the axonmyelin object at (x0, y0) removed
+    """
     return remove_axons_at_coordinates(im_axon, im_myelin, [x0], [y0])
