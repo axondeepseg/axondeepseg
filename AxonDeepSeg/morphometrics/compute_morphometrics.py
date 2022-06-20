@@ -46,6 +46,16 @@ def get_pixelsize(path_pixelsize_file):
 
 
 def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
+    """
+    Segments the different axonmyelin objects using a watershed algorithm. Seeds points can be passed if they are 
+    already known/computed to save time.
+    :param im_axon: Array: axon binary mask
+    :param im_myelin: Array: myelin binary mask
+    :param seed_points: (optional) Array of tuples: Seed points for the watershed algorithm. If none are provided,
+    centroids of axon objects will be used. If the centroids have been computed before, it is suggested to pass them as
+    seed points in order to reduce computation time.
+    :return: Array containing the watershed segmentation of the axonmyelin mask
+    """
     # Seed points (usually centroids) can take a while to compute, hence why there's the option to pass them directly if
     # they are computed elsewhere. If they aren't passed, we can compute them here
     if seed_points is None:
