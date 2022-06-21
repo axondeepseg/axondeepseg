@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.8
+  - nibabel 3.2.*
   - fsleyes
   - h5py=2.10.0
   - numpy
