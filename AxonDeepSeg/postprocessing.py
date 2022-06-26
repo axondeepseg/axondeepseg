@@ -5,7 +5,7 @@ from skimage import measure, morphology, feature, segmentation
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
 from AxonDeepSeg import params
-from AxonDeepSeg.morphometrics.compute_morphometrics import get_watershed_segmentation
+import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from matplotlib import font_manager
 import os
 
@@ -189,7 +189,7 @@ def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
     :return: axon and myelin array with the axonmyelin objects removed
     """
     im_axon, im_myelin = remove_intersection(im_axon, im_myelin)
-    watershed_seg = get_watershed_segmentation(im_axon, im_myelin)
+    watershed_seg = compute_morphs.get_watershed_segmentation(im_axon, im_myelin)
 
     #perform a floodfill at the coordinates passed in parameters
     for i in range(len(x0s)):
