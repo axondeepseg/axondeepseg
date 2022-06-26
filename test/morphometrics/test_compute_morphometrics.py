@@ -23,7 +23,8 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 load_axon_morphometrics,
                                                                 draw_axon_diameter,
                                                                 get_aggregate_morphometrics,
-                                                                write_aggregate_morphometrics
+                                                                write_aggregate_morphometrics,
+                                                                get_watershed_segmentation
                                                             )
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
@@ -882,3 +883,17 @@ class TestCore(object):
 
         if image_sim_path.exists():
             image_sim_path.unlink()
+
+    # --------------watershed_segmentation_test-------------- #
+    @pytest.mark.unit
+    def test_get_watershed_segmentation_returns_expected_data(self):
+        reference_watershed_seg_path = self.test_folder_path / "watershed_segmentation.png"
+        reference_mask_path = self.test_folder_path / "mask.png"
+
+        reference_watershed_seg_data = np.asarray(ads.imread(reference_watershed_seg_path))
+        reference_mask_data = ads.imread(reference_mask_path)
+
+        im_axon, im_myelin = ads.extract_axon_and_myelin_masks_from_image_data(reference_mask_data)
+        obtained_watershed = (get_watershed_segmentation(im_axon, im_myelin)).astype(np.uint8)
+
+        assert np.array_equal(obtained_watershed, reference_watershed_seg_data)
