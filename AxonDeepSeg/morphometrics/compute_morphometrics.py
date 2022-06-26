@@ -79,8 +79,7 @@ def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
     # Watershed segmentation of axonmyelin using distance map
     return watershed(-distance, im_centroid, mask=im_axonmyelin)
 
-def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, axon_shape="circle", return_index_image=False):
-
+def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, axon_shape="circle", return_index_image=False, return_border_info=False):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
@@ -92,6 +91,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                             if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :param return_index_image (optional): If set to true, an image with the index numbers at the axon centroids will be
     returned as a second return array
+    :param return_border_info (optional): Flag to output if axons touch the image border along with their bounding box 
 
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
@@ -168,10 +168,10 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 'myelin_thickness': np.nan,
                 'myelin_area': np.nan,
                 'axonmyelin_area': np.nan,
-                'axonmyelin_perimeter': np.nan,
-                'image_border_touching': False
+                'axonmyelin_perimeter': np.nan
             }
             stats.update(myelin_stats)
+
             # Find label of axonmyelin corresponding to axon centroid
             label_axonmyelin = im_axonmyelin_label[int(y0), int(x0)]
 
@@ -202,11 +202,19 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                     stats['myelin_area'] = np.nan
                     stats['axonmyelin_area'] = np.nan
                     stats['axonmyelin_perimeter'] = np.nan
-
-                # check if bounding box touches a border (partial axonmyelin object)
-                bbox = prop_axonmyelin.bbox
-                if 0 in bbox[:2] or bbox[2] == im_shape[0] or bbox[3] == im_shape[1]:
-                    stats['image_border_touching'] = True
+                
+                if return_border_info:
+                    # check if bounding box touches a border (partial axonmyelin object)
+                    bbox = prop_axonmyelin.bbox
+                    touching = 0 in bbox[:2] or bbox[2] == im_shape[0] or bbox[3] == im_shape[1]
+                    border_info_stats = {
+                        'image_border_touching': touching,
+                        'bbox_min_y': bbox[0],
+                        'bbox_min_x': bbox[1],
+                        'bbox_max_y': bbox[2],
+                        'bbox_max_x': bbox[3]
+                    }
+                    stats.update(border_info_stats)
 
             else:
                 logger.warning(f"WARNING: Myelin object not found for axon centroid [y:{y0}, x:{x0}]")
