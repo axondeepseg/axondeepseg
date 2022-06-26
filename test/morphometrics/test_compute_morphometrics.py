@@ -882,9 +882,6 @@ class TestCore(object):
         
         image_border_touching_col = stats_df["image_border_touching"].to_numpy()
         assert np.array_equal(image_border_touching_col, [True, False])
-
-        if image_sim_path.exists():
-            image_sim_path.unlink()
         
     @pytest.mark.unit
     def test_morphometrics_border_info_bounding_box_columns(self):
