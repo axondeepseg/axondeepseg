@@ -19,6 +19,8 @@ class TestCore(object):
         self.before_floodfill_image = ads_utils.imread((self.test_files_path / 'before_flood_fill.png'))
         self.after_floodfill_image = ads_utils.imread((self.test_files_path / 'after_flood_fill.png'))
 
+        self.before_axon_removal_image = ads_utils.imread((self.test_files_path / 'before_removing.png'))
+
     def teardown(self):
         pass
 
@@ -113,3 +115,26 @@ class TestCore(object):
         # Load the created image and compare it to the expected image
         output_image = np.asarray(Image.open(output_image_path))
         assert np.array_equal(output_image, expected_image)
+
+    @pytest.mark.unit
+    def test_remove_single_axon_at_coordinate_returns_expected_masks(self):
+        expected_image = ads_utils.imread((self.test_files_path / 'after_removing_single.png'))
+        expected_axon, expected_myelin = ads_utils.extract_axon_and_myelin_masks_from_image_data(expected_image)
+        im_axon, im_myelin = ads_utils.extract_axon_and_myelin_masks_from_image_data(self.before_axon_removal_image)
+        obtained_axon, obtained_myelin = postprocessing.remove_single_axon_at_coordinate(im_axon, im_myelin, 12.0, 39.0)
+
+        assert (np.array_equal(expected_axon, obtained_axon)) \
+               and \
+               (np.array_equal(expected_myelin, obtained_myelin))
+
+    @pytest.mark.unit
+    def test_remove_axons_at_coordinates_returns_expected_masks(self):
+        expected_image = ads_utils.imread((self.test_files_path / 'after_removing_two.png'))
+        expected_axon, expected_myelin = ads_utils.extract_axon_and_myelin_masks_from_image_data(expected_image)
+        im_axon, im_myelin = ads_utils.extract_axon_and_myelin_masks_from_image_data(self.before_axon_removal_image)
+        obtained_axon, obtained_myelin = \
+            postprocessing.remove_axons_at_coordinates(im_axon, im_myelin, [14.5, 42.5], [12.5, 12.5])
+
+        assert (np.array_equal(expected_axon, obtained_axon)) \
+               and \
+               (np.array_equal(expected_myelin, obtained_myelin))
