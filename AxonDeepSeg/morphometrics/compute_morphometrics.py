@@ -15,8 +15,9 @@ import pandas as pd
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 
-from AxonDeepSeg.ads_utils import convert_path
+from AxonDeepSeg.ads_utils import convert_path, imwrite
 from AxonDeepSeg import postprocessing, params
 
 
@@ -102,6 +103,9 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
         # Watershed segmentation of axonmyelin using distance map
         im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
+        
+        plt.imsave('instance_map.png', arr=im_axonmyelin_label, cmap='magma', format='png')
+
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
 
