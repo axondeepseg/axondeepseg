@@ -193,12 +193,15 @@ def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
 
     #perform a floodfill at the coordinates passed in parameters
     for i in range(len(x0s)):
-        watershed_seg = segmentation.flood_fill(watershed_seg, (int(y0s[i]), int(x0s[i])), 0)
+        removed_axons_value = np.iinfo(np.int16).max
+        watershed_seg = segmentation.flood_fill(watershed_seg, (int(y0s[i]), int(x0s[i])),  removed_axons_value)
 
-    axonmyelin_extracted_array = (watershed_seg > 0).astype(np.uint8)
+    removed_axons = (watershed_seg == removed_axons_value).astype(np.uint8)
+    original_axonmyelin_array = im_axon + im_myelin
+    new_axonmyelin_array, _ = remove_intersection(original_axonmyelin_array, removed_axons, priority=2)
 
-    axon_array = (im_axon & axonmyelin_extracted_array).astype(np.uint8)
-    myelin_array = (im_myelin & axonmyelin_extracted_array).astype(np.uint8)
+    axon_array = (im_axon & new_axonmyelin_array).astype(np.uint8)
+    myelin_array = (im_myelin & new_axonmyelin_array).astype(np.uint8)
     return axon_array, myelin_array
 
 def remove_single_axon_at_coordinate(im_axon, im_myelin, x0, y0):
