@@ -263,11 +263,12 @@ def imread(filename, bitdepth=8):
 
     # Get list of all suffixes in file, join them into a string, and then 
     # lowercase to set the file extention to check against valid extension.
-    file_ext = ''.join(filename.suffixes).lower()
+    file_ext = get_file_extension(filename)
 
-    # Check that file extension is valid
-    if file_ext not in valid_extensions:
-        raise IOError('File must have one of the valid extensions: ', valid_extensions)
+    if (not file_ext) or ("ome" in file_ext):
+            raise IOError(f"The input file extension '{file_ext}' of '{Path(filename).stem}' is not "
+                               f"supported. AxonDeepSeg supports the following "
+                               f"file extensions:  '.png', '.tif', '.tiff', '.jpg' and '.jpeg'.")
 
     # Load image
     if str(file_ext) in ['.tif', '.tiff']:
@@ -317,6 +318,17 @@ def get_existing_models_list():
     if "__pycache__" in models_list:
         models_list.remove("__pycache__")
     return models_list
+
+def get_file_extension(filename):
+    """ Get file extension if it is supported
+    Args:
+        filename (str): Path of the file.
+    Returns:
+        str: File extension
+    """
+    # Find the first match from the list of supported file extensions
+    extension = next((ext for ext in valid_extensions if str(filename).lower().endswith(ext)), None)
+    return extension
 
 # Call init_ads() automatically when module is imported
 # init_ads()

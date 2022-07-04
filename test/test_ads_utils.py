@@ -6,7 +6,7 @@ import numpy as np
 
 import pytest
 
-from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data
+from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, get_file_extension
 from AxonDeepSeg import params
 
 
@@ -89,3 +89,45 @@ class TestCore(object):
 
         for model in known_models:
             assert model in get_existing_models_list()
+
+    @pytest.mark.single
+    def test_imread_fails_for_ome_filename(self):
+        filename = 'test_name.ome.tif'
+
+        with pytest.raises(IOError):
+            imread(filename)
+
+    @pytest.mark.single
+    def test_get_file_extension_returns_expected_filenames(self):
+        filenames_lowercase = [
+                    'test_name.jpg',
+                    'test_name.jpeg',
+                    'test_name.png',
+                    'test_name.tif',
+                    'test_name.tiff',
+                    'test_name.ome.tif'
+        ]
+        expected_extensions = [
+                    '.jpg',
+                    '.jpeg',
+                    '.png',
+                    '.tif',
+                    '.tiff',
+                    '.ome.tif'
+
+        ]
+
+        filenames_uppercase = [
+                    'test_name.JPG',
+                    'test_name.JPEG',
+                    'test_name.PNG',
+                    'test_name.TIF',
+                    'test_name.TIFF',
+                    'test_name.OME.TIF'
+        ]
+
+        for filename, ext in zip(filenames_lowercase, expected_extensions):
+            assert get_file_extension(filename) == ext
+        
+        for filename, ext in zip(filenames_uppercase, expected_extensions):
+            assert get_file_extension(filename) == ext
