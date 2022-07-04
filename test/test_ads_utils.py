@@ -90,14 +90,14 @@ class TestCore(object):
         for model in known_models:
             assert model in get_existing_models_list()
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_imread_fails_for_ome_filename(self):
         filename = 'test_name.ome.tif'
 
         with pytest.raises(IOError):
             imread(filename)
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_get_file_extension_returns_expected_filenames(self):
         filenames_lowercase = [
                     'test_name.jpg',
