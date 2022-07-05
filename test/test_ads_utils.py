@@ -131,3 +131,19 @@ class TestCore(object):
         
         for filename, ext in zip(filenames_uppercase, expected_extensions):
             assert get_file_extension(filename) == ext
+
+    @pytest.mark.unit
+    def test_get_file_extension_works_with_periods_inside_filenames(self):
+        filenames = [
+            'something_seg-axon_zf-1.25.png',
+            'something_seg-axon_zf-1.25.ome.tiff',
+        ]
+
+        expected_extensions = [
+            '.png',
+            '.ome.tiff'
+        ]
+
+        for filename, ext in zip(filenames, expected_extensions):
+            assert get_file_extension(filename) == ext
+
