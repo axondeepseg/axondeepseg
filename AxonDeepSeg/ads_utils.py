@@ -266,7 +266,7 @@ def imread(filename, bitdepth=8):
     file_ext = get_file_extension(filename)
 
     if (not file_ext) or ("ome" in file_ext):
-            raise IOError(f"The input file extension '{file_ext}' of '{Path(filename).stem}' is not "
+            raise IOError(f"The input file extension '{file_ext}' of '{Path(filename).name}' is not "
                                f"supported. AxonDeepSeg supports the following "
                                f"file extensions:  '.png', '.tif', '.tiff', '.jpg' and '.jpeg'.")
 
