@@ -18,6 +18,9 @@ import raven
 import imageio
 import numpy as np
 
+from config import valid_extensions
+
+
 DEFAULT_CONFIGFILE = "axondeepseg.cfg"
 
 # raven function override - do not modify unless needed if raven version is
@@ -254,7 +257,21 @@ def convert_path(object_path):
 def imread(filename, bitdepth=8):
     """ Read image and convert it to desired bitdepth without truncation.
     """
-    if 'tif' in str(filename):
+
+    # Convert to Path
+    filename = Path(filename)
+
+    # Get list of all suffixes in file, join them into a string, and then 
+    # lowercase to set the file extention to check against valid extension.
+    file_ext = get_file_extension(filename)
+
+    if (not file_ext) or ("ome" in file_ext):
+            raise IOError(f"The input file extension '{file_ext}' of '{Path(filename).name}' is not "
+                               f"supported. AxonDeepSeg supports the following "
+                               f"file extensions:  '.png', '.tif', '.tiff', '.jpg' and '.jpeg'.")
+
+    # Load image
+    if str(file_ext) in ['.tif', '.tiff']:
         raw_img = imageio.imread(filename, format='tiff-pil')
         if len(raw_img.shape) > 2:
             raw_img = imageio.imread(filename, format='tiff-pil', as_gray=True)
@@ -301,6 +318,17 @@ def get_existing_models_list():
     if "__pycache__" in models_list:
         models_list.remove("__pycache__")
     return models_list
+
+def get_file_extension(filename):
+    """ Get file extension if it is supported
+    Args:
+        filename (str): Path of the file.
+    Returns:
+        str: File extension
+    """
+    # Find the first match from the list of supported file extensions
+    extension = next((ext for ext in valid_extensions if str(filename).lower().endswith(ext)), None)
+    return extension
 
 # Call init_ads() automatically when module is imported
 # init_ads()
