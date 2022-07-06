@@ -114,7 +114,6 @@ class TestCore(object):
                     '.tif',
                     '.tiff',
                     '.ome.tif'
-
         ]
 
         filenames_uppercase = [
