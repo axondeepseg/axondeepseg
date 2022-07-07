@@ -10,3 +10,18 @@ axonmyelin_index_suffix = Path('_axonmyelin_index.png') # Colored axonmyelin seg
 
 # morphometrics file suffix name
 morph_suffix = Path('axon_morphometrics.xlsx')
+
+# List of valid image extensions
+valid_extensions = [
+    ".ome.tif",
+    ".ome.tiff",
+    ".ome.tf2",
+    ".ome.tf8",
+    ".ome.btf",
+    ".tif",
+    ".tiff",
+    ".png",
+    ".jpg",
+    ".jpeg"
+    ]
+
