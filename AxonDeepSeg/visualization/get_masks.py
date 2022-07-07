@@ -8,6 +8,7 @@ from skimage import io
 # AxonDeepSeg modules import
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.ads_utils import convert_path
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 def get_masks(path_prediction):
     # If string, convert to Path objects
@@ -30,8 +31,8 @@ def get_masks(path_prediction):
         filename_part = filename_part.split('.png')[0]
 
     # Save masks
-    filename_axon   = filename_part + '_seg-axon.png'
-    filename_myelin = filename_part + '_seg-myelin.png'
+    filename_axon   = filename_part + str(axon_suffix)
+    filename_myelin = filename_part + str(myelin_suffix)
     ads.imwrite(folder_path / filename_axon, axon_prediction.astype(int))
     ads.imwrite(folder_path / filename_myelin, myelin_prediction.astype(int))
 
