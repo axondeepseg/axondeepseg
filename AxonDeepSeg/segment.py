@@ -26,8 +26,8 @@ import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 import AxonDeepSeg.zoom_factor_sweep as zfs
 from AxonDeepSeg.apply_model import axon_segmentation
-from AxonDeepSeg.ads_utils import convert_path
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.ads_utils import convert_path, get_file_extension
+from config import axonmyelin_suffix, axon_suffix, myelin_suffix, valid_extensions
 
 # Global variables
 SEM_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_sem"
@@ -431,15 +431,6 @@ def main(argv=None):
     # Preparing the arguments to axon_segmentation function
     path_model = generate_default_parameters(type_, new_path)
 
-    # Tuple of valid file extensions
-    validExtensions = (
-                        ".jpeg",
-                        ".jpg",
-                        ".tif",
-                        ".tiff",
-                        ".png"
-                        )
-
     # Going through all paths passed into arguments
     for current_path_target in path_target_list:
         
@@ -448,7 +439,7 @@ def main(argv=None):
                     "pixel_size_in_micrometer.txt file containing the pixel size value."
         if not current_path_target.is_dir():
 
-            if current_path_target.suffix.lower() in validExtensions:
+            if get_file_extension(current_path_target) in valid_extensions:
 
                 # Handle cases if no resolution is provided on the CLI
                 if psm == None:
