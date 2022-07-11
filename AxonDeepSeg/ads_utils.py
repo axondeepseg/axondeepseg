@@ -272,13 +272,13 @@ def imread(filename, bitdepth=8):
 
     # Load image
     if str(file_ext) in ['.tif', '.tiff']:
-        raw_img = imageio.imread(filename, format='tiff-pil')
+        raw_img = imageio.v2.imread(filename, format='tiff-pil')
         if len(raw_img.shape) > 2:
-            raw_img = imageio.imread(filename, format='tiff-pil', as_gray=True)
+            raw_img = imageio.v2.imread(filename, format='tiff-pil', as_gray=True)
     else:
-        raw_img = imageio.imread(filename)
+        raw_img = imageio.v2.imread(filename)
         if len(raw_img.shape) > 2:
-            raw_img = imageio.imread(filename, as_gray=True)
+            raw_img = imageio.v2.imread(filename, as_gray=True)
 
     img = imageio.core.image_as_uint(raw_img, bitdepth=bitdepth)
     return img

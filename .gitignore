@@ -35,6 +35,8 @@ models/
 
 test/__test_files__
 
+*.log
+
 # Generated image files
 AxonDeepSeg/data_test/AxonDeepSeg*
 
