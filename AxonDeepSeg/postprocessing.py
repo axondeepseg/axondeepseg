@@ -1,10 +1,11 @@
 """"
-Tools for the FSLeyes plugin.
+Tools for the FSLeyes plugin and other functions for manipulating masks.
 """
-from skimage import measure, morphology, feature
+from skimage import measure, morphology, feature, segmentation
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
-import AxonDeepSeg.params
+from AxonDeepSeg import params
+import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from matplotlib import font_manager
 import os
 
@@ -151,7 +152,7 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size, 
     # Fill the image with the numbers at their corresponding coordinates
     for i in range(centroid_index.size):
         draw.text(xy=(x0_array[i] - font_size/2, y0_array[i] - font_size/2),
-                  text=str(centroid_index[i]), font=font, fill=AxonDeepSeg.params.intensity['binary'])
+                  text=str(centroid_index[i]), font=font, fill=params.intensity['binary'])
 
     # Transform the image into a numpy array
     image_array = np.asarray(number_image)
@@ -172,8 +173,46 @@ def generate_and_save_colored_image_with_index_numbers(filename, axonmyelin_imag
     seg = Image.open(axonmyelin_image_path)
     index_image = Image.fromarray(index_image_array)
     colored_image = ImageOps.colorize(seg, black="black", white="blue", mid="red",
-                                      blackpoint=AxonDeepSeg.params.intensity["background"],
-                                      whitepoint=AxonDeepSeg.params.intensity["axon"],
-                                      midpoint=AxonDeepSeg.params.intensity["myelin"])
+                                      blackpoint=params.intensity["background"],
+                                      whitepoint=params.intensity["axon"],
+                                      midpoint=params.intensity["myelin"])
     colored_image.paste(index_image, mask=index_image)
     colored_image.save(filename)
+
+def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
+    """
+    Removes axonmyelin objects at the (x, y) coordinates passed as parameters
+    :param im_axon: Array: axon binary mask
+    :param im_myelin: Array: myelin binary mask
+    :param x0s: list of ints/floats: X coordinates of the axonmyelin object to be removed
+    :param y0s: list of ints/floats: Y coordinates of the axonmyelin object to be removed
+    :return: axon and myelin array with the axonmyelin objects removed
+    """
+    im_axon, im_myelin = remove_intersection(im_axon, im_myelin)
+    watershed_seg = compute_morphs.get_watershed_segmentation(im_axon, im_myelin)
+
+    #perform a floodfill at the coordinates passed in parameters
+    for i in range(len(x0s)):
+        value_to_remove = np.iinfo(np.int16).max
+        watershed_seg = segmentation.flood_fill(watershed_seg, (int(y0s[i]), int(x0s[i])),  value_to_remove)
+        # The axons to remove now have a value of 65535 (value_to_remove) on the watershed_seg
+
+    axons_to_remove = (watershed_seg == value_to_remove).astype(np.uint8) # Binairy mask of the location of
+                                                                          # the axons to remove
+    original_axonmyelin_array = im_axon + im_myelin
+    new_axonmyelin_array, _ = remove_intersection(original_axonmyelin_array, axons_to_remove, priority=2)
+
+    axon_array = (im_axon & new_axonmyelin_array).astype(np.uint8)
+    myelin_array = (im_myelin & new_axonmyelin_array).astype(np.uint8)
+    return axon_array, myelin_array
+
+def remove_single_axon_at_coordinate(im_axon, im_myelin, x0, y0):
+    """
+    Removes a single axonmyelin object at the (x0, y0) coordinates passed as parameters
+    :param im_axon: Array: axon binary mask
+    :param im_myelin: Array: myelin binary mask
+    :param x0: X coordinate of the axonmyelin object to be removed
+    :param y0: Y coordinate of the axonmyelin object to be removed
+    :return: axon and myelin array with the axonmyelin object at (x0, y0) removed
+    """
+    return remove_axons_at_coordinates(im_axon, im_myelin, [x0], [y0])

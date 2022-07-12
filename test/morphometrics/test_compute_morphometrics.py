@@ -23,7 +23,8 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 load_axon_morphometrics,
                                                                 draw_axon_diameter,
                                                                 get_aggregate_morphometrics,
-                                                                write_aggregate_morphometrics
+                                                                write_aggregate_morphometrics,
+                                                                get_watershed_segmentation
                                                             )
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
@@ -881,7 +882,7 @@ class TestCore(object):
         
         image_border_touching_col = stats_df["image_border_touching"].to_numpy()
         assert np.array_equal(image_border_touching_col, [True, False])
-
+        
     @pytest.mark.unit
     def test_morphometrics_border_info_bounding_box_columns(self):
         img = ads.imread(self.image_sim_border_info_path)
@@ -899,3 +900,17 @@ class TestCore(object):
         bbox_computed = stats_df[bbox_cols].to_numpy()
         
         assert np.array_equal(bbox0, bbox_computed[0]) and np.array_equal(bbox1, bbox_computed[1])
+        
+    # --------------watershed_segmentation_test-------------- #
+    @pytest.mark.unit
+    def test_get_watershed_segmentation_returns_expected_data(self):
+        reference_watershed_seg_path = self.test_folder_path / "watershed_segmentation.png"
+        reference_mask_path = self.test_folder_path / "mask.png"
+
+        reference_watershed_seg_data = np.asarray(ads.imread(reference_watershed_seg_path))
+        reference_mask_data = ads.imread(reference_mask_path)
+
+        im_axon, im_myelin = ads.extract_axon_and_myelin_masks_from_image_data(reference_mask_data)
+        obtained_watershed = (get_watershed_segmentation(im_axon, im_myelin)).astype(np.uint8)
+
+        assert np.array_equal(obtained_watershed, reference_watershed_seg_data)

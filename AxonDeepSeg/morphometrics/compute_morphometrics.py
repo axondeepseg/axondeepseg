@@ -45,8 +45,41 @@ def get_pixelsize(path_pixelsize_file):
         return pixelsize
 
 
-def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, axon_shape="circle", return_index_image=False, return_border_info=False):
+def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
+    """
+    Segments the different axonmyelin objects using a watershed algorithm. Seeds points can be passed if they are 
+    already known/computed to save time.
+    :param im_axon: Array: axon binary mask
+    :param im_myelin: Array: myelin binary mask
+    :param seed_points: (optional) Array of tuples: Seed points for the watershed algorithm. If none are provided,
+    centroids of axon objects will be used. If the centroids have been computed before, it is suggested to pass them as
+    seed points in order to reduce computation time.
+    :return: Array containing the watershed segmentation of the axonmyelin mask
+    """
+    # Seed points (usually centroids) can take a while to compute, hence why there's the option to pass them directly if
+    # they are computed elsewhere. If they aren't passed, we can compute them here
+    if seed_points is None:
+        seed_points = postprocessing.get_centroids(im_axon)
 
+    im_axonmyelin = im_axon + im_myelin
+
+    # Compute distance between each pixel and the background.
+    distance = ndi.distance_transform_edt(im_axon)
+    # Note: this distance is calculated from the im_axon,
+    # not from the im_axonmyelin image, because we know that each axon
+    # object is already isolated, therefore the distance metric will be
+    # more useful for the watershed algorithm.
+
+    # Create an image with axon centroids, which value corresponds to the value of the axon object
+    im_centroid = np.zeros_like(im_axon, dtype='uint16')
+    for i in range(len(seed_points[0])):
+        # Note: The value "i" corresponds to the label number of im_axon_label
+        im_centroid[seed_points[0][i], seed_points[1][i]] = i + 1
+
+    # Watershed segmentation of axonmyelin using distance map
+    return watershed(-distance, im_centroid, mask=im_axonmyelin)
+
+def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, axon_shape="circle", return_index_image=False, return_border_info=False):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
@@ -81,28 +114,11 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
     # Deal with myelin mask
     if im_myelin is not None:
-
-        im_axonmyelin = im_axon + im_myelin
-
-        # Compute distance between each pixel and the background.
-        distance = ndi.distance_transform_edt(im_axon)
-        # Note: this distance is calculated from the im_axon,
-        # note from the im_axonmyelin image, because we know that each axon
-        # object is already isolated, therefore the distance metric will be
-        # more useful for the watershed algorithm below.
-
         # Get axon centroid as int (not float) to be used as index
         ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
                         [int(props.centroid[1]) for props in axon_objects])
 
-        # Create an image with axon centroids, which value corresponds to the value of the axon object
-        im_centroid = np.zeros_like(im_axon, dtype='uint16')
-        for i in range(len(ind_centroid[0])):
-            # Note: The value "i" corresponds to the label number of im_axon_label
-            im_centroid[ind_centroid[0][i], ind_centroid[1][i]] = i + 1
-
-        # Watershed segmentation of axonmyelin using distance map
-        im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
+        im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
 
