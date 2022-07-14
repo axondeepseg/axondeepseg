@@ -47,3 +47,7 @@ AxonDeepSeg/data_test/AxonDeepSeg*
 __MACOSX/
 .DS_Store
 .vscode/
+
+axondeepseg.log
+
+Pipfile
