@@ -2,22 +2,40 @@
 
 import itertools
 import numpy as np
+import pandas as pd
 from skimage.future import graph
 
 from loguru import logger
 
-def color_generator(colors):
-    '''a generator that yields the next color given a color palette'''
-    if len(colors) < 4:
-        raise ValueError("Please provide 4 colors or more.")
-    if len(colors) != len(np.unique(colors)):
-        raise ValueError("Please provide only unique colors.")
-    #TODO: WARN IF "BLACK" WAS CHOSEN THAT BG IS BLACK
-    
-    # cast the color list into a cyclic iterator
-    colors = itertools.cycle(colors)
-    while True:
-        yield next(colors)
+
+class color_generator(object):
+    '''Generator that yields the next color given a color palette'''
+
+    def __init__(self, colors):
+        '''
+        Initialize the object given a color palette
+        :param colors:  List of colors in RGB format. e.g. [r, g, b]
+        '''
+        if len(colors) < 4:
+            raise ValueError("Please provide 4 colors or more.")
+        if len(colors) != len(np.unique(colors)):
+            raise ValueError("Please provide only unique colors.")
+        
+        # cast the color list into a cyclic iterator
+        self.colors = itertools.cycle(colors)
+        
+        # dataframe to store the colors already generated
+        generated_df = pd.DataFrame({"R": [], "G": [], "B": []})
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        #TODO: take 2 next colors
+        #TODO: generate a color inbetween these 2
+        #TODO: check if already generated; if not, return color
+
+
 
 def colorize_instance_segmentation(instance_seg, image, colors=None):
     '''
@@ -27,7 +45,8 @@ def colorize_instance_segmentation(instance_seg, image, colors=None):
     input value.
     :param instance_seg:    instance segmentation map to colorize
     :param image:           image to colorize
-    :param colors:          color palette to use for the colorization
+    :param colors:          color palette to use for the colorization in
+                            RGB format like so: [R, G, B]
     :return:                colorized instance segmentation
     '''
 
