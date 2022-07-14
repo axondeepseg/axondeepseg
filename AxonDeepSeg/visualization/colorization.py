@@ -12,6 +12,7 @@ def color_generator(colors):
         raise ValueError("Please provide 4 colors or more.")
     if len(colors) != len(np.unique(colors)):
         raise ValueError("Please provide only unique colors.")
+    #TODO: WARN IF "BLACK" WAS CHOSEN THAT BG IS BLACK
     
     # cast the color list into a cyclic iterator
     colors = itertools.cycle(colors)
@@ -34,7 +35,7 @@ def colorize_instance_segmentation(instance_seg, image, colors=None):
         colors = [
 
         ]
-    colormap = color_generator(colors)
+    color_gen = color_generator(colors)
 
     logger.info("Computing Region Adjacency Graph (RAG)")
     rag = graph.RAG(instance_seg)

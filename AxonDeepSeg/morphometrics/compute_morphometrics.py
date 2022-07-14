@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 from AxonDeepSeg.ads_utils import convert_path, imwrite
 from AxonDeepSeg import postprocessing, params
-from AxonDeepSeg.visualization.colorize_instance_map import colorize_instance_segmentation
+from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
 
 
 def get_pixelsize(path_pixelsize_file):
