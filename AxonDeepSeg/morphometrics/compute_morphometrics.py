@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 
 from AxonDeepSeg.ads_utils import convert_path, imwrite
 from AxonDeepSeg import postprocessing, params
+import AxonDeepSeg.visualization.colorize_instance_map
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -115,6 +116,16 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
 
     # Deal with myelin mask
     if im_myelin is not None:
+
+        im_axonmyelin = im_axon + im_myelin
+
+        # Compute distance between each pixel and the background.
+        distance = ndi.distance_transform_edt(im_axon)
+        # Note: this distance is calculated from the im_axon,
+        # not from the im_axonmyelin image, because we know that each axon
+        # object is already isolated, therefore the distance metric will be
+        # more useful for the watershed algorithm below.
+
         # Get axon centroid as int (not float) to be used as index
         ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
                         [int(props.centroid[1]) for props in axon_objects])
