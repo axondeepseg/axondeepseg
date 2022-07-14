@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 from AxonDeepSeg.ads_utils import convert_path, imwrite
 from AxonDeepSeg import postprocessing, params
-import AxonDeepSeg.visualization.colorize_instance_map
+from AxonDeepSeg.visualization.colorize_instance_map import colorize_instance_segmentation
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -140,8 +140,11 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
         
         plt.imsave('instance_map.png', arr=im_axonmyelin_label, cmap='magma', format='png')
+        print(f"UNIQUE INSTANCE IDS: {np.unique(im_axonmyelin_label)}")
 
         im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
+        im_instance = colorize_instance_segmentation(im_axonmyelin_label, im_axonmyelin)
+        
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
 
