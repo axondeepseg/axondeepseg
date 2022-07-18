@@ -4,36 +4,54 @@ import itertools
 import numpy as np
 import pandas as pd
 from skimage.future import graph
+from random import randint
 
 from loguru import logger
 
 
 class color_generator(object):
-    '''Generator that yields the next color given a color palette'''
+    '''Generator that yields the next color given a color palette.'''
 
     def __init__(self, colors):
         '''
-        Initialize the object given a color palette
+        Initialize the object given a color palette.
         :param colors:  List of colors in RGB format. e.g. [r, g, b]
         '''
         if len(colors) < 4:
             raise ValueError("Please provide 4 colors or more.")
-        if len(colors) != len(np.unique(colors)):
-            raise ValueError("Please provide only unique colors.")
+        if [0, 0, 0] in colors:
+            raise ValueError("Please avoid using black (background color).")
         
         # cast the color list into a cyclic iterator
         self.colors = itertools.cycle(colors)
+        self.current_color = next(self.colors)
         
         # dataframe to store the colors already generated
-        generated_df = pd.DataFrame({"R": [], "G": [], "B": []})
+        self.generated_df = pd.DataFrame({"R": [], "G": [], "B": []})
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        #TODO: take 2 next colors
-        #TODO: generate a color inbetween these 2
-        #TODO: check if already generated; if not, return color
+        '''Returns a value between 2 colors from the input palette.'''
+        while True:
+            c1 = self.current_color
+            c2 = next(self.colors)
+            #generate a color inbetween c1 and c2
+            color = {
+                "R": randint(min(c1[0], c2[0]), max(c1[0], c2[0])),
+                "G": randint(min(c1[1], c2[1]), max(c1[1], c2[1])),
+                "B": randint(min(c1[2], c2[2]), max(c1[2], c2[2])),
+            }
+
+            # check if already generated; if not, return color
+            color_to_check = np.array(color)
+            if not (self.generated_df == color_to_check).all(1).any():
+                # flag color as already generated
+                self.generated_df.loc[len(self.generated_df)] = color
+                return list(color.values())
+            
+            self.current_color = c2
 
 
 
@@ -56,8 +74,3 @@ def colorize_instance_segmentation(instance_seg, image, colors=None):
         ]
     color_gen = color_generator(colors)
 
-    logger.info("Computing Region Adjacency Graph (RAG)")
-    rag = graph.RAG(instance_seg)
-    rag.remove_node(0)
-    for region in rag:
-        print(f"Neighbors found: {list(rag.neighbors(region))}")
