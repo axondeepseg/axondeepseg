@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from skimage.future import graph
 from random import randint
+from PIL import Image, ImageDraw
 
 from loguru import logger
 
@@ -70,7 +71,22 @@ def colorize_instance_segmentation(instance_seg, image, colors=None):
 
     if colors is None:
         colors = [
-
+            [0, 128, 128],
+            [153, 50, 204],
+            [0, 255, 127],
+            [139, 0, 0],
         ]
     color_gen = color_generator(colors)
 
+    # background color isn't an instance
+    nb_unique_instances = len(np.unique(instance_seg)) - 1
+    logger.info(f"Colorizing {nb_unique_instances} instances.")
+    
+    colorized = Image.fromarray(image)
+    colorized = colorized.convert('RGB')
+    for i in range(nb_unique_instances):
+        instance_id = i + 1
+        #TODO select pixels associated with this instance
+        #TODO colorize instance with pseudo-random color
+    
+    return colorized

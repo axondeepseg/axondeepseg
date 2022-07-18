@@ -139,11 +139,10 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         # Watershed segmentation of axonmyelin using distance map
         im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
         
-        plt.imsave('instance_map.png', arr=im_axonmyelin_label, cmap='magma', format='png')
-        print(f"UNIQUE INSTANCE IDS: {np.unique(im_axonmyelin_label)}")
 
         im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
         im_instance = colorize_instance_segmentation(im_axonmyelin_label, im_axonmyelin)
+        im_instance.save('instance_seg.png')
         
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
