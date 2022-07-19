@@ -123,33 +123,13 @@ def get_axon_morphometrics(
 
     # Deal with myelin mask
     if im_myelin is not None:
-
-        im_axonmyelin = im_axon + im_myelin
-
-        # Compute distance between each pixel and the background.
-        distance = ndi.distance_transform_edt(im_axon)
-        # Note: this distance is calculated from the im_axon,
-        # not from the im_axonmyelin image, because we know that each axon
-        # object is already isolated, therefore the distance metric will be
-        # more useful for the watershed algorithm below.
-
         # Get axon centroid as int (not float) to be used as index
         ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
                         [int(props.centroid[1]) for props in axon_objects])
 
-        # Create an image with axon centroids, which value corresponds to the value of the axon object
-        im_centroid = np.zeros_like(im_axon, dtype='uint16')
-        for i in range(len(ind_centroid[0])):
-            # Note: The value "i" corresponds to the label number of im_axon_label
-            im_centroid[ind_centroid[0][i], ind_centroid[1][i]] = i + 1
-
-        # Watershed segmentation of axonmyelin using distance map
-        im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
-        
         im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
         if return_instance_seg:
-            im_instance = colorize_instance_segmentation(im_axonmyelin_label)
-            im_instance.save('instance_seg.png')
+            im_instance_seg = colorize_instance_segmentation(im_axonmyelin_label)
         
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
@@ -257,6 +237,8 @@ def get_axon_morphometrics(
         else:
             stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
 
+    output = (stats_dataframe,)
+
     if return_index_image is True:
         # Extract the information required to generate the index image
         x0_array = stats_dataframe["x0"].to_numpy()
@@ -268,9 +250,12 @@ def get_axon_morphometrics(
         index_image_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
                                                                   tuple(reversed(im_axon.shape)),
                                                                   mean_diameter_in_pixel)
-        return stats_dataframe, index_image_array
+        output = (*output, index_image_array)
+    
+    if return_instance_seg:
+        output = (*output, im_instance_seg)
 
-    return stats_dataframe
+    return output
 
 def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
     """

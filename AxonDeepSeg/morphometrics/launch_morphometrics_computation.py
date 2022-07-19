@@ -200,8 +200,7 @@ def main(argv=None):
                     sys.exit(3)
 
             # Compute statistics
-
-            stats_dataframe, index_image_array = get_axon_morphometrics(
+            morph_output = get_axon_morphometrics(
                 im_axon=pred_axon, 
                 im_myelin=pred_myelin, 
                 pixel_size=psm, 
@@ -210,6 +209,10 @@ def main(argv=None):
                 return_border_info=border_info_flag,
                 return_instance_seg=colorization_flag
             )
+            # unpacking the output
+            stats_dataframe, index_image_array = morph_output[0:2]
+            if colorization_flag:
+                instance_seg_image = morph_output[2]
 
             morph_filename = current_path_target.stem + "_" + filename
 
@@ -233,6 +236,10 @@ def main(argv=None):
                     axonmyelin_image_path=str(current_path_target.with_suffix("")) + str(axonmyelin_suffix),
                     index_image_array=index_image_array
                 )
+                
+                if colorization_flag:
+                    # Save instance segmentation
+                    instance_seg_image.save('instance_seg.png')
 
                 logger.info("Morphometrics file: {} has been saved in the {} directory",
                     morph_filename,
