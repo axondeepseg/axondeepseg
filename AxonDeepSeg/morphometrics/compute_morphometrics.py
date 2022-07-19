@@ -15,9 +15,8 @@ import pandas as pd
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 
-from AxonDeepSeg.ads_utils import convert_path, imwrite
+from AxonDeepSeg.ads_utils import convert_path, imwrite # REMOVE IMWRITE BEFORE MERGING THIS
 from AxonDeepSeg import postprocessing, params
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
 
