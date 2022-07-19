@@ -20,7 +20,7 @@ class color_generator(object):
         '''
         if len(colors) < 4:
             raise ValueError("Please provide 4 colors or more.")
-        if [0, 0, 0] in colors:
+        if (0, 0, 0) in colors:
             raise ValueError("Please avoid using black (background color).")
         
         # cast the color list into a cyclic iterator
@@ -91,7 +91,6 @@ def colorize_instance_segmentation(instance_seg, colors=None):
         color = next(color_gen)
         instance = np.where(instance_seg == instance_id)
         px_list = zip(instance[1], instance[0])
-        print(instance)
         for pt in px_list:
             draw.point(pt, color)
     

@@ -81,7 +81,16 @@ def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
     # Watershed segmentation of axonmyelin using distance map
     return watershed(-distance, im_centroid, mask=im_axonmyelin)
 
-def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, axon_shape="circle", return_index_image=False, return_border_info=False):
+def get_axon_morphometrics(
+        im_axon, 
+        path_folder=None, 
+        im_myelin=None, 
+        pixel_size=None, 
+        axon_shape="circle", 
+        return_index_image=False, 
+        return_border_info=False,
+        return_instance_seg=False
+    ):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
@@ -139,10 +148,10 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         # Watershed segmentation of axonmyelin using distance map
         im_axonmyelin_label = watershed(-distance, im_centroid, mask=im_axonmyelin)
         
-
         im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
-        im_instance = colorize_instance_segmentation(im_axonmyelin_label)
-        im_instance.save('instance_seg.png')
+        if return_instance_seg:
+            im_instance = colorize_instance_segmentation(im_axonmyelin_label)
+            im_instance.save('instance_seg.png')
         
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)

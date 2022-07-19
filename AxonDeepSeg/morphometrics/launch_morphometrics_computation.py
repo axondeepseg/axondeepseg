@@ -117,6 +117,12 @@ def main(argv=None):
         help='Adds a flag indicating if the axonmyelin object touches a border along with the \n'
             +'coordinates of its bounding box.'
     )
+    ap.add_argument(
+        '-c', '--colorize',
+        required=False,
+        action='store_true',
+        help='To save the instance segmentation image.'
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -124,6 +130,7 @@ def main(argv=None):
     filename = str(args["filename"])
     axon_shape = str(args["axonshape"])
     border_info_flag = args["border_info"]
+    colorization_flag = args["colorize"]
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -200,7 +207,8 @@ def main(argv=None):
                 pixel_size=psm, 
                 axon_shape=axon_shape, 
                 return_index_image=True,
-                return_border_info=border_info_flag
+                return_border_info=border_info_flag,
+                return_instance_seg=colorization_flag
             )
 
             morph_filename = current_path_target.stem + "_" + filename
