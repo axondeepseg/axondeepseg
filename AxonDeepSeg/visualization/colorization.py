@@ -50,13 +50,13 @@ class color_generator(object):
             if not (self.generated_df == color_to_check).all(1).any():
                 # flag color as already generated
                 self.generated_df.loc[len(self.generated_df)] = color
-                return list(color.values())
+                return tuple(color.values())
             
             self.current_color = c2
 
 
 
-def colorize_instance_segmentation(instance_seg, image, colors=None):
+def colorize_instance_segmentation(instance_seg, colors=None):
     '''
     Colorizes an instance segmentation such that adjacent objects are 
     never of the same color (4 colors or more required). Note that the 
@@ -71,10 +71,10 @@ def colorize_instance_segmentation(instance_seg, image, colors=None):
 
     if colors is None:
         colors = [
-            [0, 128, 128],
-            [153, 50, 204],
-            [0, 255, 127],
-            [139, 0, 0],
+            (0, 128, 128),
+            (153, 50, 204),
+            (0, 255, 127),
+            (139, 0, 0),
         ]
     color_gen = color_generator(colors)
 
@@ -82,11 +82,17 @@ def colorize_instance_segmentation(instance_seg, image, colors=None):
     nb_unique_instances = len(np.unique(instance_seg)) - 1
     logger.info(f"Colorizing {nb_unique_instances} instances.")
     
-    colorized = Image.fromarray(image)
+    colorized = Image.fromarray(instance_seg)
     colorized = colorized.convert('RGB')
+    draw = ImageDraw.Draw(colorized)
+
     for i in range(nb_unique_instances):
         instance_id = i + 1
-        #TODO select pixels associated with this instance
-        #TODO colorize instance with pseudo-random color
+        color = next(color_gen)
+        instance = np.where(instance_seg == instance_id)
+        px_list = zip(instance[1], instance[0])
+        print(instance)
+        for pt in px_list:
+            draw.point(pt, color)
     
     return colorized

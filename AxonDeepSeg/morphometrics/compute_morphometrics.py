@@ -141,7 +141,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         
 
         im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
-        im_instance = colorize_instance_segmentation(im_axonmyelin_label, im_axonmyelin)
+        im_instance = colorize_instance_segmentation(im_axonmyelin_label)
         im_instance.save('instance_seg.png')
         
         # Measure properties of each axonmyelin object
