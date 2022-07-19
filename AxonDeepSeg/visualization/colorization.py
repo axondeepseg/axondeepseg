@@ -1,6 +1,8 @@
 # Tools to colorize instance maps with arbitrary color palettes
 
 import itertools
+from collections import deque
+
 import numpy as np
 import pandas as pd
 from skimage.future import graph
@@ -13,21 +15,24 @@ from loguru import logger
 class color_generator(object):
     '''Generator that yields the next color given a color palette.'''
 
-    def __init__(self, colors):
+    def __init__(self, colors, mem_length=50, tolerance=30):
         '''
         Initialize the object given a color palette.
-        :param colors:  List of colors in RGB format. e.g. [r, g, b]
+        :param colors:      List of colors in RGB format. e.g. [R, G, B]
+        :param mem_length   Size of the buffer of generated colors
+        :param tolerance    Max difference between colors in the buffer 
+                            (computed by summing R/G/B channel differences)
         '''
         if len(colors) < 4:
             raise ValueError("Please provide 4 colors or more.")
-        if (0, 0, 0) in colors:
-            raise ValueError("Please avoid using black (background color).")
         
         # cast the color list into a cyclic iterator
         self.colors = itertools.cycle(colors)
         self.current_color = next(self.colors)
+
+        self.tailsize = mem_length
         
-        # dataframe to store the colors already generated
+        # Fixed size queue to store the colors already generated
         self.generated_df = pd.DataFrame({"R": [], "G": [], "B": []})
 
     def __iter__(self):
@@ -38,22 +43,22 @@ class color_generator(object):
         while True:
             c1 = self.current_color
             c2 = next(self.colors)
+
             #generate a color inbetween c1 and c2
             color = {
                 "R": randint(min(c1[0], c2[0]), max(c1[0], c2[0])),
                 "G": randint(min(c1[1], c2[1]), max(c1[1], c2[1])),
                 "B": randint(min(c1[2], c2[2]), max(c1[2], c2[2])),
             }
-
-            # check if already generated; if not, return color
-            color_to_check = np.array(color)
-            if not (self.generated_df == color_to_check).all(1).any():
-                # flag color as already generated
-                self.generated_df.loc[len(self.generated_df)] = color
-                return tuple(color.values())
-            
             self.current_color = c2
 
+            # check if color is too close to the ones inside the memory
+            memory = self.generated_df.tail(self.tailsize)
+            diff = abs(memory - color)
+            cumulative_diff = diff["R"] + diff["G"] + diff["B"]
+            if not (cumulative_diff < 30).any():
+                self.generated_df.loc[len(self.generated_df)] = color
+                return tuple(color.values())
 
 
 def colorize_instance_segmentation(instance_seg, colors=None):
