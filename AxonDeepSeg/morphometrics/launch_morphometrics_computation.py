@@ -15,15 +15,19 @@ import pandas as pd
 
 # AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
-                                                                get_axon_morphometrics,
-                                                                save_axon_morphometrics,
-                                                                draw_axon_diameter,
-                                                                save_map_of_axon_diameters,
-                                                                get_aggregate_morphometrics,
-                                                                write_aggregate_morphometrics
-                                                            )
+    get_axon_morphometrics,
+    save_axon_morphometrics,
+    draw_axon_diameter,
+    save_map_of_axon_diameters,
+    get_aggregate_morphometrics,
+    write_aggregate_morphometrics
+)
 import AxonDeepSeg.ads_utils as ads
-from config import axon_suffix, myelin_suffix, axonmyelin_suffix, morph_suffix, index_suffix, axonmyelin_index_suffix
+from config import (
+    axon_suffix, myelin_suffix, axonmyelin_suffix,
+    index_suffix, axonmyelin_index_suffix,
+    morph_suffix, instance_suffix,
+)
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
 
@@ -209,7 +213,7 @@ def main(argv=None):
                 return_border_info=border_info_flag,
                 return_instance_seg=colorization_flag
             )
-            # unpacking the output
+            # unpack the morphometrics output
             stats_dataframe, index_image_array = morph_output[0:2]
             if colorization_flag:
                 instance_seg_image = morph_output[2]
@@ -239,7 +243,7 @@ def main(argv=None):
                 
                 if colorization_flag:
                     # Save instance segmentation
-                    instance_seg_image.save('instance_seg.png')
+                    ads.imwrite(outfile_basename + str(instance_suffix), instance_seg_image)
 
                 logger.info("Morphometrics file: {} has been saved in the {} directory",
                     morph_filename,

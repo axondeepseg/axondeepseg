@@ -99,4 +99,4 @@ def colorize_instance_segmentation(instance_seg, colors=None):
         for pt in px_list:
             draw.point(pt, color)
     
-    return colorized
+    return np.asarray(colorized)
