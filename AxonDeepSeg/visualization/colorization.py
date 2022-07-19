@@ -1,7 +1,6 @@
 # Tools to colorize instance maps with arbitrary color palettes
 
 import itertools
-from collections import deque
 
 import numpy as np
 import pandas as pd
@@ -31,8 +30,9 @@ class color_generator(object):
         self.current_color = next(self.colors)
 
         self.tailsize = mem_length
+        self.tolerance = tolerance
         
-        # Fixed size queue to store the colors already generated
+        # df to store the colors already generated
         self.generated_df = pd.DataFrame({"R": [], "G": [], "B": []})
 
     def __iter__(self):
@@ -56,7 +56,7 @@ class color_generator(object):
             memory = self.generated_df.tail(self.tailsize)
             diff = abs(memory - color)
             cumulative_diff = diff["R"] + diff["G"] + diff["B"]
-            if not (cumulative_diff < 30).any():
+            if not (cumulative_diff < self.tolerance).any():
                 self.generated_df.loc[len(self.generated_df)] = color
                 return tuple(color.values())
 
