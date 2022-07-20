@@ -237,8 +237,10 @@ def get_axon_morphometrics(
         else:
             stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
 
-    output = (stats_dataframe,)
-
+    if (not return_index_image) and (not return_instance_seg):
+        return stats_dataframe
+    else:
+        output = (stats_dataframe,)
     if return_index_image is True:
         # Extract the information required to generate the index image
         x0_array = stats_dataframe["x0"].to_numpy()
