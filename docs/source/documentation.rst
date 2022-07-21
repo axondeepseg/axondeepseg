@@ -351,7 +351,7 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 
 -b                  Flag to extract additionnal bounding box information on axonmyelin objects.
                     Specifying this option ``-b`` flag will add a boolean value indicating if the axon touches one of the image border. It will also output every axon's bounding box (including its myelin). For more information, see the morphometrics file description in the subsection below.
--c                  Flag to save the colorized instance segmentation. For more information about this, see the *Colorization* subsection below.
+-c                  Flag to save the colorized instance segmentation. For more information about this feature, see the *Colorization* subsection below.
 
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

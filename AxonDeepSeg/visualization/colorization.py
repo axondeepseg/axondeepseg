@@ -2,9 +2,10 @@
 
 import itertools
 import random
+from collections import deque
 
 import numpy as np
-import pandas as pd
+# import pandas as pd
 from skimage.future import graph
 from PIL import Image, ImageDraw
 
@@ -32,11 +33,10 @@ class color_generator(object):
         self.colors = itertools.cycle(colors)
         self.current_color = next(self.colors)
 
-        self.tailsize = mem_length
         self.tolerance = tolerance
         
         # df to store the colors already generated
-        self.generated_df = pd.DataFrame({"R": [], "G": [], "B": []})
+        self.generated = deque([], maxlen=mem_length)
 
 
     def __iter__(self):
@@ -49,20 +49,25 @@ class color_generator(object):
             c2 = next(self.colors)
 
             #generate a color inbetween c1 and c2
-            color = {
-                "R": random.randint(min(c1[0], c2[0]), max(c1[0], c2[0])),
-                "G": random.randint(min(c1[1], c2[1]), max(c1[1], c2[1])),
-                "B": random.randint(min(c1[2], c2[2]), max(c1[2], c2[2])),
-            }
+            color = (
+                random.randint(min(c1[0], c2[0]), max(c1[0], c2[0])),
+                random.randint(min(c1[1], c2[1]), max(c1[1], c2[1])),
+                random.randint(min(c1[2], c2[2]), max(c1[2], c2[2])),
+            )
             self.current_color = c2
 
+            # first iteration: directly return the color
+            if not self.generated:
+                self.generated.append(color)
+                return color
+
             # check if color is too close to the ones inside the memory
-            memory = self.generated_df.tail(self.tailsize)
-            diff = abs(memory - color)
-            cumulative_diff = diff["R"] + diff["G"] + diff["B"]
-            if not (cumulative_diff < self.tolerance).any():
-                self.generated_df.loc[len(self.generated_df)] = color
-                return tuple(color.values())
+            memory = np.array(self.generated)
+            diff = abs(memory - list(color))
+            cumulative_diff = diff.sum(axis=1)
+            if np.all(cumulative_diff < self.tolerance):
+                self.generated.append(color)
+                return color
 
 
 def colorize_instance_segmentation(instance_seg, colors=None):
@@ -99,8 +104,8 @@ def colorize_instance_segmentation(instance_seg, colors=None):
         instance_id = i + 1
         color = next(color_gen)
         instance = np.where(instance_seg == instance_id)
-        px_list = zip(instance[1], instance[0])
-        for pt in px_list:
+        pt_list = zip(instance[1], instance[0])
+        for pt in pt_list:
             draw.point(pt, color)
     
     return np.asarray(colorized)
