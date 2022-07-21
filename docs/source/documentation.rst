@@ -351,6 +351,7 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 
 -b                  Flag to extract additionnal bounding box information on axonmyelin objects.
                     Specifying this option ``-b`` flag will add a boolean value indicating if the axon touches one of the image border. It will also output every axon's bounding box (including its myelin). For more information, see the morphometrics file description in the subsection below.
+-c                  Flag to save the colorized instance segmentation. For more information about this, see the *Colorization* subsection below.
 
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -527,6 +528,14 @@ By default for axon shape, that is, `circle`, the equivalent diameter is used. F
      - Maximum y value of the bounding box (in pixels). This bound is exclusive.
    * - bbox_max_x
      - Maximum x value of the bounding box (in pixels). This bound is exclusive.
+
+
+Colorization
+~~~~~~~~~~~~
+
+During the morphometrics computation, ``axondeepseg`` internally converts the semantic segmentation (output of the deep learning model) into an instance segmentation. This step is essential to take measurements on individual axons when the axon density is high, because if two or more elements have their myelin touching, the software needs to know which axon it is attached to. Using the ``-c`` flag, you can obtain the colorized instance segmentation to take a look at this internal representation. The image below illustrates what a typical instance segmentation looks like.
+
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/instance_seg_example.png
 
 Jupyter notebooks
 -----------------
