@@ -1,11 +1,11 @@
 # Tools to colorize instance maps with arbitrary color palettes
 
 import itertools
+import random
 
 import numpy as np
 import pandas as pd
 from skimage.future import graph
-from random import randint
 from PIL import Image, ImageDraw
 
 from loguru import logger
@@ -14,16 +14,19 @@ from loguru import logger
 class color_generator(object):
     '''Generator that yields the next color given a color palette.'''
 
-    def __init__(self, colors, mem_length=50, tolerance=30):
+    def __init__(self, colors, mem_length=50, tolerance=30, seed=42):
         '''
         Initialize the object given a color palette.
         :param colors:      List of colors in RGB format. e.g. [R, G, B]
         :param mem_length   Size of the buffer of generated colors
         :param tolerance    Max difference between colors in the buffer 
                             (computed by summing R/G/B channel differences)
+        :param seed         Controls the pseudo-random number generator seed
         '''
         if len(colors) < 4:
             raise ValueError("Please provide 4 colors or more.")
+
+        random.seed(seed)
         
         # cast the color list into a cyclic iterator
         self.colors = itertools.cycle(colors)
@@ -34,6 +37,7 @@ class color_generator(object):
         
         # df to store the colors already generated
         self.generated_df = pd.DataFrame({"R": [], "G": [], "B": []})
+
 
     def __iter__(self):
         return self
@@ -46,9 +50,9 @@ class color_generator(object):
 
             #generate a color inbetween c1 and c2
             color = {
-                "R": randint(min(c1[0], c2[0]), max(c1[0], c2[0])),
-                "G": randint(min(c1[1], c2[1]), max(c1[1], c2[1])),
-                "B": randint(min(c1[2], c2[2]), max(c1[2], c2[2])),
+                "R": random.randint(min(c1[0], c2[0]), max(c1[0], c2[0])),
+                "G": random.randint(min(c1[1], c2[1]), max(c1[1], c2[1])),
+                "B": random.randint(min(c1[2], c2[2]), max(c1[2], c2[2])),
             }
             self.current_color = c2
 
