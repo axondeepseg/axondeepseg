@@ -68,11 +68,28 @@ To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have 
     git clone https://github.com/neuropoly/axondeepseg.git
     cd axondeepseg
 
-Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you create a virtual environment before you continue with your installation.
+Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you install into a virtual environment.
 
-To setup a Python virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command and answer "y" to the installation instructions::
+.. note::
 
-    conda env create -f environment.yml -n ads_venv
+    Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`_, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`_ before continuing:
+
+    ::
+        # ~/.config/pip/pip.conf
+        [install]
+        extra-index-url =
+          https://download.pytorch.org/whl/cpu
+    
+.. comment: There's similar configs used for the opposite cases:
+            owning a GPU that's so new it needs CUDA 11, or owning a GPU but running Windows.
+            See https://github.com/axondeepseg/axondeepseg/pull/642#issuecomment-1142311380.
+            We don't document them publically because they are rare and the distraction will sew confusion.
+            People in these situations can ask us for help.
+
+
+To setup a Python virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command::
+
+    conda env create -y
 
 .. WARNING :: For some users, the installation may take up to 30 minutes as many dependencies have shared subdependencies, and resolving these potential conflicts takes time. If that's the case, we encourage you to take a break from your screen and go for a walk while listening to the `AxonDeepSeg Spotify playlist <https://open.spotify.com/playlist/27LVNnfhTKjVOli6bPCaV5?si=OydcwxoOSamwCsg3xcqybw>`_.
 
@@ -167,14 +184,6 @@ Known issues
 ~~~~~~~~~~~~
 1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
 
-GPU Support
------------
-
-If you have a compatible NVIDIA GPU card that supports CUDA11 and with the right driver installed, running the following command after installing AxonDeepSeg will install the necessary ``torch`` and ``torchvision`` versions for GPU use of AxonDeepSeg::
-
-    pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 --find-links https://download.pytorch.org/whl/torch_stable.html
-
-For more information aboud CPU and GPU support, please view the `IVADOMED documentation page <https://ivadomed.org/installation.html#step-3-install-torch-and-torchvision-with-cpu-or-gpu-support>`_ about it.
 
 Existing models
 ===============
