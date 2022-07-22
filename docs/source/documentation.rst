@@ -74,7 +74,7 @@ Virtual environments are a tool to separate the Python environment and packages 
 
     Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`_, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`_ before continuing:
 
-    ::
+    .. code::
         # ~/.config/pip/pip.conf
         [install]
         extra-index-url =
