@@ -63,7 +63,7 @@ To install ``git``, please follow instructions for your operating system on the 
 Install AxonDeepSeg
 -------------------
 
-To install AxonDeepSeg, "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+To install AxonDeepSeg, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
 
     git clone https://github.com/neuropoly/axondeepseg.git
     cd axondeepseg
@@ -87,7 +87,7 @@ Virtual environments are a tool to separate the Python environment and packages 
             People in these situations can ask us for help.
 
 
-To setup a Python virtual environment named "ads_venv" with all the required packages, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows) run the following command::
+To setup the Python virtual environment with all the required packages, run the following command::
 
     conda env create
 
