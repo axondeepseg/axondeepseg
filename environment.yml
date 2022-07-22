@@ -28,8 +28,5 @@ dependencies:
   - pip:
     - opencv-contrib-python
     - opencv-python-headless
-    # PyTorch's Linux distribution is very large due to its GPU support,
-    # but we only need that for training models. Our users only need CPU
-    - --extra-index-url https://download.pytorch.org/whl/cpu
     - protobuf==3.20.1
     - ivadomed~=2.9.6
