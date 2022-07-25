@@ -65,7 +65,7 @@ class color_generator(object):
             memory = np.array(self.generated)
             diff = abs(memory - list(color))
             cumulative_diff = diff.sum(axis=1)
-            if np.all(cumulative_diff < self.tolerance):
+            if np.all(cumulative_diff > self.tolerance):
                 self.generated.append(color)
                 return color
 
