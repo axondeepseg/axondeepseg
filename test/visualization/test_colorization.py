@@ -17,12 +17,6 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
-        self.output_filename =  Path('image' + str(axonmyelin_suffix))
-        self.path_folder = (
-            self.testPath /
-            '__test_files__' /
-            '__test_demo_files__'
-            )
 
         # simulated axons to test --border-info option
         self.simulated_image_path = Path(
@@ -58,9 +52,6 @@ class TestCore(object):
         simulated.save(self.simulated_image_path)
 
     def teardown(self):
-        if (self.path_folder / self.output_filename ).is_file():
-            (self.path_folder / self.output_filename ).unlink()
-
         if self.simulated_image_path.is_file():
             self.simulated_image_path.unlink()
 
