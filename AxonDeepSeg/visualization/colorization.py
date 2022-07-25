@@ -15,7 +15,7 @@ from loguru import logger
 class color_generator(object):
     '''Generator that yields the next color given a color palette.'''
 
-    def __init__(self, colors, mem_length=50, tolerance=30, seed=42):
+    def __init__(self, colors, mem_length=30, tolerance=30, seed=42):
         '''
         Initialize the object given a color palette.
         :param colors:      List of colors in RGB format. e.g. [R, G, B]
@@ -26,6 +26,7 @@ class color_generator(object):
         '''
         if len(colors) < 4:
             raise ValueError("Please provide 4 colors or more.")
+        self.first_color = colors[0]
 
         random.seed(seed)
         
@@ -47,6 +48,10 @@ class color_generator(object):
         while True:
             c1 = self.current_color
             c2 = next(self.colors)
+            # check for end of a cycle
+            if c2 is self.first_color:
+                c1 = c2
+                c2 = next(self.colors)
 
             #generate a color inbetween c1 and c2
             color = (
@@ -85,10 +90,10 @@ def colorize_instance_segmentation(instance_seg, colors=None):
 
     if colors is None:
         colors = [
-            (0, 128, 128),
-            (153, 50, 204),
-            (0, 255, 127),
-            (139, 0, 0),
+            (217, 237, 146),
+            (118, 200, 147),
+            (22, 138, 173),
+            (24, 78, 119),
         ]
     color_gen = color_generator(colors)
 
