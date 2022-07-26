@@ -15,15 +15,19 @@ import pandas as pd
 
 # AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
-                                                                get_axon_morphometrics,
-                                                                save_axon_morphometrics,
-                                                                draw_axon_diameter,
-                                                                save_map_of_axon_diameters,
-                                                                get_aggregate_morphometrics,
-                                                                write_aggregate_morphometrics
-                                                            )
+    get_axon_morphometrics,
+    save_axon_morphometrics,
+    draw_axon_diameter,
+    save_map_of_axon_diameters,
+    get_aggregate_morphometrics,
+    write_aggregate_morphometrics
+)
 import AxonDeepSeg.ads_utils as ads
-from config import axon_suffix, myelin_suffix, axonmyelin_suffix, morph_suffix, index_suffix, axonmyelin_index_suffix
+from config import (
+    axon_suffix, myelin_suffix, axonmyelin_suffix,
+    index_suffix, axonmyelin_index_suffix,
+    morph_suffix, instance_suffix,
+)
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
 
@@ -117,6 +121,12 @@ def main(argv=None):
         help='Adds a flag indicating if the axonmyelin object touches a border along with the \n'
             +'coordinates of its bounding box.'
     )
+    ap.add_argument(
+        '-c', '--colorize',
+        required=False,
+        action='store_true',
+        help='To save the instance segmentation image.'
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -124,6 +134,7 @@ def main(argv=None):
     filename = str(args["filename"])
     axon_shape = str(args["axonshape"])
     border_info_flag = args["border_info"]
+    colorization_flag = args["colorize"]
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -193,15 +204,19 @@ def main(argv=None):
                     sys.exit(3)
 
             # Compute statistics
-
-            stats_dataframe, index_image_array = get_axon_morphometrics(
+            morph_output = get_axon_morphometrics(
                 im_axon=pred_axon, 
                 im_myelin=pred_myelin, 
                 pixel_size=psm, 
                 axon_shape=axon_shape, 
                 return_index_image=True,
-                return_border_info=border_info_flag
+                return_border_info=border_info_flag,
+                return_instance_seg=colorization_flag
             )
+            # unpack the morphometrics output
+            stats_dataframe, index_image_array = morph_output[0:2]
+            if colorization_flag:
+                instance_seg_image = morph_output[2]
 
             morph_filename = current_path_target.stem + "_" + filename
 
@@ -225,6 +240,10 @@ def main(argv=None):
                     axonmyelin_image_path=str(current_path_target.with_suffix("")) + str(axonmyelin_suffix),
                     index_image_array=index_image_array
                 )
+                
+                if colorization_flag:
+                    # Save instance segmentation
+                    ads.imwrite(outfile_basename + str(instance_suffix), instance_seg_image)
 
                 logger.info("Morphometrics file: {} has been saved in the {} directory",
                     morph_filename,

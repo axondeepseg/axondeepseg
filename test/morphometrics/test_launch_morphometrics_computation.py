@@ -11,7 +11,10 @@ import sys
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, index_suffix, axonmyelin_index_suffix
+from config import (
+    axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, 
+    index_suffix, axonmyelin_index_suffix, instance_suffix,
+)
 
 
 class TestCore(object):
@@ -34,6 +37,9 @@ class TestCore(object):
         logfile = self.testPath / 'axondeepseg.log'
         if logfile.exists():
             logfile.unlink()
+        
+        if (self.dataPath / f'image{instance_suffix}').exists():
+            (self.dataPath / f'image{instance_suffix}').unlink()
 
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
@@ -276,3 +282,13 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", str(morph_suffix)])
 
         assert Path('axondeepseg.log').exists()
+
+    @pytest.mark.single
+    def test_main_cli_successfully_outputs_colorized_image(self):
+        pathImg = self.dataPath / 'image.png'
+        filename = self.dataPath / f'image{instance_suffix}'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-c"])
+        
+        assert filename.exists()

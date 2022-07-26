@@ -18,6 +18,7 @@ from matplotlib.figure import Figure
 
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
+from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -43,7 +44,6 @@ def get_pixelsize(path_pixelsize_file):
         raise
     else:
         return pixelsize
-
 
 def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
     """
@@ -79,7 +79,16 @@ def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
     # Watershed segmentation of axonmyelin using distance map
     return watershed(-distance, im_centroid, mask=im_axonmyelin)
 
-def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size=None, axon_shape="circle", return_index_image=False, return_border_info=False):
+def get_axon_morphometrics(
+        im_axon, 
+        path_folder=None, 
+        im_myelin=None, 
+        pixel_size=None, 
+        axon_shape="circle", 
+        return_index_image=False, 
+        return_border_info=False,
+        return_instance_seg=False
+    ):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
     If a mask of myelin is provided, also compute myelin-related metrics (myelin thickness, g-ratio, etc.).
@@ -119,6 +128,9 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                         [int(props.centroid[1]) for props in axon_objects])
 
         im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
+        if return_instance_seg:
+            im_instance_seg = colorize_instance_segmentation(im_axonmyelin_label)
+        
         # Measure properties of each axonmyelin object
         axonmyelin_objects = measure.regionprops(im_axonmyelin_label)
 
@@ -225,6 +237,10 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         else:
             stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
 
+    if (not return_index_image) and (not return_instance_seg):
+        return stats_dataframe
+    else:
+        output = (stats_dataframe,)
     if return_index_image is True:
         # Extract the information required to generate the index image
         x0_array = stats_dataframe["x0"].to_numpy()
@@ -236,10 +252,12 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         index_image_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
                                                                   tuple(reversed(im_axon.shape)),
                                                                   mean_diameter_in_pixel)
-        return stats_dataframe, index_image_array
+        output = (*output, index_image_array)
+    
+    if return_instance_seg:
+        output = (*output, im_instance_seg)
 
-    return stats_dataframe
-
+    return output
 
 def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
     """
@@ -272,7 +290,6 @@ def evaluate_myelin_thickness_in_px(axon_object, axonmyelin_object, axon_shape):
         axonmyelin_diam = axonmyelin_object.minor_axis_length
     return (axonmyelin_diam - axon_diam)/2
 
-
 def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
     """
     Returns the myenlinated axon area minus the axon area.
@@ -288,7 +305,6 @@ def evaluate_myelin_area_in_px(axon_object, axonmyelin_object):
         )
     return axonmyelin_object.area - axon_object.area
 
-
 def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
     """
     Calls the `_check_measures_are_relatively_valid` function and if return
@@ -303,7 +319,6 @@ def warn_if_measures_are_unexpected(axon_object, axonmyelin_object, attribute):
             f"for {attribute} attribute."
         )
         logger.warning(msg)
-
 
 def _check_measures_are_relatively_valid(axon_object, axonmyelin_object, attribute):
     """
@@ -406,7 +421,6 @@ def load_axon_morphometrics(morphometrics_file):
 
     return stats_dataframe
 
-
 def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape="circle"):
     """
     :param img: sample grayscale image (png)
@@ -453,7 +467,6 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=
     )
     return fig
 
-
 def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
     """
     :param path_folder: absolute path of the sample and the segmentation folder
@@ -466,7 +479,6 @@ def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
     
     file_path = path_folder / "AxonDeepSeg_map-axondiameter.png"
     axon_diameter_figure.savefig(file_path)
-
 
 def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape="circle"):
     """
@@ -513,7 +525,6 @@ def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape=
                          'mean_myelin_diam': mean_myelin_diam, 'mean_myelin_thickness': mean_myelin_thickness,
                          'axon_density_mm2': axon_density_mm2}
     return aggregate_metrics
-
 
 def write_aggregate_morphometrics(path_folder, aggregate_metrics):
     """
