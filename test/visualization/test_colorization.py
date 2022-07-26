@@ -8,7 +8,6 @@ from AxonDeepSeg.visualization.colorization import colorize_instance_segmentatio
 from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
 from AxonDeepSeg.morphometrics.compute_morphometrics import get_watershed_segmentation
 from AxonDeepSeg import ads_utils as adsutils
-from config import axonmyelin_suffix, instance_suffix
 
 
 class TestCore(object):
@@ -32,21 +31,18 @@ class TestCore(object):
         y_pos = 100
         axon_radius = 100
         gratio = 0.6
-        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
         simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
         # axon 2
         x_pos = 500
         y_pos = 500
         axon_radius = 40
         gratio = 0.6
-        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
         simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
         # axon 3
         x_pos = 750
         y_pos = 750
         axon_radius = 40
         gratio = 0.6
-        myelin_thickness = calc_myelin_thickness(axon_radius, gratio)
         simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
 
         simulated.save(self.simulated_image_path)
