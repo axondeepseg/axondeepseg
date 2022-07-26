@@ -37,6 +37,9 @@ class TestCore(object):
         logfile = self.testPath / 'axondeepseg.log'
         if logfile.exists():
             logfile.unlink()
+        
+        if (self.dataPath / f'image{instance_suffix}').exists():
+            (self.dataPath / f'image{instance_suffix}').unlink()
 
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
@@ -280,7 +283,7 @@ class TestCore(object):
 
         assert Path('axondeepseg.log').exists()
 
-    @pytest.mark.integration
+    @pytest.mark.single
     def test_main_cli_successfully_outputs_colorized_image(self):
         pathImg = self.dataPath / 'image.png'
         filename = self.dataPath / f'image{instance_suffix}'
