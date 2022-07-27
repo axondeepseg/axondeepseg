@@ -285,6 +285,9 @@ def imread(filename):
 def imwrite(filename, img, format='png'):
     """ Write image.
     """
+    # check datatype:
+    if img.dtype == 'float64':
+        img = img.astype(np.uint8)
     imageio.imwrite(filename, img, format=format)
 
 def extract_axon_and_myelin_masks_from_image_data(image_data):
