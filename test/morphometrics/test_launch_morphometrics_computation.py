@@ -283,7 +283,7 @@ class TestCore(object):
 
         assert Path('axondeepseg.log').exists()
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_main_cli_successfully_outputs_colorized_image(self):
         pathImg = self.dataPath / 'image.png'
         filename = self.dataPath / f'image{instance_suffix}'

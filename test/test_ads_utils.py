@@ -16,6 +16,8 @@ class TestCore(object):
         
         self.bad_osf_link = "https://af7lafuoDs"
 
+        self.precision_path = Path('test/__test_files__/__test_precision_files__')
+
     def teardown(self):
         output_path = Path("TEM_striatum") # Name of zip file downloaded, folder was created in this name too
         if output_path.exists():
@@ -96,6 +98,29 @@ class TestCore(object):
 
         with pytest.raises(IOError):
             imread(filename)
+
+    @pytest.mark.unit
+    def test_imread_same_output_for_different_input_precisions(self):
+        filenames = {
+            'image_8bit_int.png',
+            'image_16bit_int.png',
+            'image_32bit_int.png',
+            'image_16bit_float.png',
+            'image_32bit_float.png',
+        }
+
+        image_1 = None
+        image_2 = None
+        for file in filenames:
+            print(file)
+            image = (imread(self.precision_path / file))\
+            
+            if image_1 is None:
+                image_1 = image
+            else:
+                image_2 = image
+
+                assert np.allclose(image_1, image_2, atol=1) # In very few pixels (eg, 3 pixels in entire image), rounding differences between float and int conversions lead to an int difference value of 1, which is why this atol was chosen.
 
     @pytest.mark.unit
     def test_get_file_extension_returns_expected_filenames(self):
