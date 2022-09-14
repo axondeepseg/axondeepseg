@@ -63,33 +63,45 @@ jobs:
           pwd
 
       # Step 2: Install environment.
-      - name: Install Conda Env All OS
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Install Miniforge/Mamba Env All OS
+      - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{matrix.python-version}}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: ads_venv
           auto-update-conda: true
           environment-file: environment.yml
+      - shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+          conda config --show-sources
+          conda config --show
+          printenv | sort
+      - shell: bash -l {0}
+        run: mamba install jupyterlab
 
       # Step 3: List conda info, conda packages
       - name: Conda info and list
         # List
         run: |
-          conda info
-          conda list
+          mamba info
+          mamba list
 
       # Step 4: Activate and Install main AxonDeepSeg repository
       - name: Installation of the main ADS repository
         run: |
-          conda activate ads_venv
+          mamba activate ads_venv
           pip install --verbose -e .
 
       # Step 5: Conda list packages POST ADS.
       - name: Conda list post installation
         # List
         run: |
-          conda info
-          conda list
+          mamba info
+          mamba list
 
       # Step 6: Full PyTest
       - name: Test with pytest
