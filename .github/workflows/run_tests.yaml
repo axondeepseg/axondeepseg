@@ -73,6 +73,7 @@ jobs:
           activate-environment: ads_venv
           auto-update-conda: true
           environment-file: environment.yml
+      
       - shell: bash -l {0}
         run: |
           conda info
@@ -80,6 +81,7 @@ jobs:
           conda config --show-sources
           conda config --show
           printenv | sort
+      
       - shell: bash -l {0}
         run: mamba install jupyterlab
 
