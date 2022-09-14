@@ -85,6 +85,8 @@ jobs:
       - name: Installation of the main ADS repository
         run: |
           mamba init
+          source ~/.bashrc
+          source ~/.bash_profile
           mamba activate ads_venv
           pip install --verbose -e .
 
