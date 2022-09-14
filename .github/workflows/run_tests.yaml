@@ -73,20 +73,9 @@ jobs:
           activate-environment: ads_venv
           auto-update-conda: true
           environment-file: environment.yml
-      
-      - shell: bash -l {0}
-        run: |
-          conda info
-          conda list
-          conda config --show-sources
-          conda config --show
-          printenv | sort
-      
-      - shell: bash -l {0}
-        run: mamba install jupyterlab
 
-      # Step 3: List conda info, conda packages
-      - name: Conda info and list
+      # Step 3: List mamba info, mamba packages
+      - name: Mamba info and list
         # List
         run: |
           mamba info
@@ -95,11 +84,12 @@ jobs:
       # Step 4: Activate and Install main AxonDeepSeg repository
       - name: Installation of the main ADS repository
         run: |
+          mamba init
           mamba activate ads_venv
           pip install --verbose -e .
 
-      # Step 5: Conda list packages POST ADS.
-      - name: Conda list post installation
+      # Step 5: Mamba list packages POST ADS.
+      - name: Mamba list post installation
         # List
         run: |
           mamba info
