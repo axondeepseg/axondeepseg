@@ -64,7 +64,7 @@ jobs:
 
       # Step 2: Install environment.
       - name: Install Miniforge/Mamba Env All OS
-      - uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{matrix.python-version}}
           mamba-version: "*"
