@@ -85,7 +85,16 @@ jobs:
       - name: Installation of the main ADS repository
         run: |
           mamba init
-          source ~/.bashrc
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            source ~/.bashrc
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            source ~/.bash_profile
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            source ~/.bash_profile
+          else
+              echo "$RUNNER_OS not supported"
+              exit 1
+          fi
           mamba activate ads_venv
           pip install --verbose -e .
 
