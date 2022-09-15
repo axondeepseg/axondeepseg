@@ -1,0 +1,2 @@
+[napari.manifest]
+napari-cookietest = napari_cookietest:napari.yaml
