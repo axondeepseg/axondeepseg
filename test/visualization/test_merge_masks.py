@@ -43,4 +43,4 @@ class TestCore(object):
         both = merge_masks(str(path_axon), str(path_myelin), str(self.output_filename))
 
         assert expectedFilePath.is_file()
-        assert np.array_equal(both, imageio.imread(expectedFilePath))
+        assert np.array_equal(both, imageio.v2.imread(expectedFilePath))
