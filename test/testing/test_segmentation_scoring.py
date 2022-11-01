@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 import numpy as np
-import imagio
+import imageio
 import pandas as pd
 
 import pytest
