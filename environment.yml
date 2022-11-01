@@ -29,4 +29,4 @@ dependencies:
     - opencv-contrib-python
     - opencv-python-headless
     - protobuf==3.20.1
-    - ivadomed~=2.9.6
+    - ivadomed~=2.9.7
