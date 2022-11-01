@@ -2,7 +2,7 @@
 
 from pathlib import Path
 import numpy as np
-from imageio import imread
+import imageio
 import pytest
 
 
@@ -18,7 +18,7 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.image = imread(self.folderPath / 'image.png', as_gray=True)
+        self.image = imageio.v2.imread(self.folderPath / 'image.png', as_gray=True)
 
     def teardown_method(self):
         pass
