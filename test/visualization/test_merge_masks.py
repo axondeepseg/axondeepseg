@@ -11,7 +11,7 @@ from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
@@ -23,7 +23,7 @@ class TestCore(object):
             '__test_demo_files__'
             )
 
-    def teardown(self):
+    def teardown_method(self):
         if (self.path_folder / self.output_filename ).is_file():
             (self.path_folder / self.output_filename ).unlink()
 

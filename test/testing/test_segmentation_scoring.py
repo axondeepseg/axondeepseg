@@ -13,7 +13,7 @@ from config import axonmyelin_suffix
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
@@ -30,7 +30,7 @@ class TestCore(object):
             as_gray=True
             )
 
-    def teardown(self):
+    def teardown_method(self):
         pass
 
     # --------------score_analysis tests-------------- #
