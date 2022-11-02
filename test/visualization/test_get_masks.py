@@ -1,18 +1,19 @@
 # coding: utf-8
 
 from pathlib import Path
-import imageio
 import numpy as np
 import os
 from skimage.transform import resize
 import pytest
+import imageio
 
+import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.visualization.get_masks import get_masks, rgb_rendering_of_mask, get_image_unique_vals_properties
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
@@ -25,15 +26,15 @@ class TestCore(object):
             '__prediction_only__'
             )
 
-    def teardown(self):
+    def teardown_method(self):
         if (self.path_folder / ('image' + str(axon_suffix))).is_file():
             (self.path_folder / ('image' + str(axon_suffix))).unlink()
 
         if (self.path_folder / ('image' + str(myelin_suffix))).is_file():
             (self.path_folder / ('image' + str(myelin_suffix))).unlink()
 
-        if (self.path_folder / ('image' + axonmyelin_suffix.stem + '-rgb.png')).is_file():
-            (self.path_folder / ('image' + axonmyelin_suffix.stem + '-rgb.png')).unlink()
+        #if (self.path_folder / ('image' + axonmyelin_suffix.stem + '-rgb.png')).is_file():
+        #    (self.path_folder / ('image' + axonmyelin_suffix.stem + '-rgb.png')).unlink()
 
     # --------------get_masks tests-------------- #
     @pytest.mark.unit
@@ -52,7 +53,7 @@ class TestCore(object):
     # --------------rgb_rendering_of_mask tests-------------- #
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_returns_array_with_extra_dim_of_len_3(self):
-        pred_img = imageio.imread(self.path_folder / ('image' + str(axonmyelin_suffix)))
+        pred_img = ads.imread(self.path_folder / ('image' + str(axonmyelin_suffix)))
 
         rgb_mask = rgb_rendering_of_mask(pred_img)
 
@@ -64,7 +65,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_rgb_rendering_of_mask_writes_expected_files(self):
-        pred_img = imageio.imread(self.path_folder / ('image' + str(axonmyelin_suffix)))
+        pred_img = ads.imread(self.path_folder / ('image' + str(axonmyelin_suffix)))
 
         rgbFile = self.path_folder / ('image' + axonmyelin_suffix.stem + '-rgb.png')
 
@@ -74,7 +75,7 @@ class TestCore(object):
         rgb_mask = rgb_rendering_of_mask(pred_img, str(rgbFile))
 
         assert rgbFile.is_file()
-        assert np.array_equal(rgb_mask, imageio.imread(rgbFile))
+        assert np.array_equal(rgb_mask, imageio.v2.imread(rgbFile))
 
     # --------------get_image_properties tests-------------- #
     @pytest.mark.unit
@@ -96,7 +97,7 @@ class TestCore(object):
             ('image' + str(axonmyelin_suffix))
             )
 
-        loaded_image = imageio.imread(pred_img)
+        loaded_image = ads.imread(pred_img)
 
         image_properties = get_image_unique_vals_properties(loaded_image)
 

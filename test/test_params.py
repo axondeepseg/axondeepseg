@@ -6,10 +6,10 @@ from AxonDeepSeg import params
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         pass
 
-    def teardown(self):
+    def teardown_method(self):
         pass
 
     # --------------download_data tests-------------- #

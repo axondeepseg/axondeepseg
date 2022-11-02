@@ -5,10 +5,10 @@ from AxonDeepSeg.integrity_test import integrity_test
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         pass
 
-    def teardown(self):
+    def teardown_method(self):
         pass
 
     # --------------integrity_test.py tests-------------- #

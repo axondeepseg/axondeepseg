@@ -9,7 +9,7 @@ from AxonDeepSeg import ads_utils
 from AxonDeepSeg import postprocessing
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
 
@@ -21,7 +21,7 @@ class TestCore(object):
 
         self.before_axon_removal_image = ads_utils.imread((self.test_files_path / 'before_removing.png'))
 
-    def teardown(self):
+    def teardown_method(self):
         pass
 
     @pytest.mark.unit

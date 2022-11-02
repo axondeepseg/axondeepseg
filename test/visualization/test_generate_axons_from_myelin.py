@@ -10,7 +10,7 @@ from AxonDeepSeg.visualization.generate_axons_from_myelin import generate_axons_
 from config import myelin_suffix, axonmyelin_suffix
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
@@ -22,7 +22,7 @@ class TestCore(object):
 
         self.myelinMask = self.folderPath / ('image' + str(myelin_suffix))
 
-    def teardown(self):
+    def teardown_method(self):
         if (self.folderPath / 'axon_myelin_mask_corrected.png').is_file():
             (self.folderPath / 'axon_myelin_mask_corrected.png').unlink()
 

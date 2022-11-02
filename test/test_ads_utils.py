@@ -11,12 +11,12 @@ from AxonDeepSeg import params
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         self.osf_link = "https://osf.io/uw5hv/?action=download"
         
         self.bad_osf_link = "https://af7lafuoDs"
 
-    def teardown(self):
+    def teardown_method(self):
         output_path = Path("TEM_striatum") # Name of zip file downloaded, folder was created in this name too
         if output_path.exists():
             shutil.rmtree(output_path)

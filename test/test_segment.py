@@ -17,7 +17,7 @@ import AxonDeepSeg
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.testPath = Path(__file__).resolve().parent
         self.projectPath = self.testPath.parent

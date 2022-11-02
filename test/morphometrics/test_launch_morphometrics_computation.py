@@ -18,7 +18,7 @@ from config import (
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
@@ -29,7 +29,7 @@ class TestCore(object):
         self.axon_shape = "ellipse"         # axon shape is set to ellipse
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
-    def teardown(self):
+    def teardown_method(self):
 
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
@@ -283,7 +283,7 @@ class TestCore(object):
 
         assert Path('axondeepseg.log').exists()
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_main_cli_successfully_outputs_colorized_image(self):
         pathImg = self.dataPath / 'image.png'
         filename = self.dataPath / f'image{instance_suffix}'
