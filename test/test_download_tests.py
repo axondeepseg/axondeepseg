@@ -9,7 +9,7 @@ from AxonDeepSeg.download_tests import download_tests
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         print(self.fullPath)
@@ -30,7 +30,7 @@ class TestCore(object):
 
 
 
-    def teardown(self):
+    def teardown_method(self):
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
         print(fullPath)

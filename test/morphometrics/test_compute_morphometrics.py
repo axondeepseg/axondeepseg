@@ -30,7 +30,7 @@ from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
@@ -129,7 +129,7 @@ class TestCore(object):
         simulated.save(self.image_sim_border_info_path)
 
 
-    def teardown(self):
+    def teardown_method(self):
         if self.tmpDir.exists():
             shutil.rmtree(self.tmpDir)
         if self.image_sim_ellipse_path.is_file():

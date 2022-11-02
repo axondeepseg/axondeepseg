@@ -11,10 +11,10 @@ from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         self.file_path = Path("simulation_test.png")
 
-    def teardown(self):
+    def teardown_method(self):
         if self.file_path.is_file():
             self.file_path.unlink()
 

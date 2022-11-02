@@ -18,7 +18,7 @@ from config import (
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
@@ -29,7 +29,7 @@ class TestCore(object):
         self.axon_shape = "ellipse"         # axon shape is set to ellipse
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
-    def teardown(self):
+    def teardown_method(self):
 
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
