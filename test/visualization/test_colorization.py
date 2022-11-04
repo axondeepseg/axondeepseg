@@ -11,7 +11,7 @@ from AxonDeepSeg import ads_utils as adsutils
 
 
 class TestCore(object):
-    def setup(self):
+    def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
@@ -47,7 +47,7 @@ class TestCore(object):
 
         simulated.save(self.simulated_image_path)
 
-    def teardown(self):
+    def teardown_method(self):
         if self.simulated_image_path.is_file():
             self.simulated_image_path.unlink()
 

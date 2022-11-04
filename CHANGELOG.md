@@ -1,6 +1,42 @@
 Changelog
 ===============================================================================
 
+## v4.1.0 (2022-10-07)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v4.0.0...v4.1.0)
+
+**BUG**
+
+ - Resolve "tif in filename" imread bug & refactor valid image exensions.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/629)
+ - Fix morphometrics bug when writing index/axonmyelin_index files.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/622)
+
+**ENHANCEMENT**
+
+ - `--border-info` option for morphometrics (optical fractionator technique).  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/650)
+ - Add border_touching flag to morphometrics.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/645)
+ - Zoom factor sweep.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/632)
+ - Zoom factor option for segmentation via CLI.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/620)
+
+**FEATURE**
+
+ - Save instance segmentation image.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/667)
+ - Add logging for segmentation/morphometrics.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/633)
+ - Zoom factor sweep.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/632)
+
+**DOCUMENTATION**
+
+ - Add model repo links in the doc.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/621)
+
+**INSTALLATION**
+
+ - Simplify specifying torch dependency.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/642)
+ - Update ivadomed to 2.9.5.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/625)
+ - Update ivadomed to 2.9.4.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/612)
+
+**TESTING**
+
+ - Add test for 16bit TIF grayscale file.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/630)
+ - `environment.yaml`: Pin `pillow!=9.0.0`.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/602)
+
 ## Version 4.0.0 - 2022-02-03
 [View detailed changelog](https://github.com/neuropoly/axondeepseg/compare/v3.3.0...v4.0.0)
 

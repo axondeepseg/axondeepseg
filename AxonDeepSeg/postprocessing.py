@@ -77,7 +77,7 @@ def fill_myelin_holes(myelin_array, max_area_fraction=0.1):
     maximum_axon_area = max_area_fraction * image_dims[0] * image_dims[1]
 
     #Fill the myelin array
-    filled_array = morphology.remove_small_holes(myelin_array.astype(np.bool), area_threshold=maximum_axon_area)
+    filled_array = morphology.remove_small_holes(myelin_array.astype(bool), area_threshold=maximum_axon_area)
     filled_array = filled_array.astype(np.uint8)
 
     #Extract the axon array
