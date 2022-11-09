@@ -26,6 +26,7 @@ def sweep(
     sweep_range,
     sweep_length,
     acquired_resolution = None,
+    no_patch=False
     ):
     """
     Wrapper over segment_image to produce segmentations for zoom factor values within a given range.
@@ -64,6 +65,7 @@ def sweep(
             overlap_value,
             acquired_resolution,
             zoom_factor,
+            no_patch=no_patch
         )    
         # move and rename segmentations
         for path_seg in path_seg_outputs:

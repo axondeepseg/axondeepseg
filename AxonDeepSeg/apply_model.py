@@ -13,6 +13,7 @@ def axon_segmentation(
                     path_model_folder,
                     acquired_resolution,
                     overlap_value=[48,48],
+                    no_patch=False,
                     verbosity_level = 0
                     ):
     '''
@@ -28,11 +29,13 @@ def axon_segmentation(
     :return: Nothing.
     '''
 
-
-
     path_model=path_model_folder
     input_filenames = acquisitions_filenames
-    options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um", "overlap_2D": overlap_value, "binarize_maxpooling": True}
+    options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um",
+               "overlap_2D": overlap_value, "binarize_maxpooling": True}
+    #TODO: Deal with overlap_2D when no_patch is True (CLI and default value)
+    if no_patch:
+        options["no_patch"] = no_patch
 
     # IVADOMED automated segmentation
     nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
