@@ -412,7 +412,7 @@ def main(argv=None):
         required=False,
         help='When applying the model, the image is segmented without using patches. \n'
              'The "--no-patch" flag supersedes the "--overlap" flag. \n'
-             'It may not be suitable with large images depending on computer RAM capacity.'
+             'This option may not be suitable with large images depending on computer RAM capacity.'
     )
     ap._action_groups.reverse()
 

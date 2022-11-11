@@ -27,7 +27,7 @@ def axon_segmentation(
     Higher value means less border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel size of the acquired images.
     :param no_patch: If True, the image is segmented without using patches. Default: False. This parameter supersedes
-    the "overlap_value" parameter. It may not be suitable with large images depending on computer RAM capacity.
+    the "overlap_value" parameter. This option may not be suitable with large images depending on computer RAM capacity.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.

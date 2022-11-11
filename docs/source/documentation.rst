@@ -256,6 +256,10 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 -z ZOOM             Zoom factor.
                     When applying the model, the size of the segmentation patches relative to the image size will change according to this factor.
 
+--no-patch          When applying the model, the image is segmented without using patches.
+                    The "--no-patch" flag supersedes the "--overlap" flag.
+                    This option may not be suitable with large images depending on computer RAM capacity.
+
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
 
