@@ -21,9 +21,11 @@ def axon_segmentation(
     :param path_acquisitions_folders: the directory containing the images to segment.
     :param acquisitions_filenames: filenames of the images to segment.
     :param path_model_folder: path to the folder of the IVADOMED-trained model.
-    :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
-    border effects but more time to perform the segmentation.
+    :param overlap_value: the number of pixels to be used for overlap between patches when doing prediction.
+    Higher value means less border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel size of the acquired images.
+    :param no_patch: If True, the image is segmented without using patches. Default: False. This parameter supersedes
+    the "overlap_value" parameter. It may not be suitable with large images depending on computer RAM capacity.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.

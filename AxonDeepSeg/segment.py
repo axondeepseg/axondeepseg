@@ -127,6 +127,7 @@ def segment_image(
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
+    :param no_patch: If True, the image is segmented without using patches. Default: False.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -219,6 +220,7 @@ def segment_folders(path_testing_images_folder, path_model,
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
+    :param no_patch: If True, the image is segmented without using patches. Default: False.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -408,9 +410,9 @@ def main(argv=None):
         dest="no_patch",
         action='store_true',
         required=False,
-        help='2D patches are not used while segmenting with models trained with patches '
-             'The "--no-patch" argument supersedes the "--overlap-2D" argument. '
-             'This option may not be suitable with large images depending on computer RAM capacity.'
+        help='When applying the model, the image is segmented without using patches. \n'
+             'The "--no-patch" flag supersedes the "--overlap" flag. \n'
+             'It may not be suitable with large images depending on computer RAM capacity.'
     )
     ap._action_groups.reverse()
 

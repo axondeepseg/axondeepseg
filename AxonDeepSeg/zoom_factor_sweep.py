@@ -37,6 +37,7 @@ def sweep(
     :param sweep_range:         tuple with lower and upper bounds for the zoom factor range
     :param sweep_length:        number of equidistant zoom factor values to sample from the range
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
+    :param no_patch:            If True, the image is segmented without using patches. Default: False.
     :return: Nothing.
     """
 
