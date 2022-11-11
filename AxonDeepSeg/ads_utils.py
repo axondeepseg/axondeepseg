@@ -254,7 +254,7 @@ def convert_path(object_path):
         else:
             raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
 
-def imread(filename, bitdepth=8):
+def imread(filename):
     """ Read image and convert it to desired bitdepth without truncation.
     """
 
@@ -279,13 +279,15 @@ def imread(filename, bitdepth=8):
         raw_img = imageio.v2.imread(filename)
         if len(raw_img.shape) > 2:
             raw_img = imageio.v2.imread(filename, as_gray=True)
-
-    img = imageio.core.image_as_uint(raw_img, bitdepth=bitdepth)
+    img = raw_img.astype(np.uint8)
     return img
 
 def imwrite(filename, img, format='png'):
     """ Write image.
     """
+    # check datatype:
+    if img.dtype == 'float64':
+        img = img.astype(np.uint8)
     imageio.imwrite(filename, img, format=format)
 
 def extract_axon_and_myelin_masks_from_image_data(image_data):
