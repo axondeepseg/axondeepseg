@@ -380,7 +380,7 @@ def main(argv=None):
             + 'but also increase the segmentation time. \n'
             + 'Default value: '+str(default_overlap)+'\n'
             + 'Recommended range of values: [10-100]. \n',
-        default=default_overlap,
+        default=None
     )
     ap.add_argument(
         "-z", "--zoom", 
@@ -420,7 +420,7 @@ def main(argv=None):
     args = vars(ap.parse_args(argv))
     type_ = str(args["type"])
     verbosity_level = int(args["verbose"])
-    overlap_value = [int(args["overlap"]), int(args["overlap"])]
+    overlap_value = [int(args["overlap"]), int(args["overlap"])] if args["overlap"] else None
     if args["sizepixel"] is not None:
         psm = float(args["sizepixel"])
     else:

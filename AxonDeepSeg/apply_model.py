@@ -7,12 +7,14 @@ from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 
 from ivadomed import inference as imed_inference
 
+default_overlap = 48
+
 def axon_segmentation(
                     path_acquisitions_folders, 
                     acquisitions_filenames,
                     path_model_folder,
                     acquired_resolution,
-                    overlap_value=[48,48],
+                    overlap_value=None,
                     no_patch=False,
                     verbosity_level = 0
                     ):
@@ -33,11 +35,18 @@ def axon_segmentation(
 
     path_model=path_model_folder
     input_filenames = acquisitions_filenames
-    options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um",
-               "overlap_2D": overlap_value, "binarize_maxpooling": True}
-    #TODO: Deal with overlap_2D when no_patch is True (CLI and default value)
+
+    # Fill options dictionary
+    options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um", "binarize_maxpooling": True}
     if no_patch:
         options["no_patch"] = no_patch
+    if overlap_value:
+        # When both no_patch and overlap_value are used, the no_patch option supersedes the overlap_value
+        # and a warning will be issued by ivadomed while segmenting without patches.
+        options["overlap_2D"] = overlap_value
+    elif not no_patch:
+        # Default overlap is used only without the no_patch option.
+        options["overlap_2D"] = [default_overlap, default_overlap]
 
     # IVADOMED automated segmentation
     nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
