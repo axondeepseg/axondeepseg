@@ -61,11 +61,11 @@ def sweep(
             continue
 
         ads_seg.segment_image(
-            path_image,
-            path_model,
-            overlap_value,
-            acquired_resolution,
-            zoom_factor,
+            path_testing_image=path_image,
+            path_model=path_model,
+            overlap_value=overlap_value,
+            acquired_resolution=acquired_resolution,
+            zoom_factor=zoom_factor,
             no_patch=no_patch
         )    
         # move and rename segmentations
