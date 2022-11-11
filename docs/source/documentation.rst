@@ -250,14 +250,14 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
                         **1**: Developer mode. Shows more information on the terminal, useful for debugging.. 
 
---overlap           Overlap value (in pixels) of the patches when doing the segmentation. 
+--overlap OVERLAP   Overlap value (in pixels) of the patches when doing the segmentation.
                     Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 48. Recommended range of values: [10-100]. 
 
 -z ZOOM             Zoom factor.
                     When applying the model, the size of the segmentation patches relative to the image size will change according to this factor.
 
---no-patch          When applying the model, the image is segmented without using patches.
-                    The "--no-patch" flag supersedes the "--overlap" flag.
+--no-patch          Flag to segment the image without using patches.
+                    The "no-patch" flag supersedes the "overlap" flag.
                     This option may not be suitable with large images depending on computer RAM capacity.
 
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
@@ -362,6 +362,7 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 
 -b                  Flag to extract additionnal bounding box information on axonmyelin objects.
                     Specifying this option ``-b`` flag will add a boolean value indicating if the axon touches one of the image border. It will also output every axon's bounding box (including its myelin). For more information, see the morphometrics file description in the subsection below.
+
 -c                  Flag to save the colorized instance segmentation. For more information about this feature, see the *Colorization* subsection below.
 
 Morphometrics of a single image
@@ -391,7 +392,7 @@ This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
             axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
 
 Morphometrics of a specific image from multiple folders
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argument of the CLI separated by space. For instance, to compute morphometrics of the image **'77.png'** and **'image.png'** present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** respectively of the test dataset, use the following command::
 
     axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png test_segmentation/test_sem_image/image2_sem/image.png

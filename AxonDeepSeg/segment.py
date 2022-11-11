@@ -410,7 +410,7 @@ def main(argv=None):
         dest="no_patch",
         action='store_true',
         required=False,
-        help='When applying the model, the image is segmented without using patches. \n'
+        help='Flag to segment the image without using patches. \n'
              'The "--no-patch" flag supersedes the "--overlap" flag. \n'
              'This option may not be suitable with large images depending on computer RAM capacity.'
     )
