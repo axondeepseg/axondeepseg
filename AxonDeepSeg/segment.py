@@ -114,9 +114,10 @@ def segment_image(
                 path_testing_image,
                 path_model,
                 overlap_value,
-                acquired_resolution = None,
-                zoom_factor = 1.0,
-                verbosity_level = 0):
+                acquired_resolution=None,
+                zoom_factor=1.0,
+                no_patch=False,
+                verbosity_level=0):
 
     '''
     Segment the image located at the path_testing_image location.
@@ -126,6 +127,7 @@ def segment_image(
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
+    :param no_patch: If True, the image is segmented without using patches. Default: False.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -191,7 +193,7 @@ def segment_image(
         axon_segmentation(path_acquisitions_folders=path_acquisition,
                           acquisitions_filenames=[str(path_acquisition / acquisition_name)],
                           path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
-                          overlap_value=overlap_value)
+                          overlap_value=overlap_value, no_patch=no_patch)
 
         if verbosity_level >= 1:
             logger.info(f"Image {path_testing_image} segmented.")
@@ -205,8 +207,9 @@ def segment_image(
 @logger.catch
 def segment_folders(path_testing_images_folder, path_model,
                     overlap_value, 
-                    acquired_resolution = None,
-                    zoom_factor = 1.0,
+                    acquired_resolution=None,
+                    zoom_factor=1.0,
+                    no_patch=False,
                     verbosity_level=0):
     '''
     Segments the images contained in the image folders located in the path_testing_images_folder.
@@ -217,6 +220,7 @@ def segment_folders(path_testing_images_folder, path_model,
     border effects but more time to perform the segmentation.
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
+    :param no_patch: If True, the image is segmented without using patches. Default: False.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -299,7 +303,7 @@ def segment_folders(path_testing_images_folder, path_model,
             axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
                             acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
                             path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
-                            overlap_value=overlap_value)
+                            overlap_value=overlap_value, no_patch=no_patch)
             if verbosity_level >= 1:
                 tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
@@ -376,7 +380,7 @@ def main(argv=None):
             + 'but also increase the segmentation time. \n'
             + 'Default value: '+str(default_overlap)+'\n'
             + 'Recommended range of values: [10-100]. \n',
-        default=default_overlap,
+        default=None
     )
     ap.add_argument(
         "-z", "--zoom", 
@@ -401,13 +405,22 @@ def main(argv=None):
         help='Number of zoom factor values to be computed by the sweep.',
         default=None,
     )
+    ap.add_argument(
+        "--no-patch",
+        dest="no_patch",
+        action='store_true',
+        required=False,
+        help='Flag to segment the image without using patches. \n'
+             'The "--no-patch" flag supersedes the "--overlap" flag. \n'
+             'This option may not be suitable with large images depending on computer RAM capacity.'
+    )
     ap._action_groups.reverse()
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
     type_ = str(args["type"])
     verbosity_level = int(args["verbose"])
-    overlap_value = [int(args["overlap"]), int(args["overlap"])]
+    overlap_value = [int(args["overlap"]), int(args["overlap"])] if args["overlap"] else None
     if args["sizepixel"] is not None:
         psm = float(args["sizepixel"])
     else:
@@ -418,6 +431,7 @@ def main(argv=None):
         zoom_factor = float(args["zoom"])
     else:
         zoom_factor = 1.0
+    no_patch = bool(args["no_patch"])
 
     # check for sweep mode
     sweep_mode = (args["sweeprange"] is not None) & (args["sweeplength"] is not None)
@@ -464,6 +478,7 @@ def main(argv=None):
                         sweep_range=sweep_range,
                         sweep_length=sweep_length,
                         acquired_resolution=psm,
+                        no_patch=no_patch,
                     )
                 else:
                     segment_image(
@@ -472,6 +487,7 @@ def main(argv=None):
                         overlap_value=overlap_value,
                         acquired_resolution=psm,
                         zoom_factor=zoom_factor,
+                        no_patch=no_patch,
                         verbosity_level=verbosity_level
                     )
 
@@ -507,6 +523,7 @@ def main(argv=None):
                 overlap_value=overlap_value,
                 acquired_resolution=psm,
                 zoom_factor=zoom_factor,
+                no_patch=no_patch,
                 verbosity_level=verbosity_level
                 )
 

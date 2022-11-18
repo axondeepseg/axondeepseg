@@ -26,6 +26,7 @@ def sweep(
     sweep_range,
     sweep_length,
     acquired_resolution = None,
+    no_patch=False
     ):
     """
     Wrapper over segment_image to produce segmentations for zoom factor values within a given range.
@@ -36,6 +37,7 @@ def sweep(
     :param sweep_range:         tuple with lower and upper bounds for the zoom factor range
     :param sweep_length:        number of equidistant zoom factor values to sample from the range
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
+    :param no_patch:            If True, the image is segmented without using patches. Default: False.
     :return: Nothing.
     """
 
@@ -59,11 +61,12 @@ def sweep(
             continue
 
         ads_seg.segment_image(
-            path_image,
-            path_model,
-            overlap_value,
-            acquired_resolution,
-            zoom_factor,
+            path_testing_image=path_image,
+            path_model=path_model,
+            overlap_value=overlap_value,
+            acquired_resolution=acquired_resolution,
+            zoom_factor=zoom_factor,
+            no_patch=no_patch
         )    
         # move and rename segmentations
         for path_seg in path_seg_outputs:
