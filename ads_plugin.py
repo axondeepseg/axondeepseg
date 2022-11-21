@@ -36,7 +36,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-VERSION = "0.2.20"
+VERSION = "0.2.21"
 
 class ADSsettings:
     """
@@ -55,6 +55,7 @@ class ADSsettings:
         self.overlap_value = 48
         self.zoom_factor = 1.0
         self.axon_shape = "circle"
+        self.no_patch = False
 
     def on_settings_button(self, event):
         """
@@ -104,6 +105,16 @@ class ADSsettings:
         sizer_axon_shape.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
         frame_sizer_h.Add(sizer_axon_shape)
 
+        # No patch checkbox
+        sizer_no_patch_checkbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.no_patch_checkbox = wx.CheckBox(self.settings_frame, label="No patches")
+        no_patch_checkbox_tooltip = wx.ToolTip("Determines whether or not to split the image into patches. "
+                                               "No patches might give better results but requires more memory.")
+        self.no_patch_checkbox.Bind(wx.EVT_CHECKBOX, self.on_no_patch_checkbox_clicked)
+        self.no_patch_checkbox.SetToolTip(no_patch_checkbox_tooltip)
+        sizer_no_patch_checkbox.Add(self.no_patch_checkbox, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_no_patch_checkbox)
+
         # Add the done button
         sizer_done_button = wx.BoxSizer(wx.HORIZONTAL)
         done_button = wx.Button(self.settings_frame, label="Done")
@@ -122,6 +133,10 @@ class ADSsettings:
 
     def on_axon_shape_combobox_item_selected(self, event):
         self.axon_shape = self.axon_shape_combobox.GetStringSelection()
+
+    def on_no_patch_checkbox_clicked(self, event):
+        self.no_patch = self.no_patch_checkbox.IsChecked()
+        self.overlap_value_spinCtrl.Enable(not self.no_patch)
 
     def on_done_button(self, event):
         # TODO: make sure every setting is saved
@@ -438,6 +453,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
                     acquired_resolution=pixel_size_float,
                     zoom_factor=self.settings.zoom_factor,
+                    no_patch=self.settings.no_patch,
                     verbosity_level=3
                     )
         except SystemExit as err:
