@@ -71,6 +71,7 @@ class ADSsettings:
                                            "applying the prediction model")
         sizer_overlap_value.Add(wx.StaticText(self.settings_frame, label="Overlap value (pixels): "))
         self.overlap_value_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=100, initial=self.overlap_value)
+        self.overlap_value_spinCtrl.Enable(not self.no_patch)
         self.overlap_value_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_overlap_value_changed)
         self.overlap_value_spinCtrl.SetToolTip(overlap_value_tooltip)
         sizer_overlap_value.Add(self.overlap_value_spinCtrl, flag=wx.SHAPED, proportion=1)
@@ -108,8 +109,10 @@ class ADSsettings:
         # No patch checkbox
         sizer_no_patch_checkbox = wx.BoxSizer(wx.HORIZONTAL)
         self.no_patch_checkbox = wx.CheckBox(self.settings_frame, label="No patches")
+        self.no_patch_checkbox.SetValue(self.no_patch)
         no_patch_checkbox_tooltip = wx.ToolTip("Determines whether or not to split the image into patches. "
-                                               "No patches might give better results but requires more memory.")
+                                               "No patches may not be suitable with large images depending on "
+                                               "computer RAM capacity.")
         self.no_patch_checkbox.Bind(wx.EVT_CHECKBOX, self.on_no_patch_checkbox_clicked)
         self.no_patch_checkbox.SetToolTip(no_patch_checkbox_tooltip)
         sizer_no_patch_checkbox.Add(self.no_patch_checkbox, flag=wx.SHAPED, proportion=1)
@@ -446,11 +449,16 @@ class ADScontrol(ctrlpanel.ControlPanel):
             resolution_file = open((image_directory / "pixel_size_in_micrometer.txt").__str__(), 'r')
             pixel_size_float = float(resolution_file.read())
 
+        if self.settings.no_patch:
+            overlap_value = None
+        else:
+            overlap_value = [int(self.settings.overlap_value), int(self.settings.overlap_value)]
+
         try:
             segment_image(
                     path_testing_image=image_path,
                     path_model=model_path,
-                    overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
+                    overlap_value=overlap_value,
                     acquired_resolution=pixel_size_float,
                     zoom_factor=self.settings.zoom_factor,
                     no_patch=self.settings.no_patch,
