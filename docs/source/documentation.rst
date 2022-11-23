@@ -260,6 +260,8 @@ The script to launch is called **axondeepseg**. It takes several arguments:
                     The "no-patch" flag supersedes the "overlap" flag.
                     This option may not be suitable with large images depending on computer RAM capacity.
 
+--gpu-id GPU_ID     Number representing the GPU ID for segmentation if available. Default: 0.
+
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
 
