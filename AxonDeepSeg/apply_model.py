@@ -29,7 +29,7 @@ def axon_segmentation(
     :param acquired_resolution: isotropic pixel size of the acquired images.
     :param no_patch: If True, the image is segmented without using patches. Default: False. This parameter supersedes
     the "overlap_value" parameter. This option may not be suitable with large images depending on computer RAM capacity.
-    :param gpu_id: Number representing the gpu ID for segmentation if available. Default 0.
+    :param gpu_id: Number representing the GPU ID for segmentation if available. Default 0.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.

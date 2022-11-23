@@ -129,7 +129,7 @@ def segment_image(
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
     :param no_patch: If True, the image is segmented without using patches. Default: False.
-    :param gpu_id: Number representing the gpu ID for segmentation if available. Default: 0.
+    :param gpu_id: Number representing the GPU ID for segmentation if available. Default: 0.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -224,7 +224,7 @@ def segment_folders(path_testing_images_folder, path_model,
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
     :param no_patch: If True, the image is segmented without using patches. Default: False.
-    :param gpu_id: Number representing the gpu ID for segmentation if available. Default: 0.
+    :param gpu_id: Number representing the GPU ID for segmentation if available. Default: 0.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -423,7 +423,7 @@ def main(argv=None):
         dest="gpu_id",
         required=False,
         type=int,
-        help='Number representing the gpu ID for segmentation if available. Default: 0.',
+        help='Number representing the GPU ID for segmentation if available. Default: 0.',
         default=0,
     )
     ap._action_groups.reverse()
