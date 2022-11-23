@@ -25,8 +25,9 @@ def sweep(
     overlap_value,
     sweep_range,
     sweep_length,
-    acquired_resolution = None,
-    no_patch=False
+    acquired_resolution=None,
+    no_patch=False,
+    gpu_id=0,
     ):
     """
     Wrapper over segment_image to produce segmentations for zoom factor values within a given range.
@@ -38,6 +39,7 @@ def sweep(
     :param sweep_length:        number of equidistant zoom factor values to sample from the range
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param no_patch:            If True, the image is segmented without using patches. Default: False.
+    :param gpu_id:              Number representing the gpu ID for segmentation if available. Default: 0.
     :return: Nothing.
     """
 
@@ -66,7 +68,8 @@ def sweep(
             overlap_value=overlap_value,
             acquired_resolution=acquired_resolution,
             zoom_factor=zoom_factor,
-            no_patch=no_patch
+            no_patch=no_patch,
+            gpu_id=gpu_id,
         )    
         # move and rename segmentations
         for path_seg in path_seg_outputs:

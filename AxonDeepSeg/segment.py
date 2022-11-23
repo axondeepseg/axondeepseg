@@ -117,6 +117,7 @@ def segment_image(
                 acquired_resolution=None,
                 zoom_factor=1.0,
                 no_patch=False,
+                gpu_id=0,
                 verbosity_level=0):
 
     '''
@@ -128,6 +129,7 @@ def segment_image(
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
     :param no_patch: If True, the image is segmented without using patches. Default: False.
+    :param gpu_id: Number representing the gpu ID for segmentation if available. Default: 0.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -193,7 +195,7 @@ def segment_image(
         axon_segmentation(path_acquisitions_folders=path_acquisition,
                           acquisitions_filenames=[str(path_acquisition / acquisition_name)],
                           path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
-                          overlap_value=overlap_value, no_patch=no_patch)
+                          overlap_value=overlap_value, no_patch=no_patch, gpu_id=gpu_id)
 
         if verbosity_level >= 1:
             logger.info(f"Image {path_testing_image} segmented.")
@@ -210,6 +212,7 @@ def segment_folders(path_testing_images_folder, path_model,
                     acquired_resolution=None,
                     zoom_factor=1.0,
                     no_patch=False,
+                    gpu_id=0,
                     verbosity_level=0):
     '''
     Segments the images contained in the image folders located in the path_testing_images_folder.
@@ -221,6 +224,7 @@ def segment_folders(path_testing_images_folder, path_model,
     :param acquired_resolution: isotropic pixel resolution of the acquired images.
     :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
     :param no_patch: If True, the image is segmented without using patches. Default: False.
+    :param gpu_id: Number representing the gpu ID for segmentation if available. Default: 0.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -303,7 +307,7 @@ def segment_folders(path_testing_images_folder, path_model,
             axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
                             acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
                             path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
-                            overlap_value=overlap_value, no_patch=no_patch)
+                            overlap_value=overlap_value, no_patch=no_patch, gpu_id=gpu_id)
             if verbosity_level >= 1:
                 tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
 
@@ -414,6 +418,14 @@ def main(argv=None):
              'The "--no-patch" flag supersedes the "--overlap" flag. \n'
              'This option may not be suitable with large images depending on computer RAM capacity.'
     )
+    ap.add_argument(
+        "--gpu-id",
+        dest="gpu_id",
+        required=False,
+        type=int,
+        help='Number representing the gpu ID for segmentation if available. Default: 0.',
+        default=0,
+    )
     ap._action_groups.reverse()
 
     # Processing the arguments
@@ -432,6 +444,7 @@ def main(argv=None):
     else:
         zoom_factor = 1.0
     no_patch = bool(args["no_patch"])
+    gpu_id = int(args["gpu_id"])
 
     # check for sweep mode
     sweep_mode = (args["sweeprange"] is not None) & (args["sweeplength"] is not None)
@@ -479,6 +492,7 @@ def main(argv=None):
                         sweep_length=sweep_length,
                         acquired_resolution=psm,
                         no_patch=no_patch,
+                        gpu_id=gpu_id
                     )
                 else:
                     segment_image(
@@ -488,6 +502,7 @@ def main(argv=None):
                         acquired_resolution=psm,
                         zoom_factor=zoom_factor,
                         no_patch=no_patch,
+                        gpu_id=gpu_id,
                         verbosity_level=verbosity_level
                     )
 
@@ -524,6 +539,7 @@ def main(argv=None):
                 acquired_resolution=psm,
                 zoom_factor=zoom_factor,
                 no_patch=no_patch,
+                gpu_id=gpu_id,
                 verbosity_level=verbosity_level
                 )
 
