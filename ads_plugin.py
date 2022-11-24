@@ -55,6 +55,7 @@ class ADSsettings:
         self.overlap_value = 48
         self.zoom_factor = 1.0
         self.axon_shape = "circle"
+        self.gpu_id = 0
 
     def on_settings_button(self, event):
         """
@@ -104,6 +105,16 @@ class ADSsettings:
         sizer_axon_shape.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
         frame_sizer_h.Add(sizer_axon_shape)
 
+        # Add the gpu_id selection
+        sizer_gpu_id = wx.BoxSizer(wx.HORIZONTAL)
+        gpu_id_tooltip = wx.ToolTip("Number representing the GPU ID for segmentation if available.")
+        sizer_gpu_id.Add(wx.StaticText(self.settings_frame, label="GPU ID: "))
+        self.gpu_id_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=100, initial=self.gpu_id)
+        self.gpu_id_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_gpu_id_changed)
+        self.gpu_id_spinCtrl.SetToolTip(gpu_id_tooltip)
+        sizer_gpu_id.Add(self.gpu_id_spinCtrl, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_gpu_id)
+
         # Add the done button
         sizer_done_button = wx.BoxSizer(wx.HORIZONTAL)
         done_button = wx.Button(self.settings_frame, label="Done")
@@ -122,6 +133,9 @@ class ADSsettings:
 
     def on_axon_shape_combobox_item_selected(self, event):
         self.axon_shape = self.axon_shape_combobox.GetStringSelection()
+
+    def on_gpu_id_changed(self, event):
+        self.gpu_id = self.gpu_id_spinCtrl.GetValue()
 
     def on_done_button(self, event):
         # TODO: make sure every setting is saved
@@ -438,6 +452,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
                     acquired_resolution=pixel_size_float,
                     zoom_factor=self.settings.zoom_factor,
+                    gpu_id=self.settings.gpu_id,
                     verbosity_level=3
                     )
         except SystemExit as err:
