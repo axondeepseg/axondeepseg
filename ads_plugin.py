@@ -56,6 +56,8 @@ class ADSsettings:
         self.zoom_factor = 1.0
         self.axon_shape = "circle"
         self.gpu_id = 0
+        self.n_gpus = ads_utils.check_available_gpus(None)
+        self.max_gpu_id = self.n_gpus-1 if self.n_gpus > 0 else 0
 
     def on_settings_button(self, event):
         """
@@ -109,7 +111,8 @@ class ADSsettings:
         sizer_gpu_id = wx.BoxSizer(wx.HORIZONTAL)
         gpu_id_tooltip = wx.ToolTip("Number representing the GPU ID for segmentation if available.")
         sizer_gpu_id.Add(wx.StaticText(self.settings_frame, label="GPU ID: "))
-        self.gpu_id_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=100, initial=self.gpu_id)
+        self.gpu_id_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=self.max_gpu_id, initial=self.gpu_id)
+        self.gpu_id_spinCtrl.Enable(bool(self.n_gpus))
         self.gpu_id_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_gpu_id_changed)
         self.gpu_id_spinCtrl.SetToolTip(gpu_id_tooltip)
         sizer_gpu_id.Add(self.gpu_id_spinCtrl, flag=wx.SHAPED, proportion=1)

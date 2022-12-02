@@ -446,7 +446,10 @@ def main(argv=None):
     no_patch = bool(args["no_patch"])
     gpu_id = int(args["gpu_id"])
 
-    # check for sweep mode
+    # Check for available GPU IDs
+    ads.check_available_gpus(gpu_id)
+
+    # Check for sweep mode
     sweep_mode = (args["sweeprange"] is not None) & (args["sweeplength"] is not None)
     if sweep_mode:
         sweep_range = [float(args["sweeprange"][0]), float(args["sweeprange"][1])]
