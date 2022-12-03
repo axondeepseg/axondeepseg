@@ -36,7 +36,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-VERSION = "0.2.20"
+VERSION = "0.2.21"
 
 class ADSsettings:
     """
@@ -55,6 +55,7 @@ class ADSsettings:
         self.overlap_value = 48
         self.zoom_factor = 1.0
         self.axon_shape = "circle"
+        self.no_patch = False
 
     def on_settings_button(self, event):
         """
@@ -70,6 +71,7 @@ class ADSsettings:
                                            "applying the prediction model")
         sizer_overlap_value.Add(wx.StaticText(self.settings_frame, label="Overlap value (pixels): "))
         self.overlap_value_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=100, initial=self.overlap_value)
+        self.overlap_value_spinCtrl.Enable(not self.no_patch)
         self.overlap_value_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_overlap_value_changed)
         self.overlap_value_spinCtrl.SetToolTip(overlap_value_tooltip)
         sizer_overlap_value.Add(self.overlap_value_spinCtrl, flag=wx.SHAPED, proportion=1)
@@ -104,6 +106,18 @@ class ADSsettings:
         sizer_axon_shape.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
         frame_sizer_h.Add(sizer_axon_shape)
 
+        # No patch checkbox
+        sizer_no_patch_checkbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.no_patch_checkbox = wx.CheckBox(self.settings_frame, label="No patches")
+        self.no_patch_checkbox.SetValue(self.no_patch)
+        no_patch_checkbox_tooltip = wx.ToolTip("Determines whether or not to split the image into patches. "
+                                               "No patches may not be suitable with large images depending on "
+                                               "computer RAM capacity.")
+        self.no_patch_checkbox.Bind(wx.EVT_CHECKBOX, self.on_no_patch_checkbox_clicked)
+        self.no_patch_checkbox.SetToolTip(no_patch_checkbox_tooltip)
+        sizer_no_patch_checkbox.Add(self.no_patch_checkbox, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_no_patch_checkbox)
+
         # Add the done button
         sizer_done_button = wx.BoxSizer(wx.HORIZONTAL)
         done_button = wx.Button(self.settings_frame, label="Done")
@@ -122,6 +136,10 @@ class ADSsettings:
 
     def on_axon_shape_combobox_item_selected(self, event):
         self.axon_shape = self.axon_shape_combobox.GetStringSelection()
+
+    def on_no_patch_checkbox_clicked(self, event):
+        self.no_patch = self.no_patch_checkbox.IsChecked()
+        self.overlap_value_spinCtrl.Enable(not self.no_patch)
 
     def on_done_button(self, event):
         # TODO: make sure every setting is saved
@@ -431,13 +449,19 @@ class ADScontrol(ctrlpanel.ControlPanel):
             resolution_file = open((image_directory / "pixel_size_in_micrometer.txt").__str__(), 'r')
             pixel_size_float = float(resolution_file.read())
 
+        if self.settings.no_patch:
+            overlap_value = None
+        else:
+            overlap_value = [int(self.settings.overlap_value), int(self.settings.overlap_value)]
+
         try:
             segment_image(
                     path_testing_image=image_path,
                     path_model=model_path,
-                    overlap_value=[int(self.settings.overlap_value), int(self.settings.overlap_value)],
+                    overlap_value=overlap_value,
                     acquired_resolution=pixel_size_float,
                     zoom_factor=self.settings.zoom_factor,
+                    no_patch=self.settings.no_patch,
                     verbosity_level=3
                     )
         except SystemExit as err:
