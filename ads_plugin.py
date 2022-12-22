@@ -36,7 +36,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-VERSION = "0.2.21"
+VERSION = "0.2.22"
 
 class ADSsettings:
     """
@@ -111,8 +111,8 @@ class ADSsettings:
         self.no_patch_checkbox = wx.CheckBox(self.settings_frame, label="No patches")
         self.no_patch_checkbox.SetValue(self.no_patch)
         no_patch_checkbox_tooltip = wx.ToolTip("Determines whether or not to split the image into patches. "
-                                               "No patches may not be suitable with large images depending on "
-                                               "computer RAM capacity.")
+                                               "No patches could potentially produce better results but may not be suitable "
+                                               "with large images depending on computer RAM capacity.")
         self.no_patch_checkbox.Bind(wx.EVT_CHECKBOX, self.on_no_patch_checkbox_clicked)
         self.no_patch_checkbox.SetToolTip(no_patch_checkbox_tooltip)
         sizer_no_patch_checkbox.Add(self.no_patch_checkbox, flag=wx.SHAPED, proportion=1)

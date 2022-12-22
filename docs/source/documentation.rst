@@ -258,7 +258,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 --no-patch          Flag to segment the image without using patches.
                     The "no-patch" flag supersedes the "overlap" flag.
-                    This option may not be suitable with large images depending on computer RAM capacity.
+                    This option could potentially produce better results but may not be suitable with large images depending on computer RAM capacity.
 
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
