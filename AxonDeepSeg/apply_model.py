@@ -4,6 +4,7 @@ from pathlib import Path
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.visualization.merge_masks import merge_masks
 from config import axon_suffix, myelin_suffix, axonmyelin_suffix
+from loguru import logger
 
 from ivadomed import inference as imed_inference
 
@@ -42,6 +43,12 @@ def axon_segmentation(
     options = {"pixel_size": [acquired_resolution, acquired_resolution], "pixel_size_units": "um", "binarize_maxpooling": True}
     if no_patch:
         options["no_patch"] = no_patch
+        logger.warning("The 'no-patch' option was selected for segmentation. "\
+                       "Please note that it may not be suitable with large images depending on computer RAM capacity.")
+    else:
+        logger.warning("The 'no-patch' option was not selected for segmentation. "\
+                       "Please note that this option could potentially produce better results but may not be suitable "\
+                       "with large images depending on computer RAM capacity.")
     if overlap_value:
         # When both no_patch and overlap_value are used, the no_patch option supersedes the overlap_value
         # and a warning will be issued by ivadomed while segmenting without patches.
