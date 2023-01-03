@@ -401,7 +401,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_nopatch_and_overlap_flags(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            # Note that the pixel size set here, 0.1, differs from the true size, 0.37, in order to reduce RAM burden GitHub Actions CIs and users computers
+            # Note that the pixel size set here, 0.1, differs from the true size, 0.37, in order to reduce RAM burden on GitHub Actions CIs and users computers
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.1", "--no-patch", "--overlap", "48"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
