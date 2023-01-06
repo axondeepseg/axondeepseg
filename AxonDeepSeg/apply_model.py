@@ -17,7 +17,8 @@ def axon_segmentation(
                     acquired_resolution,
                     overlap_value=None,
                     no_patch=False,
-                    verbosity_level = 0
+                    gpu_id=0,
+                    verbosity_level=0
                     ):
     '''
     Segment images using IVADOMED.
@@ -29,6 +30,7 @@ def axon_segmentation(
     :param acquired_resolution: isotropic pixel size of the acquired images.
     :param no_patch: If True, the image is segmented without using patches. Default: False. This parameter supersedes
     the "overlap_value" parameter. This option may not be suitable with large images depending on computer RAM capacity.
+    :param gpu_id: Number representing the GPU ID for segmentation if available. Default 0.
     :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
     process.
     :return: Nothing.
@@ -56,7 +58,7 @@ def axon_segmentation(
         options["overlap_2D"] = [default_overlap, default_overlap]
 
     # IVADOMED automated segmentation
-    nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, options=options)
+    nii_lst, _ = imed_inference.segment_volume(str(path_model), input_filenames, gpu_id=gpu_id, options=options)
     
     target_lst = [str(axon_suffix), str(myelin_suffix)]
 

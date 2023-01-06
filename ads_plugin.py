@@ -36,7 +36,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-VERSION = "0.2.22"
+VERSION = "0.2.23"
 
 class ADSsettings:
     """
@@ -56,6 +56,9 @@ class ADSsettings:
         self.zoom_factor = 1.0
         self.axon_shape = "circle"
         self.no_patch = False
+        self.gpu_id = 0
+        self.n_gpus = ads_utils.check_available_gpus(None)
+        self.max_gpu_id = self.n_gpus-1 if self.n_gpus > 0 else 0
 
     def on_settings_button(self, event):
         """
@@ -118,6 +121,17 @@ class ADSsettings:
         sizer_no_patch_checkbox.Add(self.no_patch_checkbox, flag=wx.SHAPED, proportion=1)
         frame_sizer_h.Add(sizer_no_patch_checkbox)
 
+        # Add the gpu_id selection
+        sizer_gpu_id = wx.BoxSizer(wx.HORIZONTAL)
+        gpu_id_tooltip = wx.ToolTip("Number representing the GPU ID for segmentation if available.")
+        sizer_gpu_id.Add(wx.StaticText(self.settings_frame, label="GPU ID: "))
+        self.gpu_id_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=self.max_gpu_id, initial=self.gpu_id)
+        self.gpu_id_spinCtrl.Enable(bool(self.n_gpus))
+        self.gpu_id_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_gpu_id_changed)
+        self.gpu_id_spinCtrl.SetToolTip(gpu_id_tooltip)
+        sizer_gpu_id.Add(self.gpu_id_spinCtrl, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_gpu_id)
+
         # Add the done button
         sizer_done_button = wx.BoxSizer(wx.HORIZONTAL)
         done_button = wx.Button(self.settings_frame, label="Done")
@@ -140,6 +154,9 @@ class ADSsettings:
     def on_no_patch_checkbox_clicked(self, event):
         self.no_patch = self.no_patch_checkbox.IsChecked()
         self.overlap_value_spinCtrl.Enable(not self.no_patch)
+
+    def on_gpu_id_changed(self, event):
+        self.gpu_id = self.gpu_id_spinCtrl.GetValue()
 
     def on_done_button(self, event):
         # TODO: make sure every setting is saved
@@ -462,6 +479,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     acquired_resolution=pixel_size_float,
                     zoom_factor=self.settings.zoom_factor,
                     no_patch=self.settings.no_patch,
+                    gpu_id=self.settings.gpu_id,
                     verbosity_level=3
                     )
         except SystemExit as err:

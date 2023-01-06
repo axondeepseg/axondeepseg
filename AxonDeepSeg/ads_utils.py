@@ -17,6 +17,7 @@ from tqdm import tqdm
 import raven
 import imageio
 import numpy as np
+from loguru import logger
 
 from config import valid_extensions
 
@@ -331,6 +332,26 @@ def get_file_extension(filename):
     # Find the first match from the list of supported file extensions
     extension = next((ext for ext in valid_extensions if str(filename).lower().endswith(ext)), None)
     return extension
+
+def check_available_gpus(gpu_id):
+    """ Get the number of available GPUs
+    Args:
+        gpu_id (int): Number representing the requested GPU ID for segmentation
+    Returns:
+        n_gpus: Number of available GPUs
+    """
+    from torch.cuda import device_count
+    n_gpus = device_count()
+    if (gpu_id is not None) and (gpu_id < 0):
+        logger.error("The GPU ID must be 0 or a positive integer.")
+        sys.exit(3)
+    elif (gpu_id is not None) and n_gpus == 0:
+        logger.warning("No GPU available, using CPU.")
+    elif (gpu_id is not None) and (gpu_id > n_gpus-1):
+        logger.error(f"GPU ID '{str(gpu_id)}' is not available. The available GPU IDs are {str(list(range(n_gpus)))}.")
+        sys.exit(3)
+
+    return n_gpus
 
 # Call init_ads() automatically when module is imported
 # init_ads()
