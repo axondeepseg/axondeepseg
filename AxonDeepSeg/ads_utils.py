@@ -280,7 +280,7 @@ def imread(filename):
         raw_img = imageio.v2.imread(filename)
         if len(raw_img.shape) > 2:
             raw_img = imageio.v2.imread(filename, as_gray=True)
-    img = raw_img.astype(np.uint8)
+    img = imageio.core.image_as_uint(raw_img, bitdepth=8)
     return img
 
 def imwrite(filename, img, format='png'):
