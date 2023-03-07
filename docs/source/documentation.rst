@@ -104,14 +104,14 @@ Then, activate your virtual environment::
 
 Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
 
-    pip install -e .
+    pip install -e . plugins/
 
 .. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
    ::
 
         cd axondeepseg
         git pull
-        pip install -e .
+        pip install -e . plugins/
 
 .. WARNING :: When re-installing the application, the model folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
