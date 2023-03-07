@@ -53,3 +53,5 @@ __MACOSX/
 axondeepseg.log
 
 Pipfile
+
+*.egg-info/
