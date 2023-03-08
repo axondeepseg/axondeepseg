@@ -4,7 +4,6 @@ channels:
 dependencies:
   - python=3.8
   - nibabel 3.2.*
-  - napari
   - h5py=2.10.0
   - numpy
   - scipy
@@ -26,5 +25,6 @@ dependencies:
   - openpyxl
   - pip
   - pip:
+    - napari
     - protobuf==3.20.1
     - ivadomed~=2.9.8
