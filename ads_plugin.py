@@ -36,7 +36,7 @@ import openpyxl
 import pandas as pd
 import imageio
 
-VERSION = "0.2.23"
+VERSION = "0.2.24"
 
 class ADSsettings:
     """
