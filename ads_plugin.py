@@ -399,11 +399,11 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Load the masks into FSLeyes
         axon_outfile = self.ads_temp_dir / (image_name + "-axon.png")
         ads_utils.imwrite(axon_outfile, axon_mask)
-        self.load_png_image_from_path(axon_outfile, is_mask=True, colormap="blue")
+        self.load_png_image_from_path(axon_outfile, is_mask=True, colormap="bwr_r")
 
         myelin_outfile = self.ads_temp_dir / (image_name + "-myelin.png")
         ads_utils.imwrite(myelin_outfile, myelin_mask)
-        self.load_png_image_from_path(myelin_outfile, is_mask=True, colormap="red")
+        self.load_png_image_from_path(myelin_outfile, is_mask=True, colormap="bwr")
 
     def on_apply_model_button(self, event):
         """
@@ -795,7 +795,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
                 return im_axonmyelin_label
 
     def load_png_image_from_path(
-        self, image_path, is_mask=False, add_to_overlayList=True, colormap="greyscale"
+        self, image_path, is_mask=False, add_to_overlayList=True, colormap="gray"
     ):
         """
         This function converts a 2D image into a NIfTI image and loads it as an overlay.
