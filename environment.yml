@@ -12,7 +12,7 @@ dependencies:
   - scikit-image=0.19.3
   - tabulate
   - pandas
-  - matplotlib=3.3.4
+  - matplotlib
   - mpld3
   - tqdm
   - requests
