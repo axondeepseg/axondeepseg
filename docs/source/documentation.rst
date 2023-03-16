@@ -91,8 +91,6 @@ To setup the Python virtual environment with all the required packages, run the 
 
 .. WARNING :: For some users, the installation may take up to 30 minutes as many dependencies have shared subdependencies, and resolving these potential conflicts takes time. If that's the case, we encourage you to take a break from your screen and go for a walk while listening to the `AxonDeepSeg Spotify playlist <https://open.spotify.com/playlist/27LVNnfhTKjVOli6bPCaV5?si=OydcwxoOSamwCsg3xcqybw>`_.
 
-.. NOTE :: FSLeyes is only supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI. 
-
 Then, activate your virtual environment::
 
     conda activate ads_venv
@@ -104,14 +102,14 @@ Then, activate your virtual environment::
 
 Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
 
-    pip install -e . plugins/
+    pip install -e .
 
 .. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
    ::
 
         cd axondeepseg
         git pull
-        pip install -e . plugins/
+        pip install -e .
 
 .. WARNING :: When re-installing the application, the model folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
@@ -150,38 +148,16 @@ If all tests pass, AxonDeepSeg was installed succesfully.
 Graphical User Interface (GUI)
 -----------------------------------------
 
-AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if need to).
+AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `Napari <https://napari.org/stable/>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if needed).
 
-.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/GUI_image.png
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_image.png
 
-Launch FSLeyes ::
+Launch Napari ::
 
-           fsleyes
+           napari
 
-In FSLeyes, do the following:
-- Click on ``file -> load plugin``
-- Select ``ads_plugin.py`` (found in AxonDeepSeg folder)
-- When asked ``Install permanently`` click on ``yes``.
-- Close FSLeyes and re-open it.
-
-From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
-
-In case, you find trouble installing FSLeyes plugin for ADS you could refer the video below.
-
-.. raw:: html
-
-   <iframe width="700" height="394" src="https://www.youtube.com/embed/ImElcp9_k6Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-
-.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
-           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
-           This step may only be required when you first install the plugin.
-
-
-Known issues
-~~~~~~~~~~~~
-1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
-
+In Napari, do the following:
+- Click on ``Plugins -> ADS plugin (napari-ads)``
 
 Existing models
 ===============
