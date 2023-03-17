@@ -22,13 +22,19 @@ from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
 
 class ADSsettings:
-    """
+    """Plugin settings class.
+    
     This class handles everything related to the parameters used in the ADS plugin, including the frame for the settings
     menu.
     """
     def __init__(self, ads_plugin):
-        """
-        Constructor for the ADSsettings class. Initializes the default settings.
+        """Constructor for the ADSsettings class.
+
+        Args:
+            ads_plugin: An instance of the ADS plugin that uses the ADSsettings class.
+
+        Returns:
+            None
         """
         self.ads_plugin = ads_plugin
 
@@ -44,6 +50,14 @@ class ADSsettings:
         self.setup_settings_menu()
 
     def setup_settings_menu(self):
+        """Sets up the settings menu for the AxonDeepSeg plugin.
+
+        The settings menu contains options for the user to adjust certain parameters for the segmentation process,
+        such as the overlap value, zoom factor, axon shape, and GPU ID.
+
+        Returns:
+            None
+        """
         self.Settings_menu_ui = QtWidgets.QDialog(self.ads_plugin)
         self.ui = Ui_Settings_menu_ui()
         self.ui.setupUi(self.Settings_menu_ui)
@@ -56,6 +70,14 @@ class ADSsettings:
         self.ui.gpu_id_spinBox.valueChanged.connect(self._on_gpu_id_changed)
 
     def create_settings_menu(self):
+        """Creates the settings menu and sets the values of its UI elements to the current settings.
+
+        Sets the values in the setings menu of the overlap value, zoom factor, axon shape, no patch,
+        and GPU ID to the current values of the corresponding settings. Shows the settings menu.
+
+        Returns:
+            None
+        """
         self.ui.overlap_value_spinBox.setValue(self.overlap_value)
         self.ui.zoom_factor_spinBox.setValue(self.zoom_factor)
         self.ui.axon_shape_comboBox.setCurrentIndex(self._axon_shape_selection_index)
@@ -65,27 +87,99 @@ class ADSsettings:
         self.Settings_menu_ui.show()
 
     def _on_done_button_click(self):
+        """Closes the settings menu dialog when the user clicks the 'Done' button.
+
+        Returns:
+            None
+        """
         self.Settings_menu_ui.close()
 
     def _on_overlap_value_changed(self):
+        """Update the overlap value attribute with the value from the UI's overlap value spin box.
+
+        This method is called when the overlap value spin box value is changed in the UI. It retrieves the new value
+        from the spin box and updates the overlap_value attribute of the class instance.
+
+        Returns:
+            None
+        """
         self.overlap_value = self.ui.overlap_value_spinBox.value()
 
     def _on_zoom_factor_changed(self):
+        """Update the zoom factor value attribute with the value from the UI's zoom factor spin box.
+
+        This method is called when the zoom factor value spin box value is changed in the UI. It retrieves the new value
+        from the spin box and updates the zoom_factor attribute of the class instance.
+
+        Returns:
+            None
+        """
         self.zoom_factor = self.ui.zoom_factor_spinBox.value()
 
     def _on_axon_shape_changed(self):
+        """Update the axon shape attribute with the value from the UI's axon shape combo box.
+
+        This method is called when the axon shape value combo box value is changed in the UI. It retrieves the new value
+        from the combo box and updates the axon_shape attribute of the class instance.
+
+        Returns:
+            None
+        """
         self.axon_shape = self.ui.axon_shape_comboBox.currentText()
         self._axon_shape_selection_index = self.ui.axon_shape_comboBox.currentIndex()
 
     def _on_no_patch_changed(self):
+        """Update the no patch attribute with the value from the UI's no patch checkbox.
+
+        This method is called when the no patch value checkbox state is changed in the UI. It retrieves the new state
+        from the checkbox and updates the no_patch attribute of the class instance.
+
+        Returns:
+            None
+        """
         self.no_patch = self.ui.no_patch_checkBox.isChecked()
 
     def _on_gpu_id_changed(self):
+        """Update the GPU ID value attribute with the value from the UI's GPU ID spin box.
+
+        This method is called when the GPU ID value spin box value is changed in the UI. It retrieves the new value
+        from the spin box and updates the gpu_id attribute of the class instance.
+
+        Returns:
+            None
+        """
         self.gpu_id = self.ui.gpu_id_spinBox.value()
 
 
 class ADSplugin(QWidget):
+    """Plugin class.
+    
+    This class handles the ADS plugin widget.
+    """
     def __init__(self, napari_viewer):
+        """Constructor for the ADS plugin widget.
+
+        This method initializes the ADS plugin widget. It sets the viewer object as an attribute of the class and initializes the ADSsettings object as an attribute of the widget.
+
+        The method also creates the user interface elements for the ADS plugin widget, including:
+
+        A citation textbox that displays the citation string for the ADS plugin.
+        A hyperlink label that displays a link to the ADS plugin documentation.
+        A combobox for selecting the ADS model to apply.
+        A button for applying the selected ADS model.
+        A button for loading a mask image.
+        A button for filling axons.
+        A button for saving the segmentation.
+        A button for computing morphometrics.
+        A button for opening the settings menu.
+        The method sets up the layout of these user interface elements and adds them to the ADS plugin widget.
+
+        Args:
+            param napari_viewer: The napari viewer object.
+
+        Returns:
+            None
+        """
         super().__init__()
         self.viewer = napari_viewer
         self.settings = ADSsettings(self)
@@ -140,6 +234,20 @@ class ADSplugin(QWidget):
         self.layout().addStretch()
 
     def try_to_get_pixel_size_of_layer(self, layer):
+        """Method to attempt to retrieve the pixel size of an image layer.
+
+        This method attempts to retrieve the pixel size of the image represented by the input layer. It first identifies the path to the image file and the directory in which it is located. It then checks if a file called "pixel_size_in_micrometer.txt" exists in the image directory.
+
+        If the file exists, the method reads the pixel size value as a float from the file and returns it. If the file does not exist, the method returns None.
+
+        Note that the file "pixel_size_in_micrometer.txt" must be present in the image directory and must contain the pixel size value in micrometers as a single float value.
+        
+        Args:
+            layer: The napari image layer for which to try to retrieve the pixel size.
+
+        Returns:
+            None
+        """
         image_path = Path(layer.source.path)
         image_directory = image_path.parents[0]
 
@@ -154,6 +262,18 @@ class ADSplugin(QWidget):
             return None
 
     def add_layer_pixel_size_to_metadata(self, layer):
+        """Method to add the pixel size of an image layer to its metadata.
+
+        This method attempts to retrieve the pixel size of the input image layer using the 'try_to_get_pixel_size_of_layer' method. If the pixel size value is successfully retrieved, it is added to the metadata of the layer with the key "pixel_size". If the pixel size value cannot be retrieved, the method returns False.
+
+        Args:
+            layer: The napari image layer for which to add the pixel size metadata.
+
+        Returns:
+            bool:
+                True, if the pixel size metadata was successfully added to the layer.
+                False, if the pixel size metadata could not be retrieved or added to the layer.
+        """
         pixel_size = self.try_to_get_pixel_size_of_layer(layer)
         if pixel_size is not None:
             layer.metadata["pixel_size"] = pixel_size
@@ -163,6 +283,11 @@ class ADSplugin(QWidget):
 
 
     def _on_apply_model_button_click(self):
+        """Apply the selected AxonDeepSeg model to the active layer of the viewer.
+
+        Returns:
+            None
+        """
         selected_layers = self.viewer.layers.selection
         selected_model = self.model_selection_combobox.currentText()
 
@@ -200,6 +325,17 @@ class ADSplugin(QWidget):
 
 
     def _on_model_finished_apply(self):
+        """Callback function called when the apply model thread finishes.
+
+        This method gets the results of the apply model thread and updates the viewer and layer
+        metadata with the axon and myelin masks generated by the model. If the thread
+        finished successfully, the method gets the path and name of the axon and myelin masks
+        generated by the model, reads the masks from disk, and adds them to the viewer as separate
+        labels.
+
+        Returns:
+            None
+        """
         self.apply_model_button.setEnabled(True)
         if not self.apply_model_thread.task_finished_successfully:
             self.show_info_message("Couldn't apply the ADS model. Check the console for more information")
@@ -223,6 +359,15 @@ class ADSplugin(QWidget):
         selected_layer.metadata["associated_myelin_mask_name"] = myelin_mask_name
 
     def _on_load_mask_button_click(self):
+        """Handles the click event of the 'Load Mask' button.
+
+        The method loads a mask file selected by the user and creates two new labels to represent
+        the Axon and Myelin masks. The masks are associated with the currently selected microscopy
+        image, and metadata is added to the image layer to keep a link between them.
+
+        Returns:
+            None
+        """
         microscopy_image_layer = self.get_microscopy_image()
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
@@ -254,6 +399,14 @@ class ADSplugin(QWidget):
         microscopy_image_layer.metadata["associated_myelin_mask_name"] = myelin_mask_name
 
     def _on_fill_axons_click(self):
+        """Handles the click event of the 'Fill Axons' button.
+
+        The method fills the holes in the myelin mask and extracts the axons from it. It then sets the
+        corresponding values in the axon layer to 1, effectively creating an axon mask.
+
+        Returns:
+            None
+        """
         axon_layer = self.get_axon_layer()
         myelin_layer = self.get_myelin_layer()
 
@@ -271,6 +424,16 @@ class ADSplugin(QWidget):
         axon_layer.refresh()
 
     def _on_save_segmentation_button(self):
+        """Handles the click event of the 'Save Segmentation' button.
+
+        The method prompts the user to select a directory where the segmentation images will be saved.
+        It then scales the pixel values of the myelin and axon layers to 8-bits and combines them into a single
+        image, which is saved as a PNG file. Additionally, the method saves the myelin and axon masks as
+        separate PNG files in the same directory.
+
+        Returns:
+            None
+        """
         axon_layer = self.get_axon_layer()
         myelin_layer = self.get_myelin_layer()
 
@@ -296,6 +459,21 @@ class ADSplugin(QWidget):
         ads_utils.imwrite(filename=save_path / axon_image_name, img=axon_array)
 
     def _on_compute_morphometrics_button(self):
+        """Compute and save morphometrics statistics for the axon and myelin layers in the viewer.
+
+        Retrieves the axon layer, myelin layer, and microscopy image layer from the viewer.
+
+        If the pixel size of the microscopy image is not already set in the metadata, prompts the user to enter the pixel
+        size. Then, prompts the user to select where to save the morphometrics statistics file.
+
+        Computes the axon morphometrics using the axon and myelin data and the pixel size, using the axon shape specified
+        in the settings. The resulting statistics dataframe is saved to the selected file location.
+
+        Finally, adds an image to the viewer showing the index image array.
+
+        Returns:
+            None
+        """
         axon_layer = self.get_axon_layer()
         myelin_layer = self.get_myelin_layer()
         microscopy_image_layer = self.get_microscopy_image()
@@ -339,14 +517,41 @@ class ADSplugin(QWidget):
                               name="numbers")
 
     def _on_settings_menu_clicked(self):
+        """Create and display the settings menu when the settings menu button is clicked.
+
+        This method is called when the user clicks on the settings menu button. The settings menu is then
+        displayed to the user.
+
+        Returns:
+            None
+        """
         self.settings.create_settings_menu()
 
     def get_layer_by_name(self, name_of_layer):
+        """Retrieve the layer with the specified name from the viewer.
+
+        Searches through the list of layers in the viewer and returns the first layer with a name that matches the
+        specified `name_of_layer` argument. If no layer is found with a matching name, returns `None`.
+
+        Args:
+            name_of_layer: The name of the layer to retrieve.
+
+        Returns:
+            The layer object with the specified name, or `None` if no such layer exists in the viewer.
+        """
         for layer in self.viewer.layers:
             if layer.name == name_of_layer:
                 return layer
 
     def get_microscopy_image(self):
+        """Retrieve the currently selected microscopy image layer from the Napari viewer.
+
+        The layer is retrieved either directly (if it's an Image layer), or through associated metadata (if 
+        it's a Label layer, i.e. myelin or axon).
+
+        Returns:
+            The layer representing the microscopy image.
+        """
         selected_layers = self.viewer.layers.selection
         if len(selected_layers) == 0:
             return None
@@ -362,6 +567,15 @@ class ADSplugin(QWidget):
             return None
 
     def get_mask_layer(self, type_of_mask):
+        """Return the mask layer of the given type associated with the currently selected image layer.
+
+        Args:
+            type_of_mask (str): The type of mask to retrieve. Valid values are 'axon' and 'myelin'.
+
+        Returns:
+            Napari layer or None: The mask layer associated with the selected image layer and the
+            specified type of mask, or None if no valid mask is found.
+        """
         selected_layers = self.viewer.layers.selection
         if len(selected_layers) == 0:
             return None
@@ -386,12 +600,30 @@ class ADSplugin(QWidget):
         return None
 
     def get_axon_layer(self):
+        """Return the axon mask layer associated with the currently selected image layer.
+
+        Returns:
+            Napari layer or None: The axon mask layer associated with the selected image layer, or
+            None if no valid axon mask is found.
+        """
         return self.get_mask_layer("axon")
 
     def get_myelin_layer(self):
+        """Return the myelin mask layer associated with the currently selected image layer.
+
+        Returns:
+            Napari layer or None: The axon mask layer associated with the selected image layer, or
+            None if no valid axon mask is found.
+        """
         return self.get_mask_layer("myelin")
 
     def get_pixel_size_with_prompt(self):
+        """Displays a dialog box to prompt the user to enter the pixel size in micrometers.
+
+        Returns:
+            float or None:
+                The entered pixel size in micrometers as a float, or None if the user cancelled the dialog box.
+        """
         pixel_size, ok_pressed = QInputDialog.getDouble(self, "Enter the pixel size",
                                                         "Enter the pixel size in micrometers", 0.07, 0, 1000, 10)
         if ok_pressed:
@@ -400,6 +632,14 @@ class ADSplugin(QWidget):
             return None
 
     def show_info_message(self, message):
+        """Opens a message box dialog with an informational icon, a message text, and an "Ok" button.
+
+        Args:
+            message (str): The text to display in the message box.
+
+        Returns:
+            None
+        """
         message_box = QMessageBox(self)
         message_box.setIcon(QMessageBox.Information)
         message_box.setText(message)
@@ -407,6 +647,14 @@ class ADSplugin(QWidget):
         message_box.exec()
 
     def show_ok_cancel_message(self, message):
+        """Displays a message box with an Ok and Cancel button and prompts the user to confirm an action.
+
+        Args:
+            message: The message to display in the message box.
+
+        Returns:
+            bool: True if the Ok button is clicked, False if the Cancel button is clicked.
+        """
         message_box = QMessageBox(self)
         message_box.setIcon(QMessageBox.Information)
         message_box.setText(message)
@@ -418,6 +666,11 @@ class ADSplugin(QWidget):
             return False
 
     def get_logo(self):
+        """Return a QLabel object with the AxonDeepSeg logo as its pixmap.
+
+        Returns:
+            QLabel: A QLabel object with the AxonDeepSeg logo as its pixmap.
+        """
         ads_path = Path(AxonDeepSeg.__file__).parents[0]
         logo_file = ads_path / "logo_ads-alpha_small.png"
         logo_label = QLabel(self)
@@ -427,10 +680,10 @@ class ADSplugin(QWidget):
         return logo_label
 
     def get_citation_string(self):
-        """
-        This function returns the AxonDeepSeg paper citation.
-        :return: The AxonDeepSeg citation
-        :rtype: string
+        """This function returns the AxonDeepSeg paper citation.
+        
+        Returns:
+            The AxonDeepSeg citation
         """
         return (
             "If you use this work in your research, please cite it as follows: \n"
@@ -443,8 +696,21 @@ class ADSplugin(QWidget):
 
 
 class ApplyModelThread(QtCore.QThread):
+    """Wrapper class around AxonDeepSeg to segment an image using a trained model.
+
+    Returns:
+        None
+    """
     model_applied_signal = Signal()
     def __init__(self):
+        """Initializes an instance of the class with default values for attributes.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         super().__init__()
         # Those values must not be None before calling run()
         self.selected_layer = None
@@ -458,6 +724,11 @@ class ApplyModelThread(QtCore.QThread):
         self.task_finished_successfully = False
 
     def run(self):
+        """Executes the segmentation process on the selected image layer using the AxonDeepSeg model.
+
+        Returns:
+            None
+        """
         self.task_finished_successfully = False
         try:
             segment.segment_image(
