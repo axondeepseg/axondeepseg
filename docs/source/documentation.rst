@@ -580,8 +580,11 @@ Open image and mask
 
    .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_layers.png
 
+.. |ico1| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_zoom.png
+          :width: 20
+
 * To zoom on the image, use two fingers on your trackpad and swipe up (zoom in) or down (zoom out), or use the zoom wheel on your mouse.
-   * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon) is selected on the left "layers control" panel.
+   * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon |ico1|) is selected on the left "layers control" panel.
 * To pan on the image, click and drag your trackpad or mouse.
 
 GIMP software
