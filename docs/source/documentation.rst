@@ -578,7 +578,7 @@ Open image and mask
    * To show or hide layers, click on the eye icon.
    * To edit a layer, make sure that it is highlighted by clicking on it. In the following example, the myelin layer is selected.
 
-.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_layers.png
+   .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_layers.png
 
 * To zoom on the image, use two fingers on your trackpad and swipe up (zoom in) or down (zoom out), or use the zoom wheel on your mouse.
    * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon) is selected on the left "layers control" panel.
