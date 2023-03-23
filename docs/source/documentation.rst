@@ -559,14 +559,33 @@ Manual correction of segmentation masks
 
 If the segmentation with AxonDeepSeg does not give optimal results, you can try one of the following options:
 
-**Option 1: manual correction of the segmentation mask with FSLeyes**
+Napari plugin
+--------------------------------
 
-* In FSLeyes, you can make corrections on the myelin segmentation mask using the Edit mode in **Tools > Edit mode**.
-* Then, use the **Fill Axons** function to automatically fill the axons and create a corrected axon+myelin mask.
-* For a detailed procedure, please consult the following link: `Manual correction with FSLeyes <https://docs.google.com/document/d/1S8i96cJyWZogsMw4RrlQYwglcOWd3HrM5bpTOJE4RBQ/edit>`_.
-* As a reference, you can find more informtations about the FSLeyes Edit mode in the `user guide <https://open.win.ox.ac.uk/pages/fsl/fsleyes/fsleyes/userdoc/editing_images.html>`_.
+Open image and mask
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Option 2: manual labelling with GIMP software**
+* Open Napari by entering `napari` in the terminal (virtual environment must be activated).
+* Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS plugin (napari-ads)
+* Load the microscopy image using the Napari toolbar: File -> Open file(s)
+* If no segmentation masks already exists:
+  * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
+  * Then click on the Apply ADS model button
+* If a segmentation masks already exists:
+  * Click on the "Load mask" button and select the image with the suffix "_seg-axonmyelin"
+* After a mask is loaded or generated, the axon (blue) and myelin (red) layers will be overlayed on top of the histology image.
+* In the "layer list" panel on the left, you will find 3 layers (image, axon mask, and myelin mask).
+  * To show or hide layers, click on the eye icon.
+  * To edit a layer, make sure that it is highlighted by clicking on it. In the following example, the myelin layer is selected.
+
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_layers.png
+
+* To zoom on the image, use two fingers on your trackpad and swipe up (zoom in) or down (zoom out), or use the zoom wheel on your mouse.
+  * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon) is selected on the left "layers control" panel.
+* To pan on the image, click and drag your trackpad or mouse.
+
+GIMP software
+--------------------------------
 
 * To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`_).
 * If you are making correction on an existing segmentation mask, note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). You can then manually correct the myelin mask and create a corrected axon+myelin mask.
