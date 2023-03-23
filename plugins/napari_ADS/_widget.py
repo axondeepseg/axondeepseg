@@ -52,8 +52,7 @@ class ADSsettings:
     def setup_settings_menu(self):
         """Sets up the settings menu for the AxonDeepSeg plugin.
 
-        The settings menu contains options for the user to adjust certain parameters for the segmentation process,
-        such as the overlap value, zoom factor, axon shape, and GPU ID.
+        The settings menu contains options for the user to adjust certain parameters for the segmentation process.
 
         Returns:
             None
@@ -72,7 +71,7 @@ class ADSsettings:
     def create_settings_menu(self):
         """Creates the settings menu and sets the values of its UI elements to the current settings.
 
-        Sets the values in the setings menu of the overlap value, zoom factor, axon shape, no patch,
+        Sets the values in the settings menu of the overlap value, zoom factor, axon shape, no patch,
         and GPU ID to the current values of the corresponding settings. Shows the settings menu.
 
         Returns:
@@ -159,20 +158,10 @@ class ADSplugin(QWidget):
     def __init__(self, napari_viewer):
         """Constructor for the ADS plugin widget.
 
-        This method initializes the ADS plugin widget. It sets the viewer object as an attribute of the class and initializes the ADSsettings object as an attribute of the widget.
+        This method initializes the ADS plugin widget. It sets the viewer object as an attribute of the class and
+        initializes the ADSsettings object as an attribute of the widget.
 
-        The method also creates the user interface elements for the ADS plugin widget, including:
-
-        A citation textbox that displays the citation string for the ADS plugin.
-        A hyperlink label that displays a link to the ADS plugin documentation.
-        A combobox for selecting the ADS model to apply.
-        A button for applying the selected ADS model.
-        A button for loading a mask image.
-        A button for filling axons.
-        A button for saving the segmentation.
-        A button for computing morphometrics.
-        A button for opening the settings menu.
-        The method sets up the layout of these user interface elements and adds them to the ADS plugin widget.
+        The method also creates the user interface elements for the ADS plugin widget.
 
         Args:
             param napari_viewer: The napari viewer object.
@@ -235,18 +224,15 @@ class ADSplugin(QWidget):
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
+        This method attempts to retrieve the pixel size of the image represented by the layer passed as input parameter.
+        It will return the value found in "pixel_size_in_micrometers.txt" if the file exists.
 
-        This method attempts to retrieve the pixel size of the image represented by the input layer. It first identifies the path to the image file and the directory in which it is located. It then checks if a file called "pixel_size_in_micrometer.txt" exists in the image directory.
-
-        If the file exists, the method reads the pixel size value as a float from the file and returns it. If the file does not exist, the method returns None.
-
-        Note that the file "pixel_size_in_micrometer.txt" must be present in the image directory and must contain the pixel size value in micrometers as a single float value.
-        
         Args:
             layer: The napari image layer for which to try to retrieve the pixel size.
 
         Returns:
-            None
+            - The pixel size in um (float) if it found it.
+            - None if it didn't find the pixel size
         """
         image_path = Path(layer.source.path)
         image_directory = image_path.parents[0]
@@ -264,7 +250,8 @@ class ADSplugin(QWidget):
     def add_layer_pixel_size_to_metadata(self, layer):
         """Method to add the pixel size of an image layer to its metadata.
 
-        This method attempts to retrieve the pixel size of the input image layer using the 'try_to_get_pixel_size_of_layer' method. If the pixel size value is successfully retrieved, it is added to the metadata of the layer with the key "pixel_size". If the pixel size value cannot be retrieved, the method returns False.
+        This method attempts to retrieve the pixel size of the input image layer using the
+        'try_to_get_pixel_size_of_layer' method.
 
         Args:
             layer: The napari image layer for which to add the pixel size metadata.
@@ -402,7 +389,7 @@ class ADSplugin(QWidget):
         """Handles the click event of the 'Fill Axons' button.
 
         The method fills the holes in the myelin mask and extracts the axons from it. It then sets the
-        corresponding values in the axon layer to 1, effectively creating an axon mask.
+        corresponding values in the axon layer to 1, effectively updating the axon mask.
 
         Returns:
             None
@@ -484,7 +471,6 @@ class ADSplugin(QWidget):
         axon_data = axon_layer.data
         myelin_data = myelin_layer.data
 
-
         # Try to find the pixel size
         if "pixel_size" not in microscopy_image_layer.metadata.keys():
             pixel_size = self.get_pixel_size_with_prompt()
@@ -513,14 +499,11 @@ class ADSplugin(QWidget):
         except IOError:
             self.show_info_message("Cannot save morphometrics")
 
-        self.viewer.add_image(data = index_image_array, rgb=False, colormap="yellow", blending="additive",
+        self.viewer.add_image(data=index_image_array, rgb=False, colormap="yellow", blending="additive",
                               name="numbers")
 
     def _on_settings_menu_clicked(self):
         """Create and display the settings menu when the settings menu button is clicked.
-
-        This method is called when the user clicks on the settings menu button. The settings menu is then
-        displayed to the user.
 
         Returns:
             None
@@ -529,9 +512,6 @@ class ADSplugin(QWidget):
 
     def get_layer_by_name(self, name_of_layer):
         """Retrieve the layer with the specified name from the viewer.
-
-        Searches through the list of layers in the viewer and returns the first layer with a name that matches the
-        specified `name_of_layer` argument. If no layer is found with a matching name, returns `None`.
 
         Args:
             name_of_layer: The name of the layer to retrieve.
@@ -696,7 +676,7 @@ class ADSplugin(QWidget):
 
 
 class ApplyModelThread(QtCore.QThread):
-    """Wrapper class around AxonDeepSeg to segment an image using a trained model.
+    """QThread class used to segment an image by applying a model in a separate thread.
 
     Returns:
         None
@@ -704,6 +684,7 @@ class ApplyModelThread(QtCore.QThread):
     model_applied_signal = Signal()
     def __init__(self):
         """Initializes an instance of the class with default values for attributes.
+        Note: their value must be changed to an appropriate value before applying the model.
 
         Args:
             None
@@ -724,7 +705,8 @@ class ApplyModelThread(QtCore.QThread):
         self.task_finished_successfully = False
 
     def run(self):
-        """Executes the segmentation process on the selected image layer using the AxonDeepSeg model.
+        """Executes the segmentation process in a separate thread on the selected image layer using the AxonDeepSeg 
+        model.
 
         Returns:
             None
