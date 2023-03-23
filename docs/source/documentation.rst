@@ -569,19 +569,19 @@ Open image and mask
 * Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS plugin (napari-ads)
 * Load the microscopy image using the Napari toolbar: File -> Open file(s)
 * If no segmentation masks already exists:
-  * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
-  * Then click on the Apply ADS model button
+   * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
+   * Then click on the Apply ADS model button
 * If a segmentation masks already exists:
-  * Click on the "Load mask" button and select the image with the suffix "_seg-axonmyelin"
+   * Click on the "Load mask" button and select the image with the suffix "_seg-axonmyelin"
 * After a mask is loaded or generated, the axon (blue) and myelin (red) layers will be overlayed on top of the histology image.
 * In the "layer list" panel on the left, you will find 3 layers (image, axon mask, and myelin mask).
-  * To show or hide layers, click on the eye icon.
-  * To edit a layer, make sure that it is highlighted by clicking on it. In the following example, the myelin layer is selected.
+   * To show or hide layers, click on the eye icon.
+   * To edit a layer, make sure that it is highlighted by clicking on it. In the following example, the myelin layer is selected.
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_layers.png
 
 * To zoom on the image, use two fingers on your trackpad and swipe up (zoom in) or down (zoom out), or use the zoom wheel on your mouse.
-  * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon) is selected on the left "layers control" panel.
+   * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon) is selected on the left "layers control" panel.
 * To pan on the image, click and drag your trackpad or mouse.
 
 GIMP software
