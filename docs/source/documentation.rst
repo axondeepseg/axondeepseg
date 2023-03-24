@@ -113,11 +113,6 @@ Once your virtual environment is installed and activated, install the AxonDeepSe
 
 .. WARNING :: When re-installing the application, the model folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
 
-.. raw:: html
-
-   <iframe width="700" height="394" src="https://www.youtube.com/embed/7RwZihR0HWk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-
 
 Testing the installation
 ------------------------
@@ -158,6 +153,12 @@ Launch Napari ::
 
 In Napari, do the following:
 - Click on ``Plugins -> ADS plugin (napari-ads)``
+
+Below is a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
+
+.. raw:: html
+
+   <iframe width="700" height="394" src="https://www.youtube.com/embed/zibDbpko6ko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 Existing models
 ===============
