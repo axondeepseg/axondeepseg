@@ -63,33 +63,47 @@ jobs:
           pwd
 
       # Step 2: Install environment.
-      - name: Install Conda Env All OS
+      - name: Install Miniforge/Mamba Env All OS
         uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{matrix.python-version}}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: ads_venv
           auto-update-conda: true
           environment-file: environment.yml
 
-      # Step 3: List conda info, conda packages
-      - name: Conda info and list
+      # Step 3: List mamba info, mamba packages
+      - name: Mamba info and list
         # List
         run: |
-          conda info
-          conda list
+          mamba info
+          mamba list
 
       # Step 4: Activate and Install main AxonDeepSeg repository
       - name: Installation of the main ADS repository
         run: |
-          conda activate ads_venv
+          mamba init
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            source ~/.bashrc
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            source ~/.bash_profile
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            source ~/.bash_profile
+          else
+              echo "$RUNNER_OS not supported"
+              exit 1
+          fi
+          mamba activate ads_venv
           pip install --verbose -e .
 
-      # Step 5: Conda list packages POST ADS.
-      - name: Conda list post installation
+      # Step 5: Mamba list packages POST ADS.
+      - name: Mamba list post installation
         # List
         run: |
-          conda info
-          conda list
+          mamba info
+          mamba list
 
       # Step 6: Full PyTest
       - name: Test with pytest
