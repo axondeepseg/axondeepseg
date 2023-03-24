@@ -563,7 +563,7 @@ Napari plugin
 --------------------------------
 
 Open image and mask
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 * Open Napari by entering `napari` in the terminal (virtual environment must be activated).
 * Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS plugin (napari-ads)
@@ -579,13 +579,55 @@ Open image and mask
    * To edit a layer, make sure that it is highlighted by clicking on it. In the following example, the myelin layer is selected.
 
    .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_layers.png
+      :width: 250px
 
-.. |ico1| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_zoom.png
+.. |zoom| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_zoom.png
           :height: 1.5em
 
 * To zoom on the image, use two fingers on your trackpad and swipe up (zoom in) or down (zoom out), or use the zoom wheel on your mouse.
-   * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon |ico1|) is selected on the left "layers control" panel.
+   * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon |zoom|) is selected on the left "layers control" panel.
 * To pan on the image, click and drag your trackpad or mouse.
+
+Modify the mask
+~~~~~~~~~~~~~~~
+
+.. |brush| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_brush.png
+          :height: 1.5em
+
+.. |eraser| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_eraser.png
+          :height: 1.5em
+
+.. |bucket| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_bucket.png
+          :height: 1.5em
+
+* Click the mask (myelin or axon) that you want to modify in the "layer list" panel.
+
+* To edit the mask you chose, select one of the three editing modes in the "layer control" panel on the left.
+
+   * **Paint brush** |brush|: Add pixels to the mask.
+      * The size of the paint brush is determined by the "brush size" option in the "layer list" panel.
+   * **Eraser** |eraser|: Remove pizels from the mask.
+      *  The size of the eraser is also determined by the "brush size" option in the "layer list" panel.
+   * **Bucket tool** |bucket|: Fills a closed area of the mask with the values of that same mask.
+
+.. note::
+   Zooming and panning are disabled while editing the mask. To regain these functionalities, click on the magnifying icon |zoom| to re-activate it.
+
+* The "Fill axons" button in the AxonDeepSeg plugin (right panel) can also be used to edit the masks, and overall can speed up your workflow.
+
+.. note::
+   The "Fill axon" button will fill closed myelin mask areas by painting in the axon mask. A good workflow if starting from scratch would be to manually segment all the myelin in the image and then click the "Fill axons" button to fill in the axon areas.
+
+.. warning:: The "Fill axons" functionality will not behave properly if there are myelin objects not closed, or if multiple myelin objects touch each other to form a big closed cluster.
+
+Modify the mask
+~~~~~~~~~~~~~~~
+
+* Click the "Save segmentation" button in the AxonDeepSeg plugin (right panel).
+* Note: In case of an overlap between the axons mask and the myelin mask, the myelin will have priority when saving the new segmentation.
+* The “_seg-axon.png” and “_seg-myelin.png” are the axons-only and myelin-only binary masks.
+* The “_seg-axonmyelin.png” file is the axon+myelin mask.
+   * Note that this mask is a PNG 8-bit file with 1 channel (256 grayscale), with color values of 0 for background, 127 for myelin and 255 for axons.
 
 GIMP software
 --------------------------------
