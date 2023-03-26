@@ -91,8 +91,6 @@ To setup the Python virtual environment with all the required packages, run the 
 
 .. WARNING :: For some users, the installation may take up to 30 minutes as many dependencies have shared subdependencies, and resolving these potential conflicts takes time. If that's the case, we encourage you to take a break from your screen and go for a walk while listening to the `AxonDeepSeg Spotify playlist <https://open.spotify.com/playlist/27LVNnfhTKjVOli6bPCaV5?si=OydcwxoOSamwCsg3xcqybw>`_.
 
-.. NOTE :: FSLeyes is only supported on Mac and Linux. Windows users are encouraged to use a virtual machine if they want to use the GUI. 
-
 Then, activate your virtual environment::
 
     conda activate ads_venv
@@ -104,21 +102,16 @@ Then, activate your virtual environment::
 
 Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
 
-    pip install -e .
+    pip install -e . plugins/
 
 .. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
    ::
 
         cd axondeepseg
         git pull
-        pip install -e .
+        pip install -e . plugins/
 
 .. WARNING :: When re-installing the application, the model folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
-
-.. raw:: html
-
-   <iframe width="700" height="394" src="https://www.youtube.com/embed/7RwZihR0HWk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
 
 
 Testing the installation
@@ -150,38 +143,22 @@ If all tests pass, AxonDeepSeg was installed succesfully.
 Graphical User Interface (GUI)
 -----------------------------------------
 
-AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `FSLeyes <https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSLeyes>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if need to).
+AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `Napari <https://napari.org/stable/>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if needed).
 
-.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/GUI_image.png
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_image.png
 
-Launch FSLeyes ::
+Launch Napari ::
 
-           fsleyes
+           napari
 
-In FSLeyes, do the following:
-- Click on ``file -> load plugin``
-- Select ``ads_plugin.py`` (found in AxonDeepSeg folder)
-- When asked ``Install permanently`` click on ``yes``.
-- Close FSLeyes and re-open it.
+In Napari, do the following:
+- Click on ``Plugins -> ADS plugin (napari-ads)``
 
-From now on, you can access the plugin on the FSLeyes interface by selecting ``Settings -> Ortho View -> ADScontrol``.
-
-In case, you find trouble installing FSLeyes plugin for ADS you could refer the video below.
+Below is a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 
 .. raw:: html
 
-   <iframe width="700" height="394" src="https://www.youtube.com/embed/ImElcp9_k6Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-
-.. NOTE :: For some users, the ADScontrol tab will not appear after first installing the plugin.
-           To resolve this issue, please close FSLeyes and relaunch it (within your virtual environment).
-           This step may only be required when you first install the plugin.
-
-
-Known issues
-~~~~~~~~~~~~
-1. The FSLeyes installation doesn't always work on Linux. Refer to the `FSLeyes installation guide <https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/install.html>`_ if you need. In our testing, most issues came from the installation of the wxPython package.
-
+   <iframe width="700" height="394" src="https://www.youtube.com/embed/zibDbpko6ko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 Existing models
 ===============
@@ -583,14 +560,78 @@ Manual correction of segmentation masks
 
 If the segmentation with AxonDeepSeg does not give optimal results, you can try one of the following options:
 
-**Option 1: manual correction of the segmentation mask with FSLeyes**
+Napari plugin
+--------------------------------
 
-* In FSLeyes, you can make corrections on the myelin segmentation mask using the Edit mode in **Tools > Edit mode**.
-* Then, use the **Fill Axons** function to automatically fill the axons and create a corrected axon+myelin mask.
-* For a detailed procedure, please consult the following link: `Manual correction with FSLeyes <https://docs.google.com/document/d/1S8i96cJyWZogsMw4RrlQYwglcOWd3HrM5bpTOJE4RBQ/edit>`_.
-* As a reference, you can find more informtations about the FSLeyes Edit mode in the `user guide <https://open.win.ox.ac.uk/pages/fsl/fsleyes/fsleyes/userdoc/editing_images.html>`_.
+Open image and mask
+~~~~~~~~~~~~~~~~~~~
 
-**Option 2: manual labelling with GIMP software**
+* Open Napari by entering `napari` in the terminal (virtual environment must be activated).
+* Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS plugin (napari-ads)
+* Load the microscopy image using the Napari toolbar: File -> Open file(s)
+* If no segmentation masks already exists:
+   * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
+   * Then click on the Apply ADS model button
+* If a segmentation masks already exists:
+   * Click on the "Load mask" button and select the image with the suffix "_seg-axonmyelin"
+* After a mask is loaded or generated, the axon (blue) and myelin (red) layers will be overlayed on top of the histology image.
+* In the "layer list" panel on the left, you will find 3 layers (image, axon mask, and myelin mask).
+   * To show or hide layers, click on the eye icon.
+   * To edit a layer, make sure that it is highlighted by clicking on it. In the following example, the myelin layer is selected.
+
+   .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_layers.png
+      :width: 250px
+
+.. |zoom| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_zoom.png
+          :height: 1.5em
+
+* To zoom on the image, use two fingers on your trackpad and swipe up (zoom in) or down (zoom out), or use the zoom wheel on your mouse.
+   * If it's not working, ensure that the "Pan/zoom mode" button (magnifying icon |zoom|) is selected on the left "layers control" panel.
+* To pan on the image, click and drag your trackpad or mouse.
+
+Modify the mask
+~~~~~~~~~~~~~~~
+
+.. |brush| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_brush.png
+          :height: 1.5em
+
+.. |eraser| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_eraser.png
+          :height: 1.5em
+
+.. |bucket| image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_bucket.png
+          :height: 1.5em
+
+* Click the mask (myelin or axon) that you want to modify in the "layer list" panel.
+
+* To edit the mask you chose, select one of the three editing modes in the "layer control" panel on the left.
+
+   * **Paint brush** |brush|: Add pixels to the mask.
+      * The size of the paint brush is determined by the "brush size" option in the "layer list" panel.
+   * **Eraser** |eraser|: Remove pizels from the mask.
+      *  The size of the eraser is also determined by the "brush size" option in the "layer list" panel.
+   * **Bucket tool** |bucket|: Fills a closed area of the mask with the values of that same mask.
+
+.. note::
+   Zooming and panning are disabled while editing the mask. To regain these functionalities, click on the magnifying icon |zoom| to re-activate it.
+
+* The "Fill axons" button in the AxonDeepSeg plugin (right panel) can also be used to edit the masks, and overall can speed up your workflow.
+
+.. note::
+   The "Fill axon" button will fill closed myelin mask areas by painting in the axon mask. A good workflow if starting from scratch would be to manually segment all the myelin in the image and then click the "Fill axons" button to fill in the axon areas.
+
+.. warning:: The "Fill axons" functionality will not behave properly if there are myelin objects not closed, or if multiple myelin objects touch each other to form a big closed cluster.
+
+Modify the mask
+~~~~~~~~~~~~~~~
+
+* Click the "Save segmentation" button in the AxonDeepSeg plugin (right panel).
+* Note: In case of an overlap between the axons mask and the myelin mask, the myelin will have priority when saving the new segmentation.
+* The “_seg-axon.png” and “_seg-myelin.png” are the axons-only and myelin-only binary masks.
+* The “_seg-axonmyelin.png” file is the axon+myelin mask.
+   * Note that this mask is a PNG 8-bit file with 1 channel (256 grayscale), with color values of 0 for background, 127 for myelin and 255 for axons.
+
+GIMP software
+--------------------------------
 
 * To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`_).
 * If you are making correction on an existing segmentation mask, note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). You can then manually correct the myelin mask and create a corrected axon+myelin mask.

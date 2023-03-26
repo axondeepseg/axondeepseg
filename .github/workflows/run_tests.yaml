@@ -82,7 +82,7 @@ jobs:
       - name: Installation of the main ADS repository
         run: |
           conda activate ads_venv
-          pip install --verbose -e .
+          pip install --verbose -e . plugins/
 
       # Step 5: Conda list packages POST ADS.
       - name: Conda list post installation
