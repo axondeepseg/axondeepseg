@@ -23,6 +23,7 @@ dependencies:
   - raven
   - jupyter
   - openpyxl
+  - qtconsole<5.4.2
   - pip
   - pip:
     - napari
