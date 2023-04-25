@@ -275,11 +275,11 @@ def imread(filename):
     if str(file_ext) in ['.tif', '.tiff']:
         raw_img = imageio.v2.imread(filename, format='tiff-pil')
         if len(raw_img.shape) > 2:
-            raw_img = imageio.v2.imread(filename, format='tiff-pil', as_gray=True)
+            raw_img = imageio.v2.imread(filename, format='tiff-pil', mode='L')
     else:
         raw_img = imageio.v2.imread(filename)
         if len(raw_img.shape) > 2:
-            raw_img = imageio.v2.imread(filename, as_gray=True)
+            raw_img = imageio.v2.imread(filename, mode='L')
     img = imageio.core.image_as_uint(raw_img, bitdepth=8)
     return img
 
