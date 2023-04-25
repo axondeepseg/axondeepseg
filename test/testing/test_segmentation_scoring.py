@@ -21,13 +21,13 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.img = imageio.v2.imread(self.folderPath / 'image.png', as_gray=True)
+        self.img = imageio.v2.imread(self.folderPath / 'image.png', mode='L')
 
-        self.groundtruth = imageio.v2.imread(self.folderPath / 'mask.png', as_gray=True)
+        self.groundtruth = imageio.v2.imread(self.folderPath / 'mask.png', mode='L')
 
         self.prediction = imageio.v2.imread(
             self.folderPath / ('image' + str(axonmyelin_suffix)),
-            as_gray=True
+            mode='L'
             )
 
     def teardown_method(self):
