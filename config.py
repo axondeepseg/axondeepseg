@@ -10,7 +10,8 @@ axonmyelin_index_suffix = Path('_axonmyelin_index.png') # Colored axonmyelin seg
 
 # morphometrics file suffix name
 morph_suffix = Path('axon_morphometrics.xlsx')
-instance_suffix = Path('_instance-map.png')             # Colored instance map of the segmentation
+instance_im_suffix = Path('_colorized.png')             # Colored instance map of the segmentation
+instance_suffix = Path('_instance-map.png')             # Raw instance map
 
 # List of valid image extensions
 valid_extensions = [
