@@ -26,7 +26,7 @@ import AxonDeepSeg.ads_utils as ads
 from config import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
-    morph_suffix, instance_suffix,
+    morph_suffix, instance_im_suffix, instance_suffix,
 )
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
@@ -216,7 +216,8 @@ def main(argv=None):
             # unpack the morphometrics output
             stats_dataframe, index_image_array = morph_output[0:2]
             if colorization_flag:
-                instance_seg_image = morph_output[2]
+                instance_seg_image, instance_map = morph_output[2:]
+                instance_map = instance_map.astype(np.uint16)
 
             morph_filename = current_path_target.stem + "_" + filename
 
@@ -243,7 +244,8 @@ def main(argv=None):
                 
                 if colorization_flag:
                     # Save instance segmentation
-                    ads.imwrite(outfile_basename + str(instance_suffix), instance_seg_image)
+                    ads.imwrite(outfile_basename + str(instance_im_suffix), instance_seg_image)
+                    ads.imwrite(outfile_basename + str(instance_suffix), instance_map)
 
                 logger.info("Morphometrics file: {} has been saved in the {} directory",
                     morph_filename,
