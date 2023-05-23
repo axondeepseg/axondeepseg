@@ -255,7 +255,7 @@ def convert_path(object_path):
         else:
             raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
 
-def imread(filename):
+def imread(filename, bitdepth=8):
     """ Read image and convert it to desired bitdepth without truncation.
     """
 
@@ -280,7 +280,7 @@ def imread(filename):
         raw_img = imageio.v2.imread(filename)
         if len(raw_img.shape) > 2:
             raw_img = imageio.v2.imread(filename, as_gray=True)
-    img = imageio.core.image_as_uint(raw_img, bitdepth=8)
+    img = imageio.core.image_as_uint(raw_img, bitdepth=bitdepth)
     return img
 
 def imwrite(filename, img, format='png'):
