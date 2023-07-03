@@ -370,7 +370,7 @@ class ADSplugin(QWidget):
         self.apply_model_button.setEnabled(True)
         if not self.apply_model_thread.task_finished_successfully:
             self.show_info_message(
-                "Couldn't apply the ADS model. Check the console for more information"
+                "Couldn't apply the ADS model. Please check the console or terminal for more information."
             )
             return
 
@@ -854,8 +854,8 @@ class ApplyModelThread(QtCore.QThread):
             self.task_finished_successfully = True
         except SystemExit as err:
             if err.code == 4:
-                self.show_info_message(
-                    "Resampled image smaller than model's patch size. Please take a look at your terminal \n"
+                print(
+                    "Resampled image smaller than model's patch size. Please take a look at the lines above \n"
                     "for the minimum zoom factor value to use (option available in the Settings menu)."
                 )
             self.task_finished_successfully = False
