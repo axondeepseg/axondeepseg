@@ -8,3 +8,4 @@ dependencies:
   - numpy
   - scipy
   - scikit-learn=1.1.1
+  - scikit-image=0.19.3
