@@ -12,3 +12,4 @@ dependencies:
   - tabulate
   - pandas
   - matplotlib
+  - mpld3
