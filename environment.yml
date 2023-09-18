@@ -5,7 +5,7 @@ dependencies:
   - python=3.8
   - nibabel 3.2.*
   - h5py=2.10.0
-  - numpy
+  - numpy<1.26.0
   - scipy
   - scikit-learn=1.1.1
   - scikit-image=0.19.3
