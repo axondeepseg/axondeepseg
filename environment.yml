@@ -4,3 +4,4 @@ channels:
 dependencies:
   - python=3.8
   - nibabel 3.2.*
+  - h5py=2.10.0
