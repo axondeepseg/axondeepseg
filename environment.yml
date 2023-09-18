@@ -13,3 +13,4 @@ dependencies:
   - pandas
   - matplotlib
   - mpld3
+  - tqdm
