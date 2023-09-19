@@ -1,7 +1,6 @@
 name: ads_venv
 dependencies:
   - python=3.8
-  - nibabel 3.2.*
   - h5py=2.10.0
   - numpy
   - scipy
@@ -15,4 +14,6 @@ dependencies:
   - requests
   - pillow!=9.0.0
   - pytest
-
+  - pip
+  - pip:
+    - nibabel==3.2.*
