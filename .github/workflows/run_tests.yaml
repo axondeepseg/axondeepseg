@@ -74,6 +74,7 @@ jobs:
           activate-environment: ads_venv
           auto-update-conda: true
           environment-file: environment.yml
+          verbosity: 2
 
       # Step 3: List conda info, conda packages
       - name: Conda info and list
