@@ -17,3 +17,4 @@ dependencies:
   - requests
   - pillow!=9.0.0
   - pytest
+
