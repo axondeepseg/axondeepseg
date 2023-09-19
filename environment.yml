@@ -17,13 +17,13 @@ dependencies:
   - pytest
   - pytest-cov
   - prettytable
-  - raven
   - jupyter
   - openpyxl
   - qtconsole<5.4.2
   - pip
   - pip:
     - nibabel==3.2.*
+    - raven
     - napari
     - protobuf==3.20.1
     - ivadomed~=2.9.8
