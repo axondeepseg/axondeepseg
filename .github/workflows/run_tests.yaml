@@ -62,8 +62,9 @@ jobs:
           ls -lasth
           pwd
 
-      - name: Collect Workflow Telemetry
-        uses: runforesight/workflow-telemetry-action@v1
+      # Debug step
+      - name: Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1.8.0
 
       # Step 2: Install environment.
       - name: Install Conda Env All OS
