@@ -1,6 +1,4 @@
 name: ads_venv
-channels:
-  - conda-forge
 dependencies:
   - python=3.8
   - nibabel 3.2.*
