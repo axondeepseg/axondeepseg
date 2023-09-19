@@ -61,7 +61,10 @@ jobs:
         run: |
           ls -lasth
           pwd
-        
+
+      - name: Collect Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1
+
       # Step 2: Install environment.
       - name: Install Conda Env All OS
         uses: conda-incubator/setup-miniconda@v2
