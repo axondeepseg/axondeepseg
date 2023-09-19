@@ -64,7 +64,7 @@ jobs:
 
       # Debug step
       - name: Workflow Telemetry
-        uses: runforesight/workflow-telemetry-action@v1.8.0
+        uses: runforesight/workflow-telemetry-action@v1
 
       # Step 2: Install environment.
       - name: Install Conda Env All OS
