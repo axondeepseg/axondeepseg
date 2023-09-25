@@ -6,7 +6,7 @@ dependencies:
   - scipy
   - scikit-learn=1.1.1
   - scikit-image=0.19.3
-  - tabulate
+  - tabulate<
   - pandas
   - matplotlib
   - mpld3
@@ -27,4 +27,4 @@ dependencies:
     - napari
     - protobuf==3.20.1
     - ivadomed~=2.9.8
-    - onnx!=1.16.0 # Patches https://github.com/microsoft/onnxruntime/issues/17631
+    - onnxruntime<1.16.0 # Patches https://github.com/microsoft/onnxruntime/issues/17631
