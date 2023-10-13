@@ -5,20 +5,6 @@
     --admonition-title-font-size: 1rem;
 }
 
-.rst-content .admonition-title, .wy-alert-title, .rst-content .note .admonition-title {
-    background-color: #b3dcb0;
-}
-
-.rst-content .admonition {
-    /* background-color: #eaf7e9; */
-    background-color: #f3f4f7;
-}
-
-.rst-content .admonition.warning {
-    /* background-color: #fff4eb; */
-    background-color: #f3f4f7;
-}
-
 /* Remove the '!' on a specific admonition to use it for the testimonials page */
 .admonition.testimonial p.admonition-title::before {
     content:""
