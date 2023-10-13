@@ -4,6 +4,14 @@ AxonDeepSeg is an open-source software using deep learning and aiming at automat
 
 AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University of Montreal, Canada.
 
+Testimonials
+============
+Do you also use SCT and would like to share your feedback with the community? Please add your testimonial by clicking [here](https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link). Thank you 😊
+
+.. admonition:: Jane Doe, PhD/MD | University of Academia | United Nations 🇺🇳
+   :class: testimonial
+
+   ADS is an invaluable tool for our investigations - thank you!
 
 Installation
 ============
