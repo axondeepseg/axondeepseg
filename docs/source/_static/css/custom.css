@@ -1,0 +1,4 @@
+/* Remove the '!' on a specific admonition to use it for the testimonials page */
+.admonition.testimonial p.admonition-title::before {
+    content:""
+}
