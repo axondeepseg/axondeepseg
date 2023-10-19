@@ -8,10 +8,15 @@ Testimonials
 ============
 Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`_. Thank you 😊
 
-.. admonition:: Jane Doe, PhD/MD | University of Academia | United Nations 🇺🇳
+.. admonition:: Osvaldo Delbono, PhD | Wake Forest University School of Medicine  | United States 🇺🇸
    :class: testimonial
 
-   ADS is an invaluable tool for our investigations - thank you!
+   We utilize AxonDeepSeg for post-mortem nerve analysis of individuals afflicted with Alzheimer's Disease, related dementias, parkinsonism, and vascular deterioration affecting both the central and peripheral nervous systems. Given that our samples comprise thousands of axon/myelin units within the tibialis nerve, AxonDeepSeg is indispensable for our research. The documentation for AxonDeepSeg is comprehensive, with the guidelines for software installation being especially helpful.
+
+.. admonition:: Alan Peterson, PhD | McGill University | Canada 🇨🇦
+   :class: testimonial
+
+   Our investigation involved 6 lines of gene-edited mice that elaborate myelin sheaths of greatly different thickness. We used AxonDeepSeg to quantify myelin/axon relationships in tiled EM images from multiple tracts in young to old mice thus making this a very large experiment. AxonDeepSeg worked perfectly throughout. To obtain the maximum resolution we excluded fibers in which demonstrated fixation artifacts such as myelin splitting and the filtering step was easily accommodated in the work flow. Along the way, we required minimal support but when needed, it was both excellent an timely. 
 
 Installation
 ============
