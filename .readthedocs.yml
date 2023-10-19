@@ -18,5 +18,3 @@ sphinx:
   configuration: docs/source/conf.py
   fail_on_warning: false
 
-conda:
-  environment: docs/environment.yml
