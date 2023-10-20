@@ -8,7 +8,12 @@ Testimonials
 ============
 Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`_. Thank you 😊
 
-.. admonition:: Osvaldo Delbono, PhD | Wake Forest University School of Medicine  | United States 🇺🇸
+.. admonition:: Alison Wong, MD/MSE | Dalhousie University | Canada 🇨🇦
+   :class: testimonial
+
+   I found AxonDeepSeg very helpful for my research on peripheral nerve injury and regeneration. It performed well at segmentation and very well at obtaining the measurements, this greatly increased the ability to analyze out outcomes. There will always be attempts at new and better software, but the fact that the AxonDeepSeg team has focused on an open source format with continued development is commendable. I found the GitHub to be essential. 
+
+.. admonition:: Osvaldo Delbono, PhD | Wake Forest University School of Medicine | United States 🇺🇸
    :class: testimonial
 
    We utilize AxonDeepSeg for post-mortem nerve analysis of individuals afflicted with Alzheimer's Disease, related dementias, parkinsonism, and vascular deterioration affecting both the central and peripheral nervous systems. Given that our samples comprise thousands of axon/myelin units within the tibialis nerve, AxonDeepSeg is indispensable for our research. The documentation for AxonDeepSeg is comprehensive, with the guidelines for software installation being especially helpful.
