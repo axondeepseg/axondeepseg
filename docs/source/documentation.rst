@@ -8,6 +8,11 @@ Testimonials
 ============
 Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`_. Thank you 😊
 
+.. admonition:: Anne Wheeler, PhD | Hospital for Sick Children | Canada 🇨🇦
+   :class: testimonial
+
+   Our lab uses ADS to segment and extract morphometrics of myelinated axons from from EM images of mouse white matter tracts. We have two in-progress studies where ADS is allowing us to efficiently extract this data in the context of abberant white matter development. ADS is very well documented and easy to use and implement. In addition, the developers have been very responsive to our requests for additional functionality. Thank you!
+
 .. admonition:: Alison Wong, MD/MSE | Dalhousie University | Canada 🇨🇦
    :class: testimonial
 
