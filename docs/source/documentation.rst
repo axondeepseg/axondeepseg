@@ -553,33 +553,23 @@ During the morphometrics computation, ``axondeepseg`` internally converts the se
 
 Implementation details
 ~~~~~~~~~~~~~~~~~~~~~~
-
 The following sections provide more details about the implementation of the algorithms behind the morphometrics computation.
 
 Diameter estimation 
 ^^^^^^^^^^^^^^^^^^^
+The diameter :math:`D` is computed differently based on the chosen axon shape:
 
-The diameter is computed differently based on the chosen axon shape:
-
-* For the `circle` axon shape, BLABLABLABLALBLBALLBLBALLBALBALBALBALBALBALBLABLBLABLABLABLABALABLABLABLA
-* For the `ellipse` axon shape, the computation is entirely different. We 
-  do not actually need to fit an ellipse to get the minor axis length. Instead, `sklearn`
-  computes this by using the second order central moment of the image, which represents the 
-  spatial covariance matrix of the image. By computing its eigenvalues, we get the moment of 
-  inertia along the axis with the most variation and the axis with the least variation, which 
-  are respectively the major and minor axes of the ellipse. We can recover the minor axis length 
-  with this formula:
+* For the **circle** axon shape, the diameter is simply the equivalent diameter of the axon region, which is the diameter of a circle with the same area as the axon region.
+* For the **ellipse** axon shape, the computation is entirely different. We do not actually need to fit an ellipse to get the minor axis length. Instead, ``sklearn`` computes this by using the second order central moments of the image region, which represents the spatial covariance matrix of the image. By computing its eigenvalues, we get the moment of inertia along the axis with the most variation and the axis with the least variation, which are respectively the major and minor axes of the ellipse. We can recover the minor axis length using the moment of inertia formula:
 
   .. math:: I =
     \frac{1}{4} mr^2
     \Leftrightarrow r = \sqrt{\frac{4I}{m}}
 
-
-  Assuming a uniform unit mass, we finally get :math:`r = 2\sqrt{I}`.
+  Assuming a uniform unit mass, we finally get :math:`D = 4\sqrt{I}`.
 
 Eccentricity estimation
 ^^^^^^^^^^^^^^^^^^^^^^^
-
 The eccentricity computation is based on the same principle as the diameter estimation for 
 the ellipse axon shape. We use the eigenvalues of the second order central moment of the image,
 which gives us the moment of inertia along the major axis and the minor axis. The formula to compute 
