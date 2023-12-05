@@ -255,7 +255,7 @@ def get_axon_morphometrics(
         output = (*output, index_image_array)
     
     if return_instance_seg:
-        output = (*output, im_instance_seg)
+        output = (*output, im_instance_seg, im_axonmyelin_label)
 
     return output
 
