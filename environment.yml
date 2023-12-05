@@ -28,3 +28,4 @@ dependencies:
     - protobuf==3.20.1
     - ivadomed~=2.9.8
     - onnxruntime<1.16.0 # Patches https://github.com/microsoft/onnxruntime/issues/17631
+
