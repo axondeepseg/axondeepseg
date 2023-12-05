@@ -564,9 +564,9 @@ The diameter :math:`D` is computed differently based on the chosen axon shape:
 
   .. math:: I =
     \frac{1}{4} mr^2
-    \Leftrightarrow r = \sqrt{\frac{4I}{m}}
+    \Leftrightarrow r = 2\sqrt{\frac{I}{m}}
 
-  Assuming a uniform unit mass, we finally get :math:`D = 4\sqrt{I}`.
+  Assuming a uniform unit mass, we finally get :math:`D = 2r = 4\sqrt{I}`.
 
 Eccentricity estimation
 ^^^^^^^^^^^^^^^^^^^^^^^
