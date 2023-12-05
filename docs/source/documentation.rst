@@ -551,6 +551,36 @@ During the morphometrics computation, ``axondeepseg`` internally converts the se
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/instance_seg_example.png
 
+Implementation details
+~~~~~~~~~~~~~~~~~~~~~~
+The following sections provide more details about the implementation of the algorithms behind the morphometrics computation.
+
+Diameter estimation 
+^^^^^^^^^^^^^^^^^^^
+The diameter :math:`D` is computed differently based on the chosen axon shape:
+
+* For the **circle** axon shape, the diameter is simply the equivalent diameter of the axon region, which is the diameter of a circle with the same area as the axon region.
+* For the **ellipse** axon shape, the computation is entirely different. We do not actually need to fit an ellipse to get the minor axis length. Instead, ``sklearn`` computes this by using the second order central moments of the image region, which represents the spatial covariance matrix of the image. By computing its eigenvalues, we get the moment of inertia along the axis with the most variation and the axis with the least variation, which are respectively the major and minor axes of the ellipse. We can recover the minor axis length using the moment of inertia formula:
+
+  .. math:: I =
+    \frac{1}{4} mr^2
+    \Leftrightarrow r = 2\sqrt{\frac{I}{m}}
+
+  Assuming a uniform unit mass, we finally get :math:`D = 2r = 4\sqrt{I}`.
+
+Eccentricity estimation
+^^^^^^^^^^^^^^^^^^^^^^^
+The eccentricity computation is based on the same principle as the diameter estimation for 
+the ellipse axon shape. We use the eigenvalues of the second order central moment of the image,
+which gives us the moment of inertia along the major axis and the minor axis. The formula to compute 
+the eccentricity of an ellipse is :math:`e = \sqrt{1 - \frac{b^2}{a^2}}`, where :math:`a` and :math:`b` 
+respectively represent the lengths of the semi-major and semi-minor axes. Since the ratio :math:`\frac{a}{b}` 
+is equivalent to the ratio of the central moment eigenvalues, they are used instead of the actual lengths  
+because they are easier to compute.
+
+.. comment: We need to add explanation for perimeter estimation, but this 
+            part would need to be refactored beforehand.
+
 Jupyter notebooks
 -----------------
 
