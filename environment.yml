@@ -26,5 +26,5 @@ dependencies:
     - raven
     - napari
     - protobuf==3.20.1
-    - ivadomed @ https://github.com/ivadomed/ivadomed.git@test-torch-compatibility_base-kk-chore-imageio 
+    - ivadomed @ https://github.com/ivadomed/ivadomed.git@jn/test-torch-compatibility_base-kk-chore-imageio 
     - onnxruntime<1.16.0
