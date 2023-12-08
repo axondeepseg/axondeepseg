@@ -5,7 +5,7 @@ import numpy as np
 import imageio
 import pytest
 
-
+from AxonDeepSeg import ads_utils
 from AxonDeepSeg.testing.noise_simulation import add_additive_gaussian_noise, add_multiplicative_gaussian_noise, change_brightness
 
 
@@ -18,7 +18,7 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.image = imageio.v2.imread(self.folderPath / 'image.png', as_gray=True)
+        self.image = ads_utils.imread(self.folderPath / 'image.png')
 
     def teardown_method(self):
         pass

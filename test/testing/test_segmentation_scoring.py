@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from AxonDeepSeg.testing.segmentation_scoring import score_analysis, dice, pw_dice, Metrics_calculator
+from AxonDeepSeg import ads_utils
 from config import axonmyelin_suffix
 
 
@@ -21,13 +22,12 @@ class TestCore(object):
 
         self.folderPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
-        self.img = imageio.v2.imread(self.folderPath / 'image.png', as_gray=True)
+        self.img = ads_utils.imread(self.folderPath / 'image.png')
 
-        self.groundtruth = imageio.v2.imread(self.folderPath / 'mask.png', as_gray=True)
+        self.groundtruth = ads_utils.imread(self.folderPath / 'mask.png')
 
-        self.prediction = imageio.v2.imread(
-            self.folderPath / ('image' + str(axonmyelin_suffix)),
-            as_gray=True
+        self.prediction = ads_utils.imread(
+            self.folderPath / ('image' + str(axonmyelin_suffix))
             )
 
     def teardown_method(self):
