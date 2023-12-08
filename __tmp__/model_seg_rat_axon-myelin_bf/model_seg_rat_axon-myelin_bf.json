@@ -1,0 +1,188 @@
+{
+    "command": "train",
+    "gpu_ids": [
+        6
+    ],
+    "path_output": "../data_extrassd_maboudb/20211013_optim_om/20211112_log_bf_base512_full_filter_medium_da",
+    "model_name": "model_seg_rat_axon-myelin_bf",
+    "debugging": true,
+    "log_file": "log",
+    "object_detection_params": {
+        "object_detection_path": null,
+        "safety_factor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "gpu_ids": 6,
+        "path_output": "../data_extrassd_maboudb/20211013_optim_om/20211112_log_bf_base512_full_filter_medium_da"
+    },
+    "loader_parameters": {
+        "path_data": [
+            "../data_extrassd_maboudb/20211013_optim_om/data_axondeepseg_bf_training/"
+        ],
+        "subject_selection": {
+            "n": [],
+            "metadata": [],
+            "value": []
+        },
+        "target_suffix": [
+            "_seg-axon-manual",
+            "_seg-myelin-manual"
+        ],
+        "extensions": [
+            ".png"
+        ],
+        "roi_params": {
+            "suffix": null,
+            "slice_filter_roi": null
+        },
+        "contrast_params": {
+            "training_validation": [
+                "BF"
+            ],
+            "testing": [
+                "BF"
+            ],
+            "balance": {}
+        },
+        "slice_filter_params": {
+            "filter_empty_mask": false,
+            "filter_empty_input": false
+        },
+        "slice_axis": "axial",
+        "multichannel": false,
+        "soft_gt": false,
+        "is_input_dropout": false,
+        "bids_config": "ivadomed/config/config_bids.json"
+    },
+    "split_dataset": {
+        "fname_split": "../data_extrassd_maboudb/20211013_optim_om/config/split_datasets.joblib",
+        "random_seed": 6,
+        "split_method": "participant_id",
+        "data_testing": {
+            "data_type": null,
+            "data_value": []
+        },
+        "balance": null,
+        "train_fraction": 0.7,
+        "test_fraction": 0.1
+    },
+    "training_parameters": {
+        "batch_size": 4,
+        "loss": {
+            "name": "DiceLoss"
+        },
+        "training_time": {
+            "num_epochs": 150,
+            "early_stopping_patience": 50,
+            "early_stopping_epsilon": 0.001
+        },
+        "scheduler": {
+            "initial_lr": 0.005,
+            "lr_scheduler": {
+                "name": "CosineAnnealingLR",
+                "base_lr": 1e-05,
+                "max_lr": 0.01
+            }
+        },
+        "balance_samples": {
+            "applied": false,
+            "type": "gt"
+        },
+        "mixup_alpha": null,
+        "transfer_learning": {
+            "retrain_model": null,
+            "retrain_fraction": 1.0,
+            "reset": true
+        }
+    },
+    "default_model": {
+        "name": "Unet",
+        "dropout_rate": 0.2,
+        "bn_momentum": 0.1,
+        "depth": 4,
+        "is_2d": true,
+        "final_activation": "sigmoid",
+        "length_2D": [
+            512,
+            512
+        ],
+        "stride_2D": [
+            500,
+            500
+        ]
+    },
+    "uncertainty": {
+        "epistemic": false,
+        "aleatoric": false,
+        "n_it": 0
+    },
+    "postprocessing": {
+        "binarize_maxpooling": {}
+    },
+    "evaluation_parameters": {},
+    "transformation": {
+        "Resample": {
+            "wspace": 0.0001,
+            "hspace": 0.0001
+        },
+        "RandomAffine": {
+            "degrees": 2.5,
+            "scale": [
+                0.05,
+                0.05
+            ],
+            "translate": [
+                0.015,
+                0.015
+            ],
+            "applied_to": [
+                "im",
+                "gt"
+            ],
+            "dataset_type": [
+                "training"
+            ]
+        },
+        "ElasticTransform": {
+            "alpha_range": [
+                28.0,
+                30.0
+            ],
+            "sigma_range": [
+                3.5,
+                4.5
+            ],
+            "p": 0.1,
+            "applied_to": [
+                "im",
+                "gt"
+            ],
+            "dataset_type": [
+                "training"
+            ]
+        },
+        "NormalizeInstance": {
+            "applied_to": [
+                "im"
+            ]
+        }
+    },
+    "training_sha256": {
+        "sub-uoftRat04_sample-uoftRat04_acq-roi_chunk-01_BF.png": "258b4064519a835cceec76180c26962340c73c8fc5a2511360adc1c684e41309",
+        "sub-uoftRat04_sample-uoftRat04_acq-roi_chunk-02_BF.png": "8f29659f4e2a7b814eba16a4d3f837766c522f68de6e544aaa13d1ab188a7829",
+        "sub-uoftRat04_sample-uoftRat04_acq-roi_chunk-03_BF.png": "86f3b199be81cd538e296aa6a725fc68df203cc085d570fb144d1b0cbd1ec484",
+        "sub-uoftRat08_sample-uoftRat08_acq-roi_chunk-01_BF.png": "f9f2a1dafa870fab608554616626002fe9ead308b1d7431ef0d5506840638686",
+        "sub-uoftRat09_sample-uoftRat09_acq-roi_chunk-01_BF.png": "194f96b0aaf781ae7b2b047bf8926c6a87eda01155ec1f2278ffdcbe9582b544",
+        "sub-uoftRat09_sample-uoftRat09_acq-roi_chunk-02_BF.png": "da8345ab0339daf8882d47cf910e6b893905bbd8c62ce1d554f2ddc3a8d59357",
+        "sub-uoftRat09_sample-uoftRat09_acq-roi_chunk-03_BF.png": "8c7cb401c4fb2804bfd07d7d9451d06789e14fbb21ee1c4d4a63110bfd7ddbf2",
+        "sub-uoftRat10_sample-uoftRat10_acq-roi_chunk-01_BF.png": "eaa633c1c53600447be08c679349219a74c218df92fa53d8050731f6d87c4f5b",
+        "sub-uoftRat10_sample-uoftRat10_acq-roi_chunk-02_BF.png": "862d5259ad7ef3c2dc451d64fab297b8609a9ed492dbf2a1dfef8af8f739a195",
+        "sub-uoftRat10_sample-uoftRat10_acq-roi_chunk-03_BF.png": "2cab77fab2b8edaba2fc33ffeacbcf7a697e41958a010b76f8c3e239c44a7fdd",
+        "sub-uoftRat16_sample-uoftRat16_acq-roi_chunk-01_BF.png": "6f03172e59d63a6246fc06ac9d59d9cfbc6d7a4a0b1e8c8f1919445798a0bcc7",
+        "sub-uoftRat17_sample-uoftRat17_acq-roi_chunk-01_BF.png": "9961fa9360490f64dfd1b0b5968fb612759b74f0dda7582618dec737679fbadf",
+        "sub-uoftRat17_sample-uoftRat17_acq-roi_chunk-02_BF.png": "3a1990f97768f6f9dd3843e471bcb02ec5df431fe74c779f8fb38344bca3a25f",
+        "sub-uoftRat17_sample-uoftRat17_acq-roi_chunk-03_BF.png": "fb5b69d2de347883272c3643e9819508227ee59cfab90bfa65e87db6026ce6a1"
+    }
+}
