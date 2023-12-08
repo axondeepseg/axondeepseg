@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css?family=Lato');
+
+:root {
+    --admonition-font-size: 1rem;
+    --admonition-title-font-size: 1rem;
+}
+
+/* Remove the '!' on a specific admonition to use it for the testimonials page */
+.admonition.testimonial p.admonition-title::before {
+    content:""
+}
