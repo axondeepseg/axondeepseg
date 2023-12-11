@@ -33,8 +33,8 @@ def get_masks(path_prediction):
     # Save masks
     filename_axon   = filename_part + str(axon_suffix)
     filename_myelin = filename_part + str(myelin_suffix)
-    ads.imwrite(folder_path / filename_axon, axon_prediction.astype(int))
-    ads.imwrite(folder_path / filename_myelin, myelin_prediction.astype(int))
+    ads.imwrite(folder_path / filename_axon, np.uint8(axon_prediction))
+    ads.imwrite(folder_path / filename_myelin, np.uint8(myelin_prediction))
 
     return axon_prediction, myelin_prediction
 

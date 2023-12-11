@@ -38,7 +38,7 @@ def generate_axons_from_myelin(path_prediction,path_myelin_corrected):
     new_axon_mask = np.logical_xor(myelin_corrected, fused)
 
     # merge corrected myelin mask and generated axon mask
-    both = new_axon_mask*255 + myelin_corrected*127
+    both = new_axon_mask*np.uint8(255) + myelin_corrected*np.uint8(127)
 
     # save the corrected axon+myelin image
     path = path_prediction.parent / 'axon_myelin_mask_corrected.png'
