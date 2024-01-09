@@ -28,11 +28,11 @@ column_names_ordered = [
     Morphometrics_Column_Name('x0', 'x0 (px)'),
     Morphometrics_Column_Name('y0', 'y0 (px)'),
     Morphometrics_Column_Name('gratio'),
-    Morphometrics_Column_Name('axon_area','axon_area (um\u00b2)'), # unicode for ^2
+    Morphometrics_Column_Name('axon_area','axon_area (um^2)'), # unicode for ^2
     Morphometrics_Column_Name('axon_perimeter','axon_perimeter (um)'),
-    Morphometrics_Column_Name('myelin_area', 'myelin_area (um\u00b2)'),
+    Morphometrics_Column_Name('myelin_area', 'myelin_area (um^2)'),
     Morphometrics_Column_Name('axon_diam','axon_diam (um)'),
     Morphometrics_Column_Name('myelin_thickness','myelin_thickness (um)'),
-    Morphometrics_Column_Name('axonmyelin_area','axonmyelin_area (um\u00b2)'),
+    Morphometrics_Column_Name('axonmyelin_area','axonmyelin_area (um^2)'),
     Morphometrics_Column_Name('axonmyelin_perimeter','axonmyelin_perimeter (um)'),
 ]
