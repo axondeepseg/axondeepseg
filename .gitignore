@@ -35,6 +35,8 @@ models/
 
 test/__test_files__
 
+tmp/
+
 *.log
 
 # Generated image files
