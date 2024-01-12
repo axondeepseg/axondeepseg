@@ -9,6 +9,10 @@ import pandas as pd
 
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+plt.style.use('custom_matplotlibrc')
+plt.rcParams["figure.figsize"] = (6,6)
+
 class MetricsQA:
     def __init__(self, morphometrics_file):
         """
@@ -28,6 +32,12 @@ class MetricsQA:
 
         # bins='fd' uses the Freedman Diaconis Estimator to find the optimal number of bins
         count, bins, ignored = plt.hist(x,bins='fd', histtype='bar', ec='black')
-
+        plt.xlabel(metric_name)
+        plt.ylabel('Count')
         plt.show()
     
+    def plot_all(self):
+        metric_list = list(self.df.columns.values[3:])
+
+        for metric in metric_list:
+            self.plot(metric)
