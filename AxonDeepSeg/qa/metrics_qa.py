@@ -28,7 +28,7 @@ class MetricsQA:
     def list_metrics(self):
         print('\n'.join(list(self.df.columns.values[3:])))
 
-    def plot(self, metric_name):
+    def plot(self, metric_name, save_folder = None):
         x = self.df[metric_name].to_numpy()
 
         fig, (ax1, ax2) = plt.subplots(1, 2, width_ratios=[3, 1])
@@ -75,9 +75,12 @@ class MetricsQA:
         ax2.annotate(np.sum(np.isnan(x)), xy=(1, 0.3))
 
         fig.show()
+
+        if save_folder is not None:
+            plt.savefig(Path(Path(save_folder) / metric_name))
     
-    def plot_all(self):
+    def plot_all(self, save_folder=None):
         metric_list = list(self.df.columns.values[3:])
 
         for metric in metric_list:
-            self.plot(metric)
+            self.plot(metric, save_folder)
