@@ -8,10 +8,16 @@ import scipy
 import matplotlib.pyplot as plt
 import pandas as pd
 
+import pathlib
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-plt.style.use('custom_matplotlibrc')
+
+import AxonDeepSeg.ads_utils as ads
+from AxonDeepSeg.morphometrics.compute_morphometrics import get_axon_morphometrics
+
+mpl_config = Path(pathlib.Path(__file__).parent.resolve() / 'custom_matplotlibrc')
+plt.style.use(mpl_config)
 plt.rcParams["figure.figsize"] = (9,6)
 
 class MetricsQA:
@@ -84,3 +90,37 @@ class MetricsQA:
 
         for metric in metric_list:
             self.plot(metric, save_folder, quiet)
+
+    def get_flagged_objects(self, axon_file, myelin_file, pixel_file, folder, save_folder):
+
+        axon_img = ads.imread(axon_file)
+        myelin_img = ads.imread(myelin_file)
+
+        morph_out = get_axon_morphometrics(
+                axon_img, 
+                path_folder=folder, 
+                im_myelin=myelin_img, 
+                pixel_size=pixel_file, 
+                axon_shape="circle", 
+                return_index_image=False, 
+                return_border_info=False,
+                return_instance_seg=True
+            )
+        df = self.df
+
+        
+        flagged_objects = np.array([])
+        flagged_objects = np.append(flagged_objects, df.loc[df['gratio'] >=0.99].index.to_numpy())
+        flagged_objects = np.append(flagged_objects, df.loc[df['axon_area (um^2)'] <= min(df['axon_area (um^2)'])*5].index.to_numpy())
+        flagged_objects = np.append(flagged_objects, df.loc[df['myelin_area (um^2)'] <= min(df['myelin_area (um^2)'])*5].index.to_numpy())
+
+        flagged_objects = np.unique(flagged_objects)
+
+        mask = np.zeros_like(morph_out[2])
+
+        # go through each element in arr
+        for id in flagged_objects:
+            locations = np.where(np.isclose(morph_out[2], id+1))
+            mask[locations] = 1
+
+        ads.imwrite(Path(save_folder) / 'flagged_objjects.png', mask)
