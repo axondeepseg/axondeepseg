@@ -127,16 +127,6 @@ Once your virtual environment is installed and activated, install the AxonDeepSe
 
     pip install -e . plugins/
 
-.. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
-   ::
-
-        cd axondeepseg
-        git pull
-        pip install -e . plugins/
-
-.. WARNING :: When re-installing the application, the model folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
-
-
 Testing the installation
 ------------------------
 .. WARNING :: Ensure that the virtual environment is activated.
@@ -182,6 +172,28 @@ Below is a short tutorial describing how to use the AxonDeepSeg plugin for Napar
 .. raw:: html
 
    <iframe width="700" height="394" src="https://www.youtube.com/embed/zibDbpko6ko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+Updating AxonDeepSeg
+-------------------
+
+To update an already cloned AxonDeepSeg package, we reccommend that users delete their conda environment and re-do the installation 
+
+pull the latest version of the project from GitHub and re-install the application as documented above. 
+
+To uninstall a conda environment:::
+
+    conda env remove -n ads_venv
+
+In addition, we recommend that user (developers: see note below) delete the axondeepseg/ folder and redownload it as described in our installation instructions to ensure that your software will be the latest version.
+
+From the parent folder of the AxonDeepSeg directory:::
+
+    rm -rf axondeepseg
+
+.. NOTE :: For developers working on different branches, deleting the repository is **not** recommended, as you may lose work that was not pushed. Instead, we recommend you delete the models folder, as they may have changed.
+  ::
+
+        rm -rf axondeepseg/AxonDeepSeg/models/
 
 Existing models
 ===============
