@@ -57,3 +57,4 @@ axondeepseg.log
 Pipfile
 
 *.egg-info/
+qa_test/
