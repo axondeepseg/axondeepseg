@@ -22,7 +22,7 @@ dependencies:
   - qtconsole<5.4.2
   - pip
   - pip:
-    - nibabel==3.2.*
+    - nibabel~=5.2
     - raven
     - napari
     - protobuf==3.20.1
