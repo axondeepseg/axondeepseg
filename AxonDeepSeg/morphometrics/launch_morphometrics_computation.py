@@ -131,8 +131,8 @@ def main(argv=None):
         '-u', '--unmyelinated',
         required=False,
         action='store_true',
-        help='Toggles morphometrics for unmyelinated axons. This will process masks with the \n'
-            +f'"{unmyelinated_suffix}" suffix.'
+        help='Toggles morphometrics for unmyelinated axons. This will only process masks with \n'
+            +f'the "{unmyelinated_suffix}" suffix.'
     )
 
     # Processing the arguments
@@ -163,8 +163,11 @@ def main(argv=None):
         if dir_iter.is_dir(): # batch morphometrics
             flag_morp_batch = True
             target_list += [Path(dir_iter / path_target) for path_target in os.listdir(dir_iter)  \
-                                if Path(path_target).suffix.lower() in validExtensions and not path_target.endswith(str(axon_suffix)) \
-                                and not path_target.endswith(str(myelin_suffix)) and not path_target.endswith(str(axonmyelin_suffix)) \
+                                if Path(path_target).suffix.lower() in validExtensions 
+                                and not path_target.endswith(str(axon_suffix)) \
+                                and not path_target.endswith(str(myelin_suffix)) \
+                                and not path_target.endswith(str(axonmyelin_suffix)) \
+                                and not path_target.endswith(str(unmyelinated_suffix)) \
                                 and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
 
     if flag_morp_batch: # If flag_morph_batch = True, set the path_target_list to target_list.
