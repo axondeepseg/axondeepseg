@@ -7,6 +7,7 @@ axon_suffix = Path('_seg-axon.png')                     # axon segmentation suff
 myelin_suffix = Path('_seg-myelin.png')                 # myelin segmentation suffix file name
 index_suffix = Path('_index.png')                       # image with the index of the axons
 axonmyelin_index_suffix = Path('_axonmyelin_index.png') # Colored axonmyelin segmentation + the index image
+unmyelinated_suffix = Path('_seg-uaxon.png')            # unmyelinated axon segmentation suffix file name
 
 # morphometrics file suffix name
 morph_suffix = Path('axon_morphometrics.xlsx')

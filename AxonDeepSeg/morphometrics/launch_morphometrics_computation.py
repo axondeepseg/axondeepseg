@@ -26,7 +26,7 @@ import AxonDeepSeg.ads_utils as ads
 from config import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
-    morph_suffix, instance_suffix,
+    morph_suffix, instance_suffix, unmyelinated_suffix
 )
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
