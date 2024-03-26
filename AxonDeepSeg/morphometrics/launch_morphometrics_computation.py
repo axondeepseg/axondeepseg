@@ -82,6 +82,28 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
         write_aggregate_morphometrics(path_folder, aggregate_metrics)
 
 
+def load_mask(current_path_target: Path, semantic_class: str, suffix: str):
+    """
+    This function loads a maskbased on the provided suffix. Will stop execution 
+    with exit code 3 if the mask is not found.
+
+    :param current_path_target: Path of the target image
+    :param semantic_class: Semantic class of the mask to load ('axon', 'myelin' or 'unmyelinated axon')
+    :param suffix: Suffix to determine which mask to load
+    :return: Loaded mask image
+    """
+    mask_path = Path(str(current_path_target.with_suffix("")) + str(suffix))
+    if mask_path.exists():
+        return image.imread(str(mask_path))
+    else:
+        msg = f"ERROR: Segmented {semantic_class} mask for image: `{str(current_path_target)}` " \
+            f"is not present in the image folder. Please check that the {semantic_class} mask is " \
+            " located in the image folder. If it is not present, perform segmentation of the " \
+            "image first using ADS.\n"
+        logger.error(msg)
+        sys.exit(3)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -176,25 +198,13 @@ def main(argv=None):
     for current_path_target in tqdm(path_target_list):
         if current_path_target.suffix.lower() in validExtensions:
 
-            # load the axon mask
-            if (Path(str(current_path_target.with_suffix("")) + str(axon_suffix))).exists():
-                pred_axon = image.imread(str(current_path_target.with_suffix("")) + str(axon_suffix))
+            if unmyelinated_mode:
+                # load the unmyelinated axon mask
+                pred_uaxon = load_mask(current_path_target, 'unmyelinated axon', unmyelinated_suffix)
             else:
-                msg = f"ERROR: Segmented axon mask for image: `{str(current_path_target)}` is not present " \
-                    "in the image folder. Please check that the axon mask is located in the image folder. " \
-                    "If it is not present, perform segmentation of the image first using ADS.\n"
-                logger.error(msg)
-                sys.exit(3)
-
-            # load myelin mask
-            if (Path(str(current_path_target.with_suffix("")) + str(myelin_suffix))).exists():
-                pred_myelin = image.imread(str(current_path_target.with_suffix("")) + str(myelin_suffix))
-            else:
-                msg = f"ERROR: Segmented myelin mask for image: `{str(current_path_target)}` is not present " \
-                    "in the image folder. Please check that the myelin mask is located in the image folder. " \
-                    "If it is not present, perform segmentation of the image first using ADS.\n"
-                logger.error(msg)
-                sys.exit(3)
+                # load the axon and myelin masks
+                pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
+                pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
 
             if args["sizepixel"] is not None:
                 psm = float(args["sizepixel"])
