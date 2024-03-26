@@ -131,7 +131,8 @@ def main(argv=None):
         '-u', '--unmyelinated',
         required=False,
         action='store_true',
-        help='To toggle morphometrics for unmyelinated axons.'
+        help='Toggles morphometrics for unmyelinated axons. This will process masks with the \n'
+            +f'"{unmyelinated_suffix}" suffix.'
     )
 
     # Processing the arguments
