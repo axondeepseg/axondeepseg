@@ -258,13 +258,16 @@ def main(argv=None):
                     outfile_basename = str(current_path_target.with_suffix(""))
 
                 ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
-                # Generate the colored image
+                # Generate the colored image; note that its background image is different in unmyelinated mode
                 if not unmyelinated_mode:
-                    postprocessing.generate_and_save_colored_image_with_index_numbers(
-                        filename=outfile_basename + str(axonmyelin_index_suffix),
-                        axonmyelin_image_path=str(current_path_target.with_suffix("")) + str(axonmyelin_suffix),
-                        index_image_array=index_image_array
-                    )
+                    bg_image_path = str(current_path_target.with_suffix("")) + str(axonmyelin_suffix)
+                else:
+                    bg_image_path = str(current_path_target.with_suffix("")) + str(unmyelinated_suffix)
+                postprocessing.generate_and_save_colored_image_with_index_numbers(
+                    filename=outfile_basename + str(axonmyelin_index_suffix),
+                    axonmyelin_image_path=bg_image_path,
+                    index_image_array=index_image_array
+                )
                 
                 if colorization_flag:
                     # Save instance segmentation
