@@ -165,6 +165,9 @@ def main(argv=None):
     border_info_flag = args["border_info"]
     colorization_flag = args["colorize"]
     unmyelinated_mode = args["unmyelinated"]
+    if colorization_flag and unmyelinated_mode:
+        logger.warning("ERROR: Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
+        colorization_flag = False
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -226,8 +229,8 @@ def main(argv=None):
 
             # Compute statistics
             morph_output = get_axon_morphometrics(
-                im_axon=pred_axon, 
-                im_myelin=pred_myelin, 
+                im_axon=pred_uaxon if unmyelinated_mode else pred_axon, 
+                im_myelin=None if unmyelinated_mode else pred_myelin, 
                 pixel_size=psm, 
                 axon_shape=axon_shape, 
                 return_index_image=True,
@@ -256,11 +259,12 @@ def main(argv=None):
 
                 ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
                 # Generate the colored image
-                postprocessing.generate_and_save_colored_image_with_index_numbers(
-                    filename=outfile_basename + str(axonmyelin_index_suffix),
-                    axonmyelin_image_path=str(current_path_target.with_suffix("")) + str(axonmyelin_suffix),
-                    index_image_array=index_image_array
-                )
+                if not unmyelinated_mode:
+                    postprocessing.generate_and_save_colored_image_with_index_numbers(
+                        filename=outfile_basename + str(axonmyelin_index_suffix),
+                        axonmyelin_image_path=str(current_path_target.with_suffix("")) + str(axonmyelin_suffix),
+                        index_image_array=index_image_array
+                    )
                 
                 if colorization_flag:
                     # Save instance segmentation
