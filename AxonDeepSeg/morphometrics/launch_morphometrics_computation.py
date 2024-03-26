@@ -127,6 +127,12 @@ def main(argv=None):
         action='store_true',
         help='To save the instance segmentation image.'
     )
+    ap.add_argument(
+        '-u', '--unmyelinated',
+        required=False,
+        action='store_true',
+        help='To toggle morphometrics for unmyelinated axons.'
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -135,6 +141,7 @@ def main(argv=None):
     axon_shape = str(args["axonshape"])
     border_info_flag = args["border_info"]
     colorization_flag = args["colorize"]
+    unmyelinated_mode = args["unmyelinated"]
 
     # Tuple of valid file extensions
     validExtensions = (
