@@ -26,7 +26,8 @@ import AxonDeepSeg.ads_utils as ads
 from config import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
-    morph_suffix, instance_suffix, unmyelinated_suffix
+    morph_suffix, unmyelinated_morph_suffix, instance_suffix, 
+    unmyelinated_suffix, unmyelinated_index_suffix
 )
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
@@ -168,6 +169,9 @@ def main(argv=None):
     if colorization_flag and unmyelinated_mode:
         logger.warning("ERROR: Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
         colorization_flag = False
+    if unmyelinated_mode and filename is str(morph_suffix):
+        # change to appropriate unmyelinated axon morphometrics filename
+        filename = str(unmyelinated_morph_suffix)
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -261,10 +265,12 @@ def main(argv=None):
                 # Generate the colored image; note that its background image is different in unmyelinated mode
                 if not unmyelinated_mode:
                     bg_image_path = str(current_path_target.with_suffix("")) + str(axonmyelin_suffix)
+                    index_overlay_fname = outfile_basename + str(axonmyelin_index_suffix)
                 else:
                     bg_image_path = str(current_path_target.with_suffix("")) + str(unmyelinated_suffix)
+                    index_overlay_fname = outfile_basename + str(unmyelinated_index_suffix)
                 postprocessing.generate_and_save_colored_image_with_index_numbers(
-                    filename=outfile_basename + str(axonmyelin_index_suffix),
+                    filename=index_overlay_fname,
                     axonmyelin_image_path=bg_image_path,
                     index_image_array=index_image_array
                 )
