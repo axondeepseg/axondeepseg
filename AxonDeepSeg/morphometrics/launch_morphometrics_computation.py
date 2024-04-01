@@ -166,9 +166,12 @@ def main(argv=None):
     border_info_flag = args["border_info"]
     colorization_flag = args["colorize"]
     unmyelinated_mode = args["unmyelinated"]
-    if colorization_flag and unmyelinated_mode:
-        logger.warning("Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
-        colorization_flag = False
+    if unmyelinated_mode:
+        if colorization_flag:
+            logger.warning("Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
+            colorization_flag = False
+        if border_info_flag:
+            logger.warning("Border information not supported for unmyelinated axons. Ignoring the -b flag.")
     if unmyelinated_mode and filename is str(morph_suffix):
         # change to appropriate unmyelinated axon morphometrics filename
         filename = str(unmyelinated_morph_suffix)
