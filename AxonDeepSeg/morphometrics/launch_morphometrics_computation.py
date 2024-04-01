@@ -167,7 +167,7 @@ def main(argv=None):
     colorization_flag = args["colorize"]
     unmyelinated_mode = args["unmyelinated"]
     if colorization_flag and unmyelinated_mode:
-        logger.warning("ERROR: Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
+        logger.warning("Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
         colorization_flag = False
     if unmyelinated_mode and filename is str(morph_suffix):
         # change to appropriate unmyelinated axon morphometrics filename
@@ -191,13 +191,21 @@ def main(argv=None):
     for dir_iter in path_target_list:
         if dir_iter.is_dir(): # batch morphometrics
             flag_morp_batch = True
-            target_list += [Path(dir_iter / path_target) for path_target in os.listdir(dir_iter)  \
-                                if Path(path_target).suffix.lower() in validExtensions 
-                                and not path_target.endswith(str(axon_suffix)) \
-                                and not path_target.endswith(str(myelin_suffix)) \
-                                and not path_target.endswith(str(axonmyelin_suffix)) \
-                                and not path_target.endswith(str(unmyelinated_suffix)) \
-                                and ((Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter))]
+            # identify the images; ignore masks but make sure they are present
+            target_list += [
+                Path(dir_iter / path_target) 
+                for path_target in os.listdir(dir_iter) if (
+                    Path(path_target).suffix.lower() in validExtensions 
+                    and not path_target.endswith(str(axon_suffix))
+                    and not path_target.endswith(str(myelin_suffix))
+                    and not path_target.endswith(str(axonmyelin_suffix))
+                    and not path_target.endswith(str(unmyelinated_suffix))
+                    and (
+                        (Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter)
+                        or (Path(path_target).stem + str(unmyelinated_suffix)) in os.listdir(dir_iter)
+                    )
+                )
+            ]
 
     if flag_morp_batch: # If flag_morph_batch = True, set the path_target_list to target_list.
         path_target_list = target_list
@@ -260,8 +268,8 @@ def main(argv=None):
                 else:
                     # in case current_path_target already contains the parent directory
                     outfile_basename = str(current_path_target.with_suffix(""))
-
                 ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
+
                 # Generate the colored image; note that its background image is different in unmyelinated mode
                 if not unmyelinated_mode:
                     bg_image_path = str(current_path_target.with_suffix("")) + str(axonmyelin_suffix)
