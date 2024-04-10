@@ -35,9 +35,6 @@ class TestCore(object):
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
 
-        if self.uMorphometricsPath.exists():
-            self.uMorphometricsPath.unlink()
-
         logfile = self.testPath / 'axondeepseg.log'
         if logfile.exists():
             logfile.unlink()
