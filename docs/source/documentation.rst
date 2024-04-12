@@ -173,7 +173,7 @@ Below is a short tutorial describing how to use the AxonDeepSeg plugin for Napar
 
    <iframe width="700" height="394" src="https://www.youtube.com/embed/zibDbpko6ko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-Updating AxonDeepSeg
+Update/reinstall AxonDeepSeg
 -------------------
 
 To update an already cloned AxonDeepSeg package, we reccommend that users delete their conda environment and re-do the installation 
