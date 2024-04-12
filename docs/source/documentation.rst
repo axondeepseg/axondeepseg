@@ -705,6 +705,10 @@ GIMP software
 Training Models
 ===============
 
+.. NOTE :: The IVADOMED project is going to be archived soon, and will soon no longer be maintained. We are currently developing models using alternative tools, which will be released in ADS soon. If you would like to train your own models for use in ADS, please open an issue on the ADS repository (https://github.com/axondeepseg/axondeepseg/issues) so that a developer may assist you with the up-to-date training procedure.
+
+.. NOTE :: The AxonDeepSeg development team is able to assist you with training models on your data if you do not possess the computer hardware or deep learning skills to do it yourself. When doing so, we prefer to make your newly trained model available for anyone to use with AxonDeepSeg, and if there is a susbtantual amount of work or innovation made in the process we may also ask for co-authorship from some of our lab members that contributed to this work. Please reach out to us to schedule a video-call if you'd like our assistance and to discuss more.
+
 To train your own model for use in AxonDeepSeg, please refer to the `IVADOMED documentation <https://ivadomed.org/tutorials/two_class_microscopy_seg_2d_unet.html>`_ on model training for two-class microscopy images.
 
 Help
