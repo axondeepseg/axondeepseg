@@ -367,6 +367,8 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 
 -c                  Flag to save the colorized instance segmentation. For more information about this feature, see the *Colorization* subsection below.
 
+-u                  Toggles *unmyelinated mode*. This will compute morphometrics for unmyelinated axons. Note that this requires a separate unmyelinated axon segmentation mask with suffix ``_seg-uaxon``.
+
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
