@@ -1,6 +1,7 @@
 '''
 Model descriptions and download links for all models supported in AxonDeepSeg.
 '''
+import pprint
 
 models = {
     "generalist": {
@@ -47,7 +48,7 @@ models = {
             "light": "https://github.com/axondeepseg/default-CARS-model/releases/download/r20240403/model_seg_rat_axon-myelin_cars_light.zip"
         }
     },
-    "unmyelinated-sickkids": {
+    "unmyelinated-TEM": {
         "name": "model_seg_unmyelinated_sickkids",
         "task": "unmyelinated-axon-segmentation",
         "n_classes": 1,
@@ -61,7 +62,10 @@ models = {
 }
 
 def pretty_print_model(model):
-    print(f"Model name:\n\t{model['name']}")
-    print(f"Number of classes:\n\t{model['n_classes']}")
-    print(f"Overview:\n\t{model['model-info']}")
-    print(f"Training data:\n\t{model['training-data']}")
+    model_details = {
+        "MODEL NAME": models[model]['name'],
+        "NUMBER OF CLASSES": models[model]['n_classes'],
+        "OVERVIEW": models[model]['model-info'],
+        "TRAINING DATA": models[model]['training-data'],
+    }
+    pprint.pprint(model_details)
