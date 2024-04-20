@@ -1,3 +1,7 @@
+'''
+Model descriptions and download links for all models supported in AxonDeepSeg.
+'''
+
 models = {
     "generalist": {
         "name": "model_seg_generalist",
@@ -26,7 +30,7 @@ models = {
         "task": "myelinated-axon-segmentation",
         "n_classes": 2,
         "model-info": "Axon and myelin segmentation model trained on Scanning Electron Microscopy data.",
-        "training-data": "14.8 Mpx of SEM rat images with a resolution of 0.13 um/px. The dataset used for this model is publicly available here: https://github.com/axondeepseg/data_axondeepseg_sem.",
+        "training-data": "14.8 Mpx of SEM rat spinal cord images with a resolution of 0.13 um/px. The dataset used for this model is publicly available here: https://github.com/axondeepseg/data_axondeepseg_sem.",
         "weights": {
             "ensemble": "https://github.com/axondeepseg/default-SEM-model/releases/download/r20240403/model_seg_rat_axon-myelin_sem_ensemble.zip",
             "light": "https://github.com/axondeepseg/default-SEM-model/releases/download/r20240403/model_seg_rat_axon-myelin_sem_light.zip"
@@ -37,13 +41,23 @@ models = {
         "task": "myelinated-axon-segmentation",
         "n_classes": 2,
         "model-info": "Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data.",
-        "training-data": "<ADD_DESCRIPTION>",
+        "training-data": "2.6 Mpx of CARS rat spinal cord images, resolution of 0.225 um/px. The training set is relatively small so the model is not as robust as the generalist model.",
         "weights": {
             "ensemble": "https://github.com/axondeepseg/default-CARS-model/releases/download/r20240403/model_seg_rat_axon-myelin_cars_ensemble.zip",
             "light": "https://github.com/axondeepseg/default-CARS-model/releases/download/r20240403/model_seg_rat_axon-myelin_cars_light.zip"
         }
     },
-    "unmyelinated-sickkids": {}
+    "unmyelinated-sickkids": {
+        "name": "model_seg_unmyelinated_sickkids",
+        "task": "unmyelinated-axon-segmentation",
+        "n_classes": 1,
+        "model-info": "Unmyelinated axon segmentation model trained on TEM data.",
+        "training-data": "5 large TEM mouse images, resolution of 0.0048 um/px. Unmyelinated axons were manually annotated. The data comes from Sick Kids Hospital, Toronto.",
+        "weights": {
+            "ensemble": "https://github.com/axondeepseg/model_seg_unmyelinated_tem/releases/download/v1.1.0/model_seg_unmyelinated_sickkids_tem_best.zip",
+            "light": None
+        }
+    }
 }
 
 def pretty_print_model(model):
