@@ -3,7 +3,7 @@ Model descriptions and download links for all models supported in AxonDeepSeg.
 '''
 import pprint
 
-models = {
+MODELS = {
     "generalist": {
         "name": "model_seg_generalist",
         "task": "myelinated-axon-segmentation",

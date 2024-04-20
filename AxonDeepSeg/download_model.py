@@ -1,9 +1,10 @@
 from AxonDeepSeg.ads_utils import convert_path, download_data
+from AxonDeepSeg.model_cards import MODELS
 from pathlib import Path
 import shutil
 
 
-def download_model(destination = None):
+def download_model(destination=None, model='generalist'):
     sem_release_version = 'r20211209v2'
     tem_release_version = 'r20211111v3'
     bf_release_version = 'r20211210'
