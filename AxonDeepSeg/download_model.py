@@ -9,21 +9,23 @@ import argparse
 
 def download_model(model='generalist', model_type='light', destination=None):
     
+    model_suffix = 'light' if model_type == 'light' else 'ensemble'
+    full_model_name = f'{MODELS[model]["name"]}_{model_suffix}'
     if destination is None:
-        model_destination = Path(f"AxonDeepSeg/models/{model}")
+        model_destination = Path(f"AxonDeepSeg/models/{full_model_name}")
     else:
-        model_destination = destination / model
+        model_destination = destination / full_model_name
 
     url_model_destination = MODELS[model]['weights'][model_type]
     if url_model_destination is None:
-        print(f"Model not found.")
+        logger.error('Model not found.')
         sys.exit()
 
     files_before = list(Path.cwd().iterdir())
     if download_data(url_model_destination) == 0:
-        print("Model downloaded and unzipped succesfully.")
+        logger.info("Model downloaded and unzipped succesfully.")
     else:
-        print("An error occured. The model was not downloaded.")
+        logger.error("An error occured. The model was not downloaded.")
         sys.exit()
     files_after = list(Path.cwd().iterdir())
 
@@ -31,15 +33,10 @@ def download_model(model='generalist', model_type='light', destination=None):
     folder_name = list(set(files_after) - set(files_before))[0]
 
     if model_destination.exists():
-        print('Model folder already existed - deleting old one')
+        logger.info("Model folder already existed - deleting old one")
         shutil.rmtree(str(model_destination))
     
-    model_suffix = 'light' if model_type == 'light' else 'ensemble'
-    model_name = f'{MODELS[model]["name"]}_{model_suffix}'
-    shutil.move(folder_name.joinpath(model_name), str(model_destination))
-
-    # remove temporary folder
-    shutil.rmtree(folder_name)
+    shutil.move(folder_name, str(model_destination))
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
