@@ -64,11 +64,10 @@ jobs:
 
       # Step 2: Install environment.
       - name: Install Conda Env All OS
-        with:
-          python-version: ${{matrix.python-version}}
-          activate-environment: ads_venv
-          auto-update-conda: true
-          environment-file: environment.yml
+        run: |
+          conda update
+          conda install environment.yml
+          conda activate ads_env
 
       # Step 3: List conda info, conda packages
       - name: Conda info and list
