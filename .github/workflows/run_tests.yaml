@@ -64,10 +64,8 @@ jobs:
 
       # Step 2: Install environment.
       - name: Install Conda Env All OS
-        uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{matrix.python-version}}
-          auto-activate-base: true
           activate-environment: ads_venv
           auto-update-conda: true
           environment-file: environment.yml
