@@ -63,9 +63,9 @@ MODELS = {
 
 def pretty_print_model(model):
     model_details = {
-        "MODEL NAME": models[model]['name'],
-        "NUMBER OF CLASSES": models[model]['n_classes'],
-        "OVERVIEW": models[model]['model-info'],
-        "TRAINING DATA": models[model]['training-data'],
+        "MODEL NAME": MODELS[model]['name'],
+        "NUMBER OF CLASSES": MODELS[model]['n_classes'],
+        "OVERVIEW": MODELS[model]['model-info'],
+        "TRAINING DATA": MODELS[model]['training-data'],
     }
     pprint.pprint(model_details)

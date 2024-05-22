@@ -1,5 +1,5 @@
 from AxonDeepSeg.ads_utils import convert_path, download_data
-from AxonDeepSeg.model_cards import MODELS
+from AxonDeepSeg.model_cards import MODELS, pretty_print_model
 from pathlib import Path
 import shutil
 from loguru import logger
@@ -54,9 +54,23 @@ def main(argv=None):
         default='light',
         type=str,
     )
+    ap.add_argument(
+        "-l", "--list",
+        required=False,
+        help="List all available models for download",
+        default=False,
+        action='store_true',
+    )
     args = vars(ap.parse_args())
 
-    download_model(args["model_name"], args["model_type"])
+    if args["list"]:
+        logger.info("Printing available models:")
+        for model in MODELS:
+            logger.info(model)
+            pretty_print_model(model)
+        sys.exit()
+    else:
+        download_model(args["model_name"], args["model_type"])
 
 if __name__ == "__main__":
     with logger.catch():
