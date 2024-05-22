@@ -1,10 +1,8 @@
 name: ads_venv
 dependencies:
-  - python=3.8
-  - h5py=2.10.0
+  - python=3.11
   - numpy
   - scipy
-  - scikit-learn=1.1.1
   - scikit-image=0.19.3
   - tabulate<
   - pandas
@@ -18,13 +16,10 @@ dependencies:
   - pytest-cov
   - prettytable
   - jupyter
-  - openpyxl
   - qtconsole<5.4.2
   - pip
   - pip:
-    - nibabel==3.2.*
     - raven
     - napari
-    - protobuf==3.20.1
-    - ivadomed @ git+https://github.com/ivadomed/ivadomed.git@c52689d087de28f9a9a814b6eb99bf2093d96c5a
-    - onnxruntime<1.16.0
+    - nnunetv2==2.2.1
+    - loguru

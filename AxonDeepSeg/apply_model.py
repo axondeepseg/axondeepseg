@@ -6,7 +6,7 @@ from AxonDeepSeg.visualization.merge_masks import merge_masks
 from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 from loguru import logger
 
-from ivadomed import inference as imed_inference
+from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
 default_overlap = 48
 
