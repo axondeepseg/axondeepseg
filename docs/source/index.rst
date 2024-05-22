@@ -8,7 +8,7 @@ Welcome to AxonDeepSeg !
 
 Welcome to the AxonDeepSeg framework. In this site you will find the documentation on how to install and how to use AxonDeepSeg to obtain segmentations of your own microscopy data.
 
-AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It is based on a convolutional neural network.
+AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It is based on convolutional neural networks. The package also includes a tool for automatic morphometrics computation.
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig0.png
    :scale: 35 %
