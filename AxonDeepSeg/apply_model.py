@@ -1,34 +1,80 @@
 from pathlib import Path
+import os
 
 # AxonDeepSeg imports
-import AxonDeepSeg.ads_utils as ads
-from AxonDeepSeg.visualization.merge_masks import merge_masks
+from AxonDeepSeg.visualization.get_masks import get_masks
 from config import axon_suffix, myelin_suffix, axonmyelin_suffix
+import numpy as np
+import torch
 from loguru import logger
-from typing import List
+from typing import List, Literal
 
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
+
+# setup dummy env variables so that nnUNet does not complain
+os.environ['nnUNet_raw'] = 'UNDEFINED'
+os.environ['nnUNet_results'] = 'UNDEFINED'
+os.environ['nnUNet_preprocessed'] = 'UNDEFINED'
 
 def axon_segmentation(
                     path_inputs: List[Path],
                     path_model: Path,
-                    gpu_id: int=0,
+                    model_type: Literal['light', 'ensemble']='light',
+                    gpu_id: int=-1,
                     verbosity_level: int=0,
                     ):
     '''
-    Segment images using nnU-Net.
+    Segment images by applying a nnU-Net pretrained model.
 
     Parameters
     ----------
     path_inputs : List[pathlib.Path]
-        List of images to segment.
+        List of images to segment. We assume they all exist.
     path_model : pathlib.Path
-        Path to the folder of the nnU-Net pretrained model.
+        Path to the folder of the nnU-Net pretrained model. We assume it exists.
+    model_type : Literal['light', 'ensemble'], optional
+        Type of model, by default 'light'.
     gpu_id : int, optional
-        GPU ID to use for cuda acceleration, by default 0.
+        GPU ID to use for cuda acceleration. -1 to use CPU, by default -1.
     verbosity_level : int, optional
         Level of verbosity, by default 0.
     '''
+
+    # find all available folds
+    if model_type == 'light':
+        folds_avail = ['all']
+    else:
+        folds_avail = [int(str(f).split('_')[-1]) for f in path_model.glob('fold_*')]
+
+    # instantiate predictor
+    predictor = nnUNetPredictor(
+        perform_everything_on_gpu=True if gpu_id < 0 else False,
+        device=torch.device('cuda', gpu_id) if gpu_id >= 0 else torch.device('cpu'),
+    )
+    logger.info('Running inference on device: {}'.format(predictor.device))
+
+    # find checkpoint name
+    chkpt_name = next((path_model / f'fold_{folds_avail[0]}').glob('*.pth')).name
+    # init network architecture and load checkpoint
+    predictor.initialize_from_trained_model_folder(
+        str(path_model),
+        folds=folds_avail,
+        checkpoint_name=chkpt_name,
+    )
+    logger.info('Model successfully loaded.')
+
+    # we predict every input individually to ensure partial completion if an 
+    # error occurs for one of them
+    for path_img in path_inputs:
+        #TODO: create tmp dir
+        #TODO: copy file for valid nnunet filenaming
+        #TODO: use predictor.predict_from_files
+        #TODO: (eventually, use predict_from_list_of_npy_arrays instead)
+        #TODO: rescale output to 8-bit range and rename with axonmyelin suffix
+        #TODO: use get_masks to also save axon and myelin masks
+        #TODO: delete tmp dir
+        pass
+
 
 def axon_segmentation_deprecated(
                     path_acquisitions_folders, 
