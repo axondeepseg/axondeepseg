@@ -5,12 +5,32 @@ import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.visualization.merge_masks import merge_masks
 from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 from loguru import logger
+from typing import List
 
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
-default_overlap = 48
-
 def axon_segmentation(
+                    path_inputs: List[Path],
+                    path_model: Path,
+                    gpu_id: int=0,
+                    verbosity_level: int=0,
+                    ):
+    '''
+    Segment images using nnU-Net.
+
+    Parameters
+    ----------
+    path_inputs : List[pathlib.Path]
+        List of images to segment.
+    path_model : pathlib.Path
+        Path to the folder of the nnU-Net pretrained model.
+    gpu_id : int, optional
+        GPU ID to use for cuda acceleration, by default 0.
+    verbosity_level : int, optional
+        Level of verbosity, by default 0.
+    '''
+
+def axon_segmentation_deprecated(
                     path_acquisitions_folders, 
                     acquisitions_filenames,
                     path_model_folder,
