@@ -11,6 +11,21 @@ from AxonDeepSeg.ads_utils import convert_path
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 def get_masks(path_prediction):
+    '''
+    Extracts the separated axon and myelin masks from the axonmyelin prediction.
+    Also saves the masks in the same folder.
+
+    Parameters
+    ----------
+    path_prediction : str or pathlib.Path
+        Path to the prediction image (axonmyelin mask)
+
+    Returns
+    -------
+    (axon_pred, myelin_pred) : tuple(Ndarray, Ndarray)
+        The separate axon and myelin masks extracted from the axonmyelin mask.
+    '''
+
     # If string, convert to Path objects
     path_prediction = convert_path(path_prediction)
 
