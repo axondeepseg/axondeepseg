@@ -11,10 +11,19 @@ from typing import List, Literal
 
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
-# setup dummy env variables so that nnUNet does not complain
-os.environ['nnUNet_raw'] = 'UNDEFINED'
-os.environ['nnUNet_results'] = 'UNDEFINED'
-os.environ['nnUNet_preprocessed'] = 'UNDEFINED'
+def setup_environment_vars():
+    '''Sets up dummy env vars so that nnUNet does not complain.'''
+    os.environ['nnUNet_raw'] = 'UNDEFINED'
+    os.environ['nnUNet_results'] = 'UNDEFINED'
+    os.environ['nnUNet_preprocessed'] = 'UNDEFINED'
+
+def split_nnunet_output():
+    '''
+    nnU-Net outputs a single mask with all classes; this function reads the 
+    model config to fetch the class names and splits the mask accordingly.
+    
+    '''
+    pass
 
 def axon_segmentation(
                     path_inputs: List[Path],
@@ -40,6 +49,7 @@ def axon_segmentation(
         Level of verbosity, by default 0.
     '''
 
+    setup_environment_vars()
     # find all available folds
     if model_type == 'light':
         folds_avail = ['all']
@@ -53,27 +63,28 @@ def axon_segmentation(
     )
     logger.info('Running inference on device: {}'.format(predictor.device))
 
-    # find checkpoint name
+    # find checkpoint name (identical for all folds)
     chkpt_name = next((path_model / f'fold_{folds_avail[0]}').glob('*.pth')).name
     # init network architecture and load checkpoint
     predictor.initialize_from_trained_model_folder(
         str(path_model),
-        folds=folds_avail,
+        use_folds=folds_avail,
         checkpoint_name=chkpt_name,
     )
     logger.info('Model successfully loaded.')
 
-    # we predict every input individually to ensure partial completion if an 
-    # error occurs for one of them
-    for path_img in path_inputs:
-        #TODO: create tmp dir
-        #TODO: copy file for valid nnunet filenaming
-        #TODO: use predictor.predict_from_files
-        #TODO: (eventually, use predict_from_list_of_npy_arrays instead)
-        #TODO: rescale output to 8-bit range and rename with axonmyelin suffix
-        #TODO: use get_masks to also save axon and myelin masks
-        #TODO: delete tmp dir
-        pass
+    # create input list
+    input_list = [ [str(p)] for p in path_inputs]
+    output_list = [ str(p.with_suffix('')) + '_seg' for p in path_inputs ]
+
+    predictor.predict_from_files(
+        list_of_lists_or_source_folder=input_list,
+        output_folder_or_list_of_truncated_output_files=output_list,
+        save_probabilities=False,
+        overwrite=False,
+    )
+
+    #TODO: split masks
 
 
 def axon_segmentation_deprecated(
