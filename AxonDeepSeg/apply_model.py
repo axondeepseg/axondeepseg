@@ -6,9 +6,10 @@ from loguru import logger
 from typing import List, Literal, Dict
 
 # AxonDeepSeg imports
-from AxonDeepSeg.visualization.get_masks import get_masks
+from AxonDeepSeg.visualization.merge_masks import merge_masks
 from AxonDeepSeg import ads_utils
-from config import axon_suffix, myelin_suffix, axonmyelin_suffix
+from config import axon_suffix, myelin_suffix, axonmyelin_suffix, nnunet_suffix
+from AxonDeepSeg.params import intensity
 
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
@@ -17,6 +18,49 @@ def setup_environment_vars():
     os.environ['nnUNet_raw'] = 'UNDEFINED'
     os.environ['nnUNet_results'] = 'UNDEFINED'
     os.environ['nnUNet_preprocessed'] = 'UNDEFINED'
+
+def extract_from_nnunet_prediction(pred, pred_path, class_name, class_value) -> str:
+    '''
+    Extracts the given class from the nnunet raw prediction, saves it in a 
+    separate mask and return the .
+
+    Parameters
+    ----------
+    pred : np.ndarray
+        The raw prediction from nnunet with values 0, 1, 2, ...
+    pred_path : pathlib.Path
+        Path to the raw prediction file; We expect its filename to end 
+        with '_seg-nnunet.png'
+    class_name : str
+        Name of the class to extract. e.g. 'axon', 'myelin', etc.
+    class_value : int
+        Value of the class in the raw prediction.
+
+    Errors
+    ------
+    ValueError
+        If the class value is not found in the raw prediction.
+    ValueError
+        If the raw nnunet prediction file does not end with '_seg-nnunet.png'.
+
+    Returns
+    -------
+    new_fname : str
+        Path to the extracted class mask saved.
+    '''
+
+    pred_path = ads_utils.convert_path(pred_path)
+    if not np.any(pred == class_value):
+        raise ValueError(f'Class value {class_value} not found in the raw prediction.')
+    elif not pred_path.name.endswith(str(nnunet_suffix)):
+        raise ValueError(f'Raw nnunet pred file does not end with "{nnunet_suffix}".')
+    
+    extraction = np.zeros_like(pred)
+    extraction[pred == class_value] = intensity['binary']
+    new_fname = str(pred_path).replace(str(nnunet_suffix), f'_seg-{class_name}.png')
+    ads_utils.imwrite(new_fname, extraction)
+
+    return new_fname
 
 def axon_segmentation(
                     path_inputs: List[Path],
@@ -31,7 +75,8 @@ def axon_segmentation(
     Parameters
     ----------
     path_inputs : List[pathlib.Path]
-        List of images to segment. We assume they all exist.
+        List of images to segment. We assume they all exist and are already in 
+        the correct format expected by the model (nb of channels, image format).
     path_model : pathlib.Path
         Path to the folder of the nnU-Net pretrained model. We assume it exists.
     model_type : Literal['light', 'ensemble'], optional
@@ -68,7 +113,9 @@ def axon_segmentation(
 
     # create input list
     input_list = [ [str(p)] for p in path_inputs]
-    output_list = [ str(p.with_suffix('')) + '_seg-' for p in path_inputs ]
+    target_suffix = str(nnunet_suffix.with_suffix(''))
+    data_format = predictor.dataset_json['file_ending'] # e.g. '.png'
+    output_list = [ str(p).replace(data_format, target_suffix) for p in path_inputs ]
 
     predictor.predict_from_files(
         list_of_lists_or_source_folder=input_list,
@@ -78,23 +125,25 @@ def axon_segmentation(
     )
 
     output_structure = predictor.dataset_json['labels']
-    output_classes = list(output_structure.keys())
+    output_classes = sorted(list(output_structure.keys()))
     output_classes.remove('background')
-    is_axonmyelin_seg = ['axon', 'myelin'] == sorted(output_classes) 
+    is_axonmyelin_seg = ['axon', 'myelin'] == output_classes
+
     # nnUNet outputs a single file will all classes mapped to consecutive ints
     for pred_path in output_list:
-        fname = pred_path + predictor.dataset_json['file_ending']
+        fname = pred_path + data_format
+        raw_pred = ads_utils.imread(fname)
+        new_masks = []
+
+        for c in output_classes:
+            class_value = output_structure[c]
+            new_fname = extract_from_nnunet_prediction(raw_pred, fname, c, class_value)
+            new_masks.append(new_fname)
+        logger.info(f'Successfully saved masks for classes: {output_classes}.')
+
         if is_axonmyelin_seg:
-            rescaled = 127 * ads_utils.imread(fname)
-            new_fname = fname.replace('_seg-', '_seg-axonmyelin')
-            ads_utils.imwrite(new_fname, rescaled)
-            print(rescaled.shape)
-            get_masks(new_fname)
-        else:
-            #TODO: save all classes one by one
-            pass        
+            merge_masks(new_masks[0], new_masks[1])
         Path(fname).unlink()
-        #TODO: remove nnUNet JSON output files?
 
 
 def axon_segmentation_deprecated(
