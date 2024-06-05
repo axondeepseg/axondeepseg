@@ -30,20 +30,12 @@ from AxonDeepSeg.ads_utils import convert_path, get_file_extension
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix, valid_extensions
 
 # Global variables
-SEM_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_sem"
-TEM_DEFAULT_MODEL_NAME = "model_seg_mouse_axon-myelin_tem"
-BF_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_bf"
-
+DEFAULT_MODEL_NAME = "model_seg_generalist_light"
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
-default_SEM_path = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
-default_TEM_path = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
-default_BF_path = MODELS_PATH / BF_DEFAULT_MODEL_NAME
+DEFAULT_MODEL_PATH = MODELS_PATH / DEFAULT_MODEL_NAME
 
-default_overlap = 48
-
-# Definition of the functions
 
 def generate_default_parameters(type_acquisition, new_path):
     '''
@@ -318,7 +310,6 @@ def segment_folders(path_testing_images_folder, path_model,
 # Main loop
 
 def main(argv=None):
-
     '''
     Main loop.
     :return: Exit code.
@@ -336,15 +327,6 @@ def main(argv=None):
 
     # Setting the arguments of the segmentation
     requiredName.add_argument(
-        '-t','--type', 
-        required=True, 
-        choices=['SEM', 'TEM', 'BF'], 
-        help='Type of acquisition to segment. \n'
-            + 'SEM: scanning electron microscopy samples. \n'
-            + 'TEM: transmission electron microscopy samples. \n'
-            + 'BF: bright-field microscopy samples.',
-    )
-    requiredName.add_argument(
         '-i', '--imgpath', 
         required=True, 
         nargs='+', 
@@ -357,15 +339,6 @@ def main(argv=None):
         help='Folder where the model is located, if different from the default model.',
     )
     ap.add_argument(
-        '-s', '--sizepixel', 
-        required=False, 
-        help='Pixel size of the image(s) to segment, in micrometers. \n'
-            + 'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'
-            + 'file needs to be added to the image folder path. The pixel size \n'
-            + 'in that file will be used for the segmentation.',
-        default=None,
-    )
-    ap.add_argument(
         '-v', '--verbose', 
         required=False, 
         type=int, 
@@ -375,49 +348,29 @@ def main(argv=None):
             + '1: Developer mode. Shows more information on the terminal, useful for debugging.',
         default=0,
     )
-    ap.add_argument(
-        '--overlap', 
-        required=False, 
-        type=int, 
-        help='Overlap value (in pixels) of the patches when doing the segmentation. \n'
-            + 'Higher values of overlap can improve the segmentation at patch borders, \n'
-            + 'but also increase the segmentation time. \n'
-            + 'Default value: '+str(default_overlap)+'\n'
-            + 'Recommended range of values: [10-100]. \n',
-        default=None
-    )
-    ap.add_argument(
-        "-z", "--zoom", 
-        required=False, 
-        help='Zoom factor. \n'
-            + 'When applying the model, the pixel size of the image will be \n'
-            + 'multiplied by this number.',
-        default=None,
-    )
-    ap.add_argument(
-        "-r", "--sweeprange",
-        nargs=2,
-        metavar=('LOWER', 'UPPER'),
-        required=False,
-        help='Lower and upper bounds of zoom factor values to sweep.',
-        default=None,
-    )
-    ap.add_argument(
-        "-l", "--sweeplength",
-        required=False,
-        type=int,
-        help='Number of zoom factor values to be computed by the sweep.',
-        default=None,
-    )
-    ap.add_argument(
-        "--no-patch",
-        dest="no_patch",
-        action='store_true',
-        required=False,
-        help='Flag to segment the image without using patches. \n'
-             'The "--no-patch" flag supersedes the "--overlap" flag. \n'
-             'This option may not be suitable with large images depending on computer RAM capacity.'
-    )
+    # ap.add_argument(
+    #     "-z", "--zoom", 
+    #     required=False, 
+    #     help='Zoom factor. \n'
+    #         + 'When applying the model, the pixel size of the image will be \n'
+    #         + 'multiplied by this number.',
+    #     default=None,
+    # )
+    # ap.add_argument(
+    #     "-r", "--sweeprange",
+    #     nargs=2,
+    #     metavar=('LOWER', 'UPPER'),
+    #     required=False,
+    #     help='Lower and upper bounds of zoom factor values to sweep.',
+    #     default=None,
+    # )
+    # ap.add_argument(
+    #     "-l", "--sweeplength",
+    #     required=False,
+    #     type=int,
+    #     help='Number of zoom factor values to be computed by the sweep.',
+    #     default=None,
+    # )
     ap.add_argument(
         "--gpu-id",
         dest="gpu_id",
@@ -430,33 +383,26 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
-    type_ = str(args["type"])
     verbosity_level = int(args["verbose"])
-    overlap_value = [int(args["overlap"]), int(args["overlap"])] if args["overlap"] else None
-    if args["sizepixel"] is not None:
-        psm = float(args["sizepixel"])
-    else:
-        psm = None
     path_target_list = [Path(p) for p in args["imgpath"]]
-    new_path = Path(args["model"]) if args["model"] else None 
-    if args["zoom"] is not None:
-        zoom_factor = float(args["zoom"])
-    else:
-        zoom_factor = 1.0
-    no_patch = bool(args["no_patch"])
+    path_model = Path(args["model"]) if args["model"] else DEFAULT_MODEL_PATH
+    # if args["zoom"] is not None:
+    #     zoom_factor = float(args["zoom"])
+    # else:
+    #     zoom_factor = 1.0
     gpu_id = int(args["gpu_id"])
 
     # Check for available GPU IDs
     ads.check_available_gpus(gpu_id)
 
     # Check for sweep mode
-    sweep_mode = (args["sweeprange"] is not None) & (args["sweeplength"] is not None)
-    if sweep_mode:
-        sweep_range = [float(args["sweeprange"][0]), float(args["sweeprange"][1])]
-        sweep_length = int(args["sweeplength"])
-        if len(path_target_list) != 1:
-            logger.error("Error: Please use a single image for zoom factor sweep.")
-            sys.exit(5)
+    # sweep_mode = (args["sweeprange"] is not None) & (args["sweeplength"] is not None)
+    # if sweep_mode:
+    #     sweep_range = [float(args["sweeprange"][0]), float(args["sweeprange"][1])]
+    #     sweep_length = int(args["sweeplength"])
+    #     if len(path_target_list) != 1:
+    #         logger.error("Error: Please use a single image for zoom factor sweep.")
+    #         sys.exit(5)
 
     # Preparing the arguments to axon_segmentation function
     path_model = generate_default_parameters(type_, new_path)
