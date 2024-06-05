@@ -1,13 +1,14 @@
 from pathlib import Path
 import os
-
-# AxonDeepSeg imports
-from AxonDeepSeg.visualization.get_masks import get_masks
-from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 import numpy as np
 import torch
 from loguru import logger
-from typing import List, Literal
+from typing import List, Literal, Dict
+
+# AxonDeepSeg imports
+from AxonDeepSeg.visualization.get_masks import get_masks
+from AxonDeepSeg import ads_utils
+from config import axon_suffix, myelin_suffix, axonmyelin_suffix
 
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
@@ -16,14 +17,6 @@ def setup_environment_vars():
     os.environ['nnUNet_raw'] = 'UNDEFINED'
     os.environ['nnUNet_results'] = 'UNDEFINED'
     os.environ['nnUNet_preprocessed'] = 'UNDEFINED'
-
-def split_nnunet_output():
-    '''
-    nnU-Net outputs a single mask with all classes; this function reads the 
-    model config to fetch the class names and splits the mask accordingly.
-    
-    '''
-    pass
 
 def axon_segmentation(
                     path_inputs: List[Path],
@@ -75,16 +68,33 @@ def axon_segmentation(
 
     # create input list
     input_list = [ [str(p)] for p in path_inputs]
-    output_list = [ str(p.with_suffix('')) + '_seg' for p in path_inputs ]
+    output_list = [ str(p.with_suffix('')) + '_seg-' for p in path_inputs ]
 
     predictor.predict_from_files(
         list_of_lists_or_source_folder=input_list,
         output_folder_or_list_of_truncated_output_files=output_list,
         save_probabilities=False,
-        overwrite=False,
+        overwrite=True,
     )
 
-    #TODO: split masks
+    output_structure = predictor.dataset_json['labels']
+    output_classes = list(output_structure.keys())
+    output_classes.remove('background')
+    is_axonmyelin_seg = ['axon', 'myelin'] == sorted(output_classes) 
+    # nnUNet outputs a single file will all classes mapped to consecutive ints
+    for pred_path in output_list:
+        fname = pred_path + predictor.dataset_json['file_ending']
+        if is_axonmyelin_seg:
+            rescaled = 127 * ads_utils.imread(fname)
+            new_fname = fname.replace('_seg-', '_seg-axonmyelin')
+            ads_utils.imwrite(new_fname, rescaled)
+            print(rescaled.shape)
+            get_masks(new_fname)
+        else:
+            #TODO: save all classes one by one
+            pass        
+        Path(fname).unlink()
+        #TODO: remove nnUNet JSON output files?
 
 
 def axon_segmentation_deprecated(
