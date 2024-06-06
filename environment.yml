@@ -26,5 +26,5 @@ dependencies:
     - raven
     - napari
     - protobuf==3.20.1
-    - ivadomed @ git+https://github.com/ivadomed/ivadomed.git@8f87bca335ea3de60bac98224e13ea6a3e1b91a6
+    - ivadomed==2.9.10
     - onnxruntime<1.16.0
