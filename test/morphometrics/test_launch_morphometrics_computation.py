@@ -14,6 +14,7 @@ from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_mo
 from config import (
     axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, 
     index_suffix, axonmyelin_index_suffix, instance_suffix,
+    unmyelinated_suffix, unmyelinated_morph_suffix, unmyelinated_index_suffix,
 )
 
 
@@ -86,7 +87,7 @@ class TestCore(object):
 
     # --------------main (cli) tests-------------- #
     @pytest.mark.unit
-    def test_main_cli_runs_succesfully_with_valid_inputs(self):
+    def test_main_cli_runs_successfully_with_valid_inputs(self):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -95,7 +96,7 @@ class TestCore(object):
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
     
     @pytest.mark.unit
-    def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input_with_pixel_size_file(self):
+    def test_main_cli_runs_successfully_with_valid_inputs_for_folder_input_with_pixel_size_file(self):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -103,7 +104,8 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
-    def test_main_cli_runs_succesfully_with_valid_inputs_for_save_morphometrics_as_csv(self):
+    @pytest.mark.unit
+    def test_main_cli_runs_successfully_with_valid_inputs_for_save_morphometrics_as_csv(self):
         pathImg = self.dataPath / 'image.png'
 
         self.morphometricsFile = pathImg.stem + "_" + morph_suffix.stem + ".csv"
@@ -113,6 +115,26 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', (morph_suffix.stem + '.csv')])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
+
+    @pytest.mark.unit
+    def test_main_cli_runs_successfully_with_valid_inputs_in_unmyelinated_mode(self):
+        pathImg = self.dataPath / 'image.png'
+
+        self.uMorphometricsFile = pathImg.stem + "_" + unmyelinated_morph_suffix.stem + ".csv"
+        self.uMorphometricsPath = self.dataPath / self.uMorphometricsFile
+
+        # copy axon pred to simulate unmyelinated axon mask
+        axonMaskPath = self.dataPath / ('image' + str(axon_suffix))
+        uAxonMaskPath = self.dataPath / ('image' + str(unmyelinated_suffix))
+        shutil.copy(axonMaskPath, uAxonMaskPath)
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", (unmyelinated_morph_suffix.stem + '.csv'), "-u"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.uMorphometricsPath.exists()
+
+        # unlink simulated unmyelinated axon mask
+        uAxonMaskPath.unlink()
 
     @pytest.mark.unit
     def test_main_cli_successfully_outputs_index_and_colored_image(self):
@@ -129,7 +151,7 @@ class TestCore(object):
         assert expected_outut_images_filenames[0].exists() and expected_outut_images_filenames[1].exists()
 
     @pytest.mark.unit
-    def test_main_cli_runs_succesfully_with_valid_inputs_for_custom_morphometrics_file_name(self):
+    def test_main_cli_runs_successfully_with_valid_inputs_for_custom_morphometrics_file_name(self):
         pathImg = self.dataPath / 'image.png'
         self.morphometricsFile = 'test_morphometrics.xlsx'
         self.morphometricsPath = self.dataPath / (pathImg.stem + '_' + self.morphometricsFile)
@@ -143,7 +165,7 @@ class TestCore(object):
         self.morphometricsPath.unlink()
     
     @pytest.mark.unit
-    def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_ellipse(self):
+    def test_main_cli_runs_successfully_with_valid_inputs_with_axon_shape_as_ellipse(self):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -152,7 +174,7 @@ class TestCore(object):
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
     
     @pytest.mark.unit
-    def test_main_cli_runs_succesfully_with_valid_inputs_with_axon_shape_as_circle(self):
+    def test_main_cli_runs_successfully_with_valid_inputs_with_axon_shape_as_circle(self):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -182,7 +204,7 @@ class TestCore(object):
         morphometricsPathCopy.unlink() 
 
     @pytest.mark.unit
-    def test_main_cli_runs_successfully_for_generating_batches_morphometrics_multiple_images(self):
+    def test_main_cli_runs_successfully_for_batch_morphometrics_multiple_images(self):
         
         # path of `__test_demo_files__` directory
         pathDirCopy = self.dataPath.parent / '__test_demo_files_copy__'
@@ -273,6 +295,15 @@ class TestCore(object):
         ads.imwrite(str(pathAxon), axonMask)
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+    @pytest.mark.exceptionhandling
+    def test_main_cli_handles_exception_for_uaxon_mask_not_present(self):
+        pathImg = self.dataPath / 'image.png'
+        
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-u"])
+        
+        assert (pytest_wrapped_e.type == SystemExit)
 
     @pytest.mark.integration
     def test_main_cli_creates_logfile(self):
