@@ -19,6 +19,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 from tqdm import tqdm
 import pkg_resources
+from typing import Literal, List, NoReturn
 from loguru import logger
 
 # AxonDeepSeg imports
@@ -30,143 +31,85 @@ from AxonDeepSeg.ads_utils import convert_path, get_file_extension
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix, valid_extensions
 
 # Global variables
-SEM_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_sem"
-TEM_DEFAULT_MODEL_NAME = "model_seg_mouse_axon-myelin_tem"
-BF_DEFAULT_MODEL_NAME = "model_seg_rat_axon-myelin_bf"
-
+DEFAULT_MODEL_NAME = "model_seg_generalist_light"
 MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
-default_SEM_path = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
-default_TEM_path = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
-default_BF_path = MODELS_PATH / BF_DEFAULT_MODEL_NAME
+DEFAULT_MODEL_PATH = MODELS_PATH / DEFAULT_MODEL_NAME
 
-default_overlap = 48
 
-# Definition of the functions
-
-def generate_default_parameters(type_acquisition, new_path):
+def get_model_type(path_model: Path) -> Literal['light', 'ensemble']:
     '''
-    Generates the parameters used for segmentation for the default model corresponding to the type_model acquisition.
-    :param type_model: String, the type of model to get the parameters from.
-    :param new_path: Path to the model to use.
-    :return: the config dictionary.
+    Checks if the model has a "fold_all" model or is an ensemble of N-folds.
     '''
-    
-    # If string, convert to Path objects
-    new_path = convert_path(new_path)
-
-    # Building the path of the requested model if it exists and was supplied, else we load the default model.
-    if type_acquisition == 'SEM':
-        if (new_path is not None) and new_path.exists():
-            path_model = new_path
-        else:
-            path_model = MODELS_PATH / SEM_DEFAULT_MODEL_NAME
-    elif type_acquisition == 'TEM':
-        if (new_path is not None) and new_path.exists():
-            path_model = new_path
-        else:
-            path_model = MODELS_PATH / TEM_DEFAULT_MODEL_NAME
-    elif type_acquisition == 'BF':
-        if (new_path is not None) and new_path.exists():
-            path_model = new_path
-        else:
-            path_model = MODELS_PATH / BF_DEFAULT_MODEL_NAME
+    if (path_model / 'fold_all').exists():
+        return 'light'
     else:
-        raise ValueError
-
-    return path_model
-
-def get_model_native_resolution_and_patch(path_model):
+        return 'ensemble'
+    
+def get_model_input_format(path_model: Path) -> tuple[str, int]:
     '''
-    Get the native resolution of the model, ie. the resolution that segmented images will get resampled to.
-    Also, get the patch size.
-    :param path_model: model directory
-    :return: model_resolution, patch_size
+    Get the input format of the model used for segmentation (e.g. '.png')
+
+    Parameters
+    ----------
+    path_model : Path
+        Path to the folder containing the model.
+    
+    Returns
+    -------
+    (format, n_channels): tuple[str, int]
+        model input format (e.g. png) and nb. of channels
     '''
-    resolution_unit_conversion_factor = 1e3 # IVADOMED uses a native mm resolution, whereas ADS uses um
-    
-    model_json = [pos_json for pos_json in os.listdir(path_model) if pos_json.endswith('.json')]
-    model = json.load(open(path_model / model_json[0]))
+    with open(path_model / 'dataset.json') as f:
+        dataset_dict = json.load(f)
+    fmt = dataset_dict['file_ending']
+    channels = list(dataset_dict['channel_names'].keys())
+    return fmt, len(channels)
 
-    model_resolution = [model['transformation']['Resample']['wspace'], model['transformation']['Resample']['hspace']]
-    model_resolution[0] = model_resolution[0] * resolution_unit_conversion_factor
-    model_resolution[1] = model_resolution[1] * resolution_unit_conversion_factor
-    
-    patch_size = [model['default_model']['length_2D'][0], model['default_model']['length_2D'][1]]
-    
-    exception_msg = "This model uses an anisotropic resolution, which AxonDeepSeg does not yet support."
-
-    if model_resolution[0] == model_resolution[1]: #isotropic pixels
-        model_resolution = model_resolution[0]
-    else:
-        raise Exception(exception_msg)
-
-    if patch_size[0] == patch_size[1]: #isotropic pixels
-        patch_size = patch_size[0]
-    else:
-        raise Exception(exception_msg)
-
-    return model_resolution, patch_size
+def prepare_input(path_img: Path, file_format: str, n_channels: int) -> Path:
+    '''
+    Verifies if the input image can be sent to axon_segmentation(). Otherwise, 
+    converts the image in the expected format, saves it and return its path.
+    '''
+    pass
 
 @logger.catch
-def segment_image(
-                path_testing_image,
-                path_model,
-                overlap_value,
-                acquired_resolution=None,
-                zoom_factor=1.0,
-                no_patch=False,
-                gpu_id=0,
-                verbosity_level=0):
-
+def segment_images(
+                path_images: List[Path],
+                path_model: Path,
+                gpu_id: int=0,
+                verbosity_level: int=0,
+                ) -> NoReturn:
     '''
-    Segment the image located at the path_testing_image location.
-    :param path_testing_image: the path of the image to segment.
-    :param path_model: where to access the model
-    :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
-    border effects but more time to perform the segmentation.
-    :param acquired_resolution: isotropic pixel resolution of the acquired images.
-    :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
-    :param no_patch: If True, the image is segmented without using patches. Default: False.
-    :param gpu_id: Number representing the GPU ID for segmentation if available. Default: 0.
-    :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
-    process.
-    :return: Nothing.
+    Segment the image(s) in path_images.
+
+    Parameters
+    ----------
+    path_images : List(pathlib.Path)
+        List of path(s) to the image(s) to segment.
+    path_model : str or Path
+        Path to the folder containing the model.
+    gpu_id : int
+        Number representing the GPU ID. Default: 0.
+    verbosity_level : int
+        The higher, the more information is given about the segmentation process.
     '''
 
-    # If string, convert to Path objects
-    path_testing_image = convert_path(path_testing_image)
+    path_images = [convert_path(p) for p in path_images]
     path_model = convert_path(path_model)
-
-    # Get pixel size from file, if needed
-    # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
-    if acquired_resolution == None:
-        if (Path(path_testing_image.parents[0]) / 'pixel_size_in_micrometer.txt').exists():
-            resolutions_file = open(Path(path_testing_image.parents[0]) / 'pixel_size_in_micrometer.txt', 'r')
-            str_resolution = float(resolutions_file.read())
-            acquired_resolution = float(str_resolution)
-        else:
-            exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
-                            "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
-                            "containing the pixel size value."
-            logger.error(exception_msg)
-            raise Exception(exception_msg)
-
+    (expected_format, n_channels) = get_model_input_format(path_model)
+        
+    for path_img in path_images:
+        if not path_img.exists():
+            logger.error(f"File {path_img} does not exist.")
+            sys.exit(2)
+        # do the thing
+        
+    
     if path_testing_image.exists():
 
-        # Extracting the image name and its folder path from the total path.
-        path_parts = path_testing_image.parts
-        acquisition_name = Path(path_parts[-1])
-        path_acquisition = Path(*path_parts[:-1])
-
-        # Get type of model we are using
-        selected_model = path_model.name
-
-        img_name_original = acquisition_name.stem
-
-        # Get the model's native resolution
-        model_resolution, patch_size = get_model_native_resolution_and_patch(path_model)
+        file_format = get_model_input_format(path_model)
 
         # Check that the resampled image will be of sufficient size, and if not throw an error.
         im = ads.imread(path_testing_image)
@@ -207,11 +150,8 @@ def segment_image(
     return None
 
 @logger.catch
-def segment_folders(path_testing_images_folder, path_model,
-                    overlap_value, 
-                    acquired_resolution=None,
-                    zoom_factor=1.0,
-                    no_patch=False,
+def segment_folders(path_testing_images_folder, 
+                    path_model,
                     gpu_id=0,
                     verbosity_level=0):
     '''
@@ -318,14 +258,12 @@ def segment_folders(path_testing_images_folder, path_model,
 # Main loop
 
 def main(argv=None):
-
     '''
     Main loop.
     :return: Exit code.
         0: Success
-        3: Missing value or file
-        4: Invalid acquired resolution
-        5: Too many input files
+        1: Invalid extension
+        2: Invalid input
     '''
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
     logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__}")
@@ -335,15 +273,6 @@ def main(argv=None):
     requiredName = ap.add_argument_group('required arguments')
 
     # Setting the arguments of the segmentation
-    requiredName.add_argument(
-        '-t','--type', 
-        required=True, 
-        choices=['SEM', 'TEM', 'BF'], 
-        help='Type of acquisition to segment. \n'
-            + 'SEM: scanning electron microscopy samples. \n'
-            + 'TEM: transmission electron microscopy samples. \n'
-            + 'BF: bright-field microscopy samples.',
-    )
     requiredName.add_argument(
         '-i', '--imgpath', 
         required=True, 
@@ -357,15 +286,6 @@ def main(argv=None):
         help='Folder where the model is located, if different from the default model.',
     )
     ap.add_argument(
-        '-s', '--sizepixel', 
-        required=False, 
-        help='Pixel size of the image(s) to segment, in micrometers. \n'
-            + 'If no pixel size is specified, a pixel_size_in_micrometer.txt \n'
-            + 'file needs to be added to the image folder path. The pixel size \n'
-            + 'in that file will be used for the segmentation.',
-        default=None,
-    )
-    ap.add_argument(
         '-v', '--verbose', 
         required=False, 
         type=int, 
@@ -374,49 +294,6 @@ def main(argv=None):
             + '0 (default) : Quiet mode. Shows minimal information on the terminal. \n'
             + '1: Developer mode. Shows more information on the terminal, useful for debugging.',
         default=0,
-    )
-    ap.add_argument(
-        '--overlap', 
-        required=False, 
-        type=int, 
-        help='Overlap value (in pixels) of the patches when doing the segmentation. \n'
-            + 'Higher values of overlap can improve the segmentation at patch borders, \n'
-            + 'but also increase the segmentation time. \n'
-            + 'Default value: '+str(default_overlap)+'\n'
-            + 'Recommended range of values: [10-100]. \n',
-        default=None
-    )
-    ap.add_argument(
-        "-z", "--zoom", 
-        required=False, 
-        help='Zoom factor. \n'
-            + 'When applying the model, the pixel size of the image will be \n'
-            + 'multiplied by this number.',
-        default=None,
-    )
-    ap.add_argument(
-        "-r", "--sweeprange",
-        nargs=2,
-        metavar=('LOWER', 'UPPER'),
-        required=False,
-        help='Lower and upper bounds of zoom factor values to sweep.',
-        default=None,
-    )
-    ap.add_argument(
-        "-l", "--sweeplength",
-        required=False,
-        type=int,
-        help='Number of zoom factor values to be computed by the sweep.',
-        default=None,
-    )
-    ap.add_argument(
-        "--no-patch",
-        dest="no_patch",
-        action='store_true',
-        required=False,
-        help='Flag to segment the image without using patches. \n'
-             'The "--no-patch" flag supersedes the "--overlap" flag. \n'
-             'This option may not be suitable with large images depending on computer RAM capacity.'
     )
     ap.add_argument(
         "--gpu-id",
@@ -430,121 +307,35 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
-    type_ = str(args["type"])
     verbosity_level = int(args["verbose"])
-    overlap_value = [int(args["overlap"]), int(args["overlap"])] if args["overlap"] else None
-    if args["sizepixel"] is not None:
-        psm = float(args["sizepixel"])
-    else:
-        psm = None
     path_target_list = [Path(p) for p in args["imgpath"]]
-    new_path = Path(args["model"]) if args["model"] else None 
-    if args["zoom"] is not None:
-        zoom_factor = float(args["zoom"])
-    else:
-        zoom_factor = 1.0
-    no_patch = bool(args["no_patch"])
+    path_model = Path(args["model"]) if args["model"] else DEFAULT_MODEL_PATH
     gpu_id = int(args["gpu_id"])
 
     # Check for available GPU IDs
     ads.check_available_gpus(gpu_id)
 
-    # Check for sweep mode
-    sweep_mode = (args["sweeprange"] is not None) & (args["sweeplength"] is not None)
-    if sweep_mode:
-        sweep_range = [float(args["sweeprange"][0]), float(args["sweeprange"][1])]
-        sweep_length = int(args["sweeplength"])
-        if len(path_target_list) != 1:
-            logger.error("Error: Please use a single image for zoom factor sweep.")
-            sys.exit(5)
-
     # Preparing the arguments to axon_segmentation function
-    path_model = generate_default_parameters(type_, new_path)
+    model_type = get_model_type(path_model)
+    input_img_list = []
+    input_dir_list = []
 
-    # Going through all paths passed into arguments
+    # Separate image vs directory paths
     for current_path_target in path_target_list:
-        
-        error_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt "\
-                    "file in image folder. Please provide a pixel size (using argument -s), or add a "\
-                    "pixel_size_in_micrometer.txt file containing the pixel size value."
         if not current_path_target.is_dir():
-
-            if get_file_extension(current_path_target) in valid_extensions:
-
-                # Handle cases if no resolution is provided on the CLI
-                if psm == None:
-
-                    # Check if a pixel size file exists, if so read it.
-                    if (current_path_target.parent / 'pixel_size_in_micrometer.txt').exists():
-
-                        resolution_file = open(current_path_target.parent / 'pixel_size_in_micrometer.txt', 'r')
-
-                        psm = float(resolution_file.read())
-
-                    else:
-                        logger.error(error_msg)
-                        sys.exit(3)
-
-                # Performing the segmentation over the image
-                if sweep_mode:
-                    zfs.sweep(
-                        path_image=current_path_target,
-                        path_model=path_model,
-                        overlap_value=overlap_value,
-                        sweep_range=sweep_range,
-                        sweep_length=sweep_length,
-                        acquired_resolution=psm,
-                        no_patch=no_patch,
-                        gpu_id=gpu_id
-                    )
-                else:
-                    segment_image(
-                        path_testing_image=current_path_target,
-                        path_model=path_model,
-                        overlap_value=overlap_value,
-                        acquired_resolution=psm,
-                        zoom_factor=zoom_factor,
-                        no_patch=no_patch,
-                        gpu_id=gpu_id,
-                        verbosity_level=verbosity_level
-                    )
-
-                logger.info("Segmentation finished.")
-
-            else:
-                logger.error("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
-                break
-
+            if not get_file_extension(current_path_target) in valid_extensions:
+                logger.error(f"Invalid extension for file {current_path_target}.")
+                sys.exit(1)
+            input_img_list.append(current_path_target)
         else:
-            if sweep_mode:
-                logger.error("Error: Please use a single image for zoom factor sweep.")
-                sys.exit(5)
-
-            # Handle cases if no resolution is provided on the CLI
-            if psm == None:
-
-                # Check if a pixel size file exists, if so read it.
-                if (current_path_target / 'pixel_size_in_micrometer.txt').exists():
-
-                    resolution_file = open(current_path_target / 'pixel_size_in_micrometer.txt', 'r')
-
-                    psm = float(resolution_file.read())
-
-                else:
-                    logger.error(error_msg)
-                    sys.exit(3)
-
-            # Performing the segmentation over all folders in the specified folder containing acquisitions to segment.
-            segment_folders(
-                path_testing_images_folder=current_path_target,
-                path_model=path_model,
-                overlap_value=overlap_value,
-                acquired_resolution=psm,
-                zoom_factor=zoom_factor,
-                no_patch=no_patch,
-                gpu_id=gpu_id,
-                verbosity_level=verbosity_level
-                )
+            input_dir_list.append(current_path_target)
+    
+    # perform segmentation
+    if input_img_list:
+        segment_images(input_img_list, path_model, gpu_id, verbosity_level)
+    if input_dir_list:
+        for dir_path in input_dir_list:
+            segment_folders(dir_path, path_model, gpu_id, verbosity_level)
 
     sys.exit(0)
 

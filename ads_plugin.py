@@ -32,7 +32,6 @@ from scipy import ndimage as ndi
 from skimage import measure, morphology, feature
 
 import tempfile
-import openpyxl
 import pandas as pd
 import imageio
 

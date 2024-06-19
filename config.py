@@ -9,6 +9,7 @@ index_suffix = Path('_index.png')                       # image with the index o
 axonmyelin_index_suffix = Path('_axonmyelin_index.png') # Colored axonmyelin segmentation + the index image
 unmyelinated_suffix = Path('_seg-uaxon.png')            # unmyelinated axon segmentation suffix file name
 unmyelinated_index_suffix = Path('_uaxon_index.png')    # Colored unmyelinated axon segmentation + the index image
+nnunet_suffix=Path('_seg-nnunet.png')                   # nnunet raw segmentation suffix
 
 # morphometrics file suffix name
 morph_suffix = Path('axon_morphometrics.xlsx')
