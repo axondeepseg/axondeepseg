@@ -4,15 +4,13 @@ from pathlib import Path
 import shutil
 import tempfile
 import os
-
 import pytest
 
 from AxonDeepSeg.segment import (
-                                    generate_default_parameters,
-                                    segment_folders, 
-                                    segment_image
-                                )
-import AxonDeepSeg.segment
+    generate_default_parameters,
+    segment_folders, 
+    segment_image
+)
 import AxonDeepSeg
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
@@ -125,7 +123,7 @@ class TestCore(object):
             shutil.rmtree(sweepFolder)
 
     # --------------segment_folders tests-------------- #
-    @pytest.mark.integration
+    @pytest.mark.unit
     def test_segment_folders_creates_expected_files(self):
         path_model = generate_default_parameters('SEM', str(self.modelPath))
 
@@ -148,7 +146,7 @@ class TestCore(object):
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
 
-    @pytest.mark.integration
+    @pytest.mark.unit
     def test_segment_folders_runs_with_relative_path(self):
 
         path_model = generate_default_parameters('SEM', str(self.modelPath))
@@ -170,7 +168,7 @@ class TestCore(object):
             verbosity_level=2
             )
 
-    @pytest.mark.integration
+    @pytest.mark.unit
     def test_segment_folders_creates_expected_files_without_acq_res_input(self):
         path_model = generate_default_parameters('SEM', str(self.modelPath))
 
@@ -190,7 +188,7 @@ class TestCore(object):
             )
 
     # --------------segment_image tests-------------- #
-    @pytest.mark.integration
+    @pytest.mark.unit
     def test_segment_image_creates_runs_successfully(self):
         # Since segment_folders should have already run, the output files
         # should already exist, which this test tests for.
@@ -215,7 +213,7 @@ class TestCore(object):
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
 
-    @pytest.mark.integration
+    @pytest.mark.unit
     def test_segment_image_creates_runs_successfully_for_16bit_TIF_gray_file(self):
 
         path_model = generate_default_parameters('TEM', str(self.modelPathTEM))
@@ -232,7 +230,7 @@ class TestCore(object):
         except:
             pytest.fail("Image segmentation failed for 16bit TIF grayscale file.")
 
-    @pytest.mark.integration
+    @pytest.mark.unit
     def test_segment_image_creates_runs_successfully_without_acq_res_input(self):
         # It should work because there exists a pixel file
 

@@ -40,22 +40,38 @@ DEFAULT_MODEL_PATH = MODELS_PATH / DEFAULT_MODEL_NAME
 
 def get_model_type(path_model: Path) -> Literal['light', 'ensemble']:
     '''
-    Get the type of the model used for segmentation. Either 'light' or 'ensemble'.
+    Checks if the model has a "fold_all" model or is an ensemble of N-folds.
     '''
     if (path_model / 'fold_all').exists():
         return 'light'
     else:
         return 'ensemble'
     
-def get_model_input_format(path_model: Path) -> str:
+def get_model_input_format(path_model: Path) -> tuple[str, int]:
     '''
     Get the input format of the model used for segmentation (e.g. '.png')
+
+    Parameters
+    ----------
+    path_model : Path
+        Path to the folder containing the model.
+    
+    Returns
+    -------
+    (format, n_channels): tuple[str, int]
+        model input format (e.g. png) and nb. of channels
     '''
     with open(path_model / 'dataset.json') as f:
         dataset_dict = json.load(f)
-    return dataset_dict['file_ending']
+    fmt = dataset_dict['file_ending']
+    channels = list(dataset_dict['channel_names'].keys())
+    return fmt, len(channels)
 
-def prepare_input(path_img: Path, file_format: str) -> Path:
+def prepare_input(path_img: Path, file_format: str, n_channels: int) -> Path:
+    '''
+    Verifies if the input image can be sent to axon_segmentation(). Otherwise, 
+    converts the image in the expected format, saves it and return its path.
+    '''
     pass
 
 @logger.catch
@@ -80,10 +96,17 @@ def segment_images(
         The higher, the more information is given about the segmentation process.
     '''
 
-    # If string, convert to Path objects
-    path_testing_image = convert_path(path_testing_image)
+    path_images = [convert_path(p) for p in path_images]
     path_model = convert_path(path_model)
-
+    (expected_format, n_channels) = get_model_input_format(path_model)
+        
+    for path_img in path_images:
+        if not path_img.exists():
+            logger.error(f"File {path_img} does not exist.")
+            sys.exit(2)
+        # do the thing
+        
+    
     if path_testing_image.exists():
 
         file_format = get_model_input_format(path_model)
@@ -240,6 +263,7 @@ def main(argv=None):
     :return: Exit code.
         0: Success
         1: Invalid extension
+        2: Invalid input
     '''
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
     logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__}")

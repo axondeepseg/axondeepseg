@@ -3,7 +3,7 @@ import os
 import numpy as np
 import torch
 from loguru import logger
-from typing import List, Literal, Dict
+from typing import List, Literal, Dict, NoReturn
 
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.merge_masks import merge_masks
@@ -21,7 +21,8 @@ def setup_environment_vars():
 
 def get_checkpoint_name(checkpoint_folder_path: Path) -> str:
     '''
-    Get the name of the checkpoint file in the given folder.
+    Get the name of the checkpoint file in the given folder, with priority for 
+    best validation checkpoint.
 
     Parameters
     ----------
@@ -31,7 +32,7 @@ def get_checkpoint_name(checkpoint_folder_path: Path) -> str:
     Returns
     -------
     str
-        Name of the checkpoint file.
+        Name of the checkpoint file, e.g. 'checkpoint_best.pth'.
     '''
     if (checkpoint_folder_path / 'checkpoint_best.pth').exists():
         return 'checkpoint_best.pth'
@@ -45,7 +46,7 @@ def get_checkpoint_name(checkpoint_folder_path: Path) -> str:
 def extract_from_nnunet_prediction(pred, pred_path, class_name, class_value) -> str:
     '''
     Extracts the given class from the nnunet raw prediction, saves it in a 
-    separate mask and return the .
+    separate mask and return the path of the extracted mask.
 
     Parameters
     ----------
@@ -91,7 +92,7 @@ def axon_segmentation(
                     model_type: Literal['light', 'ensemble']='light',
                     gpu_id: int=-1,
                     verbosity_level: int=0,
-                    ):
+                    ) -> NoReturn:
     '''
     Segment images by applying a nnU-Net pretrained model.
 
