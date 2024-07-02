@@ -333,6 +333,14 @@ def get_file_extension(filename):
     extension = next((ext for ext in valid_extensions if str(filename).lower().endswith(ext)), None)
     return extension
 
+def get_imshape(filename: str):
+    """Get the shape of an image without reading its data.
+    """
+    shape = imageio.v3.improps(filename).shape
+    if len(shape) == 2:
+        shape = (shape[0], shape[1], 1)
+    return shape
+
 def check_available_gpus(gpu_id):
     """ Get the number of available GPUs
     Args:
