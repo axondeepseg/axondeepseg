@@ -25,7 +25,7 @@ from loguru import logger
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 import AxonDeepSeg.zoom_factor_sweep as zfs
-from AxonDeepSeg.apply_model import axon_segmentation, setup_environment_vars
+from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
                                    get_imshape, imwrite, imread)
 import AxonDeepSeg.ads_utils
@@ -123,6 +123,8 @@ def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int) -> 
             target = converted_fname
         
         filelist.append(target)
+
+    return filelist 
 
 @logger.catch
 def segment_images(

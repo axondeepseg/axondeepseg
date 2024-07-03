@@ -7,9 +7,8 @@ import os
 import pytest
 
 from AxonDeepSeg.segment import (
-    generate_default_parameters,
     segment_folders, 
-    segment_image
+    segment_images
 )
 import AxonDeepSeg
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
