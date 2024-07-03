@@ -10,7 +10,6 @@
 
 from math import ceil
 import os
-from os import error
 import sys
 from pathlib import Path
 
@@ -26,8 +25,10 @@ from loguru import logger
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 import AxonDeepSeg.zoom_factor_sweep as zfs
-from AxonDeepSeg.apply_model import axon_segmentation
-from AxonDeepSeg.ads_utils import convert_path, get_file_extension
+from AxonDeepSeg.apply_model import axon_segmentation, setup_environment_vars
+from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
+                                   get_imshape, imwrite, imread)
+import AxonDeepSeg.ads_utils
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix, valid_extensions
 
 # Global variables
@@ -59,7 +60,7 @@ def get_model_input_format(path_model: Path) -> tuple[str, int]:
     Returns
     -------
     (format, n_channels): tuple[str, int]
-        model input format (e.g. png) and nb. of channels
+        model input format (e.g. '.png') and nb. of input channels
     '''
     with open(path_model / 'dataset.json') as f:
         dataset_dict = json.load(f)
@@ -67,12 +68,61 @@ def get_model_input_format(path_model: Path) -> tuple[str, int]:
     channels = list(dataset_dict['channel_names'].keys())
     return fmt, len(channels)
 
-def prepare_input(path_img: Path, file_format: str, n_channels: int) -> Path:
+@logger.catch
+def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int) -> List[Path]:
     '''
-    Verifies if the input image can be sent to axon_segmentation(). Otherwise, 
-    converts the image in the expected format, saves it and return its path.
+    Verifies if the input images can be sent to axon_segmentation(). Otherwise, 
+    converts and saves in expected format.
+
+    Parameters
+    ----------
+    path_imgs : List(Path)
+        List of paths to the images to prepare.
+    file_format : str
+        Expected file format for the images, e.g. '.png' or '.tif'.
+    n_channels : int
+        Number of channels expected by the model, e.g. 1 for grayscale.
+
+    Error
+    -----
+    If n_channels > 1 and the image doesn't have enough channels, an error is raised.
+    Note that if n_channels == 1, the image will be converted to grayscale if needed.
+
+    Returns
+    -------
+    filelist : List(Path)
+        List of paths to sanitized images. If an image is already in the 
+        expected format, the path is the same as the one in path_imgs. Otherwise, 
+        will be the path to the converted image.
     '''
-    pass
+    filelist = []
+    for im_path in path_imgs:
+        print(im_path)
+        target = im_path
+
+        imshape = get_imshape(str(target)) # HWC format
+        is_correct_shape = imshape[-1] == n_channels
+        if not is_correct_shape:
+            if n_channels == 1:
+                logger.warning(f'{str(target)} will be converted to grayscale.')
+                grayscale_fname = target.with_suffix(file_format)
+                im = imread(str(target))
+                imwrite(str(grayscale_fname), im, file_format)
+                target = grayscale_fname
+            else:
+                logger.error(f'{str(target)} has {imshape[-1]} channels, expected {n_channels}.')
+                sys.exit(2)
+        
+        is_correct_format = target.suffix == file_format
+        if not is_correct_format:
+            logger.warning(f'{str(target)} will be converted in the expected {file_format} format.')
+            im = imread(str(target))
+            converted_fname = target.with_suffix(file_format)
+            imwrite(str(converted_fname), im, file_format)
+            # correct the filename
+            target = converted_fname
+        
+        filelist.append(target)
 
 @logger.catch
 def segment_images(
@@ -98,54 +148,55 @@ def segment_images(
 
     path_images = [convert_path(p) for p in path_images]
     path_model = convert_path(path_model)
-    (expected_format, n_channels) = get_model_input_format(path_model)
+    (fileformat, n_channels) = get_model_input_format(path_model)
         
     for path_img in path_images:
         if not path_img.exists():
             logger.error(f"File {path_img} does not exist.")
             sys.exit(2)
-        # do the thing
-        
+    path_images_sanitized = prepare_inputs(path_images, fileformat, n_channels)
+    print(path_images)
+    print(path_images_sanitized)
     
-    if path_testing_image.exists():
+    # if path_testing_image.exists():
 
-        file_format = get_model_input_format(path_model)
+    #     file_format = get_model_input_format(path_model)
 
-        # Check that the resampled image will be of sufficient size, and if not throw an error.
-        im = ads.imread(path_testing_image)
-        w, h = im.shape
+    #     # Check that the resampled image will be of sufficient size, and if not throw an error.
+    #     im = ads.imread(path_testing_image)
+    #     w, h = im.shape
 
-        w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
-        h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
+    #     w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
+    #     h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
 
-        if w_resampled < patch_size or h_resampled < patch_size:
-            if w<=h:
-                minimum_zoom_factor = patch_size*model_resolution/(w*acquired_resolution)
-            else:
-                minimum_zoom_factor = patch_size*model_resolution/(h*acquired_resolution)
+    #     if w_resampled < patch_size or h_resampled < patch_size:
+    #         if w<=h:
+    #             minimum_zoom_factor = patch_size*model_resolution/(w*acquired_resolution)
+    #         else:
+    #             minimum_zoom_factor = patch_size*model_resolution/(h*acquired_resolution)
 
-            # Round to 1 decimal, always up.
-            minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
+    #         # Round to 1 decimal, always up.
+    #         minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
 
-            error_msg = "ERROR: Due to your given image size, resolution, and zoom factor, the resampled image is "\
-                        "smaller than the patch size during segmentation. To resolve this, please set a zoom factor "\
-                        f"greater than {str(minimum_zoom_factor)}. To do this on the command line, call the "\
-                        f"segmentation with the -z flag, i.e. -z {str(minimum_zoom_factor)}"
-            logger.error(error_msg)
-            sys.exit(4)
+    #         error_msg = "ERROR: Due to your given image size, resolution, and zoom factor, the resampled image is "\
+    #                     "smaller than the patch size during segmentation. To resolve this, please set a zoom factor "\
+    #                     f"greater than {str(minimum_zoom_factor)}. To do this on the command line, call the "\
+    #                     f"segmentation with the -z flag, i.e. -z {str(minimum_zoom_factor)}"
+    #         logger.error(error_msg)
+    #         sys.exit(4)
 
-        # Performing the segmentation
-        axon_segmentation(path_acquisitions_folders=path_acquisition,
-                          acquisitions_filenames=[str(path_acquisition / acquisition_name)],
-                          path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
-                          overlap_value=overlap_value, no_patch=no_patch, gpu_id=gpu_id)
+    #     # Performing the segmentation
+    #     axon_segmentation(path_acquisitions_folders=path_acquisition,
+    #                       acquisitions_filenames=[str(path_acquisition / acquisition_name)],
+    #                       path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
+    #                       overlap_value=overlap_value, no_patch=no_patch, gpu_id=gpu_id)
 
-        if verbosity_level >= 1:
-            logger.info(f"Image {path_testing_image} segmented.")
+    #     if verbosity_level >= 1:
+    #         logger.info(f"Image {path_testing_image} segmented.")
 
 
-    else:
-        logger.warning(f"The path {path_testing_image} does not exist.")
+    # else:
+    #     logger.warning(f"The path {path_testing_image} does not exist.")
 
     return None
 
