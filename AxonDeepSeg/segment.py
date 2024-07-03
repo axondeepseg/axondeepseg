@@ -128,11 +128,11 @@ def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int) -> 
 
 @logger.catch
 def segment_images(
-                path_images: List[Path],
-                path_model: Path,
-                gpu_id: int=0,
-                verbosity_level: int=0,
-                ) -> NoReturn:
+        path_images: List[Path],
+        path_model: Path,
+        gpu_id: int=-1,
+        verbosity_level: int=0,
+    ) -> NoReturn:
     '''
     Segment the image(s) in path_images.
 
@@ -143,7 +143,7 @@ def segment_images(
     path_model : str or Path
         Path to the folder containing the model.
     gpu_id : int
-        Number representing the GPU ID. Default: 0.
+        Number representing the GPU ID. Defaults to -1 for cpu.
     verbosity_level : int
         The higher, the more information is given about the segmentation process.
     '''
@@ -157,50 +157,14 @@ def segment_images(
             logger.error(f"File {path_img} does not exist.")
             sys.exit(2)
     path_images_sanitized = prepare_inputs(path_images, fileformat, n_channels)
-    print(path_images)
-    print(path_images_sanitized)
     
-    # if path_testing_image.exists():
-
-    #     file_format = get_model_input_format(path_model)
-
-    #     # Check that the resampled image will be of sufficient size, and if not throw an error.
-    #     im = ads.imread(path_testing_image)
-    #     w, h = im.shape
-
-    #     w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
-    #     h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
-
-    #     if w_resampled < patch_size or h_resampled < patch_size:
-    #         if w<=h:
-    #             minimum_zoom_factor = patch_size*model_resolution/(w*acquired_resolution)
-    #         else:
-    #             minimum_zoom_factor = patch_size*model_resolution/(h*acquired_resolution)
-
-    #         # Round to 1 decimal, always up.
-    #         minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
-
-    #         error_msg = "ERROR: Due to your given image size, resolution, and zoom factor, the resampled image is "\
-    #                     "smaller than the patch size during segmentation. To resolve this, please set a zoom factor "\
-    #                     f"greater than {str(minimum_zoom_factor)}. To do this on the command line, call the "\
-    #                     f"segmentation with the -z flag, i.e. -z {str(minimum_zoom_factor)}"
-    #         logger.error(error_msg)
-    #         sys.exit(4)
-
-    #     # Performing the segmentation
-    #     axon_segmentation(path_acquisitions_folders=path_acquisition,
-    #                       acquisitions_filenames=[str(path_acquisition / acquisition_name)],
-    #                       path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
-    #                       overlap_value=overlap_value, no_patch=no_patch, gpu_id=gpu_id)
-
-    #     if verbosity_level >= 1:
-    #         logger.info(f"Image {path_testing_image} segmented.")
-
-
-    # else:
-    #     logger.warning(f"The path {path_testing_image} does not exist.")
-
-    return None
+    axon_segmentation(
+        path_inputs=path_images_sanitized, 
+        path_model=path_model, 
+        model_type=get_model_type(path_model),
+        gpu_id=gpu_id, 
+        verbosity_level=verbosity_level
+    )
 
 @logger.catch
 def segment_folders(path_testing_images_folder, 
@@ -309,7 +273,6 @@ def segment_folders(path_testing_images_folder,
     return None
 
 # Main loop
-
 def main(argv=None):
     '''
     Main loop.
@@ -353,8 +316,8 @@ def main(argv=None):
         dest="gpu_id",
         required=False,
         type=int,
-        help='Number representing the GPU ID for segmentation if available. Default: 0.',
-        default=0,
+        help='Number representing the GPU ID for segmentation if available. Default: -1 (cpu).',
+        default=-1,
     )
     ap._action_groups.reverse()
 
@@ -366,13 +329,11 @@ def main(argv=None):
     gpu_id = int(args["gpu_id"])
 
     # Check for available GPU IDs
-    ads.check_available_gpus(gpu_id)
+    if gpu_id >= 0:
+        ads.check_available_gpus(gpu_id)
 
-    # Preparing the arguments to axon_segmentation function
-    model_type = get_model_type(path_model)
     input_img_list = []
     input_dir_list = []
-
     # Separate image vs directory paths
     for current_path_target in path_target_list:
         if not current_path_target.is_dir():

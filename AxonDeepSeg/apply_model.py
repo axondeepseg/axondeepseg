@@ -116,7 +116,7 @@ def axon_segmentation(
 
     # instantiate predictor
     predictor = nnUNetPredictor(
-        perform_everything_on_gpu=True if gpu_id < 0 else False,
+        perform_everything_on_gpu=True if gpu_id >= 0 else False,
         device=torch.device('cuda', gpu_id) if gpu_id >= 0 else torch.device('cpu'),
     )
     logger.info('Running inference on device: {}'.format(predictor.device))
