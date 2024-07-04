@@ -97,30 +97,28 @@ def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int) -> 
     '''
     filelist = []
     for im_path in path_imgs:
-        print(im_path)
         target = im_path
 
         imshape = get_imshape(str(target)) # HWC format
         is_correct_shape = imshape[-1] == n_channels
-        if not is_correct_shape:
-            if n_channels == 1:
-                logger.warning(f'{str(target)} will be converted to grayscale.')
-                grayscale_fname = target.with_suffix(file_format)
-                im = imread(str(target))
-                imwrite(str(grayscale_fname), im, file_format)
-                target = grayscale_fname
-            else:
-                logger.error(f'{str(target)} has {imshape[-1]} channels, expected {n_channels}.')
-                sys.exit(2)
-        
         is_correct_format = target.suffix == file_format
-        if not is_correct_format:
-            logger.warning(f'{str(target)} will be converted in the expected {file_format} format.')
+        needs_conversion = not is_correct_shape or not is_correct_format
+        
+        if not is_correct_shape and n_channels != 1:
+            logger.error(f'{str(target)} has {imshape[-1]} channels, expected {n_channels}.')
+            sys.exit(2)
+
+        if needs_conversion:
             im = imread(str(target))
-            converted_fname = target.with_suffix(file_format)
-            imwrite(str(converted_fname), im, file_format)
-            # correct the filename
-            target = converted_fname
+            filename = target.stem
+            if not is_correct_shape:
+                logger.warning(f'{filename} will be converted to grayscale.')
+                # add grayscale suffix to avoid overwriting original file
+                target = Path(str(target.with_suffix('')) + '_grayscale' + file_format)
+            if not is_correct_format:
+                logger.warning(f'{filename} will be converted in the expected {file_format} format.')
+                target = target.with_suffix(file_format)
+            imwrite(str(target), im, file_format)
         
         filelist.append(target)
 

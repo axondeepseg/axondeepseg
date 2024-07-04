@@ -334,7 +334,7 @@ def get_file_extension(filename):
     return extension
 
 def get_imshape(filename: str):
-    """Get the shape of an image without reading its data.
+    """Get the shape of an image (HWC format) without reading its data.
     """
     shape = imageio.v3.improps(filename).shape
     if len(shape) == 2:
