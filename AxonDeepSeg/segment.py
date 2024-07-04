@@ -29,7 +29,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
                                    get_imshape, imwrite, imread)
 import AxonDeepSeg.ads_utils
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix, valid_extensions
+from config import valid_extensions, side_effect_suffixes
 
 # Global variables
 DEFAULT_MODEL_NAME = "model_seg_generalist_light"
@@ -138,7 +138,7 @@ def segment_images(
     ----------
     path_images : List(pathlib.Path)
         List of path(s) to the image(s) to segment.
-    path_model : str or Path
+    path_model : pathlib.Path
         Path to the folder containing the model.
     gpu_id : int
         Number representing the GPU ID. Defaults to -1 for cpu.
@@ -165,110 +165,41 @@ def segment_images(
     )
 
 @logger.catch
-def segment_folders(path_testing_images_folder, 
-                    path_model,
-                    gpu_id=0,
-                    verbosity_level=0):
+def segment_folder(
+        path_folder: Path, 
+        path_model: Path,
+        gpu_id: int=-1,
+        verbosity_level: int=0
+    ) -> NoReturn:
     '''
-    Segments the images contained in the image folders located in the path_testing_images_folder.
-    :param path_testing_images_folder: the folder where all image folders are located (the images to segment are located
-    in those image folders)
-    :param path_model: where to access the model.
-    :param overlap_value: the number of pixels to be used for overlap when doing prediction. Higher value means less
-    border effects but more time to perform the segmentation.
-    :param acquired_resolution: isotropic pixel resolution of the acquired images.
-    :param zoom_factor: multiplicative constant applied to the pixel size before model inference.
-    :param no_patch: If True, the image is segmented without using patches. Default: False.
-    :param gpu_id: Number representing the GPU ID for segmentation if available. Default: 0.
-    :param verbosity_level: Level of verbosity. The higher, the more information is given about the segmentation
-    process.
-    :return: Nothing.
+    Segments all images in the path_folder directory.
+
+    Parameters
+    ----------
+    path_folder : pathlib.Path
+        Path to the folder containing the images to segment
+    path_model : pathlib.Path
+        Path to the folder containing the model.
+    gpu_id : int
+        Number representing the GPU ID. Defaults to -1 for cpu.
+    verbosity_level : int
+        The higher, the more information is given about the segmentation process.
     '''
-    logger.info(f'Starting segmentation of multiple images in "{Path(path_testing_images_folder).resolve()}".')
+    logger.info(f'Starting segmentation of multiple images in "{str(path_folder)}".')
 
     # If string, convert to Path objects
-    path_testing_images_folder = convert_path(path_testing_images_folder)
+    path_folder = convert_path(path_folder)
     path_model = convert_path(path_model)
 
-    # Update list of images to segment by selecting only image files (not already segmented or not masks)
-    img_files = [file for file in path_testing_images_folder.iterdir() if (file.suffix.lower() in ('.png','.jpg','.jpeg','.tif','.tiff'))
-                 and (not str(file).endswith((str(axonmyelin_suffix), str(axon_suffix), str(myelin_suffix),'mask.png')))]
+    # Update list of images to segment by selecting only image files (not masks)
+    img_files = [
+        file for file in path_folder.iterdir() 
+            if (file.suffix.lower() in valid_extensions)
+            and not str(file).endswith(side_effect_suffixes)
+    ]
 
-     # Get the model's native resolution
-    model_resolution, patch_size = get_model_native_resolution_and_patch(path_model)
-
-    # Pre-processing: convert to png if not already done and adapt to model contrast
-    for file_ in tqdm(img_files, desc="Segmentation..."):
-
-        # Get pixel size from file, if needed
-        # If we did not receive any resolution we read the pixel size in micrometer from each pixel.
-        if acquired_resolution == None:
-            if (path_testing_images_folder / 'pixel_size_in_micrometer.txt').exists():
-                resolutions_file = open(path_testing_images_folder / 'pixel_size_in_micrometer.txt', 'r')
-                str_resolution = float(resolutions_file.read())
-                acquired_resolution = float(str_resolution)
-            else:
-                exception_msg = "ERROR: No pixel size is provided, and there is no pixel_size_in_micrometer.txt file in image folder. " \
-                                "Please provide a pixel size (using argument acquired_resolution), or add a pixel_size_in_micrometer.txt file " \
-                                "containing the pixel size value."
-                logger.error(exception_msg)
-                raise Exception(exception_msg)
-
-        logger.info(f"Loading {path_testing_images_folder / file_}.")
-        try:
-            height, width, _ = ads.imread(str(path_testing_images_folder / file_)).shape
-        except:
-            try:
-                height, width = ads.imread(str(path_testing_images_folder / file_)).shape
-            except Exception as e:
-                raise e
-
-        image_size = [height, width]
-
-        selected_model = path_model.name
-
-        # Read image for conversion
-        img = ads.imread(str(path_testing_images_folder / file_))
-
-        img_name_original = file_.stem
-
-        acquisition_name = file_.name
-       
-
-        # Check that the resampled image will be of sufficient size, and if not throw an error.
-        h, w = image_size
-
-        w_resampled = w*(acquired_resolution*zoom_factor)/model_resolution
-        h_resampled = h*(acquired_resolution*zoom_factor)/model_resolution
-
-        if w_resampled < patch_size or h_resampled < patch_size:
-            if w<=h:
-                minimum_zoom_factor = patch_size*model_resolution/(w*acquired_resolution)
-            else:
-                minimum_zoom_factor = patch_size*model_resolution/(h*acquired_resolution)
-
-            # Round to 1 decimal, always up.
-            minimum_zoom_factor = ceil(minimum_zoom_factor*10)/10
-
-            warning_msg = "Skipping image: Due to your given image size, resolution, and zoom factor, the image " \
-                   f"{path_testing_images_folder / file_}" \
-                   " is smaller than the patch size after it is resampled during segmentation. " \
-                   "To resolve this, please set a zoom factor greater than " \
-                   f"{minimum_zoom_factor}  for this image on a re-run. " \
-                   "To do this on the command line, call the segmentation with the -z flag, i.e. " \
-                   f"-z {minimum_zoom_factor}"
-            logger.info(warning_msg)
-        else:
-            axon_segmentation(path_acquisitions_folders=path_testing_images_folder,
-                            acquisitions_filenames=[str(path_testing_images_folder  / acquisition_name)],
-                            path_model_folder=path_model, acquired_resolution=acquired_resolution*zoom_factor,
-                            overlap_value=overlap_value, no_patch=no_patch, gpu_id=gpu_id)
-            if verbosity_level >= 1:
-                tqdm.write("Image {0} segmented.".format(str(path_testing_images_folder / file_)))
-
-
-    logger.info("Segmentations done.")
-    return None
+    segment_images(img_files, path_model, gpu_id, verbosity_level)
+    logger.info("Folder segmentation done.")
 
 # Main loop
 def main(argv=None):
@@ -347,7 +278,7 @@ def main(argv=None):
         segment_images(input_img_list, path_model, gpu_id, verbosity_level)
     if input_dir_list:
         for dir_path in input_dir_list:
-            segment_folders(dir_path, path_model, gpu_id, verbosity_level)
+            segment_folder(dir_path, path_model, gpu_id, verbosity_level)
 
     sys.exit(0)
 

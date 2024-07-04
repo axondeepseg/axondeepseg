@@ -7,7 +7,7 @@ import os
 import pytest
 
 from AxonDeepSeg.segment import (
-    segment_folders, 
+    segment_folder, 
     segment_images
 )
 import AxonDeepSeg
