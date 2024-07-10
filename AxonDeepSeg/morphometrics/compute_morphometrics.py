@@ -87,7 +87,8 @@ def get_axon_morphometrics(
         axon_shape="circle", 
         return_index_image=False, 
         return_border_info=False,
-        return_instance_seg=False
+        return_instance_seg=False,
+        detect_holes=False,
     ):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
@@ -191,6 +192,11 @@ def get_axon_morphometrics(
                 idx = axonmyelin_labels_list.index(label_axonmyelin)
                 prop_axonmyelin = axonmyelin_objects[idx]
 
+                print('MYELIN AREA\t\t', prop_axonmyelin.area - prop_axon.area)
+                print('MYELIN AREA_FILLED\t', prop_axonmyelin.area_filled - prop_axon.area)
+                print('MYELIN AREA_CONVEX\t', prop_axonmyelin.area_convex - prop_axon.area)
+                print('HOLE AREA', prop_axonmyelin.area_filled - prop_axonmyelin.area)
+
                 _res1 = evaluate_myelin_thickness_in_px(prop_axon, prop_axonmyelin, axon_shape)
                 myelin_thickness = pixelsize * _res1
 
@@ -227,6 +233,9 @@ def get_axon_morphometrics(
                         'bbox_max_x': bbox[3]
                     }
                     stats.update(border_info_stats)
+
+                if detect_holes:
+                    stats['holes_area'] = prop_axonmyelin.area_filled - prop_axonmyelin.area
 
             else:
                 logger.warning(f"WARNING: Myelin object not found for axon centroid [y:{y0}, x:{x0}]")
