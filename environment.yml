@@ -1,7 +1,6 @@
 name: ads_venv
 dependencies:
   - python=3.11
-  - numpy
   - scipy
   - scikit-image=0.19.3
   - tabulate<
@@ -24,3 +23,4 @@ dependencies:
     - napari
     - nnunetv2==2.2.1
     - loguru
+    - numpy
