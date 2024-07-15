@@ -68,19 +68,29 @@ class TestCore(object):
             '__test_segment_folder_zoom__'
             )
 
-        self.image16bitTIFGray = (
+        self.image16bit_folder = (
             self.testPath /
             '__test_files__' /
             '__test_16b_file__' /
             'raw' /
-            'data1' /
+            'data1'
+        )
+
+        self.image16bitTIFGray = (
+            self.image16bit_folder /
             'image.tif'
-            )
+        )
+
+        self.expected_image_16bit_output_files = [
+            self.image16bit_folder / ('image' + str(axon_suffix)),
+            self.image16bit_folder / ('image' + str(myelin_suffix)),
+            self.image16bit_folder / ('image' + str(axonmyelin_suffix)),
+            self.image16bit_folder / 'image.png',    # TIF image should be converted to PNG
+        ]
 
         self.statsFilename = 'model_statistics_validation.json'
 
-    @classmethod
-    def teardown_class(cls):
+    def teardown_method(self):
 
         testPath = Path(__file__).resolve().parent
         projectPath = testPath.parent
@@ -119,6 +129,10 @@ class TestCore(object):
 
         if sweepFolder.exists():
             shutil.rmtree(sweepFolder)
+
+        for output_16bit in self.expected_image_16bit_output_files:
+            if output_16bit.exists():
+                output_16bit.unlink()
 
     # --------------segment_folder tests-------------- #
     @pytest.mark.unit
@@ -179,8 +193,12 @@ class TestCore(object):
                 path_images=[str(self.image16bitTIFGray)],
                 path_model=str(self.modelPath)
             )
+            
         except:
             pytest.fail("Image segmentation failed for 16bit TIF grayscale file.")
+        
+        for out_file in self.expected_image_16bit_output_files:
+            assert out_file.exists()
 
 
     # --------------main (cli) tests-------------- #
