@@ -176,7 +176,7 @@ class TestCore(object):
 
         try:
             segment_images(
-                path_images=str(self.image16bitTIFGray),
+                path_images=[str(self.image16bitTIFGray)],
                 path_model=str(self.modelPath)
             )
         except:
@@ -188,7 +188,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1"])
+            AxonDeepSeg.segment.main(["-i", str(self.imagePath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -196,13 +196,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "1"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            # Note that the pixel size set here, 0.1, differs from the true size, 0.37, in order to reduce RAM burden on GitHub Actions CIs and users computers
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.1", "--no-patch", "--overlap", "48"])
+            AxonDeepSeg.segment.main(["-i", str(self.imageFolderPath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -210,6 +204,6 @@ class TestCore(object):
     def test_main_cli_creates_logfile(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1"])
+            AxonDeepSeg.segment.main(["-i", str(self.imagePath), "-v", "1"])
 
         assert Path('axondeepseg.log').exists()
