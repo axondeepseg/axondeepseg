@@ -166,7 +166,7 @@ class TestCore(object):
         segment_images(
             path_images=[str(self.imagePath)],
             path_model=str(self.modelPath),
-            )
+        )
 
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
@@ -174,187 +174,31 @@ class TestCore(object):
     @pytest.mark.unit
     def test_segment_image_creates_runs_successfully_for_16bit_TIF_gray_file(self):
 
-        path_model = generate_default_parameters('TEM', str(self.modelPathTEM))
-
-        overlap_value = [48,48]
-
         try:
-            segment_image(
-                path_testing_image=str(self.image16bitTIFGray),
-                path_model=str(path_model),
-                overlap_value=overlap_value,
-                zoom_factor=1.9
-                )
+            segment_images(
+                path_images=str(self.image16bitTIFGray),
+                path_model=str(self.modelPath)
+            )
         except:
             pytest.fail("Image segmentation failed for 16bit TIF grayscale file.")
 
-    @pytest.mark.unit
-    def test_segment_image_creates_runs_successfully_without_acq_res_input(self):
-        # It should work because there exists a pixel file
-
-        path_model = generate_default_parameters('SEM', str(self.modelPath))
-
-        overlap_value = [48,48]
-
-        outputFiles = [
-            'image' + str(axon_suffix),
-            'image' + str(myelin_suffix),
-            'image' + str(axonmyelin_suffix)
-            ]
-        
-        segment_image(
-            path_testing_image=str(self.imagePathWithPixelSize),
-            path_model=str(path_model),
-            overlap_value=overlap_value
-            )
 
     # --------------main (cli) tests-------------- #
     @pytest.mark.integration
     def test_main_cli_runs_succesfully_with_valid_inputs(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_with_valid_inputs_with_overlap_value(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37", '--overlap', '48'])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_with_valid_inputs_with_pixel_size_file(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePathWithPixelSize), "-v", "1"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.exceptionhandling
-    def test_main_cli_handles_exception_missing_resolution_size(self):
-
-        # Make sure that the test folder doesn't have a file named pixel_size_in_micrometer.txt
-        assert not (self.imageFolderPath / 'pixel_size_in_micrometer.txt').exists()
-    
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1"])
 
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
     @pytest.mark.integration
     def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "1", "-s", "0.37"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input_with_pixel_size_file(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPathWithPixelSize), "-v", "1"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.exceptionhandling
-    def test_main_cli_handles_exception_missing_resolution_size_for_folder_input(self):
-
-        # Make sure that the test folder doesn't have a file named pixel_size_in_micrometer.txt
-        assert not (self.imageFolderPath / 'pixel_size_in_micrometer.txt').exists()
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imageFolderPath), "-v", "1"])
 
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
-
-    @pytest.mark.integration
-    def test_main_cli_throws_error_for_too_small_image_without_zoom(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomPathWithPixelSize), "-v", "1"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 4)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_with_too_small_image_with_zoom(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomPathWithPixelSize), "-v", "1", "-z", "1.2"])
-
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_doesnt_throws_error_with_folder_containing_too_small_image_without_zoom(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_with_folder_containing_too_small_image_with_zoom(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "TEM", "-i", str(self.imageZoomFolderWithPixelSize), "-v", "1", "-z", "1.2"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-    
-    @pytest.mark.integration
-    def test_main_cli_zoom_factor_sweep_creates_expected_files(self):
-        
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(
-                ["-t", "SEM", "-i", str(self.imageFolderPathWithPixelSize / 'image.png'), "-r", "1", "1.4", "-l", "2"]
-            )
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-        sweepFolder = self.imageFolderPathWithPixelSize / 'image_sweep'
-
-        # strip the '.png' from the suffixes
-        suffixes = [s[:-4] for s in [str(axon_suffix), str(myelin_suffix), str(axonmyelin_suffix)]]
-        expectedOutputParts = [(s, zf) for s in suffixes for zf in [1.0, 1.2]]
-        expectedFiles = [f"image{part[0]}_zf-{part[1]}.png" for part in expectedOutputParts]
-
-        assert sweepFolder.exists()
-        for file in expectedFiles:
-            assert (sweepFolder / file).exists()
-
-    @pytest.mark.exceptionhandling
-    def test_main_cli_zoom_factor_sweep_throws_error_multiple_images(self):
-        
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(
-                ["-t", "SEM", "-i", str(self.imagePath), str(self.otherImagePath), "-r", "1", "1.4", "-l", "4"]
-            )
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 5)
-
-    @pytest.mark.exceptionhandling
-    def test_main_cli_zoom_factor_sweep_throws_error_folder_with_multiple_images(self):
-        
-        badFolder = str(self.imageFolderPathWithPixelSize)
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", badFolder, "-r", "1", "1.4", "-l", "4"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 5)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_with_nopatch_flag(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            # Note that the pixel size set here, 0.1, differs from the true size, 0.37, in order to reduce RAM burden on GitHub Actions CIs and users computers
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.1", "--no-patch"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_with_nopatch_and_overlap_flags(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             # Note that the pixel size set here, 0.1, differs from the true size, 0.37, in order to reduce RAM burden on GitHub Actions CIs and users computers
@@ -366,6 +210,6 @@ class TestCore(object):
     def test_main_cli_creates_logfile(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1", "-s", "0.37"])
+            AxonDeepSeg.segment.main(["-t", "SEM", "-i", str(self.imagePath), "-v", "1"])
 
         assert Path('axondeepseg.log').exists()
