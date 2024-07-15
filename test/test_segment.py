@@ -23,7 +23,7 @@ class TestCore(object):
             self.projectPath /
             'AxonDeepSeg' /
             'models' /
-            'model_seg_rat_axon-myelin_sem'
+            'model_seg_generalist_light'
             )
 
         self.modelPathTEM = (
@@ -96,11 +96,10 @@ class TestCore(object):
             'image' + str(axon_suffix),
             'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix),
-            'image.nii.gz',
-            'image_2' + str(axon_suffix),
-            'image_2' + str(myelin_suffix),
-            'image_2' + str(axonmyelin_suffix),
-            'image_2.nii.gz'
+            'image_2_grayscale.png',
+            'image_2_grayscale' + str(axon_suffix),
+            'image_2_grayscale' + str(myelin_suffix),
+            'image_2_grayscale' + str(axonmyelin_suffix)
             ]
 
         logfile = testPath / 'axondeepseg.log'
@@ -121,70 +120,38 @@ class TestCore(object):
         if sweepFolder.exists():
             shutil.rmtree(sweepFolder)
 
-    # --------------segment_folders tests-------------- #
+    # --------------segment_folder tests-------------- #
     @pytest.mark.unit
-    def test_segment_folders_creates_expected_files(self):
-        path_model = generate_default_parameters('SEM', str(self.modelPath))
-
-        overlap_value = [48,48]
+    def test_segment_folder_creates_expected_files(self):
 
         outputFiles = [
             'image' + str(axon_suffix),
             'image' + str(myelin_suffix),
             'image' + str(axonmyelin_suffix),
+            'image_2_grayscale.png',
+            'image_2_grayscale' + str(axon_suffix),
+            'image_2_grayscale' + str(myelin_suffix),
+            'image_2_grayscale' + str(axonmyelin_suffix)
             ]
 
-        segment_folders(
-            path_testing_images_folder=str(self.imageFolderPath),
-            path_model=str(path_model),
-            overlap_value=overlap_value,
-            acquired_resolution=0.37,
+        segment_folder(
+            path_folder=str(self.imageFolderPath),
+            path_model=str(self.modelPath),
             verbosity_level=2
-            )
+        )
 
         for fileName in outputFiles:
             assert (self.imageFolderPath / fileName).exists()
 
     @pytest.mark.unit
-    def test_segment_folders_runs_with_relative_path(self):
+    def test_segment_folder_runs_with_relative_path(self):
 
-        path_model = generate_default_parameters('SEM', str(self.modelPath))
-
-        overlap_value = [48,48]
-
-        outputFiles = [
-            'image' + str(axon_suffix),
-            'image' + str(myelin_suffix),
-            'image' + str(axonmyelin_suffix)
-            ]
-
-
-        segment_folders(
-            path_testing_images_folder=str(self.relativeImageFolderPath),
-            path_model=str(path_model),
-            overlap_value=overlap_value,
-            acquired_resolution=0.37,
+        segment_folder(
+            path_folder=str(self.relativeImageFolderPath),
+            path_model=str(self.modelPath),
             verbosity_level=2
-            )
+        )
 
-    @pytest.mark.unit
-    def test_segment_folders_creates_expected_files_without_acq_res_input(self):
-        path_model = generate_default_parameters('SEM', str(self.modelPath))
-
-        overlap_value = [48,48]
-
-        outputFiles = [
-            'image' + str(axon_suffix),
-            'image' + str(myelin_suffix),
-            'image' + str(axonmyelin_suffix)
-            ]
-
-        segment_folders(
-            path_testing_images_folder=str(self.imageFolderPathWithPixelSize),
-            path_model=str(path_model),
-            overlap_value=overlap_value,
-            verbosity_level=2
-            )
 
     # --------------segment_image tests-------------- #
     @pytest.mark.unit
