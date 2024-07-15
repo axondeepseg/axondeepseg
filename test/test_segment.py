@@ -155,13 +155,7 @@ class TestCore(object):
 
     # --------------segment_image tests-------------- #
     @pytest.mark.unit
-    def test_segment_image_creates_runs_successfully(self):
-        # Since segment_folders should have already run, the output files
-        # should already exist, which this test tests for.
-
-        path_model = generate_default_parameters('SEM', str(self.modelPath))
-
-        overlap_value = [48,48]
+    def test_segment_images_creates_expected_files(self):
 
         outputFiles = [
             'image' + str(axon_suffix),
@@ -169,11 +163,9 @@ class TestCore(object):
             'image' + str(axonmyelin_suffix),
             ]
 
-        segment_image(
-            path_testing_image=str(self.imagePath),
-            path_model=str(path_model),
-            overlap_value=overlap_value,
-            acquired_resolution=0.37
+        segment_images(
+            path_images=[str(self.imagePath)],
+            path_model=str(self.modelPath),
             )
 
         for fileName in outputFiles:
