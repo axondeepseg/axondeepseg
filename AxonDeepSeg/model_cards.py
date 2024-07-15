@@ -69,3 +69,12 @@ def pretty_print_model(model):
         "TRAINING DATA": MODELS[model]['training-data'],
     }
     pprint.pprint(model_details)
+
+def get_supported_models():
+    supported_models = []
+    for m in MODELS.keys():
+        if MODELS[m]["weights"]["ensemble"] is not None:
+            supported_models.append(MODELS[m]["name"] + "_ensemble")
+        if MODELS[m]["weights"]["light"] is not None:
+            supported_models.append(MODELS[m]["name"] + "_light")
+    return supported_models
