@@ -25,14 +25,14 @@ def integrity_test():
         # input parameters
 
         path = Path('folder_name') / 'file_name'
-        model_name = 'model_seg_rat_axon-myelin_sem'
+        model_name = 'model_seg_generalist_light'
         path_model = dir_path / 'models' / model_name
-        path_testing = path_model / 'data_test'
+        path_testing = dir_path.parent / 'test' / '__test_files__' / '__test_demo_files__'
         image = Path("image.png")
 
         # Launch the axon and myelin segmentation on test image sample provided in the installation
         print('Computing the segmentation of axon and myelin on test image.')
-        axon_segmentation(path_testing, [str(path_testing / image)], path_model, acquired_resolution=0.13, gpu_id=0, overlap_value=[48,48])
+        axon_segmentation([str(path_testing / image)], path_model)
 
         # Read the ground truth mask and the obtained segmentation mask
         mask = ads.imread(path_testing / 'mask.png')
