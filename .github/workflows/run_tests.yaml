@@ -71,6 +71,13 @@ jobs:
           auto-update-conda: true
           environment-file: environment.yml
 
+      # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
+      # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
+      - name: Set MKL_THREADING_LAYER
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "MKL_THREADING_LAYER=GNU" >> $GITHUB_ENV
+
       # Step 3: List conda info, conda packages
       - name: Conda info and list
         # List
