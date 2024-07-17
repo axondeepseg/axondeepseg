@@ -15,7 +15,8 @@ side_effect_suffixes = tuple(
     [
         str(s) for s in [
             axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, 
-            axonmyelin_index_suffix, unmyelinated_suffix, unmyelinated_index_suffix
+            axonmyelin_index_suffix, unmyelinated_suffix, unmyelinated_index_suffix,
+            nnunet_suffix
         ]
     ]
 )
