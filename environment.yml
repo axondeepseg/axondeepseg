@@ -22,9 +22,9 @@ dependencies:
   - qtconsole<5.4.2
   - pip
   - pip:
-    - nibabel==3.2.*
+    - nibabel~=5.2
     - raven
     - napari
     - protobuf==3.20.1
-    - ivadomed @ git+https://github.com/ivadomed/ivadomed.git@c52689d087de28f9a9a814b6eb99bf2093d96c5a
+    - ivadomed==2.9.10
     - onnxruntime<1.16.0
