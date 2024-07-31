@@ -93,12 +93,7 @@ jobs:
 
       # Step 6: Full PyTest
       - name: Test with pytest
-        env:
-          COVERALLS_FLAG_NAME: ${{ matrix.test-name }}
-          COVERALLS_PARALLEL: true
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
-          pip install coveralls
           pytest ./axoneepseg/ -v --cov AxonDeepSeg/ --cov-report lcov
   
       # Step 7: Submnit to coveralls
