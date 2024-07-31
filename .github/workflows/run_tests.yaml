@@ -109,9 +109,10 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3-slim
     steps:
-      - name: Finished
+      -name: Coveralls GitHub Action
+      uses: coverallsapp/github-action@v2.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pip3 install --upgrade coveralls
           coveralls --finish
+            
