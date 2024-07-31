@@ -90,29 +90,21 @@ jobs:
         run: |
           conda info
           conda list
-
-      # Step 6: Full PyTest
-      - name: Test with pytest
-        env:
-          COVERALLS_FLAG_NAME: ${{ matrix.test-name }}
-          COVERALLS_PARALLEL: true
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: |
-          pip install coveralls
-          pytest . -v --cov AxonDeepSeg/ --cov-report term-missing
-          coveralls --service=github
+          
+      # Step 6: Submnit to coveralls
+      - name: Submit to coveralls
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          parallel: true
+          github-token: ${{ secrets.github_token }}
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
-  coveralls:
-    needs: ultra_matrix_test
+  coverage:
     runs-on: ubuntu-latest
-    container: python:3-slim
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Publish to Coveralls
-        uses: coverallsapp/github-action@v1.1.2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
