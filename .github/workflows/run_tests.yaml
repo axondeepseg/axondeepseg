@@ -90,10 +90,20 @@ jobs:
         run: |
           conda info
           conda list
-          
-      # Step 6: Submnit to coveralls
+
+      # Step 6: Full PyTest
+      - name: Test with pytest
+        env:
+          COVERALLS_FLAG_NAME: ${{ matrix.test-name }}
+          COVERALLS_PARALLEL: true
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          pip install coveralls
+          pytest . -v --cov AxonDeepSeg/ --cov-report lcov
+  
+      # Step 7: Submnit to coveralls
       - name: Submit to coveralls
-        uses: AndreMiras/coveralls-python-action@develop
+        uses: coverallsapp/github-action@master
         with:
           parallel: true
           github-token: ${{ secrets.github_token }}
