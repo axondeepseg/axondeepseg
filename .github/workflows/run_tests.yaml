@@ -115,3 +115,4 @@ jobs:
       with:
         github-token: ${{ secrets.github_token }}
         parallel-finished: true
+        carryforward: "ubuntu-latest","macos-12","windows-latest"
