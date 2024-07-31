@@ -99,12 +99,13 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           pip install coveralls
-          pytest . -v --cov AxonDeepSeg/ --cov-report lcov
+          pytest ./axoneepseg/ -v --cov AxonDeepSeg/ --cov-report lcov
   
       # Step 7: Submnit to coveralls
       - name: Submit to coveralls
         uses: coverallsapp/github-action@master
         with:
+          flag-name: run-${{ join(matrix.*, '-') }}
           parallel: true
           github-token: ${{ secrets.github_token }}
 
@@ -119,3 +120,4 @@ jobs:
       with:
         github-token: ${{ secrets.github_token }}
         parallel-finished: true
+        carryforward: "run-ubuntu-latest,run-macos-12,run-windows-latest"
