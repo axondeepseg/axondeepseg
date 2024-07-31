@@ -108,11 +108,12 @@ jobs:
     needs: ultra_matrix_test
     runs-on: ubuntu-latest
     container: python:3-slim
-      -name: Coveralls GitHub Action
-      uses: coverallsapp/github-action@v2.3.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      run: |
-        coveralls --finish
+    steps:
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          coveralls --finish
             
