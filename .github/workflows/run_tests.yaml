@@ -94,13 +94,12 @@ jobs:
       # Step 6: Full PyTest
       - name: Test with pytest
         run: |
-          pytest ./test/visualization/ -v --cov AxonDeepSeg/ --cov-report lcov
+          pytest ./test/visualization/ -v --cov AxonDeepSeg/ --cov-report=lcov
   
       # Step 7: Submnit to coveralls
       - name: Submit to coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: ${matrix.os}
           parallel: true
 
@@ -108,10 +107,11 @@ jobs:
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
   finish:
     needs: ultra_matrix_test
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
+      uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.github_token }}
         parallel-finished: true
