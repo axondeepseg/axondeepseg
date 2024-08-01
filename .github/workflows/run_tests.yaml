@@ -100,25 +100,26 @@ jobs:
 
       # Step 6: Full PyTest
       - name: Test with pytest
-        env:
-          COVERALLS_FLAG_NAME: ${{ matrix.test-name }}
-          COVERALLS_PARALLEL: true
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
-          pip install coveralls
-          pytest . -v --cov AxonDeepSeg/ --cov-report term-missing
-          coveralls --service=github
+          pytest ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
+  
+      # Step 7: Submnit to coveralls
+      - name: Submit to coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          flag-name: ${matrix.os}
+          parallel: true
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
-  coveralls:
+  finish:
     needs: ultra_matrix_test
+    if: ${{ always() }}
     runs-on: ubuntu-latest
-    container: python:3-slim
     steps:
-      - name: Finished
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pip3 install --upgrade coveralls
-          coveralls --finish
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
+        carryforward: "ubuntu-latest,macos-12,windows-latest"
