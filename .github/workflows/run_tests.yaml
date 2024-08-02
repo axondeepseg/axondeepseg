@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - master
+      - mb/debug_windows
 
   # Trigger current workflow on PR from ANY branch
   pull_request:
@@ -47,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ "ubuntu-latest", "macos-12", "windows-latest" ]
+        os: [ "windows-latest" ]
         python-version: [ ">=3.11" ]
 
     # Main steps for the test to be reproduced across OS x Python
@@ -101,7 +102,7 @@ jobs:
       # Step 6: Full PyTest
       - name: Test with pytest
         run: |
-          pytest ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
+          pytest ./test/ -vvv --cov AxonDeepSeg/ --cov-report=lcov
   
       # Step 7: Submnit to coveralls
       - name: Submit to coveralls
