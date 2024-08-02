@@ -11,10 +11,10 @@ from AxonDeepSeg import ads_utils
 from config import axon_suffix, myelin_suffix, axonmyelin_suffix, nnunet_suffix
 from AxonDeepSeg.params import intensity
 
-os.environ['nnUNet_raw'] = 'UNDEFINED'
-os.environ['nnUNet_results'] = 'UNDEFINED'
-os.environ['nnUNet_preprocessed'] = 'UNDEFINED'
-from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
+#os.environ['nnUNet_raw'] = 'UNDEFINED'
+#os.environ['nnUNet_results'] = 'UNDEFINED'
+#os.environ['nnUNet_preprocessed'] = 'UNDEFINED'
+#from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
 def get_checkpoint_name(checkpoint_folder_path: Path) -> str:
     '''
