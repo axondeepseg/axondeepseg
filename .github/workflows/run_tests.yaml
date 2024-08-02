@@ -102,7 +102,7 @@ jobs:
       # Step 6: Full PyTest
       - name: Test with pytest
         run: |
-          pytest ./test/test_integrity_tests.py -vvv --cov AxonDeepSeg/ --cov-report=lcov
+          pytest ./test/test_integrity_test.py -vvv --cov AxonDeepSeg/ --cov-report=lcov
   
       # Step 7: Submnit to coveralls
       - name: Submit to coveralls
