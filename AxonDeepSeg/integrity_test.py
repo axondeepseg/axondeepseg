@@ -10,11 +10,11 @@ import tempfile
 import shutil
 
 # AxonDeepSeg imports
-from AxonDeepSeg.testing.segmentation_scoring import pw_dice
-from AxonDeepSeg.apply_model import axon_segmentation
-import AxonDeepSeg.ads_utils as ads
-import AxonDeepSeg.ads_utils
-from config import axonmyelin_suffix
+#from AxonDeepSeg.testing.segmentation_scoring import pw_dice
+#from AxonDeepSeg.apply_model import axon_segmentation
+#import AxonDeepSeg.ads_utils as ads
+#import AxonDeepSeg.ads_utils
+#from config import axonmyelin_suffix
 
 def integrity_test():
 
