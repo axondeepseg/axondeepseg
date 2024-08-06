@@ -1,11 +1,14 @@
 from AxonDeepSeg.ads_utils import convert_path, download_data
-from AxonDeepSeg.model_cards import MODELS, pretty_print_model
+from AxonDeepSeg.model_cards import MODELS
 from pathlib import Path
 import shutil
 from loguru import logger
 import sys
 import argparse
+import pprint
 
+# exit codes
+SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
 
 def download_model(model='generalist', model_type='light', destination=None):
     
@@ -19,14 +22,14 @@ def download_model(model='generalist', model_type='light', destination=None):
     url_model_destination = MODELS[model]['weights'][model_type]
     if url_model_destination is None:
         logger.error('Model not found.')
-        sys.exit()
+        sys.exit(MODEL_NOT_FOUND)
 
     files_before = list(Path.cwd().iterdir())
     if download_data(url_model_destination) == 0:
         logger.info("Model downloaded and unzipped succesfully.")
     else:
         logger.error("An error occured. The model was not downloaded.")
-        sys.exit()
+        sys.exit(DOWNLOAD_ERROR)
     files_after = list(Path.cwd().iterdir())
 
     # retrieving unknown model folder name
@@ -67,8 +70,14 @@ def main(argv=None):
         logger.info("Printing available models:")
         for model in MODELS:
             logger.info(model)
-            pretty_print_model(model)
-        sys.exit()
+            model_details = {
+                "MODEL NAME": MODELS[model]['name'],
+                "NUMBER OF CLASSES": MODELS[model]['n_classes'],
+                "OVERVIEW": MODELS[model]['model-info'],
+                "TRAINING DATA": MODELS[model]['training-data'],
+            }
+            pprint.pprint(model_details)
+        sys.exit(SUCCESS)
     else:
         download_model(args["model_name"], args["model_type"])
 
