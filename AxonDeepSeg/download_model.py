@@ -64,7 +64,7 @@ def main(argv=None):
         default=False,
         action='store_true',
     )
-    args = vars(ap.parse_args())
+    args = vars(ap.parse_args(argv))
 
     if args["list"]:
         logger.info("Printing available models:")
