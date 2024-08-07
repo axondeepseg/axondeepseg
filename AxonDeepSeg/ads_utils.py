@@ -20,40 +20,6 @@ from loguru import logger
 
 from config import valid_extensions
 
-def init_error_client(bugTracking):
-    """ Send traceback to neuropoly servers
-    :return:
-    """
-
-    if strtobool(bugTracking):
-
-        try:
-
-            client = raven.Client(
-                        "https://e04a130541c64bc9a64939672f19ad52@sentry.io/1238683",
-                        processors=(
-                            'raven.processors.RemoveStackLocalsProcessor',
-                            'raven.processors.SanitizePasswordsProcessor')
-                        )
-
-            traceback_to_server(client)
-
-        except:
-            print("Unexpected error: bug tracking may not be functionning.")
-
-
-def traceback_to_server(client):
-    """
-        Send all traceback children of Exception to sentry
-    """
-
-    def excepthook(exctype, value, traceback):
-        if issubclass(exctype, Exception):
-            client.captureException(exc_info=(exctype, value, traceback))
-        sys.__excepthook__(exctype, value, traceback)
-
-    sys.excepthook = excepthook
-
 def download_data(url_data):
     """ Downloads and extracts zip files from the web.
     :return: 0 - Success, 1 - Encountered an exception.
