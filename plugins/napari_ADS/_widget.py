@@ -23,6 +23,7 @@ from qtpy.QtCore import QStringListModel, QObject, Signal
 from qtpy.QtGui import QPixmap
 
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
+from AxonDeepSeg.qa.metrics_qa import MetricsQA
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
 
@@ -605,6 +606,7 @@ class ADSplugin(QWidget):
         except IOError:
             self.show_info_message("Cannot save morphometrics")
 
+
         self.viewer.add_image(
             data=index_image_array,
             rgb=False,
@@ -612,6 +614,18 @@ class ADSplugin(QWidget):
             blending="additive",
             name="numbers",
         )
+
+        # QA
+
+        morphometrics_folder = Path(file_name).parents[0]
+        qa_folder = Path(morphometrics_folder / 'QA')
+
+        if os.path.isdir(qa_folder) == False:
+            os.mkdir(Path(morphometrics_folder / 'QA'))
+        
+        qa = MetricsQA(file_name)
+
+        qa.plot_all(qa_folder, quiet=True)
 
     def _on_settings_menu_clicked(self):
         """Create and display the settings menu when the settings menu button is clicked.
