@@ -20,7 +20,6 @@ dependencies:
   - qtconsole<5.4.2
   - pip
   - pip:
-    - raven
     - napari
     - nnunetv2==2.2.1
     - loguru
