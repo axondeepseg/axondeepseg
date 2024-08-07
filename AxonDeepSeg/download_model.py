@@ -1,64 +1,86 @@
 from AxonDeepSeg.ads_utils import convert_path, download_data
+from AxonDeepSeg.model_cards import MODELS
 from pathlib import Path
 import shutil
+from loguru import logger
+import sys
+import argparse
+import pprint
 
+# exit codes
+SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
 
-def download_model(destination = None):
-    sem_release_version = 'r20211209v2'
-    tem_release_version = 'r20211111v3'
-    bf_release_version = 'r20211210'
+def download_model(model='generalist', model_type='light', destination=None):
     
+    model_suffix = 'light' if model_type == 'light' else 'ensemble'
+    full_model_name = f'{MODELS[model]["name"]}_{model_suffix}'
     if destination is None:
-        sem_destination = Path("AxonDeepSeg/models/model_seg_rat_axon-myelin_sem")
-        tem_destination = Path("AxonDeepSeg/models/model_seg_mouse_axon-myelin_tem")
-        bf_destination = Path("AxonDeepSeg/models/model_seg_rat_axon-myelin_bf")
+        model_destination = Path(f"AxonDeepSeg/models/{full_model_name}")
     else:
-        sem_destination = destination / "model_seg_rat_axon-myelin_sem"
-        tem_destination = destination / "model_seg_mouse_axon-myelin_tem"
-        bf_destination = destination / "model_seg_rat_axon-myelin_bf"
+        model_destination = destination / full_model_name
 
-    url_sem_destination = "https://github.com/axondeepseg/default-SEM-model/archive/refs/tags/" + sem_release_version + ".zip"
-    url_tem_destination = "https://github.com/axondeepseg/default-TEM-model/archive/refs/tags/" + tem_release_version + ".zip"
-    url_bf_destination = "https://github.com/axondeepseg/default-BF-model/archive/refs/tags/" + bf_release_version + ".zip"
+    url_model_destination = MODELS[model]['weights'][model_type]
+    if url_model_destination is None:
+        logger.error('Model not found.')
+        sys.exit(MODEL_NOT_FOUND)
 
     files_before = list(Path.cwd().iterdir())
-
-    if (
-        not download_data(url_sem_destination) and not download_data(url_tem_destination) and not download_data(url_bf_destination) 
-    ) == 1:
-        print("Data downloaded and unzipped succesfully.")
+    if download_data(url_model_destination) == 0:
+        logger.info("Model downloaded and unzipped succesfully.")
     else:
-        print(
-            "ERROR: Data was not succesfully downloaded and unzipped- please check your link and filename and try again."
-        )
-
+        logger.error("An error occured. The model was not downloaded.")
+        sys.exit(DOWNLOAD_ERROR)
     files_after = list(Path.cwd().iterdir())
 
-    # retrieving unknown model folder names
-    folder_name_SEM_model = Path("default-SEM-model-" + sem_release_version)
-    folder_name_TEM_model = Path("default-TEM-model-" + tem_release_version)
-    folder_name_BF_model = Path("default-BF-model-" + bf_release_version)
+    # retrieving unknown model folder name
+    folder_name = list(set(files_after) - set(files_before))[0]
 
-    if sem_destination.exists():
-        print('SEM model folder already existed - deleting old one')
-        shutil.rmtree(str(sem_destination))
-
-    if tem_destination.exists():
-       print('TEM model folder already existed - deleting old one')
-       shutil.rmtree(str(tem_destination))      
-
-    if bf_destination.exists():
-       print('BF model folder already existed - deleting old one')
-       shutil.rmtree(str(bf_destination))
-
-    shutil.move(folder_name_SEM_model.joinpath("model_seg_rat_axon-myelin_sem"), str(sem_destination))
-    shutil.move(folder_name_TEM_model.joinpath("model_seg_mouse_axon-myelin_tem"), str(tem_destination))
-    shutil.move(folder_name_BF_model.joinpath("model_seg_rat_axon-myelin_bf"), str(bf_destination))
-
-    # remove temporary folders
-    shutil.rmtree(folder_name_SEM_model)
-    shutil.rmtree(folder_name_TEM_model)
-    shutil.rmtree(folder_name_BF_model)
+    if model_destination.exists():
+        logger.info("Model folder already existed - deleting old one")
+        shutil.rmtree(str(model_destination))
+    
+    shutil.move(folder_name, str(model_destination))
 
 def main(argv=None):
-    download_model()
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-m", "--model-name",
+        required=False,
+        help="Model to download. Default: generalist",
+        default='generalist',
+        type=str,
+    )
+    ap.add_argument(
+        "-t", "--model-type",
+        required=False,
+        help="Model type to download. Default: light",
+        default='light',
+        type=str,
+    )
+    ap.add_argument(
+        "-l", "--list",
+        required=False,
+        help="List all available models for download",
+        default=False,
+        action='store_true',
+    )
+    args = vars(ap.parse_args(argv))
+
+    if args["list"]:
+        logger.info("Printing available models:")
+        for model in MODELS:
+            logger.info(model)
+            model_details = {
+                "MODEL NAME": MODELS[model]['name'],
+                "NUMBER OF CLASSES": MODELS[model]['n_classes'],
+                "OVERVIEW": MODELS[model]['model-info'],
+                "TRAINING DATA": MODELS[model]['training-data'],
+            }
+            pprint.pprint(model_details)
+        sys.exit(SUCCESS)
+    else:
+        download_model(args["model_name"], args["model_type"])
+
+if __name__ == "__main__":
+    with logger.catch():
+        main()
