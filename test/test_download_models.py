@@ -25,6 +25,7 @@ class TestCore(object):
         self.valid_model = 'generalist'
         self.valid_model_path = self.tmpPath / 'model_seg_generalist_light'
         self.invalid_model = 'dedicated-BF' # (ensembled version unavailable)
+        self.invalid_model_type = 'ensemble'
 
     def teardown_method(self):
         # Get the directory where this current file is saved
@@ -51,10 +52,10 @@ class TestCore(object):
     def test_download_model_cli_throws_error_for_unavailable_model(self):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(
-                ["-m", self.invalid_model, "-t", "ensemble"]
+                ["-m", self.invalid_model, "-t", self.invalid_model_type]
             )
 
-        assert pytest_wrapped_e.type == SystemExit
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 1)
 
 
     @pytest.mark.unit
@@ -63,3 +64,8 @@ class TestCore(object):
         download_model(self.valid_model, 'light', self.tmpPath)
         download_model(self.valid_model, 'light', self.tmpPath)
         
+    @pytest.mark.unit
+    def test_list_models(self):
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.download_model.main(["-l"])
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)

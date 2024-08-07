@@ -1,7 +1,6 @@
 '''
 Model descriptions and download links for all models supported in AxonDeepSeg.
 '''
-import pprint
 
 MODELS = {
     "generalist": {
@@ -61,11 +60,11 @@ MODELS = {
     }
 }
 
-def pretty_print_model(model):
-    model_details = {
-        "MODEL NAME": MODELS[model]['name'],
-        "NUMBER OF CLASSES": MODELS[model]['n_classes'],
-        "OVERVIEW": MODELS[model]['model-info'],
-        "TRAINING DATA": MODELS[model]['training-data'],
-    }
-    pprint.pprint(model_details)
+def get_supported_models():
+    supported_models = []
+    for m in MODELS.keys():
+        if MODELS[m]["weights"]["ensemble"] is not None:
+            supported_models.append(MODELS[m]["name"] + "_ensemble")
+        if MODELS[m]["weights"]["light"] is not None:
+            supported_models.append(MODELS[m]["name"] + "_light")
+    return supported_models
