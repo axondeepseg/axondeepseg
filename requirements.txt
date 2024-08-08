@@ -1,6 +1,6 @@
 numpy
 scipy
-scikit-image==0.19.3
+scikit-image
 tabulate
 pandas
 matplotlib
