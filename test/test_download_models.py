@@ -7,6 +7,7 @@ import pytest
 
 from AxonDeepSeg.download_model import download_model
 import AxonDeepSeg
+import AxonDeepSeg.download_model
 
 
 class TestCore(object):
@@ -68,4 +69,13 @@ class TestCore(object):
     def test_list_models(self):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(["-l"])
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    # --------------main (cli) tests-------------- #
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_for_list_models(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.download_model.main(["--list"])
+
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
