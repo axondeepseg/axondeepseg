@@ -37,8 +37,8 @@ def get_checkpoint_name(checkpoint_folder_path: Path) -> str:
         return 'checkpoint_final.pth'
     else:
         # Return checkpoint with most recent modification time
-        checkpoints_timesorted=sorted(checkpoint_folder_path.glob('*.pth'), key=os.path.getmtime)
-        return checkpoints_timesorted[-1].name
+        checkpoints_namesorted=sorted(checkpoint_folder_path.glob('*.pth'))
+        return checkpoints_namesorted[-1].name
 
 
 def extract_from_nnunet_prediction(pred, pred_path, class_name, class_value) -> str:
@@ -72,9 +72,11 @@ def extract_from_nnunet_prediction(pred, pred_path, class_name, class_value) -> 
     '''
 
     pred_path = ads_utils.convert_path(pred_path)
+    
     if not np.any(pred == class_value):
         raise ValueError(f'Class value {class_value} not found in the raw prediction.')
-    elif not pred_path.name.endswith(str(nnunet_suffix)):
+    
+    if not pred_path.name.endswith(str(nnunet_suffix)):
         raise ValueError(f'Raw nnunet pred file does not end with "{nnunet_suffix}".')
     
     extraction = np.zeros_like(pred)
@@ -164,4 +166,6 @@ def axon_segmentation(
 
         if is_axonmyelin_seg:
             merge_masks(new_masks[0], new_masks[1])
+        breakpoint()
+        raise ValueError('stop')
         Path(fname).unlink()

@@ -35,3 +35,8 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_checkpoint_name_case3(self):
         assert get_checkpoint_name(self.checkpointFolder / "case3") == 'checkpoint_2.pth'
+
+    # --------------extract_from_nnunet_prediction tests-------------- #
+    @pytest.mark.single
+    def test_extract_from_nnunet_prediction(self):
+        pass
