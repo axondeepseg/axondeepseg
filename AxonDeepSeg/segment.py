@@ -24,7 +24,6 @@ from loguru import logger
 # AxonDeepSeg imports
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
-import AxonDeepSeg.zoom_factor_sweep as zfs
 from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
                                    get_imshape, imwrite, imread)
@@ -100,11 +99,11 @@ def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int) -> 
         target = im_path
 
         imshape = get_imshape(str(target)) # HWC format
-        is_correct_shape = imshape[-1] == n_channels
-        is_correct_format = target.suffix == file_format
+        is_correct_shape = (imshape[-1] == n_channels)
+        is_correct_format = (target.suffix == file_format)
         needs_conversion = not is_correct_shape or not is_correct_format
         
-        if not is_correct_shape and n_channels != 1:
+        if (not is_correct_shape) and (n_channels != 1):
             logger.error(f'{str(target)} has {imshape[-1]} channels, expected {n_channels}.')
             sys.exit(2)
 

@@ -142,11 +142,6 @@ class TestCore(object):
         if logfile.exists():
             logfile.unlink()
 
-        sweepFolder = imageFolderPathWithPixelSize / 'image_sweep'
-
-        if sweepFolder.exists():
-            shutil.rmtree(sweepFolder)
-
         for output_16bit in self.expected_image_16bit_output_files:
             if output_16bit.exists():
                 output_16bit.unlink()
