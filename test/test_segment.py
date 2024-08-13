@@ -8,7 +8,8 @@ import pytest
 
 from AxonDeepSeg.segment import (
     segment_folder, 
-    segment_images
+    segment_images,
+    get_model_type
 )
 import AxonDeepSeg
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
@@ -89,6 +90,22 @@ class TestCore(object):
         ]
 
         self.statsFilename = 'model_statistics_validation.json'
+
+        self.nnunetModelLight = (
+            self.projectPath /
+            'AxonDeepSeg' /
+            'models' /
+            'model_seg_generalist_light'
+        )
+
+        self.nnunetModelEmptyEnsemble = (
+            self.projectPath /
+            'test' /
+            '__test_files__' /
+            '__test_model__' /
+            'models' / 
+            'model_empty_ensemble'
+            )
 
     def teardown_method(self):
 
@@ -200,6 +217,23 @@ class TestCore(object):
         for out_file in self.expected_image_16bit_output_files:
             assert out_file.exists()
 
+    # --------------get_model_type tests-------------- #
+    @pytest.mark.unit
+    def test_get_model_type_light(self):
+        path_model = self.nnunetModelLight
+        model_type = get_model_type(path_model)
+        expected_model_type = 'light'
+
+        assert model_type == expected_model_type
+
+    @pytest.mark.unit
+    def test_get_model_type_ensemble(self):
+        path_model = self.nnunetModelEmptyEnsemble
+        model_type = get_model_type(path_model)
+        expected_model_type = 'ensemble'
+
+        assert model_type == expected_model_type
+
 
     # --------------main (cli) tests-------------- #
     @pytest.mark.integration
@@ -225,3 +259,5 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-i", str(self.imagePath), "-v", "1"])
 
         assert Path('axondeepseg.log').exists()
+
+
