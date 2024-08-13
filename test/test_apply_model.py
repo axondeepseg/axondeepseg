@@ -5,7 +5,13 @@ import pytest
 
 from AxonDeepSeg.apply_model import (
     get_checkpoint_name, 
+    extract_from_nnunet_prediction
 )
+
+from AxonDeepSeg import ads_utils
+from config import nnunet_suffix
+
+import numpy as np
 
 class TestCore(object):
     def setup_method(self):
@@ -20,8 +26,23 @@ class TestCore(object):
             '__test_checkpoint_files__'
             )
 
+        self.nnunetFolder = (
+            self.projectPath /
+            'test' /
+            '__test_files__' /
+            '__test_nnunet_files__'
+            )
+        
+        self.nnunetFile = (
+            self.nnunetFolder /
+            'image_seg-nnunet.png'
+        )
+
+        self.temp_files = []
+
     def teardown_method(self):
-        pass
+        for files in self.temp_files:
+            files.unlink()
 
     # --------------get_checkpoint_name tests-------------- #
     @pytest.mark.unit
@@ -37,6 +58,43 @@ class TestCore(object):
         assert get_checkpoint_name(self.checkpointFolder / "case3") == 'checkpoint_2.pth'
 
     # --------------extract_from_nnunet_prediction tests-------------- #
-    @pytest.mark.single
-    def test_extract_from_nnunet_prediction(self):
-        pass
+    @pytest.mark.unit
+    def test_extract_from_nnunet_prediction_throws_value_error_for_class(self):
+        pred_path = self.nnunetFile
+        pred = ads_utils.imread(pred_path)
+        class_name = 'TestClass'
+        class_value = 123 # Not a class (pixel value) in the nnunet file (image)
+        try:
+            extract_from_nnunet_prediction(pred, pred_path, class_name, class_value)
+        except ValueError:
+            pass
+        else:
+            pytest.fail('Excepted pred not to be a value in the file ' + pred_path)
+
+    @pytest.mark.unit
+    def test_extract_from_nnunet_prediction_throws_name_error_for_nnunet_file(self):
+        pred_path = 'filename.png' # doesn't have the suffix, check next:
+        assert str(nnunet_suffix) not in str(pred_path)
+
+        pred = np.ones(1)
+        class_name = 'TestClass'
+        class_value = 1 
+        try:
+            extract_from_nnunet_prediction(pred, pred_path, class_name, class_value)
+        except NameError:
+            pass
+        else:
+            pytest.fail('Excepted filename not to have ' + nnunet_suffix + ' in filename')
+
+    @pytest.mark.unit
+    def test_extract_from_nnunet_prediction_returns_expected_filename(self):
+        pred_path = self.nnunetFile
+        pred = ads_utils.imread(pred_path)
+        class_name = 'axon'
+        class_value = 2
+        
+        output_filename = extract_from_nnunet_prediction(pred, pred_path, class_name, class_value)
+        self.temp_files.append(Path(output_filename))
+
+        expected_filename = 'image_seg-axon.png'
+        assert Path(output_filename).name == expected_filename

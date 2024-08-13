@@ -72,12 +72,12 @@ def extract_from_nnunet_prediction(pred, pred_path, class_name, class_value) -> 
     '''
 
     pred_path = ads_utils.convert_path(pred_path)
-    
+
     if not np.any(pred == class_value):
         raise ValueError(f'Class value {class_value} not found in the raw prediction.')
     
     if not pred_path.name.endswith(str(nnunet_suffix)):
-        raise ValueError(f'Raw nnunet pred file does not end with "{nnunet_suffix}".')
+        raise NameError(f'Raw nnunet pred file does not end with "{nnunet_suffix}".')
     
     extraction = np.zeros_like(pred)
     extraction[pred == class_value] = intensity['binary']
@@ -166,6 +166,5 @@ def axon_segmentation(
 
         if is_axonmyelin_seg:
             merge_masks(new_masks[0], new_masks[1])
-        breakpoint()
-        raise ValueError('stop')
+
         Path(fname).unlink()
