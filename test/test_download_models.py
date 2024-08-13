@@ -79,3 +79,12 @@ class TestCore(object):
             AxonDeepSeg.download_model.main(["--list"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+
+    @pytest.mark.integration
+    def test_main_cli_fails_for_model_that_does_not_exist(self):
+        model_name = "no_model"
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.download_model.main(["-m ", model_name])
+
+        expected_code = 2
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == expected_code)
