@@ -5,7 +5,8 @@ import pytest
 
 from AxonDeepSeg.apply_model import (
     get_checkpoint_name, 
-    extract_from_nnunet_prediction
+    extract_from_nnunet_prediction,
+    find_folds
 )
 
 from AxonDeepSeg import ads_utils
@@ -37,6 +38,23 @@ class TestCore(object):
             self.nnunetFolder /
             'image_seg-nnunet.png'
         )
+
+        self.nnunetModelLight = (
+            self.projectPath /
+            'AxonDeepSeg' /
+            'models' /
+            'model_seg_generalist_light'
+        )
+
+        self.nnunetModelEmptyEnsemble = (
+            self.projectPath /
+            'test' /
+            '__test_files__' /
+            '__test_model__' /
+            'models' / 
+            'model_empty_ensemble'
+            )
+
 
         self.temp_files = []
 
@@ -98,3 +116,41 @@ class TestCore(object):
 
         expected_filename = 'image_seg-axon.png'
         assert Path(output_filename).name == expected_filename
+
+    # --------------extract_from_nnunet_prediction tests-------------- #
+    @pytest.mark.unit
+    def test_find_folds_light(self):
+        path_model = self.nnunetModelLight
+        model_type = 'light'
+
+        folds_avail = find_folds(path_model, model_type)
+
+        expected_folds_avail = ['all']
+
+        assert folds_avail == expected_folds_avail
+
+    @pytest.mark.unit
+    def test_find_folds_else_light(self):
+        path_model = self.nnunetModelLight
+        model_type = 'fake_light' # Just use the light model folder 
+                                  # already downloaded to probe the else case, 
+                                  # should still give ['all']
+
+        folds_avail = find_folds(path_model, model_type)
+
+        expected_folds_avail = ['all']
+
+        assert folds_avail == expected_folds_avail
+
+
+    @pytest.mark.unit
+    def test_find_folds_else_ensemble(self):
+        path_model = self.nnunetModelEmptyEnsemble
+        model_type = 'ensemble'
+
+        folds_avail = find_folds(path_model, model_type)
+        folds_avail.sort()
+
+        expected_folds_avail = ['0', '1', '2', '3', '4']
+
+        assert folds_avail == expected_folds_avail

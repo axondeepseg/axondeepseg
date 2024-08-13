@@ -86,6 +86,18 @@ def extract_from_nnunet_prediction(pred, pred_path, class_name, class_value) -> 
 
     return new_fname
 
+def find_folds(
+            path_model: Path,
+            model_type: Literal['light', 'ensemble']='light',
+            ) -> List:
+
+    if model_type == 'light':
+        folds_avail = ['all']
+    else:
+        folds_avail = [str(f).split('_')[-1] for f in path_model.glob('fold_*')]
+
+    return folds_avail
+
 def axon_segmentation(
                     path_inputs: List[Path],
                     path_model: Path,
@@ -110,12 +122,8 @@ def axon_segmentation(
     verbosity_level : int, optional
         Level of verbosity, by default 0.
     '''
-
     # find all available folds
-    if model_type == 'light':
-        folds_avail = ['all']
-    else:
-        folds_avail = [int(str(f).split('_')[-1]) for f in path_model.glob('fold_*')]
+    folds_avail = find_folds(path_model, model_type)
 
     # instantiate predictor
     predictor = nnUNetPredictor(
