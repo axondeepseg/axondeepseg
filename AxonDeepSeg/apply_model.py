@@ -36,8 +36,9 @@ def get_checkpoint_name(checkpoint_folder_path: Path) -> str:
     elif (checkpoint_folder_path / 'checkpoint_final.pth').exists():
         return 'checkpoint_final.pth'
     else:
-        # just return the first .pth file found
-        next((checkpoint_folder_path).glob('*.pth')).name
+        # Return checkpoint with most recent modification time
+        checkpoints_timesorted=sorted(checkpoint_folder_path.glob('*.pth'), key=os.path.getmtime)
+        return checkpoints_timesorted[-1].name
 
 
 def extract_from_nnunet_prediction(pred, pred_path, class_name, class_value) -> str:
