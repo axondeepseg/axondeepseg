@@ -288,4 +288,10 @@ class TestCore(object):
 
         assert Path('axondeepseg.log').exists()
 
+    @pytest.mark.integration
+    def test_main_cli_fails_for_negative_gpu(self):
 
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-i", str(Path('/file/does/not/exist/image.png')), "--gpu-id", "-5"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)

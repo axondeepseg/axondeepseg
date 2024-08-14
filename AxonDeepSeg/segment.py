@@ -241,7 +241,7 @@ def main(argv=None):
         required=False,
         type=int,
         help='Number representing the GPU ID for segmentation if available. Default: -1 (cpu).',
-        default=-1,
+        default=None,
     )
     ap._action_groups.reverse()
 
@@ -250,11 +250,13 @@ def main(argv=None):
     verbosity_level = int(args["verbose"])
     path_target_list = [Path(p) for p in args["imgpath"]]
     path_model = Path(args["model"]) if args["model"] else DEFAULT_MODEL_PATH
-    gpu_id = int(args["gpu_id"])
 
     # Check for available GPU IDs
-    if gpu_id >= 0:
+    if args["gpu_id"] is not None:
+        gpu_id = int(args["gpu_id"])
         ads.check_available_gpus(gpu_id)
+    else:
+        gpu_id = int(0)
 
     input_img_list = []
     input_dir_list = []
