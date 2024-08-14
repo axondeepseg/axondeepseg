@@ -295,3 +295,11 @@ class TestCore(object):
             AxonDeepSeg.segment.main(["-i", str(Path('/file/does/not/exist/image.png')), "--gpu-id", "-5"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
+
+    @pytest.mark.integration
+    def test_main_cli_fails_for_incorrect_file_extention(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-i", str(self.modelPath / 'dataset.json')])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 1)
