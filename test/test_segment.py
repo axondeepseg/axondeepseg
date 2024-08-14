@@ -9,7 +9,8 @@ import pytest
 from AxonDeepSeg.segment import (
     segment_folder, 
     segment_images,
-    get_model_type
+    get_model_type,
+    prepare_inputs
 )
 import AxonDeepSeg
 from config import axonmyelin_suffix, axon_suffix, myelin_suffix
@@ -80,6 +81,8 @@ class TestCore(object):
             'model_empty_ensemble'
             )
 
+        self.to_delete = []
+
     def teardown_method(self):
 
         testPath = Path(__file__).resolve().parent
@@ -118,6 +121,9 @@ class TestCore(object):
         for output_16bit in self.expected_image_16bit_output_files:
             if output_16bit.exists():
                 output_16bit.unlink()
+        
+        for file in self.to_delete:
+            file.unlink()
 
     # --------------segment_folder tests-------------- #
     @pytest.mark.unit
@@ -201,6 +207,54 @@ class TestCore(object):
         expected_model_type = 'ensemble'
 
         assert model_type == expected_model_type
+
+    # --------------prepare_inputs tests-------------- #
+    @pytest.mark.unit
+    def test_prepare_inputs_grayscale_to_1channel_valid(self):
+        path_imgs = [self.testPath / '__test_files__'/ '__test_demo_files__' / 'image.png']
+        file_format = '.png'
+        n_channels = 1
+        prepared_inputs = prepare_inputs(path_imgs, file_format, n_channels)
+
+        expected_inputs = path_imgs
+
+        assert prepared_inputs == expected_inputs
+
+    @pytest.mark.unit
+    def test_prepare_inputs_grayscale_to_3channel_exits(self):
+        path_imgs = [self.testPath / '__test_files__'/ '__test_demo_files__' / 'image.png']
+        file_format = '.png'
+        n_channels = 3
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            prepare_inputs(path_imgs, file_format, n_channels)
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
+
+    @pytest.mark.unit
+    def test_prepare_inputs_rgb_to_3channel_valid(self):
+        path_imgs = [self.testPath / '__test_files__'/ '__test_demo_files__' / 'image_axonmyelin_index.png']
+        file_format = '.png'
+        n_channels = 3
+        prepared_inputs = prepare_inputs(path_imgs, file_format, n_channels)
+
+        expected_inputs = path_imgs
+
+        assert prepared_inputs == expected_inputs
+
+    @pytest.mark.unit
+    def test_prepare_inputs_rgb_to_grayscale(self):
+        path_imgs = [self.testPath / '__test_files__'/ '__test_demo_files__' / 'image_axonmyelin_index.png']
+        file_format = '.png'
+        n_channels = 1
+        prepared_inputs = prepare_inputs(path_imgs, file_format, n_channels)
+
+        expected_inputs = path_imgs
+
+        assert prepared_inputs != expected_inputs
+        for file in prepared_inputs:
+            assert Path(file).exists
+            self.to_delete.append(Path(file))
 
 
     # --------------main (cli) tests-------------- #

@@ -98,20 +98,19 @@ def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int) -> 
         imshape = get_imshape(str(target)) # HWC format
         is_correct_shape = (imshape[-1] == n_channels)
         is_correct_format = (target.suffix == file_format)
-        needs_conversion = not is_correct_shape or not is_correct_format
-        
-        if (not is_correct_shape) and (n_channels != 1):
-            logger.error(f'{str(target)} has {imshape[-1]} channels, expected {n_channels}.')
-            sys.exit(2)
+        needs_conversion = (is_correct_shape == False) or (is_correct_format == False)
 
         if needs_conversion:
+            if n_channels != 1:
+                logger.error(f'{str(target)} has {imshape[-1]} channels, expected {n_channels}.')
+                sys.exit(2)
             im = imread(str(target))
             filename = target.stem
-            if not is_correct_shape:
+            if is_correct_shape == False:
                 logger.warning(f'{filename} will be converted to grayscale.')
                 # add grayscale suffix to avoid overwriting original file
                 target = Path(str(target.with_suffix('')) + '_grayscale' + file_format)
-            if not is_correct_format:
+            if is_correct_format == False:
                 logger.warning(f'{filename} will be converted in the expected {file_format} format.')
                 target = target.with_suffix(file_format)
             imwrite(str(target), im, file_format)
