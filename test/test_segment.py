@@ -1,9 +1,6 @@
 # coding: utf-8
 
 from pathlib import Path
-import shutil
-import tempfile
-import os
 import pytest
 
 from AxonDeepSeg.segment import (
@@ -190,6 +187,15 @@ class TestCore(object):
         
         for out_file in self.expected_image_16bit_output_files:
             assert out_file.exists()
+
+
+    @pytest.mark.unit
+    def test_segment_image_exits_for_nonexistent_file(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.segment.main(["-i", str(Path('/image/does/not/exist/image.png'))])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
 
     # --------------get_model_type tests-------------- #
     @pytest.mark.unit
