@@ -90,7 +90,22 @@ def find_folds(
             path_model: Path,
             model_type: Literal['light', 'ensemble']='light',
             ) -> List:
+    '''
+    For a given model, find the folders containing the folds
 
+    Parameters
+    ----------
+    path_model : pathlib.Path
+        Path to the folder model
+    model_type :  Literal['light', 'ensemble'], optional
+        Type of model, by default 'light'.       
+
+    Returns
+    -------
+    List
+        List of paths to the folds folders.
+    '''
+    
     if model_type == 'light':
         folds_avail = ['all']
     else:
