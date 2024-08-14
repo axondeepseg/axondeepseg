@@ -27,13 +27,6 @@ class TestCore(object):
             'model_seg_generalist_light'
             )
 
-        self.modelPathTEM = (
-            self.projectPath /
-            'AxonDeepSeg' /
-            'models' /
-            'model_seg_mouse_axon-myelin_tem'
-            )
-
         self.imageFolderPath = (
             self.testPath /
             '__test_files__' /
@@ -44,29 +37,11 @@ class TestCore(object):
         )
 
         self.imagePath = self.imageFolderPath / 'image.png'
-        self.otherImagePath = self.imageFolderPath / 'image_2.png'
 
         self.imageFolderPathWithPixelSize = (
             self.testPath /
             '__test_files__' /
             '__test_segment_files_with_pixel_size__'
-            )
-
-        self.imagePathWithPixelSize = self.imageFolderPathWithPixelSize / 'image.png'
-
-
-        self.imageZoomFolderPathWithPixelSize = (
-            self.testPath /
-            '__test_files__' /
-            '__test_segment_zoom__'
-            )
-    
-        self.imageZoomPathWithPixelSize = self.imageZoomFolderPathWithPixelSize / 'image.png'
-
-        self.imageZoomFolderWithPixelSize = (
-            self.testPath /
-            '__test_files__' /
-            '__test_segment_folder_zoom__'
             )
 
         self.image16bit_folder = (
@@ -88,8 +63,6 @@ class TestCore(object):
             self.image16bit_folder / ('image' + str(axonmyelin_suffix)),
             self.image16bit_folder / 'image.png',    # TIF image should be converted to PNG
         ]
-
-        self.statsFilename = 'model_statistics_validation.json'
 
         self.nnunetModelLight = (
             self.projectPath /

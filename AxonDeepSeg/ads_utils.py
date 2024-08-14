@@ -5,8 +5,6 @@ AxonDeepSeg utilities module.
 import os
 import sys
 from pathlib import Path
-import configparser
-from distutils.util import strtobool
 import cgi
 import tempfile
 import zipfile
