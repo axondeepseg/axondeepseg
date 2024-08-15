@@ -248,35 +248,16 @@ Segment a single image
 
 To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image **'77.png'** of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png
 
-The script will use the explicitely specified size argument (here, 0.07) for the segmentation. If no pixel size is provided in the arguments, it will automatically read the image resolution encoded in the file **'pixel_size_in_micrometer.txt'** if that file exists in the folder containing the image to segment.
 The segmented acquisition will be saved in the same folder as the acquisition image, with the suffix **'_seg-axonmyelin.png'**, in *png* format, along with the binary axon and myelin segmentation masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). In our example, the following output files will be generated: **'77_seg-axonmyelin.png'**, **'77_seg-axon.png'** and **'77_seg-myelin.png'**.
-
-To segment the same image by using the **'pixel_size_in_micrometer.txt'** file in the folder (i.e. not specifying the pixel size as argument in the command), use the following command::
-
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png
 
 Segment multiple images of the same resolution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
+To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'**, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ -s 0.07
-
-To segment multiple images of the same folder and of the same resolution by using the **'pixel_size_in_micrometer.txt'** file in the folder (i.e. not specifying the pixel size as argument in the command), use the following folder structure::
-
-    folder_with_samples/
-    ├── image_1.png
-    ├── image_2.png
-    ├── image_3.png
-    ├── ...
-    └── pixel_size_in_micrometer.txt
-
-
-Then, use the following command::
-
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/
 
 Please note that when using ``axondeepseg``, a file called *axondeepseg.log* will be saved in the current working directory. The console output will be saved in this file so you can review it later (useful to process large folders).
 
@@ -285,7 +266,7 @@ Segment images from multiple folders
 
 To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
 Morphometrics
 -------------
