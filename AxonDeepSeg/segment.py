@@ -240,7 +240,7 @@ def main(argv=None):
         dest="gpu_id",
         required=False,
         type=int,
-        help='Number representing the GPU ID for segmentation if available. Default: -1 (cpu).',
+        help='Number representing the GPU ID for segmentation if available. Default: None (cpu).',
         default=None,
     )
     ap._action_groups.reverse()

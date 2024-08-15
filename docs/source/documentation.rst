@@ -222,24 +222,12 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 **Required arguments:**
 
--t MODALITY            
-                    Type of acquisition to segment.
-
-                        **SEM**: scanning electron microscopy samples. 
-
-                        **TEM**: transmission electron microscopy samples.
-
-                        **BF**: bright field optical microscopy samples.
-
 -i IMGPATH
                     Path to the image to segment or path to the folder where the image(s) to segment is/are located.
 
 **Optional arguments:**
 
 -m MODEL            Folder where the model is located, if different from the default model.
-
--s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
-                    If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
 
 -v VERBOSITY        
                     Verbosity level. 
@@ -248,17 +236,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
                         **1**: Developer mode. Shows more information on the terminal, useful for debugging.. 
 
---overlap OVERLAP   Overlap value (in pixels) of the patches when doing the segmentation.
-                    Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 48. Recommended range of values: [10-100]. 
-
--z ZOOM             Zoom factor.
-                    When applying the model, the size of the segmentation patches relative to the image size will change according to this factor.
-
---no-patch          Flag to segment the image without using patches.
-                    The "no-patch" flag supersedes the "overlap" flag.
-                    This option could potentially produce better results but may not be suitable with large images depending on computer RAM capacity.
-
---gpu-id GPU_ID     Number representing the GPU ID for segmentation if available. Default: 0.
+--gpu-id GPU_ID     Number representing the GPU ID for segmentation if available. Default: None.
 
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
