@@ -198,11 +198,11 @@ Here are the details of all the models currently supported by AxonDeepSeg:
 * **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`_.
 * **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`_.
 
-To download these models, you must first have AxonDeepSeg installed. Afterwards, 
+To download these models, you must first have AxonDeepSeg installed. Afterwards, run::
 
     download_model -m <model name> -t <model type>
 
-where <model name> is the full name (e.g. *model_seg_rat_axon-myelin_SEM*) and <model type> is either *light* or *ensemble*. To view available models and their details, run:
+where <model name> is the full name (e.g. *model_seg_rat_axon-myelin_SEM*) and <model type> is either *light* or *ensemble*. To view available models and their details, run::
 
     download_model --list
 
