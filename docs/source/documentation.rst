@@ -32,11 +32,9 @@ Installation
 ============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
-.. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system. However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
-
 Miniconda
 ---------
-Starting with version 4.0.0, AxonDeepSeg is only supported using Python 3.8.x. Although your system may already have a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions for this recommended installation setup.
+Although your system may already have a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions for this recommended installation setup.
 
 First, verify if you already have an AxonDeepSeg-compatible version of Miniconda or Anaconda properly installed and is in your systems path. 
 
@@ -310,28 +308,6 @@ Segment images from multiple folders
 To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
     axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
-
-Segment images using a zoom factor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Sometimes, the quality of the segmentation can be improved by changing the size of the segmentation patches so that, for example, the size of the axons within the segmentation patches are closer to the size that they were during the training of the model. 
-This is why we provide the **-z** argument, which lets you specify a zoom factor to adjust the segmentation patch sizes relative to the image size. Note that this option also works for multiple images or multiple folders. 
-
-For example, using a zoom value of 2.0 will make the patches 2x smaller relative to the image ::
-
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -z 2.0
-
-Using the zoom factor can also be useful when your image size is too small for a given resolution, as our segmentation models resample images to a standard pixel size. Using the zoom factor effectively enlarges your image so that the patches can then fit inside it. If you encounter this issue but have not set a zoom factor, an error message will appear informing you of the minimum zoom factor you should use.
-
-Segment an image using a range of zoom factors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-As mentioned above, choosing an appropriate zoom factor can enhance the quality of your segmentations. To facilitate the process of finding the best zoom value, we provide a feature that sweeps a range of zoom factors. 
-To use the zoom factor sweep on a single image, you can adjust the range of values to sweep using the **-r** argument and the number of equidistant values to sample within this range using the **-l** argument. The lower bound of the range is inclusive whereas the upper bound is exclusive.
-
-For example, using a range of 0.5 to 3 and a length of 5 on the the **'77.png'** image image will create a folder called **'77_sweep'** in that folder containing segmentations for zoom factors 0.5, 1.0, 1.5, 2.0, and 2.5::
-
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.13 -r 0.5 3.0 -l 5 
 
 Morphometrics
 -------------
