@@ -630,7 +630,7 @@ GIMP software
 Training Models
 ===============
 
-To train your own model for use in AxonDeepSeg, please refer to the `IVADOMED documentation <https://ivadomed.org/tutorials/two_class_microscopy_seg_2d_unet.html>`_ on model training for two-class microscopy images.
+To train your own model for use in AxonDeepSeg, please refer to the README and accompanying code of this repository `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`_.
 
 Help
 ====
