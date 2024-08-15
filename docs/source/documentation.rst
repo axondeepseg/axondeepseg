@@ -184,12 +184,27 @@ Below is a short tutorial describing how to use the AxonDeepSeg plugin for Napar
 Existing models
 ===============
 
-Three models are available and shipped together with the installation package, so you don't need to install them separately.
-The three models are described below:
+The **generalist** model is shipped together with the installation package and is recommended for initial use of the software.
 
-* **SEM** model (*model_seg_rat_axon-myelin_sem*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
-* **TEM** model (*model_seg_mouse_axon-myelin_tem*), that works at a resolution of 0.01 micrometer per pixel. For more information, please visit the `TEM model repository <https://github.com/axondeepseg/default-TEM-model>`_.
-* **BF** (bright-field) model (*model_seg_rat_axon-myelin_bf*, formerly called *model_seg_pns_bf*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `BF model repository <https://github.com/axondeepseg/default-BF-model>`_.
+Several other more specialized models are available.
+
+For each model, a *light* and/or *ensemble* version is available. *Light* models are smaller size, whereas the *ensemble* versions may have slightly better segmentation performance.
+
+Here are the details of all the models currently supported by AxonDeepSeg:
+
+* **generalist** model (*model_seg_generalist*): Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data. For more information, please visit the `generalist model repository <https://github.com/axondeepseg/model_seg_generalist>`_.
+* **dedicated-SEM** model (*model_seg_rat_axon-myelin_SEM*): Axon and myelin segmentation model trained on Scanning Electron Microscopy data. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
+* **dedicated-BF** (bright-field) model (*model_seg_generalist_BF*): Axon and myelin segmentation model trained on Bright-Field data. For more information, please visit the `BF release of the generalist model repository <https://github.com/axondeepseg/model_seg_generalist/releases/tag/r20240416>`_.
+* **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`_.
+* **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`_.
+
+To download these models, you must first have AxonDeepSeg installed. Afterwards, 
+
+    download_model -m <model name> -t <model type>
+
+where <model name> is the full name (e.g. *model_seg_rat_axon-myelin_SEM*) and <model type> is either *light* or *ensemble*. To view available models and their details, run:
+
+    download_model --list
 
 Using AxonDeepSeg
 =================
