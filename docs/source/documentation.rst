@@ -647,6 +647,8 @@ Training Models
 
 To train your own model for use in AxonDeepSeg, please refer to the README and accompanying code of this repository `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`_.
 
+.. NOTE :: The AxonDeepSeg development team is able to assist you with training models on your data if you do not possess the computer hardware or deep learning skills to do it yourself. When doing so, we prefer to make your newly trained model available for anyone to use with AxonDeepSeg, and if there is a susbtantual amount of work or innovation made in the process we may also ask for co-authorship from some of our lab members that contributed to this work. Please reach out to us to schedule a video-call if you'd like our assistance and to discuss more.
+
 Help
 ====
 
