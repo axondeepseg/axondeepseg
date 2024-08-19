@@ -1,16 +1,16 @@
 @echo off
-rem Installation script for SCT on native Windows platforms
+rem Installation script for ADS on native Windows platforms
 rem
 rem Copyright (c) 2022 Polytechnique Montreal <www.neuro.polymtl.ca>
 rem License: see the file LICENSE
 rem
-rem Usage: install_sct.bat <version>
+rem Usage: install_ads.bat <version>
 rem e.g.
-rem        install_sct.bat 5.5
+rem        install_ads.bat 5.5
 
 echo:
 echo *******************************
-echo * Welcome to SCT installation *
+echo * Welcome to ADS installation *
 echo *******************************
 
 rem This option is needed for expanding !git_ref!, which is set (*and expanded*!) inside the 'if' statement below.
@@ -28,7 +28,7 @@ rem hasn't refreshed their terminal. Manually modifying the PATH is a bit of a h
 rem been installed somewhere else, but if this mitigates a user post on the forum, this will save us some dev time.
 PATH=%PATH%;C:\Program Files\Git
 git --version >nul 2>&1 || (
-    echo ### git not found. Make sure that git is installed ^(and a fresh Command Prompt window has been opened^) before running the SCT installer.
+    echo ### git not found. Make sure that git is installed ^(and a fresh Command Prompt window has been opened^) before running the ADS installer.
     goto error
 )
 
@@ -38,47 +38,47 @@ set git_ref=master
 rem Check to see if the PWD contains the project source files (using `__init__.py` as a proxy for the entire source dir)
 rem If it exists, then we can reliably access source files (e.g. `requirements-freeze.txt`) from the PWD.
 if exist AxonDeepSeg\__init__.py (
-  set SCT_SOURCE=%cd%
+  set ADS_SOURCE=%cd%
 rem If __init__.py isn't present, then the installation script is being run by itself (i.e. without source files).
-rem So, we need to clone SCT to a TMPDIR to access the source files, and update SCT_SOURCE accordingly.
+rem So, we need to clone ADS to a TMPDIR to access the source files, and update ADS_SOURCE accordingly.
 ) else (
-  set SCT_SOURCE=%TMP_DIR%\axondeepseg
+  set ADS_SOURCE=%TMP_DIR%\axondeepseg
   echo:
-  echo ### Source files not present. Downloading source files ^(@ !git_ref!^) to !SCT_SOURCE!...
-  git clone -b !git_ref! --single-branch --depth 1 https://github.com/axondeepseg/axondeepseg.git !SCT_SOURCE!
+  echo ### Source files not present. Downloading source files ^(@ !git_ref!^) to !ADS_SOURCE!...
+  git clone -b !git_ref! --single-branch --depth 1 https://github.com/axondeepseg/axondeepseg.git !ADS_SOURCE!
   rem Since we're git cloning into a TMPDIR, this can never be an "in-place" installation, so we force "package" instead.
-  set SCT_INSTALL_TYPE=package
+  set ADS_INSTALL_TYPE=package
 )
 
 rem Get installation type if not already specified
-if [%SCT_INSTALL_TYPE%]==[] (
+if [%ADS_INSTALL_TYPE%]==[] (
   rem The file 'requirements-freeze.txt` only exists for stable releases
-  if exist %SCT_SOURCE%\requirements-freeze.txt (
-    set SCT_INSTALL_TYPE=package
+  if exist %ADS_SOURCE%\requirements-freeze.txt (
+    set ADS_INSTALL_TYPE=package
   rem If it doesn't exist, then we can assume that a dev is performing an in-place installation from master
   ) else (
-    set SCT_INSTALL_TYPE=in-place
+    set ADS_INSTALL_TYPE=in-place
   )
 )
 
-rem Fetch the version of SCT from the source file
-for /F %%g IN (%SCT_SOURCE%\AxonDeepSeg\__init__.py) do (set SCT_VERSION=%%g:~15,20%)
+rem Fetch the version of ADS from the source file
+for /F %%g IN (%ADS_SOURCE%\AxonDeepSeg\__init__.py) do (set ADS_VERSION=%%g:~15,20%)
 
 echo:
-echo ### SCT version ......... %SCT_VERSION%
-echo ### Installation type ... %SCT_INSTALL_TYPE%
+echo ### ADS version ......... %ADS_VERSION%
+echo ### Installation type ... %ADS_INSTALL_TYPE%
 
 rem if installing from git folder, then becomes default installation folder
-if %SCT_INSTALL_TYPE%==in-place (
-  set SCT_DIR=%SCT_SOURCE%
+if %ADS_INSTALL_TYPE%==in-place (
+  set ADS_DIR=%ADS_SOURCE%
 ) else (
-  set SCT_DIR=%USERPROFILE%\sct_%SCT_VERSION%
+  set ADS_DIR=%USERPROFILE%\ads_%ADS_VERSION%
 )
 
 rem Allow user to set a custom installation directory
-:while_loop_sct_dir
+:while_loop_ads_dir
   echo:
-  echo ### SCT will be installed here: [%SCT_DIR%]
+  echo ### ADS will be installed here: [%ADS_DIR%]
   set keep_default_path=yes
   :while_loop_path_agreement
     set /p keep_default_path="### Do you agree? [y]es/[n]o: "
@@ -88,73 +88,73 @@ rem Allow user to set a custom installation directory
   echo %keep_default_path% | findstr /b [Yy] >nul 2>&1
   if %errorlevel% EQU 0 (
     rem user accepts default path, so exit loop
-    goto :done_while_loop_sct_dir
+    goto :done_while_loop_ads_dir
   )
 
   rem user enters new path
   echo:
   echo ### Choose install directory.
-  set /p new_install="### Warning^! Give full path ^(e.g. C:\Users\username\sct_v3.0^): "
+  set /p new_install="### Warning^! Give full path ^(e.g. C:\Users\username\ads_v3.0^): "
 
   rem Check user-selected path for spaces
   if not "%new_install%"=="%new_install: =%" (
        echo ### WARNING: Install directory %new_install% contains spaces.
-       echo ### SCT uses conda, which does not permit spaces in installation paths.
+       echo ### ADS uses conda, which does not permit spaces in installation paths.
        echo ### More details can be found here: https://github.com/ContinuumIO/anaconda-issues/issues/716
        echo:
-       goto :while_loop_sct_dir
+       goto :while_loop_ads_dir
   )
 
   rem Validate the user's choice of path
   if exist %new_install% (
-    rem directory exists, so update SCT_DIR and exit loop
+    rem directory exists, so update ADS_DIR and exit loop
     echo ### WARNING: '%new_install%' already exists. Files will be overwritten.
-    set SCT_DIR=%new_install%
-    goto :done_while_loop_sct_dir
+    set ADS_DIR=%new_install%
+    goto :done_while_loop_ads_dir
   ) else (
     if [%new_install%]==[]  (
       rem If no input, asking again, and again, and again
-      goto :while_loop_sct_dir
+      goto :while_loop_ads_dir
     ) else (
-      set SCT_DIR=%new_install%
-      goto :done_while_loop_sct_dir
+      set ADS_DIR=%new_install%
+      goto :done_while_loop_ads_dir
     )
   )
-:done_while_loop_sct_dir
+:done_while_loop_ads_dir
 
 rem Create directory
-if not exist %SCT_DIR% (
-  mkdir %SCT_DIR% || goto error
+if not exist %ADS_DIR% (
+  mkdir %ADS_DIR% || goto error
 )
 
 rem Copy files to destination directory
 echo:
-if not %SCT_DIR%==%SCT_SOURCE% (
-  echo ### Copying source files from %SCT_SOURCE% to %SCT_DIR%
-  xcopy /s /e /q /y %SCT_SOURCE% %SCT_DIR% || goto error
+if not %ADS_DIR%==%ADS_SOURCE% (
+  echo ### Copying source files from %ADS_SOURCE% to %ADS_DIR%
+  xcopy /s /e /q /y %ADS_SOURCE% %ADS_DIR% || goto error
 ) else (
   echo ### Skipping copy of source files ^(source and destination folders are the same^)
 )
 
 rem Clean old install setup in bin/ if existing
-if exist %SCT_DIR%\bin\ (
-  echo ### Removing sct and isct softlink inside the SCT directory...
-  del %SCT_DIR%\bin\axondeepseg_* || goto error
-  del %SCT_DIR%\bin\download_* || goto error
+if exist %ADS_DIR%\bin\ (
+  echo ### Removing axondeepseg softlink inside the ADS directory...
+  del %ADS_DIR%\bin\axondeepseg_* || goto error
+  del %ADS_DIR%\bin\download_* || goto error
 )
 rem Remove old python folder
-if exist %SCT_DIR%\python\ (
-  echo ### Removing existing 'python' folder inside the SCT directory...
-  rmdir /s /q %SCT_DIR%\python\ || goto error
+if exist %ADS_DIR%\python\ (
+  echo ### Removing existing 'python' folder inside the ADS directory...
+  rmdir /s /q %ADS_DIR%\python\ || goto error
 )
 rem Remove old '.egg-info` folder created by editable installs
-if exist %SCT_DIR%\AxonDeepSeg.egg-info\ (
-  echo ### Removing existing '.egg-info' folder inside the SCT directory...
-  rmdir /s /q %SCT_DIR%\AxonDeepSeg.egg-info\ || goto error
+if exist %ADS_DIR%\AxonDeepSeg.egg-info\ (
+  echo ### Removing existing '.egg-info' folder inside the ADS directory...
+  rmdir /s /q %ADS_DIR%\AxonDeepSeg.egg-info\ || goto error
 )
 
-rem Move into the SCT installation directory
-pushd %SCT_DIR% || goto error
+rem Move into the ADS installation directory
+pushd %ADS_DIR% || goto error
 
 rem Install portable miniconda instance. (Command source: https://github.com/conda/conda/issues/1977)
 echo:
@@ -164,49 +164,49 @@ echo:
 echo ### Installing portable copy of Miniconda...
 start /wait "" %TMP_DIR%\miniconda.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /NoRegistry=1 /S /D=%cd%\python
 
-rem Create and activate miniconda environment to install SCT into
+rem Create and activate miniconda environment to install ADS into
 echo:
 echo ### Using Conda to create virtual environment...
-python\Scripts\conda create -y -p python\envs\venv_sct python=3.11 || goto error
-CALL python\Scripts\activate.bat python\envs\venv_sct || goto error
+python\Scripts\conda create -y -p python\envs\venv_ads python=3.11 || goto error
+CALL python\Scripts\activate.bat python\envs\venv_ads || goto error
 echo Virtual environment created and activated successfully!
 
-rem Install SCT and its requirements
+rem Install ADS and its requirements
 if exist requirements-freeze.txt (
   set requirements_file=requirements-freeze.txt || goto error
 ) else (
   set requirements_file=requirements.txt || goto error
 )
 echo:
-echo ### Installing SCT and its dependencies from %requirements_file%...
+echo ### Installing ADS and its dependencies from %requirements_file%...
 rem Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
-python\envs\venv_sct\python -m pip install -U "pip^!=21.2.*" || goto error
-python\envs\venv_sct\Scripts\pip install -r %requirements_file% || goto error
-python\envs\venv_sct\Scripts\pip install -e . --use-pep517 || goto error
+python\envs\venv_ads\python -m pip install -U "pip^!=21.2.*" || goto error
+python\envs\venv_ads\Scripts\pip install -r %requirements_file% || goto error
+python\envs\venv_ads\Scripts\pip install -e . --use-pep517 || goto error
 
 rem Install external dependencies
 echo:
 echo ### Downloading model files and test data...
-python\envs\venv_sct\Scripts\download_models
-python\envs\venv_sct\Scripts\download_tests
+python\envs\venv_ads\Scripts\download_models
+python\envs\venv_ads\Scripts\download_tests
 
-rem Copying SCT scripts to an isolated folder (so we can add scripts to the PATH without adding the entire venv_sct)
+rem Copying ADS scripts to an isolated folder (so we can add scripts to the PATH without adding the entire venv_ads)
 echo:
-echo ### Copying SCT's CLI scripts to %CD%\bin\
-xcopy %CD%\python\envs\venv_sct\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
-xcopy %CD%\python\envs\venv_sct\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
+echo ### Copying ADS's CLI scripts to %CD%\bin\
+xcopy %CD%\python\envs\venv_ads\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
+xcopy %CD%\python\envs\venv_ads\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
 
 echo ### Checking installation...
-python\envs\venv_sct\Scripts\axondeepseg_test
+python\envs\venv_ads\Scripts\axondeepseg_test
 
 rem Give further instructions that the user add the Scripts directory to their PATH
 echo:
 echo ### Installation finished!
 echo:
-echo To use SCT's command-line scripts in Command Prompt, please follow these instructions:
+echo To use ADS's command-line scripts in Command Prompt, please follow these instructions:
 echo:
 echo 1. Open the Start Menu -^> Type 'edit environment' -^> Open 'Edit environment variables for your account'
-echo 2. Click 'New', then enter 'SCT_DIR' for the variable name. For the value, copy and paste this directory:
+echo 2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste this directory:
 echo:
 echo    %CD%
 echo:
@@ -215,10 +215,10 @@ echo 4. Click 'New', then copy and paste this directory:
 echo:
 echo    %CD%\bin\
 echo:
-echo 5. Click 'OK' three times. You can now access SCT's scripts in the Command Prompt.
+echo 5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 echo:
-echo If you have any questions or concerns, feel free to create a new topic on SCT's forum:
-echo   --^> https://forum.spinalcordmri.org/c/sct
+echo If you have any questions or concerns, feel free to create a new topic on ADS's forum:
+echo   --^> https://github.com/axondeepseg/axondeepseg/discussions
 
 rem Return to initial directory and deactivate the virtual environment
 goto exit
@@ -227,8 +227,8 @@ goto exit
 set cached_errorlevel=%errorlevel%
 echo:
 echo Installation failed with error code %cached_errorlevel%.
-echo Please copy and paste the installation log in a new topic on SCT's forum:
-echo   --^> https://forum.spinalcordmri.org/c/sct
+echo Please copy and paste the installation log in a new topic on ADS's forum:
+echo   --^> https://github.com/axondeepseg/axondeepseg/discussions
 
 :exit
 if "%cached_errorlevel%"=="" set cached_errorlevel=0
