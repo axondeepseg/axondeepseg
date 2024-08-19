@@ -19,7 +19,6 @@
 #  -h   Show this help
 #  -i   Install in-place; this is the default when working from git.
 #  -y   Install without interruption with 'yes' as default answer
-#  -g   Install with GPU version of PyTorch ('no' by default)
 #  -d   Prevent the (re)-installation of the data files (models, test data)
 #  -c   Prevent checks from being run to validate the installation
 #  -v   Full verbose
@@ -50,7 +49,6 @@ MACOSSUPPORTED="13"  # Minimum version of macOS 10 supported
 # CLI options
 ADS_INSTALL_TYPE=""
 NONINTERACTIVE=""
-INSTALL_GPU_TORCH=""
 NO_DATA_INSTALL=""
 NO_INSTALL_VALIDATION=""
 # Default value: 'master', however this value is updated on stable release branches.
@@ -360,10 +358,6 @@ while getopts ":iygdcvh" opt; do
     echo " non-interactive mode"
     NONINTERACTIVE="yes"
     ;;
-  g)
-    echo " ADS will be installed with GPU torch"
-    INSTALL_GPU_TORCH="yes"
-    ;;
   d)
     echo " data directory will not be (re)-installed"
     NO_DATA_INSTALL="yes"
@@ -638,16 +632,6 @@ else
   # Not a package
   print info "Using requirements.txt (git installation)"
   REQUIREMENTS_FILE="requirements.txt"
-fi
-# If installer is run with GPU option, then exclude the CPU "--extra-index-url" line, resulting in GPU torch being used.
-# NB: This won't be sufficient on Windows, but since NeuroPoly's workstations are GPU-based, we can start here for now.
-if [[ "$INSTALL_GPU_TORCH" == "yes" ]]; then
-  if [[ $OS == osx ]]; then
-    echo "Ignoring '-g' option on macOS: CUDA is not supported by PyTorch on this system"
-  else
-    grep -v "download.pytorch.org/whl/cpu" "$REQUIREMENTS_FILE" > "$TMP_DIR/requirements_gpu.txt"
-    REQUIREMENTS_FILE="$TMP_DIR/requirements_gpu.txt"
-  fi
 fi
 (
   # We use "--ignore-installed" to preserve the version of `certifi` installed into the conda
