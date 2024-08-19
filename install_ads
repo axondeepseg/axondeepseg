@@ -45,7 +45,7 @@ shopt -s failglob # error if a glob doesn't find any files, instead of remaining
 # Where tmp file are stored
 TMP_DIR="$(mktemp -d 2>/dev/null || mktemp -d -t 'TMP_DIR')"
 DATA_DIR="data"
-PYTHON_DIR="python"
+CONDA_DIR="ads_conda"
 BIN_DIR="bin"
 MACOSSUPPORTED="13"  # Minimum version of macOS 10 supported
 
@@ -537,10 +537,10 @@ if [[ -x "$ADS_DIR/$BIN_DIR" ]]; then
   find "$ADS_DIR/$BIN_DIR" -type l -name 'axondeepseg_*' -exec rm {} \;
   find "$ADS_DIR/$BIN_DIR" -type l -name 'download_*' -exec rm {} \;
 fi
-# Remove old python folder
+# Remove old conda folder
 if [[ -x "$ADS_DIR/$BIN_DIR" ]]; then
-  run rm -rf "$ADS_DIR/$PYTHON_DIR"
-  run mkdir -p "$ADS_DIR/$PYTHON_DIR"
+  run rm -rf "$ADS_DIR/$CONDA_DIR"
+  run mkdir -p "$ADS_DIR/$CONDA_DIR"
 fi
 # Remove old '.egg-info` folder created by editable installs
 if [[ -x "$ADS_DIR"/AxonDeepSeg.egg-info ]]; then
@@ -597,32 +597,32 @@ esac
 
 # Run conda installer
 print info "Installing Miniconda..."
-run bash "$TMP_DIR/miniconda.sh" -p "$ADS_DIR/$PYTHON_DIR" -b -f
+run bash "$TMP_DIR/miniconda.sh" -p "$ADS_DIR/$CONDA_DIR" -b -f
 
 # Workaround for WSL "HTTP 000 Connection Failed" error
 # See: https://github.com/conda/conda/issues/9948#issuecomment-909989810
 # Syntax explanation: https://stackoverflow.com/a/6085237
-find "$ADS_DIR/$PYTHON_DIR" -type f -exec touch {} +
+find "$ADS_DIR/$CONDA_DIR" -type f -exec touch {} +
 
 # create conda environment
 print info "Creating conda environment..."
 # NB: We use an absolute path (-p) rather than a relative name (-n) to better isolate the conda environment
-python/bin/conda create -y -p "$ADS_DIR/$PYTHON_DIR/envs/venv_ads" python=3.11
+"$CONDA_DIR"/bin/conda create -y -p "$ADS_DIR/$CONDA_DIR"/envs/venv_ads python=3.11
 
 # Reapply the touch fix to avoid `pip` connection issues on WSL
-find "$ADS_DIR/$PYTHON_DIR" -type f -exec touch {} +
+find "$ADS_DIR/$CONDA_DIR" -type f -exec touch {} +
 
 # make sure that there is no conflict with local python install by making venv_ads an isolated environment.
 # For more information, see:
 # * Issue details: https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3067
 # * Fix details: https://github.com/conda/conda/issues/7173#issuecomment-980496682
-echo "include-system-site-packages = false" > "$ADS_DIR/$PYTHON_DIR/envs/venv_ads/pyvenv.cfg"
+echo "include-system-site-packages = false" > "$ADS_DIR/$CONDA_DIR/envs/venv_ads/pyvenv.cfg"
 
 # activate miniconda
 # shellcheck disable=SC1091
-source python/etc/profile.d/conda.sh
+source "$CONDA_DIR/etc/profile.d/conda.sh"
 set +u #disable safeties, for conda is not written to their standard.
-conda activate "$ADS_DIR/$PYTHON_DIR/envs/venv_ads"
+conda activate "$ADS_DIR/$CONDA_DIR/envs/venv_ads"
 set -u # reactivate safeties
 
 if [[ $OS == linux ]]; then
@@ -633,7 +633,7 @@ if [[ $OS == linux ]]; then
 fi
 
 # Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
-python/envs/venv_ads/bin/python -m pip install -U "pip!=21.2.*"
+"$CONDA_DIR"/envs/venv_ads/bin/python -m pip install -U "pip!=21.2.*"
 
 ## Install the axondeepseg into the Conda venv
 print info "Installing Python dependencies..."
@@ -662,19 +662,19 @@ fi
   # We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
   # This is necessary in order to install 'macosx_11_0' wheels. See also:
   # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
-  SYSTEM_VERSION_COMPAT=0 python/envs/venv_ads/bin/pip install -r "$REQUIREMENTS_FILE" --ignore-installed certifi &&
+  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -r "$REQUIREMENTS_FILE" --ignore-installed certifi &&
   print info "Installing axondeepseg..." &&
-  python/envs/venv_ads/bin/pip install -e .
+  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e .
 ) ||
   die "Failed running pip install: $?"
 
 ## Create launchers for Python scripts
 print info "Creating launchers for Python scripts..."
 mkdir -p "$ADS_DIR/$BIN_DIR"
-for file in "$ADS_DIR"/python/envs/venv_ads/bin/*axondeepseg*; do
+for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*axondeepseg*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
-for file in "$ADS_DIR"/python/envs/venv_ads/bin/*download*; do
+for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*download*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
 
@@ -707,7 +707,7 @@ else
 fi
 
 # Install deep learning models
-# python/envs/venv_ads/bin/python -c 'import axondeepseg.deepseg.models; axondeepseg.deepseg.models.install_default_models()'
+# $CONDA_DIR/envs/venv_ads/bin/python -c 'import axondeepseg.deepseg.models; axondeepseg.deepseg.models.install_default_models()'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
