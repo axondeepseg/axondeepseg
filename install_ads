@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# This is the spinalcord toolbox (SCT) installer
+# This is the AxonDeepSeg (ADS) installer
 # It downloads the Conda (https://conda.pydata.org/) version
-# of python and installs the SCT requirements over it
+# of python and installs the ADS requirements over it
 #
-# The SCT can be installed in the location where you download it. If you choose to do so,
+# The ADS can be installed in the location where you download it. If you choose to do so,
 # do not delete the source code or you will delete the installation too!
 #
 # If you run the installer as super user, the default install is /opt,
@@ -13,7 +13,7 @@
 # installation is successful.
 #
 # USAGE
-#   ./install_sct [-h] [-i] [-y] [-g] [-d] [-b] [-v]
+#   ./install_ads [-h] [-i] [-y] [-g] [-d] [-b] [-v]
 #
 # OPTIONS
 #  -h   Show this help
@@ -21,7 +21,7 @@
 #  -y   Install without interruption with 'yes' as default answer
 #  -g   Install with GPU version of PyTorch ('no' by default)
 #  -d   Prevent the (re)-installation of the data/ directory
-#  -b   Prevent the (re)-installation of the SCT binaries files
+#  -b   Prevent the (re)-installation of the ADS binaries files
 #  -c   Prevent checks from being run to validate the installation
 #  -v   Full verbose
 #
@@ -29,7 +29,7 @@
 # License: see the file LICENSE
 
 
-( # | tee install_sct_log.txt
+( # | tee install_ads_log.txt
 
 # Change directory to where the script is, for the duration of the script.
 cd "$(dirname "$0")" || exit 1
@@ -50,14 +50,14 @@ BIN_DIR="bin"
 MACOSSUPPORTED="13"  # Minimum version of macOS 10 supported
 
 # CLI options
-SCT_INSTALL_TYPE=""
+ADS_INSTALL_TYPE=""
 NONINTERACTIVE=""
 INSTALL_GPU_TORCH=""
 NO_DATA_INSTALL=""
-NO_SCT_BIN_INSTALL=""
+NO_ADS_BIN_INSTALL=""
 NO_INSTALL_VALIDATION=""
 # Default value: 'master', however this value is updated on stable release branches.
-SCT_GIT_REF="master"
+ADS_GIT_REF="master"
 
 # ======================================================================================================================
 # FUNCTIONS
@@ -122,9 +122,9 @@ function finish() {
     echo ""
   else
     print error "Installation failed!\n
-Please find the file \"$PWD/install_sct_log.txt\",
-then upload it as a .txt attachment in a new topic on SCT's forum:
---> https://forum.spinalcordmri.org/c/sct"
+Please find the file \"$PWD/install_ads_log.txt\",
+then upload it as a .txt attachment in a new topic on AxonDeepSeg's forum:
+--> https://github.com/axondeepseg/axondeepseg/discussions"
   fi
   # clean tmp_dir
   rm -rf "$TMP_DIR"
@@ -178,12 +178,12 @@ function fetch_os_type() {
   fi
 }
 
-# Checks if the necessary tools for SCT are installed on the machine
+# Checks if the necessary tools for ADS are installed on the machine
 function check_requirements() {
   print info "Checking requirements..."
   # check curl
   if [[ ! ( $(command -v curl) || $(command -v wget) ) ]]; then
-    die "ERROR: neither \"curl\" nor \"wget\" is installed. Please install either of them and restart SCT installation."
+    die "ERROR: neither \"curl\" nor \"wget\" is installed. Please install either of them and restart ADS installation."
   fi
   # check rosetta
   if [[ "$OS" == "osx" ]]; then
@@ -200,10 +200,10 @@ function check_requirements() {
         softwareupdate --install-rosetta
         # check if we can now run x86_64 executables
         if ! arch -x86_64 true >/dev/null 2>&1; then
-          die "ERROR: still cannot run x86_64 executables. Please contact SCT team for assistance."
+          die "ERROR: still cannot run x86_64 executables. Please contact ADS team for assistance."
         fi
       else
-        die "Please install \"Rosetta 2\" by running \"softwareupdate --install-rosetta\" and restart SCT installation."
+        die "Please install \"Rosetta 2\" by running \"softwareupdate --install-rosetta\" and restart ADS installation."
       fi
     fi
   fi
@@ -226,13 +226,13 @@ function check_requirements() {
         brew install -f gcc
         # check if gcc install ran properly
         if ! gcc --version > /dev/null 2>&1; then
-          die "ERROR: Installation of \"gcc\" failed. Please contact SCT team for assistance."
+          die "ERROR: Installation of \"gcc\" failed. Please contact ADS team for assistance."
         fi
       else
-        die "Please install \"gcc\" and restart SCT installation."
+        die "Please install \"gcc\" and restart ADS installation."
       fi
     else
-      die "Please install \"gcc\" and restart SCT installation. On Debian/Ubuntu, run: \"apt install gcc\". On CentOS/RedHat, run: \"yum -y install gcc\"."
+      die "Please install \"gcc\" and restart ADS installation. On Debian/Ubuntu, run: \"apt install gcc\". On CentOS/RedHat, run: \"yum -y install gcc\"."
     fi
   fi
   print info "OK!"
@@ -290,13 +290,13 @@ function edit_shellrc() {
   (
     echo
     echo ""
-    echo "# SPINALCORDTOOLBOX (installed on $(date +%Y-%m-%d\ %H:%M:%S))"
+    echo "# AXONDEEPSEG (installed on $(date +%Y-%m-%d\ %H:%M:%S))"
     echo "$DISPLAY_UPDATE_PATH"
     # Switch between shell
     if [[ "$THE_RC" == "bash" ]]; then
-      echo "export SCT_DIR=$SCT_DIR"
+      echo "export ADS_DIR=$ADS_DIR"
     elif [[ "$THE_RC" == "csh" ]]; then
-      echo "setenv SCT_DIR $SCT_DIR"
+      echo "setenv ADS_DIR $ADS_DIR"
     fi
     # add line
     echo ""
@@ -357,14 +357,14 @@ done
 while getopts ":iygdbcvh" opt; do
   case $opt in
   i)
-    SCT_INSTALL_TYPE="in-place"
+    ADS_INSTALL_TYPE="in-place"
     ;;
   y)
     echo " non-interactive mode"
     NONINTERACTIVE="yes"
     ;;
   g)
-    echo " SCT will be installed with GPU torch"
+    echo " ADS will be installed with GPU torch"
     INSTALL_GPU_TORCH="yes"
     ;;
   d)
@@ -372,8 +372,8 @@ while getopts ":iygdbcvh" opt; do
     NO_DATA_INSTALL="yes"
     ;;
   b)
-    echo " SCT binaries will not be (re)-installed "
-    NO_SCT_BIN_INSTALL="yes"
+    echo " ADS binaries will not be (re)-installed "
+    NO_ADS_BIN_INSTALL="yes"
     ;;
   c)
     echo " no checks will be run (installation will not be validated)"
@@ -406,7 +406,7 @@ trap finish EXIT
 
 print info "
 *******************************
-* Welcome to SCT installation *
+* Welcome to ADS installation *
 *******************************
 "
 
@@ -416,52 +416,52 @@ check_requirements
 # Check to see if the PWD contains the project source files (using `__init__.py` as a proxy for the entire source dir)
 # If it exists, then we can reliably access source files (e.g. `requirements-freeze.txt`) from the PWD.
 if [[ -e "AxonDeepSeg/__init__.py" ]]; then
-  SCT_SOURCE="$PWD"
+  ADS_SOURCE="$PWD"
 # If __init__.py isn't present, then the installation script is being run by itself (i.e. without source files).
-# So, we need to clone SCT to a TMPDIR to access the source files, and update SCT_SOURCE accordingly.
+# So, we need to clone ADS to a TMPDIR to access the source files, and update ADS_SOURCE accordingly.
 else
-  SCT_SOURCE="$TMP_DIR/axondeepseg"
-  echo "Source files not present. Downloading source files (@ $SCT_GIT_REF) to $SCT_SOURCE."
-  git clone -b "$SCT_GIT_REF" --single-branch --depth 1 https://github.com/axondeepseg/axondeepseg.git "$SCT_SOURCE"
+  ADS_SOURCE="$TMP_DIR/axondeepseg"
+  echo "Source files not present. Downloading source files (@ $ADS_GIT_REF) to $ADS_SOURCE."
+  git clone -b "$ADS_GIT_REF" --single-branch --depth 1 https://github.com/axondeepseg/axondeepseg.git "$ADS_SOURCE"
   # Since we're git cloning into a TMPDIR, this can never be an "in-place" installation, so we force "package" instead.
-  SCT_INSTALL_TYPE="package"
+  ADS_INSTALL_TYPE="package"
 fi
 
 # Get installation type if not already specified
-if [[ -z "$SCT_INSTALL_TYPE" ]]; then
+if [[ -z "$ADS_INSTALL_TYPE" ]]; then
   # The file 'requirements-freeze.txt` only exists for stable releases
-  if [[ -e "$SCT_SOURCE/requirements-freeze.txt" ]]; then
-    SCT_INSTALL_TYPE="package"
+  if [[ -e "$ADS_SOURCE/requirements-freeze.txt" ]]; then
+    ADS_INSTALL_TYPE="package"
   # If it doesn't exist, then we can assume that a dev is performing an in-place installation from master
   else
-    SCT_INSTALL_TYPE="in-place"
+    ADS_INSTALL_TYPE="in-place"
   fi
 fi
 
-# Fetch the version of SCT from the source file
-SCT_VERSION=$(< "$SCT_SOURCE/AxonDeepSeg/__init__.py" cut -d ' ' -f 3 | cut -d '"' -f 2)
+# Fetch the version of ADS from the source file
+ADS_VERSION=$(< "$ADS_SOURCE/AxonDeepSeg/__init__.py" cut -d ' ' -f 3 | cut -d '"' -f 2)
 
 # Define sh files
 get_shell_rc_path
 
 # Display install info
-echo -e "\nSCT version ......... $SCT_VERSION"
-echo -e "Installation type ... $SCT_INSTALL_TYPE"
+echo -e "\nADS version ......... $ADS_VERSION"
+echo -e "Installation type ... $ADS_INSTALL_TYPE"
 echo -e "Operating system .... $OS ($OSver)"
 echo -e "Shell config ........ $RC_FILE_PATH"
 
 # if installing from git folder, then becomes default installation folder
-if [[ "$SCT_INSTALL_TYPE" == "in-place" ]]; then
-  SCT_DIR="$SCT_SOURCE"
+if [[ "$ADS_INSTALL_TYPE" == "in-place" ]]; then
+  ADS_DIR="$ADS_SOURCE"
 else
-  SCT_DIR="$HOME/ads_$SCT_VERSION"
+  ADS_DIR="$HOME/ads_$ADS_VERSION"
 fi
 
 # Set install dir
 while true; do
   keep_default_path=""
   while [[ ! "$keep_default_path" =~ ^([Yy](es)?|[Nn]o?)$ ]]; do
-    print info "SCT will be installed here: [$SCT_DIR]"
+    print info "ADS will be installed here: [$ADS_DIR]"
     keep_default_path="yes"
     if [ -z "$NONINTERACTIVE" ]; then
       print question "
@@ -476,7 +476,7 @@ Do you agree? [y]es/[n]o: "
 
   # ASSUMPTION: the rest of these are not guarded by $NONINTERACTIVE because this loop should have been broken already in that case.
 
-  print question "Choose install directory. Warning! Give full path (e.g. /usr/django/sct_v3.0): \n"
+  print question "Choose install directory. Warning! Give full path (e.g. /usr/django/ads_v3.0): \n"
   # user enters new path
   read -r new_install
 
@@ -487,72 +487,72 @@ Do you agree? [y]es/[n]o: "
 
   # Check user-selected path for spaces
   space_regex="[[:space:]]+"
-  if [[ $SCT_DIR =~ $space_regex ]]; then
-    print info "ERROR: Install directory $SCT_DIR contains spaces.\n\
-                SCT uses conda, which does not permit spaces in installation paths.\n\
+  if [[ $ADS_DIR =~ $space_regex ]]; then
+    print info "ERROR: Install directory $ADS_DIR contains spaces.\n\
+                ADS uses conda, which does not permit spaces in installation paths.\n\
                 More details can be found here: https://github.com/ContinuumIO/anaconda-issues/issues/716"
     continue
-  # Avoid horrible bug, like removing /bin if SCT_DIR "/" or $HOME/bin
+  # Avoid horrible bug, like removing /bin if ADS_DIR "/" or $HOME/bin
   elif [[ "$new_install" == "/" ]] || [[ "$HOME" == "${new_install%/}" ]]; then
     print info "Cannot be installed directly in $new_install"
     print info "Please pick a full path"
     continue
   elif [[ -d "$new_install" ]]; then
-    # directory exists --> update SCT_DIR and exit loop
+    # directory exists --> update ADS_DIR and exit loop
     print warning "WARNING: Directory already exists. Files will be overwritten."
-    SCT_DIR="$new_install"
+    ADS_DIR="$new_install"
     break
   elif [[ ! "$new_install" ]]; then
     # If no input, asking again, and again, and again
     continue
   else
-    SCT_DIR="$new_install"
+    ADS_DIR="$new_install"
     break
   fi
 done
 
 # Create directory
-mkdir -p "$SCT_DIR"
+mkdir -p "$ADS_DIR"
 # check if directory was created
-if [[ -d "$SCT_DIR" ]]; then
+if [[ -d "$ADS_DIR" ]]; then
   # check write permission
-  if [[ ! -w "$SCT_DIR" ]]; then
-    die "ERROR: $SCT_DIR exists but does not have write permission."
+  if [[ ! -w "$ADS_DIR" ]]; then
+    die "ERROR: $ADS_DIR exists but does not have write permission."
   fi
 else
-  die "ERROR: $SCT_DIR cannot be created. Make sure you have write permission."
+  die "ERROR: $ADS_DIR cannot be created. Make sure you have write permission."
 fi
 
 # Copy files to destination directory
-if [[ "$SCT_DIR" != "$SCT_SOURCE" ]]; then
-  print info "Copying source files from $SCT_SOURCE to $SCT_DIR"
-  cp -vR "$SCT_SOURCE/"* "$SCT_DIR/" | while read -r; do echo -n "."; done
+if [[ "$ADS_DIR" != "$ADS_SOURCE" ]]; then
+  print info "Copying source files from $ADS_SOURCE to $ADS_DIR"
+  cp -vR "$ADS_SOURCE/"* "$ADS_DIR/" | while read -r; do echo -n "."; done
 else
   print info "Skipping copy of source files (source and destination folders are the same)"
 fi
 
 # Clean old install setup in bin/ if existing
-if [[ -x "$SCT_DIR/$BIN_DIR" ]]; then
-  print info "Removing ADS softlink from $SCT_DIR/$BIN_DIR"
-  find "$SCT_DIR/$BIN_DIR" -type l -name 'axondeepseg_*' -exec rm {} \;
-  find "$SCT_DIR/$BIN_DIR" -type l -name 'download_*' -exec rm {} \;
+if [[ -x "$ADS_DIR/$BIN_DIR" ]]; then
+  print info "Removing ADS softlink from $ADS_DIR/$BIN_DIR"
+  find "$ADS_DIR/$BIN_DIR" -type l -name 'axondeepseg_*' -exec rm {} \;
+  find "$ADS_DIR/$BIN_DIR" -type l -name 'download_*' -exec rm {} \;
 fi
 # Remove old python folder
-if [[ -x "$SCT_DIR/$BIN_DIR" ]]; then
-  run rm -rf "$SCT_DIR/$PYTHON_DIR"
-  run mkdir -p "$SCT_DIR/$PYTHON_DIR"
+if [[ -x "$ADS_DIR/$BIN_DIR" ]]; then
+  run rm -rf "$ADS_DIR/$PYTHON_DIR"
+  run mkdir -p "$ADS_DIR/$PYTHON_DIR"
 fi
 # Remove old '.egg-info` folder created by editable installs
-if [[ -x "$SCT_DIR"/spinalcordtoolbox.egg-info ]]; then
-  run rm -rf "$SCT_DIR"/spinalcordtoolbox.egg-info
+if [[ -x "$ADS_DIR"/AxonDeepSeg.egg-info ]]; then
+  run rm -rf "$ADS_DIR"/AxonDeepSeg.egg-info
 fi
 
 # Go to installation folder
-cd "$SCT_DIR"
+cd "$ADS_DIR"
 
-# Make sure we are in SCT folder (to avoid deleting folder from user)
+# Make sure we are in ADS folder (to avoid deleting folder from user)
 if [[ ! -f "AxonDeepSeg/__init__.py" ]]; then
-  die "ERROR: Cannot cd into SCT folder. SCT_DIR=$SCT_DIR"
+  die "ERROR: Cannot cd into ADS folder. ADS_DIR=$ADS_DIR"
 fi
 
 
@@ -565,16 +565,16 @@ add_to_path=""
 while [[ ! "$add_to_path" =~ ^([Yy](es)?|[Nn]o?)$ ]]; do
   add_to_path="yes"
   if [ -z "$NONINTERACTIVE" ]; then
-    print question "Do you want to add the sct_* scripts to your PATH environment? [y]es/[n]o: "
+    print question "Do you want to add the axondeepseg_* scripts to your PATH environment? [y]es/[n]o: "
     read -r add_to_path
   fi
 done
 
 # Update PATH variables based on Shell type
 if [[ $THE_RC == "bash" ]]; then
-  DISPLAY_UPDATE_PATH="export PATH=\"$SCT_DIR/$BIN_DIR:\$PATH\""
+  DISPLAY_UPDATE_PATH="export PATH=\"$ADS_DIR/$BIN_DIR:\$PATH\""
 elif [[ $THE_RC == "csh" ]]; then
-  DISPLAY_UPDATE_PATH="setenv PATH \"$SCT_DIR/$BIN_DIR:\$PATH\""
+  DISPLAY_UPDATE_PATH="setenv PATH \"$ADS_DIR/$BIN_DIR:\$PATH\""
 else
   die "This variable is not recognized: THE_RC=$THE_RC"
 fi
@@ -597,32 +597,32 @@ esac
 
 # Run conda installer
 print info "Installing Miniconda..."
-run bash "$TMP_DIR/miniconda.sh" -p "$SCT_DIR/$PYTHON_DIR" -b -f
+run bash "$TMP_DIR/miniconda.sh" -p "$ADS_DIR/$PYTHON_DIR" -b -f
 
 # Workaround for WSL "HTTP 000 Connection Failed" error
 # See: https://github.com/conda/conda/issues/9948#issuecomment-909989810
 # Syntax explanation: https://stackoverflow.com/a/6085237
-find "$SCT_DIR/$PYTHON_DIR" -type f -exec touch {} +
+find "$ADS_DIR/$PYTHON_DIR" -type f -exec touch {} +
 
 # create conda environment
 print info "Creating conda environment..."
 # NB: We use an absolute path (-p) rather than a relative name (-n) to better isolate the conda environment
-python/bin/conda create -y -p "$SCT_DIR/$PYTHON_DIR/envs/venv_ads" python=3.11
+python/bin/conda create -y -p "$ADS_DIR/$PYTHON_DIR/envs/venv_ads" python=3.11
 
 # Reapply the touch fix to avoid `pip` connection issues on WSL
-find "$SCT_DIR/$PYTHON_DIR" -type f -exec touch {} +
+find "$ADS_DIR/$PYTHON_DIR" -type f -exec touch {} +
 
 # make sure that there is no conflict with local python install by making venv_ads an isolated environment.
 # For more information, see:
 # * Issue details: https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3067
 # * Fix details: https://github.com/conda/conda/issues/7173#issuecomment-980496682
-echo "include-system-site-packages = false" > "$SCT_DIR/$PYTHON_DIR/envs/venv_ads/pyvenv.cfg"
+echo "include-system-site-packages = false" > "$ADS_DIR/$PYTHON_DIR/envs/venv_ads/pyvenv.cfg"
 
 # activate miniconda
 # shellcheck disable=SC1091
 source python/etc/profile.d/conda.sh
 set +u #disable safeties, for conda is not written to their standard.
-conda activate "$SCT_DIR/$PYTHON_DIR/envs/venv_ads"
+conda activate "$ADS_DIR/$PYTHON_DIR/envs/venv_ads"
 set -u # reactivate safeties
 
 if [[ $OS == linux ]]; then
@@ -635,7 +635,7 @@ fi
 # Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
 python/envs/venv_ads/bin/python -m pip install -U "pip!=21.2.*"
 
-## Install the spinalcordtoolbox into the Conda venv
+## Install the axondeepseg into the Conda venv
 print info "Installing Python dependencies..."
 # Check if a frozen version of the requirements exist (for release only)
 if [[ -f "requirements-freeze.txt" ]]; then
@@ -663,34 +663,34 @@ fi
   # This is necessary in order to install 'macosx_11_0' wheels. See also:
   # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
   SYSTEM_VERSION_COMPAT=0 python/envs/venv_ads/bin/pip install -r "$REQUIREMENTS_FILE" --ignore-installed certifi &&
-  print info "Installing spinalcordtoolbox..." &&
+  print info "Installing axondeepseg..." &&
   python/envs/venv_ads/bin/pip install -e .
 ) ||
   die "Failed running pip install: $?"
 
 ## Create launchers for Python scripts
 print info "Creating launchers for Python scripts..."
-mkdir -p "$SCT_DIR/$BIN_DIR"
-for file in "$SCT_DIR"/python/envs/venv_ads/bin/axondeepseg_*; do
-  cp "$file" "$SCT_DIR/$BIN_DIR/" || die "Problem creating launchers!"
+mkdir -p "$ADS_DIR/$BIN_DIR"
+for file in "$ADS_DIR"/python/envs/venv_ads/bin/*axondeepseg*; do
+  cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
-for file in "$SCT_DIR"/python/envs/venv_ads/bin/download_*; do
-  cp "$file" "$SCT_DIR/$BIN_DIR/" || die "Problem creating launchers!"
+for file in "$ADS_DIR"/python/envs/venv_ads/bin/*download*; do
+  cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
 
-# Activate the launchers, particularly sct_download_data and sct_check_requirements
-export PATH="$SCT_DIR/$BIN_DIR:$PATH"
+# Activate the launchers, particularly download_models, download_tests, and axondeepseg_test
+export PATH="$ADS_DIR/$BIN_DIR:$PATH"
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Download binaries and data
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Install binaries
-if [[ -n "$NO_SCT_BIN_INSTALL" ]]; then
-  print warning "WARNING: SCT binaries will not be (re)-installed"
+if [[ -n "$NO_ADS_BIN_INSTALL" ]]; then
+  print warning "WARNING: ADS binaries will not be (re)-installed"
 else
   print info "Installing binaries..."
-  # run sct_download_data -d "binaries_${OS}" -k
+  # run ads_download_data -d "binaries_${OS}" -k
 fi
 print info "All requirements installed!"
 
@@ -700,14 +700,14 @@ if [[ -n "$NO_DATA_INSTALL" ]]; then
 else
   # Download data
   print info "Installing data..."
-  run mkdir -p "$SCT_DIR/$DATA_DIR"
+  run mkdir -p "$ADS_DIR/$DATA_DIR"
   download_models
   download_tests
-  # run sct_download_data -d default -k
+  # run ads_download_data -d default -k
 fi
 
 # Install deep learning models
-# python/envs/venv_ads/bin/python -c 'import spinalcordtoolbox.deepseg.models; spinalcordtoolbox.deepseg.models.install_default_models()'
+# python/envs/venv_ads/bin/python -c 'import axondeepseg.deepseg.models; axondeepseg.deepseg.models.install_default_models()'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -718,16 +718,16 @@ fi
 # so neither should our post-install tests
 conda deactivate >/dev/null 2>&1
 
-# In case of previous SCT installation (4.0.0-beta.1 or before), remove sct_env declaration in bashrc
+# In case of previous ADS installation (4.0.0-beta.1 or before), remove ads_env declaration in bashrc
 if [[ -e "$RC_FILE_PATH" ]]; then
     if grep "sct_env" "$RC_FILE_PATH"; then
-      print info "In case an old version SCT is already installed (4.0.0-beta.1 or before), remove 'sct_env' declaration in RC file"
+      print info "In case an old version ADS is already installed (4.0.0-beta.1 or before), remove 'sct_env' declaration in RC file"
       perl -pi -e 's/^(# )?(.*bin\/sct_env)/# \2/' "$RC_FILE_PATH"
     fi
     if grep "^export MPLBACKEND=Agg" "$RC_FILE_PATH"; then
-      print info "Commenting out 'export MPLBACKEND=Agg' from previous SCT installation"
-      perl -pi -e 's/^export MPLBACKEND=Agg/# The line below has been commented out by a more recent installation of SCT,\
-# because export MPLBACKEND=Agg is no longer needed as of SCT v5.4.0\
+      print info "Commenting out 'export MPLBACKEND=Agg' from previous ADS installation"
+      perl -pi -e 's/^export MPLBACKEND=Agg/# The line below has been commented out by a more recent installation of ADS,\
+# because export MPLBACKEND=Agg is no longer needed as of ADS v5.4.0\
 # export MPLBACKEND=Agg/' "$RC_FILE_PATH"
     fi
 fi
@@ -735,20 +735,20 @@ fi
 if [[ "$add_to_path" =~ ^[Yy] ]]; then
   edit_shellrc
 else
-  print info "Not adding $SCT_DIR to \$PATH.
-You can always add it later or call SCT functions with full path $SCT_DIR/$BIN_DIR/sct_xxx"
+  print info "Not adding $ADS_DIR to \$PATH.
+You can always add it later or call ADS functions with full path $ADS_DIR/$BIN_DIR/ads_xxx"
 fi
 
 if [[ -n "$NO_INSTALL_VALIDATION" ]]; then
     print warning "WARNING: no checks will be run (installation will not be validated)"
 else
-  # run sct_check_dependencies
+  # run axondeepseg_test
   print info "Validate installation..."
-  # We run the sct_check_dependencies in the TMP_DIR so the tmp.XXX output
+  # We run the axondeepseg_test in the TMP_DIR so the tmp.XXX output
   # it creates is cleaned properly
   if axondeepseg_test; then
     if [[ "$add_to_path" =~ ^[Nn] ]]; then
-      print info "To use SCT, please update your environment by running:
+      print info "To use ADS, please update your environment by running:
   $DISPLAY_UPDATE_PATH"
     else
       print info "Open a new Terminal window to load environment variables, or run:
@@ -759,5 +759,5 @@ else
   fi
 fi
 
-) 2>&1 | tee install_sct_log.txt
+) 2>&1 | tee install_ads_log.txt
 exit "${PIPESTATUS[0]}"
