@@ -697,20 +697,6 @@ fi
 # so neither should our post-install tests
 conda deactivate >/dev/null 2>&1
 
-# In case of previous ADS installation (4.0.0-beta.1 or before), remove ads_env declaration in bashrc
-if [[ -e "$RC_FILE_PATH" ]]; then
-    if grep "sct_env" "$RC_FILE_PATH"; then
-      print info "In case an old version ADS is already installed (4.0.0-beta.1 or before), remove 'sct_env' declaration in RC file"
-      perl -pi -e 's/^(# )?(.*bin\/sct_env)/# \2/' "$RC_FILE_PATH"
-    fi
-    if grep "^export MPLBACKEND=Agg" "$RC_FILE_PATH"; then
-      print info "Commenting out 'export MPLBACKEND=Agg' from previous ADS installation"
-      perl -pi -e 's/^export MPLBACKEND=Agg/# The line below has been commented out by a more recent installation of ADS,\
-# because export MPLBACKEND=Agg is no longer needed as of ADS v5.4.0\
-# export MPLBACKEND=Agg/' "$RC_FILE_PATH"
-    fi
-fi
-
 if [[ "$add_to_path" =~ ^[Yy] ]]; then
   edit_shellrc
 else
