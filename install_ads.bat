@@ -143,9 +143,9 @@ if exist %ADS_DIR%\bin\ (
   del %ADS_DIR%\bin\download_* || goto error
 )
 rem Remove old python folder
-if exist %ADS_DIR%\python\ (
-  echo ### Removing existing 'python' folder inside the ADS directory...
-  rmdir /s /q %ADS_DIR%\python\ || goto error
+if exist %ADS_DIR%\ads_conda\ (
+  echo ### Removing existing 'ads_conda' folder inside the ADS directory...
+  rmdir /s /q %ADS_DIR%\ads_conda\ || goto error
 )
 rem Remove old '.egg-info` folder created by editable installs
 if exist %ADS_DIR%\AxonDeepSeg.egg-info\ (
@@ -162,13 +162,13 @@ echo ### Downloading Miniconda installer...
 curl -o %TMP_DIR%\miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
 echo:
 echo ### Installing portable copy of Miniconda...
-start /wait "" %TMP_DIR%\miniconda.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /NoRegistry=1 /S /D=%cd%\python
+start /wait "" %TMP_DIR%\miniconda.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /NoRegistry=1 /S /D=%cd%\ads_conda
 
 rem Create and activate miniconda environment to install ADS into
 echo:
 echo ### Using Conda to create virtual environment...
-python\Scripts\conda create -y -p python\envs\venv_ads python=3.11 || goto error
-CALL python\Scripts\activate.bat python\envs\venv_ads || goto error
+ads_conda\Scripts\conda create -y -p ads_conda\envs\venv_ads python=3.11 || goto error
+CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads || goto error
 echo Virtual environment created and activated successfully!
 
 rem Install ADS and its requirements
@@ -180,24 +180,24 @@ if exist requirements-freeze.txt (
 echo:
 echo ### Installing ADS and its dependencies from %requirements_file%...
 rem Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
-python\envs\venv_ads\python -m pip install -U "pip^!=21.2.*" || goto error
-python\envs\venv_ads\Scripts\pip install -r %requirements_file% || goto error
-python\envs\venv_ads\Scripts\pip install -e . --use-pep517 || goto error
+ads_conda\envs\venv_ads\python -m pip install -U "pip^!=21.2.*" || goto error
+ads_conda\envs\venv_ads\Scripts\pip install -r %requirements_file% || goto error
+ads_conda\envs\venv_ads\Scripts\pip install -e . --use-pep517 || goto error
 
 rem Install external dependencies
 echo:
 echo ### Downloading model files and test data...
-python\envs\venv_ads\Scripts\download_models
-python\envs\venv_ads\Scripts\download_tests
+ads_conda\envs\venv_ads\Scripts\download_models
+ads_conda\envs\venv_ads\Scripts\download_tests
 
 rem Copying ADS scripts to an isolated folder (so we can add scripts to the PATH without adding the entire venv_ads)
 echo:
 echo ### Copying ADS's CLI scripts to %CD%\bin\
-xcopy %CD%\python\envs\venv_ads\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
-xcopy %CD%\python\envs\venv_ads\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
+xcopy %CD%\ads_conda\envs\venv_ads\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
+xcopy %CD%\ads_conda\envs\venv_ads\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
 
 echo ### Checking installation...
-python\envs\venv_ads\Scripts\axondeepseg_test
+ads_conda\envs\venv_ads\Scripts\axondeepseg_test
 
 rem Give further instructions that the user add the Scripts directory to their PATH
 echo:
