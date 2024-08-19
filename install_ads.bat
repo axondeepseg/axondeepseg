@@ -35,17 +35,17 @@ git --version >nul 2>&1 || (
 rem Default value: 'master', however this value is updated on stable release branches.
 set git_ref=master
 
-rem Check to see if the PWD contains the project source files (using `version.txt` as a proxy for the entire source dir)
-rem If it exists, then we can reliably access source files (`version.txt`, `requirements-freeze.txt`) from the PWD.
-if exist spinalcordtoolbox\version.txt (
+rem Check to see if the PWD contains the project source files (using `__init__.py` as a proxy for the entire source dir)
+rem If it exists, then we can reliably access source files (e.g. `requirements-freeze.txt`) from the PWD.
+if exist AxonDeepSeg\__init__.py (
   set SCT_SOURCE=%cd%
-rem If version.txt isn't present, then the installation script is being run by itself (i.e. without source files).
+rem If __init__.py isn't present, then the installation script is being run by itself (i.e. without source files).
 rem So, we need to clone SCT to a TMPDIR to access the source files, and update SCT_SOURCE accordingly.
 ) else (
-  set SCT_SOURCE=%TMP_DIR%\spinalcordtoolbox
+  set SCT_SOURCE=%TMP_DIR%\axondeepseg
   echo:
   echo ### Source files not present. Downloading source files ^(@ !git_ref!^) to !SCT_SOURCE!...
-  git clone -b !git_ref! --single-branch --depth 1 https://github.com/spinalcordtoolbox/spinalcordtoolbox.git !SCT_SOURCE!
+  git clone -b !git_ref! --single-branch --depth 1 https://github.com/axondeepseg/axondeepseg.git !SCT_SOURCE!
   rem Since we're git cloning into a TMPDIR, this can never be an "in-place" installation, so we force "package" instead.
   set SCT_INSTALL_TYPE=package
 )
@@ -62,7 +62,7 @@ if [%SCT_INSTALL_TYPE%]==[] (
 )
 
 rem Fetch the version of SCT from the source file
-for /F %%g IN (%SCT_SOURCE%\spinalcordtoolbox\version.txt) do (set SCT_VERSION=%%g)
+for /F %%g IN (%SCT_SOURCE%\AxonDeepSeg\__init__.py) do (set SCT_VERSION=%%g:~15,20%)
 
 echo:
 echo ### SCT version ......... %SCT_VERSION%
@@ -139,8 +139,8 @@ if not %SCT_DIR%==%SCT_SOURCE% (
 rem Clean old install setup in bin/ if existing
 if exist %SCT_DIR%\bin\ (
   echo ### Removing sct and isct softlink inside the SCT directory...
-  del %SCT_DIR%\bin\sct_* || goto error
-  del %SCT_DIR%\bin\isct_* || goto error
+  del %SCT_DIR%\bin\axondeepseg_* || goto error
+  del %SCT_DIR%\bin\download_* || goto error
 )
 rem Remove old python folder
 if exist %SCT_DIR%\python\ (
@@ -148,9 +148,9 @@ if exist %SCT_DIR%\python\ (
   rmdir /s /q %SCT_DIR%\python\ || goto error
 )
 rem Remove old '.egg-info` folder created by editable installs
-if exist %SCT_DIR%\spinalcordtoolbox.egg-info\ (
+if exist %SCT_DIR%\AxonDeepSeg.egg-info\ (
   echo ### Removing existing '.egg-info' folder inside the SCT directory...
-  rmdir /s /q %SCT_DIR%\spinalcordtoolbox.egg-info\ || goto error
+  rmdir /s /q %SCT_DIR%\AxonDeepSeg.egg-info\ || goto error
 )
 
 rem Move into the SCT installation directory
@@ -167,7 +167,7 @@ start /wait "" %TMP_DIR%\miniconda.exe /InstallationType=JustMe /AddToPath=0 /Re
 rem Create and activate miniconda environment to install SCT into
 echo:
 echo ### Using Conda to create virtual environment...
-python\Scripts\conda create -y -p python\envs\venv_sct python=3.9 || goto error
+python\Scripts\conda create -y -p python\envs\venv_sct python=3.11 || goto error
 CALL python\Scripts\activate.bat python\envs\venv_sct || goto error
 echo Virtual environment created and activated successfully!
 
@@ -186,18 +186,18 @@ python\envs\venv_sct\Scripts\pip install -e . --use-pep517 || goto error
 
 rem Install external dependencies
 echo:
-echo ### Downloading model files and binaries...
-python\envs\venv_sct\Scripts\sct_download_data -d binaries_win -k
-python\envs\venv_sct\Scripts\sct_download_data -d default -k
-python\envs\venv_sct\python -c "import spinalcordtoolbox.deepseg.models; spinalcordtoolbox.deepseg.models.install_default_models()"
+echo ### Downloading model files and test data...
+python\envs\venv_sct\Scripts\download_models
+python\envs\venv_sct\Scripts\download_tests
 
 rem Copying SCT scripts to an isolated folder (so we can add scripts to the PATH without adding the entire venv_sct)
 echo:
 echo ### Copying SCT's CLI scripts to %CD%\bin\
-xcopy %CD%\python\envs\venv_sct\Scripts\*sct*.* %CD%\bin\ /v /y /q /i || goto error
+xcopy %CD%\python\envs\venv_sct\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
+xcopy %CD%\python\envs\venv_sct\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
 
 echo ### Checking installation...
-python\envs\venv_sct\Scripts\sct_check_dependencies
+python\envs\venv_sct\Scripts\axondeepseg_test
 
 rem Give further instructions that the user add the Scripts directory to their PATH
 echo:
