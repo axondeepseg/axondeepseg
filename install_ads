@@ -689,10 +689,6 @@ else
   download_tests
 fi
 
-# Install deep learning models
-# $CONDA_DIR/envs/venv_ads/bin/python -c 'import axondeepseg.deepseg.models; axondeepseg.deepseg.models.install_default_models()'
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Validate installation
 # ----------------------------------------------------------------------------------------------------------------------
