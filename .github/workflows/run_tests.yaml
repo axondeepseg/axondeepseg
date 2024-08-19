@@ -63,13 +63,13 @@ jobs:
           pwd
 
       # Step 2: Install environment.
-      - name: Install Conda Env All OS
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          python-version: ${{matrix.python-version}}
-          activate-environment: ads_venv
-          auto-update-conda: true
-          environment-file: environment.yml
+      - name: Install ADS from release branch (Unix)
+        if: runner.os != 'Windows'
+        run: ./install_ads -y
+      - name: Install ADS from release branch (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: install_ads.bat
 
       # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
       # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
@@ -78,32 +78,36 @@ jobs:
         run: |
           echo "MKL_THREADING_LAYER=GNU" >> $GITHUB_ENV
 
-      # Step 3: List conda info, conda packages
-      - name: Conda info and list
-        # List
+      # Step 2b: Add ADS to the PATH
+      - name: Update environment variables
+        # NB: I'm not sure what GHA's syntax is for cmd.exe, so we use bash just for this one change
+        # In a user install, the user would perform this step using the Windows PATH-changing GUI.
         run: |
-          conda info
-          conda list
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            echo "${GITHUB_WORKSPACE}" >> $ADS_DIR
+            echo "${GITHUB_WORKSPACE}\bin" >> $GITHUB_PATH
+          else
+            # NB: install_ads edits ~/.bashrc, but those environment changes don't get passed to subsequent steps in GH Actions.
+            # So, we filter through the .bashrc and pass the values to $GITHUB_ENV and $GITHUB_PATH.
+            # Relevant documentation: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#environment-files
+            cat ~/.bashrc | grep "export ADS_DIR" | cut -d " " -f 2 >> $GITHUB_ENV
+            cat ~/.bashrc | grep "export PATH" | grep -o "/.*" | cut -d ':' -f 1 >> $GITHUB_PATH
+          fi
 
-      # Step 4: Activate and Install main AxonDeepSeg repository
-      - name: Installation of the main ADS repository
+      # Step 3: Full PyTest
+      - name: Test with pytest (Unix)
+        if: runner.os != 'Windows'
         run: |
-          conda activate ads_venv
-          pip install --verbose -e . plugins/
-
-      # Step 5: Conda list packages POST ADS.
-      - name: Conda list post installation
-        # List
-        run: |
-          conda info
-          conda list
-
-      # Step 6: Full PyTest
-      - name: Test with pytest
-        run: |
+          source ads_conda/bin/activate ads_conda/envs/venv_ads
           pytest ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
-  
-      # Step 7: Submnit to coveralls
+      - name: Test with pytest (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads
+          pytest.exe ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
+
+      # Step 4: Submnit to coveralls
       - name: Submit to coveralls
         uses: coverallsapp/github-action@v2
         with:
