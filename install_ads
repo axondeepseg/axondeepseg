@@ -20,7 +20,7 @@
 #  -i   Install in-place; this is the default when working from git.
 #  -y   Install without interruption with 'yes' as default answer
 #  -g   Install with GPU version of PyTorch ('no' by default)
-#  -d   Prevent the (re)-installation of the data/ directory
+#  -d   Prevent the (re)-installation of the data files (models, test data)
 #  -b   Prevent the (re)-installation of the ADS binaries files
 #  -c   Prevent checks from being run to validate the installation
 #  -v   Full verbose
@@ -44,7 +44,6 @@ shopt -s failglob # error if a glob doesn't find any files, instead of remaining
 
 # Where tmp file are stored
 TMP_DIR="$(mktemp -d 2>/dev/null || mktemp -d -t 'TMP_DIR')"
-DATA_DIR="data"
 CONDA_DIR="ads_conda"
 BIN_DIR="bin"
 MACOSSUPPORTED="13"  # Minimum version of macOS 10 supported
@@ -696,14 +695,12 @@ print info "All requirements installed!"
 
 # Install data
 if [[ -n "$NO_DATA_INSTALL" ]]; then
-  print warning "WARNING: data/ will not be (re)-install"
+  print warning "WARNING: data files will not be (re)-installed"
 else
   # Download data
   print info "Installing data..."
-  run mkdir -p "$ADS_DIR/$DATA_DIR"
   download_models
   download_tests
-  # run ads_download_data -d default -k
 fi
 
 # Install deep learning models
