@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - master
+      - ac/nnunet_migration
 
   # Trigger current workflow on PR from ANY branch
   pull_request:
