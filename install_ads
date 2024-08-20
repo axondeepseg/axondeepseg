@@ -641,7 +641,7 @@ fi
   # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
   SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -r "$REQUIREMENTS_FILE" --ignore-installed certifi &&
   print info "Installing axondeepseg..." &&
-  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e .
+  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . plugins/
 ) ||
   die "Failed running pip install: $?"
 print info "All requirements installed!"
