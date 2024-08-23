@@ -293,6 +293,8 @@ function edit_shellrc() {
     elif [[ "$THE_RC" == "csh" ]]; then
       echo "setenv ADS_DIR $ADS_DIR"
     fi
+    echo "alias ads_activate=\"source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/\""
+    echo "alias ads_napari=$ADS_DIR/ads_conda/envs/venv_ads/bin/napari"
     # add line
     echo ""
   ) >> "$RC_FILE_PATH"
@@ -703,6 +705,9 @@ else
       print info "Open a new Terminal window to load environment variables, or run:
   source $RC_FILE_PATH"
     fi
+  print info "AxonDeepSeg was succesfully installed. To open the AxonDeepSeg graphical user interface, type: ads_napari"
+  print info "For development use of AxonDeepSeg, activate the virtual environment with: ads_activate"
+  print info "Please refer to our documentation on ReadTheDocs for more usage instructions: https://axondeepseg.readthedocs.io/en/latest/"
   else
     die "Installation validation Failed!"
   fi
