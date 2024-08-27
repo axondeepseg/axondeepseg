@@ -193,6 +193,7 @@ ads_conda\envs\venv_ads\Scripts\download_tests
 rem Copying ADS scripts to an isolated folder (so we can add scripts to the PATH without adding the entire venv_ads)
 echo:
 echo ### Copying ADS's CLI scripts to %CD%\bin\
+xcopy %CD%\ads_conda\envs\venv_ads\Scripts\ads_*.* %CD%\bin\ /v /y /q /i || goto error
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
 

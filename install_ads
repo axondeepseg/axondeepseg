@@ -523,6 +523,7 @@ fi
 # Clean old install setup in bin/ if existing
 if [[ -x "$ADS_DIR/$BIN_DIR" ]]; then
   print info "Removing ADS softlink from $ADS_DIR/$BIN_DIR"
+  find "$ADS_DIR/$BIN_DIR" -type l -name 'ads_*' -exec rm {} \;
   find "$ADS_DIR/$BIN_DIR" -type l -name 'axondeepseg_*' -exec rm {} \;
   find "$ADS_DIR/$BIN_DIR" -type l -name 'download_*' -exec rm {} \;
 fi

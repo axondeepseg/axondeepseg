@@ -56,7 +56,9 @@ setup(
            'download_tests = AxonDeepSeg.download_tests:main',
            'axondeepseg = AxonDeepSeg.segment:main',
            'axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test', 
-           'axondeepseg_morphometrics = AxonDeepSeg.morphometrics.launch_morphometrics_computation:main'
+           'axondeepseg_morphometrics = AxonDeepSeg.morphometrics.launch_morphometrics_computation:main',
+           'ads_activate = AxonDeepSeg.entry_points:activate_conda_env',
+           'ads_napari = AxonDeepSeg.entry_points:run_napari'
         ],
     },
     cmdclass={
