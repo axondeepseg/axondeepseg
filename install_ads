@@ -293,8 +293,6 @@ function edit_shellrc() {
     elif [[ "$THE_RC" == "csh" ]]; then
       echo "setenv ADS_DIR $ADS_DIR"
     fi
-    echo "alias ads_activate=\"source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/\""
-    echo "alias ads_napari=$ADS_DIR/ads_conda/envs/venv_ads/bin/napari"
     # add line
     echo ""
   ) >> "$RC_FILE_PATH"
@@ -657,6 +655,9 @@ done
 for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*download*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
+cp "$ADS_DIR/$CONDA_DIR/envs/venv_ads/bin/napari" "$ADS_DIR/$BIN_DIR/ads_napari" || die "Problem creating launchers!"
+echo "source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/" > "$ADS_DIR/$BIN_DIR/ads_activate"
+chmod +x "$ADS_DIR/$BIN_DIR/ads_activate"
 
 # Activate the launchers, particularly download_models, download_tests, and axondeepseg_test
 export PATH="$ADS_DIR/$BIN_DIR:$PATH"

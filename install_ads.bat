@@ -195,6 +195,8 @@ echo:
 echo ### Copying ADS's CLI scripts to %CD%\bin\
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
+echo cmd /k %CD%\ads_conda\Scripts\activate.bat venv_ads> %CD%\bin\ads_activate.bat
+echo cmd /k %CD%\ads_conda\envs\venv_ads\Scripts\napari.exe> %CD%\bin\ads_napari.bat
 
 echo ### Checking installation...
 ads_conda\envs\venv_ads\Scripts\axondeepseg_test
