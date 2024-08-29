@@ -40,11 +40,11 @@ To install AxonDeepSeg, in a terminal window (macOS or Linux) or Anaconda Prompt
     git clone https://github.com/neuropoly/axondeepseg.git
     cd axondeepseg
 
-Then, for Linux or macOS systems, run:
+Then, for Linux or macOS systems, run::
 
     ./install_ads
 
-and follow the prompts. Or, if you want to isntall AxonDeepSeg with default settings, run:
+and follow the prompts. Or, if you want to isntall AxonDeepSeg with default settings, run::
 
     ./install_ads -y
 
@@ -62,7 +62,7 @@ and follow the prompts. Or, if you want to isntall AxonDeepSeg with default sett
             We don't document them publically because they are rare and the distraction will sew confusion.
             People in these situations can ask us for help.
 
-For Windows systems, run:
+For Windows systems, run::
 
     install_ads.bat
 
