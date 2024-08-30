@@ -35,7 +35,7 @@ The following sections will help you install all the tools you need to run AxonD
 Install AxonDeepSeg
 -------------------
 
-To install AxonDeepSeg, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
 
     git clone https://github.com/neuropoly/axondeepseg.git
     cd axondeepseg
@@ -44,7 +44,7 @@ Then, for Linux or macOS systems, run::
 
     ./install_ads
 
-and follow the prompts. Or, if you want to isntall AxonDeepSeg with default settings, run::
+and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
 
     ./install_ads -y
 
@@ -69,7 +69,6 @@ For Windows systems, run::
 
 Testing the installation
 ------------------------
-.. WARNING :: Ensure that the virtual environment is activated.
 
 Quick test
 ~~~~~~~~~~
@@ -107,17 +106,16 @@ Launch Napari ::
 In Napari, do the following:
 - Click on ``Plugins -> ADS plugin (napari-ads)``
 
-Below is a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
-
+In the [Manual Correction](#manual-correction-of-segmentation-masks) section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 .. raw:: html
 
    <iframe width="700" height="394" src="https://www.youtube.com/embed/zibDbpko6ko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
-Python Shell use
+Software Development with AxonDeepSeg
 -----------------------------------------
 
-To use AxonDeepSeg in a Python shell, first activate your virtual environment::
+To develop code in the AxonDeepSeg software package and use it in a python shell, and to run the full test suite, you'll need to first activate your virtual environment::
 
     ads_activate
 
@@ -125,6 +123,8 @@ To use AxonDeepSeg in a Python shell, first activate your virtual environment::
   ::
 
        conda deactivate
+
+If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open jupyter notebook from within an activated virtual environment. 
 
 Existing models
 ===============
