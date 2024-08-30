@@ -131,7 +131,7 @@ To develop code in the AxonDeepSeg software package and use it in a python shell
 
        conda deactivate
 
-If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open jupyter notebook from within an activated virtual environment. 
+If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open Jupyter notebook from within an activated virtual environment. 
 
 Existing models
 ===============
@@ -472,33 +472,6 @@ because they are easier to compute.
 
 .. comment: We need to add explanation for perimeter estimation, but this 
             part would need to be refactored beforehand.
-
-Jupyter notebooks
------------------
-
-Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
-
-* `00-getting_started.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/00-getting_started.ipynb>`_:
-    Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2F00-getting_started.ipynb>`_.
-
-* `01-performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/03-performance_metrics.ipynb>`_:
-    Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.
-
-* `02-morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/04-morphometrics_extraction.ipynb>`_:
-    Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, ...), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, ...), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.
-
-.. NOTE ::
-     To open a notebook, go to the notebooks/ subfolder of AxonDeepSeg and launch a particular notebook as follows::
-     
-         cd notebooks
-         jupyter notebook name_of_the_notebook.ipynb 
-
-.. WARNING ::
-   The current models available for segmentation are trained for patches of 256x256 pixels for SEM and 512x512 pixels for TEM and BF. This means that your input image(s) should be at least 256x256 or 512x512 pixels in size **after the resampling to the target pixel size of the model you are using to segment**. 
-
-   For instance, the TEM model currently available has a target resolution of 0.01 micrometers per pixel, which means that the minimum size of the input image (in micrometers) is 5.12x5.12.
-
-   **Option:** If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).
 
 Manual correction of segmentation masks
 =======================================
