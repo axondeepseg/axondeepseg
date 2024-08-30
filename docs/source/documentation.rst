@@ -32,64 +32,21 @@ Installation
 ============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
-Miniconda
----------
-Although your system may already have a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions for this recommended installation setup.
-
-First, verify if you already have an AxonDeepSeg-compatible version of Miniconda or Anaconda properly installed and is in your systems path. 
-
-In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it is installed), run the following command:::
-
-    conda search python
-
-If a list of available Python versions are displayed and versions >=3.8.0 are available, you may skip to the next section (git).
-
-Linux
-~~~~~
-
-To install Miniconda, run the following commands in your terminal:::
-
-    cd ~
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-    bash ~/miniconda.sh -b -p $HOME/miniconda
-    echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
-    source ~/.bashrc
-
-.. NOTE :: If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try adding the line ``source ~/.bashrc`` to your ``~/.bash_profile`` file. `See here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ for more details.
-
-macOS
-~~~~~
-
-To install Miniconda, run the following commands in your terminal:::
-
-    cd ~
-    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh
-    bash ~/miniconda.sh -b -p $HOME/miniconda
-    echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bash_profile
-    source ~/.bash_profile
-
-Windows
-~~~~~~~
-
-.. NOTE :: The AxonDeepSeg installation instruction using the Miniconda have only been tested for Windows 10. Older versions of Windows may not be compatible with the tools required to run AxonDeepSeg.
-
-To install Miniconda, go to the `Miniconda installation website <https://conda.io/miniconda.html>`_ and click on the Python 3.x version installer compatible with your Windows system (64 bit recommended). After the download is complete, execute the downloaded file, and follow the instructions. If you are unsure about any of the installation options, we recommend you use the default settings.
-
-git
----
-``git`` is a software version control system. Because AxonDeepSeg is hosted on GitHub, a service that hosts ``git`` repositories, having ``git`` installed on your system allows you to download the most up-to-date development version of AxonDeepSeg from a terminal, and also allows you to contribute to the project if you wish to do so.
-
-To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
-
 Install AxonDeepSeg
 -------------------
 
-To install AxonDeepSeg, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
 
     git clone https://github.com/neuropoly/axondeepseg.git
     cd axondeepseg
 
-Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you install into a virtual environment.
+Then, for Linux or macOS systems, run::
+
+    ./install_ads
+
+and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
+
+    ./install_ads -y
 
 .. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`_, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`_ before continuing:
    ::
@@ -105,39 +62,20 @@ Virtual environments are a tool to separate the Python environment and packages 
             We don't document them publically because they are rare and the distraction will sew confusion.
             People in these situations can ask us for help.
 
+For Windows systems, run::
 
-To setup the Python virtual environment with all the required packages, run the following command::
+    install_ads.bat
 
-    conda env create
+Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
 
-.. WARNING :: For some users, the installation may take up to 30 minutes as many dependencies have shared subdependencies, and resolving these potential conflicts takes time. If that's the case, we encourage you to take a break from your screen and go for a walk while listening to the `AxonDeepSeg Spotify playlist <https://open.spotify.com/playlist/27LVNnfhTKjVOli6bPCaV5?si=OydcwxoOSamwCsg3xcqybw>`_.
-
-Then, activate your virtual environment::
-
-    conda activate ads_venv
-
-.. NOTE :: To switch back to your default environment, run:
-  ::
-
-       conda deactivate
-
-Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
-
-    pip install -e . plugins/
-
-.. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
-   ::
-
-        cd axondeepseg
-        git pull
-        pip install -e . plugins/
-
-.. WARNING :: When re-installing the application, the model folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
-
+1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
+2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
+3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
+4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
+5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 
 Testing the installation
 ------------------------
-.. WARNING :: Ensure that the virtual environment is activated.
 
 Quick test
 ~~~~~~~~~~
@@ -153,13 +91,13 @@ This integrity test automatically performs the axon and myelin segmentation of a
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
 
-To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
+To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal, activate the virtual environment, and then run ``py.test``::
 
     cd axondeepseg
+    ads_activate
     py.test --cov AxonDeepSeg/ --cov-report term-missing
 
 If all tests pass, AxonDeepSeg was installed succesfully.
-
 
 Graphical User Interface (GUI)
 -----------------------------------------
@@ -170,16 +108,30 @@ AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Termi
 
 Launch Napari ::
 
-           napari
+           ads_napari
 
 In Napari, do the following:
 - Click on ``Plugins -> ADS plugin (napari-ads)``
 
-Below is a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
-
+In the [Manual Correction](#manual-correction-of-segmentation-masks) section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 .. raw:: html
 
    <iframe width="700" height="394" src="https://www.youtube.com/embed/zibDbpko6ko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+Software Development with AxonDeepSeg
+-----------------------------------------
+
+To develop code in the AxonDeepSeg software package and use it in a python shell, and to run the full test suite, you'll need to first activate your virtual environment::
+
+    ads_activate
+
+.. NOTE :: To switch back to your default environment, run:
+  ::
+
+       conda deactivate
+
+If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open jupyter notebook from within an activated virtual environment. 
 
 Existing models
 ===============
@@ -208,18 +160,6 @@ where <model name> is the full name (e.g. *model_seg_rat_axon-myelin_SEM*) and <
 
 Using AxonDeepSeg
 =================
-
-Activate the virtual environment
---------------------------------
-
-To use AxonDeepSeg, you must first activate the virtual environment if it isn't currently activated. To do so, run::
-
-    conda activate ads_venv
-
-.. NOTE :: To switch back to your default environment, run:
-  ::
-
-       conda deactivate
 
 Example dataset
 ---------------
@@ -571,7 +511,7 @@ Napari plugin
 Open image and mask
 ~~~~~~~~~~~~~~~~~~~
 
-* Open Napari by entering `napari` in the terminal (virtual environment must be activated).
+* Open Napari by entering `ads_napari` in the terminal.
 * Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS plugin (napari-ads)
 * Load the microscopy image using the Napari toolbar: File -> Open file(s)
 * If no segmentation masks already exists:
