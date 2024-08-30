@@ -68,7 +68,7 @@ For Windows systems, run::
 
 Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
 
-1. Open the Start Menu -^> Type 'edit environment' -^> Open 'Edit environment variables for your account'
+1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
 2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
 3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
 4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
