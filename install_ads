@@ -163,11 +163,13 @@ function fetch_os_type() {
       export LANG=en_US.UTF-8
     fi
     OS="osx"
+    PROCESSOR="$(uname -m)"
     # make sure bashrc is loaded when starting a new Terminal
     force_bashrc_loading
   # Linux
   elif echo "$uname_output" | grep -i linux >/dev/null 2>&1; then
     OS="linux"
+    PROCESSOR="$(uname -m)"
   else
     die "Sorry, the installer only supports Linux and macOS, quitting installer"
   fi
@@ -435,6 +437,7 @@ get_shell_rc_path
 echo -e "\nADS version ......... $ADS_VERSION"
 echo -e "Installation type ... $ADS_INSTALL_TYPE"
 echo -e "Operating system .... $OS ($OSver)"
+echo -e "Processor .... $PROCESSOR"
 echo -e "Shell config ........ $RC_FILE_PATH"
 
 # if installing from git folder, then becomes default installation folder
@@ -575,10 +578,18 @@ fi
 print info "Downloading Miniconda..."
 case $OS in
 linux)
-  download "$TMP_DIR/"miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  if "$PROCESSOR" = "aarch64" ; then
+    download "$TMP_DIR/"miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh
+  else
+    download "$TMP_DIR/"miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  fi
   ;;
 osx)
-  download "$TMP_DIR/"miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+  if "$PROCESSOR" = "arm64" ; then
+    download "$TMP_DIR/"miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  else
+    download "$TMP_DIR/"miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh
+  fi
   ;;
 esac
 
