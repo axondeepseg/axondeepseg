@@ -578,17 +578,17 @@ fi
 print info "Downloading Miniconda..."
 case $OS in
 linux)
-  if "$PROCESSOR" = "aarch64" ; then
+  if [[ "$PROCESSOR" == "aarch64" ]] ; then
     download "$TMP_DIR/"miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh
   else
     download "$TMP_DIR/"miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
   fi
   ;;
 osx)
-  if "$PROCESSOR" = "arm64" ; then
-    download "$TMP_DIR/"miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-  else
+  if [[ "$PROCESSOR" == "arm64" ]] ; then
     download "$TMP_DIR/"miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh
+  else
+    download "$TMP_DIR/"miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
   fi
   ;;
 esac
