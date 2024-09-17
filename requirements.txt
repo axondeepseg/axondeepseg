@@ -19,3 +19,4 @@ napari
 nnunetv2==2.2.1
 loguru
 torch<2.4.0
+pydicom<3
