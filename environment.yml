@@ -15,7 +15,7 @@ dependencies:
     - tqdm
     - requests
     - pillow
-    - imageio
+    - imageio<2.19
     - pytest
     - pytest-cov
     - prettytable
