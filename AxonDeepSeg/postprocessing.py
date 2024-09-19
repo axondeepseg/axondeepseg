@@ -1,13 +1,12 @@
 """"
 Tools for the FSLeyes plugin and other functions for manipulating masks.
 """
-from skimage import measure, morphology, feature, segmentation
+from skimage import measure, morphology, segmentation
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
 from AxonDeepSeg import params
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from matplotlib import font_manager
-import os
 
 def get_centroids(mask):
     """
@@ -26,41 +25,6 @@ def get_centroids(mask):
         [int(props.centroid[1]) for props in objects],
     )
     return ind_centroid
-
-def floodfill_axons(axon_array, myelin_array):
-    """
-    This function does a floodfill operation on the myelin_array. The seed points are the centroids of the axon objects
-    in the axon_array. The goal is to fill the center of the myelin objects with the axon mask.
-    Note: The myelin objects need to be closed in order to prevent the axon_mask from flooding the entire image.
-    :param axon_array: the binary array corresponding to the axon mask
-    :param myelin_array: the binary array corresponding to the myelin mask
-    :return: the binary axon array corresponding to the axon mask after the floodfill
-    """
-    # Get the centroid indexes
-    centroid_index_map = get_centroids(axon_array)
-
-    # Create an image with the myelinMask and floodfill at the coordinates of the centroids
-    # Note: The floodfill algorithm only works on RGB images. Thus, the mask must be colorized before applying
-    # the floodfill. Then, the array corresponding to the floodfilled color can be extracted.
-    myelin_image = Image.fromarray(myelin_array * 255)
-    myelin_image = ImageOps.colorize(
-        myelin_image, (0, 0, 0, 255), (255, 255, 255, 255)
-    )
-    for i in range(len(centroid_index_map[0])):
-        ImageDraw.floodfill(
-            myelin_image,
-            xy=(centroid_index_map[1][i], centroid_index_map[0][i]),
-            value=(127, 127, 127, 255),
-        )
-
-    # Extract the axon_mask overlay
-    axon_extracted_array = np.array(myelin_image.convert("LA"))
-    axon_extracted_array = axon_extracted_array[:, :, 0]
-    axon_extracted_array = np.equal(
-        axon_extracted_array, 127 * np.ones_like(axon_extracted_array)
-    )
-    axon_extracted_array = axon_extracted_array.astype(np.uint8)
-    return axon_extracted_array
 
 def fill_myelin_holes(myelin_array, max_area_fraction=0.1):
     """
@@ -205,14 +169,3 @@ def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
     axon_array = (im_axon & new_axonmyelin_array).astype(np.uint8)
     myelin_array = (im_myelin & new_axonmyelin_array).astype(np.uint8)
     return axon_array, myelin_array
-
-def remove_single_axon_at_coordinate(im_axon, im_myelin, x0, y0):
-    """
-    Removes a single axonmyelin object at the (x0, y0) coordinates passed as parameters
-    :param im_axon: Array: axon binary mask
-    :param im_myelin: Array: myelin binary mask
-    :param x0: X coordinate of the axonmyelin object to be removed
-    :param y0: Y coordinate of the axonmyelin object to be removed
-    :return: axon and myelin array with the axonmyelin object at (x0, y0) removed
-    """
-    return remove_axons_at_coordinates(im_axon, im_myelin, [x0], [y0])

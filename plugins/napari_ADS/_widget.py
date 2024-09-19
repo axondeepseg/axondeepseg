@@ -50,12 +50,9 @@ class ADSsettings:
         self.ads_plugin = ads_plugin
 
         # Declare the settings used
-        self.overlap_value = 48
-        self.zoom_factor = 1.0
         self.axon_shape = "circle"
         self._axon_shape_selection_index = 0
-        self.no_patch = False
-        self.gpu_id = 0
+        self.gpu_id = -1
         self.n_gpus = ads_utils.check_available_gpus(None)
         self.max_gpu_id = self.n_gpus - 1 if self.n_gpus > 0 else 0
         self.setup_settings_menu()
@@ -73,17 +70,8 @@ class ADSsettings:
         self.ui.setupUi(self.Settings_menu_ui)
         self.ui.done_button.clicked.connect(self._on_done_button_click)
 
-        self.ui.overlap_value_spinBox.valueChanged.connect(
-            self._on_overlap_value_changed
-        )
-        self.ui.zoom_factor_spinBox.valueChanged.connect(
-            self._on_zoom_factor_changed
-        )
         self.ui.axon_shape_comboBox.currentIndexChanged.connect(
             self._on_axon_shape_changed
-        )
-        self.ui.no_patch_checkBox.stateChanged.connect(
-            self._on_no_patch_changed
         )
         self.ui.gpu_id_spinBox.valueChanged.connect(self._on_gpu_id_changed)
 
@@ -96,12 +84,9 @@ class ADSsettings:
         Returns:
             None
         """
-        self.ui.overlap_value_spinBox.setValue(self.overlap_value)
-        self.ui.zoom_factor_spinBox.setValue(self.zoom_factor)
         self.ui.axon_shape_comboBox.setCurrentIndex(
             self._axon_shape_selection_index
         )
-        self.ui.no_patch_checkBox.setChecked(self.no_patch)
         self.ui.gpu_id_spinBox.setValue(self.gpu_id)
         self.ui.gpu_id_spinBox.setMaximum(self.max_gpu_id)
         self.Settings_menu_ui.show()
@@ -113,28 +98,6 @@ class ADSsettings:
             None
         """
         self.Settings_menu_ui.close()
-
-    def _on_overlap_value_changed(self):
-        """Update the overlap value attribute with the value from the UI's overlap value spin box.
-
-        This method is called when the overlap value spin box value is changed in the UI. It retrieves the new value
-        from the spin box and updates the overlap_value attribute of the class instance.
-
-        Returns:
-            None
-        """
-        self.overlap_value = self.ui.overlap_value_spinBox.value()
-
-    def _on_zoom_factor_changed(self):
-        """Update the zoom factor value attribute with the value from the UI's zoom factor spin box.
-
-        This method is called when the zoom factor value spin box value is changed in the UI. It retrieves the new value
-        from the spin box and updates the zoom_factor attribute of the class instance.
-
-        Returns:
-            None
-        """
-        self.zoom_factor = self.ui.zoom_factor_spinBox.value()
 
     def _on_axon_shape_changed(self):
         """Update the axon shape attribute with the value from the UI's axon shape combo box.
@@ -149,17 +112,6 @@ class ADSsettings:
         self._axon_shape_selection_index = (
             self.ui.axon_shape_comboBox.currentIndex()
         )
-
-    def _on_no_patch_changed(self):
-        """Update the no patch attribute with the value from the UI's no patch checkbox.
-
-        This method is called when the no patch value checkbox state is changed in the UI. It retrieves the new state
-        from the checkbox and updates the no_patch attribute of the class instance.
-
-        Returns:
-            None
-        """
-        self.no_patch = self.ui.no_patch_checkBox.isChecked()
 
     def _on_gpu_id_changed(self):
         """Update the GPU ID value attribute with the value from the UI's GPU ID spin box.
@@ -328,27 +280,13 @@ class ADSplugin(QWidget):
         selected_layer = selected_layers.active
         image_directory = Path(selected_layer.source.path).parents[0]
 
-        # Check if the pixel size txt file exist in the imageDirPath
-        if "pixel_size" not in selected_layer.metadata.keys():
-            if not self.add_layer_pixel_size_to_metadata(selected_layer):
-                pixel_size = self.get_pixel_size_with_prompt()
-                if pixel_size is None:
-                    return
-                selected_layer.metadata["pixel_size"] = pixel_size
-
         self.apply_model_button.setEnabled(False)
         self.apply_model_thread.selected_layer = selected_layer
         self.apply_model_thread.image_directory = image_directory
-        self.apply_model_thread.path_testing_image = Path(
+        self.apply_model_thread.path_image = Path(
             selected_layer.source.path
         )
         self.apply_model_thread.path_model = model_path
-        self.apply_model_thread.overlap_value = [
-            self.settings.overlap_value,
-            self.settings.overlap_value,
-        ]
-        self.apply_model_thread.zoom_factor = self.settings.zoom_factor
-        self.apply_model_thread.no_patch = self.settings.no_patch
         self.apply_model_thread.gpu_id = self.settings.gpu_id
         show_info(
             "Applying ADS model... This can take a few seconds. Check the console for more information."
@@ -367,6 +305,7 @@ class ADSplugin(QWidget):
         Returns:
             None
         """
+
         self.apply_model_button.setEnabled(True)
         if not self.apply_model_thread.task_finished_successfully:
             self.show_info_message(
@@ -389,14 +328,14 @@ class ADSplugin(QWidget):
         axon_data = ads_utils.imread(axon_mask_path).astype(bool)
         self.viewer.add_labels(
             axon_data,
-            color={1: "blue"},
+            colormap={None: 'transparent', 1: "blue"},
             name=axon_mask_name,
             metadata={"associated_image_name": image_name_no_extension},
         )
         myelin_data = ads_utils.imread(myelin_mask_path).astype(bool)
         self.viewer.add_labels(
             myelin_data,
-            color={1: "red"},
+            colormap={None: 'transparent', 1: "red"},
             name=myelin_mask_name,
             metadata={"associated_image_name": image_name_no_extension},
         )
@@ -446,13 +385,13 @@ class ADSplugin(QWidget):
         # Load the masks and add metadata to the files to keep a link between them
         self.viewer.add_labels(
             axon_data,
-            color={1: "blue"},
+            colormap={ None: 'transparent', 1: "blue"},
             name=axon_mask_name,
             metadata={"associated_image_name": microscopy_image_layer.name},
         )
         self.viewer.add_labels(
             myelin_data,
-            color={1: "red"},
+            colormap={ None: 'transparent', 1: "red"},
             name=myelin_mask_name,
             metadata={"associated_image_name": microscopy_image_layer.name},
         )
@@ -824,12 +763,9 @@ class ApplyModelThread(QtCore.QThread):
         # Those values must not be None before calling run()
         self.selected_layer = None
         self.image_directory = None
-        self.path_testing_image = None
+        self.path_image = None
         self.path_model = None
-        self.overlap_value = None
-        self.zoom_factor = None
-        self.no_patch = False
-        self.gpu_id = 0
+        self.gpu_id = -1
         self.task_finished_successfully = False
 
     def run(self):
@@ -841,14 +777,10 @@ class ApplyModelThread(QtCore.QThread):
         """
         self.task_finished_successfully = False
         try:
-            segment.segment_image(
-                path_testing_image=self.path_testing_image,
+            segment.segment_images(
+                path_images=[self.path_image],
                 path_model=self.path_model,
-                overlap_value=self.overlap_value,
-                acquired_resolution=self.selected_layer.metadata["pixel_size"],
-                zoom_factor=self.zoom_factor,
                 gpu_id=self.gpu_id,
-                no_patch=self.no_patch,
                 verbosity_level=3,
             )
             self.task_finished_successfully = True

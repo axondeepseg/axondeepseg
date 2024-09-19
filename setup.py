@@ -26,7 +26,7 @@ class PostDevelopCommand(develop):
 
 setup(
     name='AxonDeepSeg',
-    python_requires='>=3.8, <3.9',
+    python_requires='>=3.11',
     version=AxonDeepSeg.__version__,
     description='Python tool for automatic axon and myelin segmentation',
     long_description=long_description,
@@ -37,7 +37,7 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.11',
     ],
 
     keywords='',
