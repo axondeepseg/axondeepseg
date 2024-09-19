@@ -21,7 +21,7 @@ dependencies:
     - prettytable
     - raven
     - jupyter
-    - Keras<2.8
+    - Keras<2.1
     - Keras-Applications
     - Keras-Preprocessing
     - albumentations==0.3.0
