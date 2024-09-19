@@ -3,30 +3,29 @@ channels:
   - conda-forge
 dependencies:
   - python=3.7
-  - fsleyes=0.33.1
-  - h5py=2.10.0
-  - numpy
-  - scipy
-  - tabulate
-  - pandas
-  - matplotlib=3.3.4
-  - mpld3
-  - tqdm
-  - requests
-  - pillow
-  - imageio
-  - pytest
-  - pytest-cov
-  - prettytable
-  - raven
-  - jupyter
-  - Keras
-  - Keras-Applications
-  - Keras-Preprocessing
-  - albumentations=0.3.0
-  - openpyxl
   - pip
   - pip:
+    - h5py==2.10.0
+    - numpy
+    - scipy
+    - tabulate
+    - pandas
+    - matplotlib==3.3.4
+    - mpld3
+    - tqdm
+    - requests
+    - pillow
+    - imageio
+    - pytest
+    - pytest-cov
+    - prettytable
+    - raven
+    - jupyter
+    - Keras
+    - Keras-Applications
+    - Keras-Preprocessing
+    - albumentations==0.3.0
+    - openpyxl
     - opencv-contrib-python
     - opencv-python-headless
     - scikit-learn==0.19.2
