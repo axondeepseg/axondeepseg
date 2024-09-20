@@ -114,6 +114,7 @@ In Napari, do the following:
 - Click on ``Plugins -> ADS plugin (napari-ads)``
 
 In the [Manual Correction](#manual-correction-of-segmentation-masks) section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
+
 .. raw:: html
 
    <iframe width="700" height="394" src="https://www.youtube.com/embed/zibDbpko6ko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
