@@ -153,11 +153,11 @@ Here are the details of all the models currently supported by AxonDeepSeg:
 
 To download these models, you must first have AxonDeepSeg installed. Afterwards, run::
 
-    download_model -m <model name> -t <model type>
+    download_models -m <model name> -t <model type>
 
 where <model name> is the full name (e.g. *model_seg_rat_axon-myelin_SEM*) and <model type> is either *light* or *ensemble*. To view available models and their details, run::
 
-    download_model --list
+    download_models --list
 
 Using AxonDeepSeg
 =================
