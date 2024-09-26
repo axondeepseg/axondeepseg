@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - master
+      - mb/windows
 
   # Trigger current workflow on PR from ANY branch
   pull_request:
@@ -104,7 +105,9 @@ jobs:
         if: runner.os == 'Windows'
         shell: cmd
         run: |
+          axondeepseg -h
           CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads
+          axondeepseg -h
           pytest.exe ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
 
       # Step 4: Submnit to coveralls
