@@ -41,7 +41,7 @@ class TestCore(object):
             shutil.rmtree(tmpPath)
             pass
 
-    # --------------download_models tests-------------- #
+    # --------------download_model tests-------------- #
     @pytest.mark.unit
     def test_download_valid_model_works(self):
 
@@ -60,7 +60,7 @@ class TestCore(object):
 
 
     @pytest.mark.unit
-    def test_redownload_models_multiple_times_works(self):
+    def test_redownload_model_multiple_times_works(self):
 
         download_model(self.valid_model, 'light', self.tmpPath)
         download_model(self.valid_model, 'light', self.tmpPath)

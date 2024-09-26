@@ -670,7 +670,7 @@ cp "$ADS_DIR/$CONDA_DIR/envs/venv_ads/bin/napari" "$ADS_DIR/$BIN_DIR/ads_napari"
 echo "source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/" > "$ADS_DIR/$BIN_DIR/ads_activate"
 chmod +x "$ADS_DIR/$BIN_DIR/ads_activate"
 
-# Activate the launchers, particularly download_models, download_tests, and axondeepseg_test
+# Activate the launchers, particularly download_model, download_tests, and axondeepseg_test
 export PATH="$ADS_DIR/$BIN_DIR:$PATH"
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -683,7 +683,7 @@ if [[ -n "$NO_DATA_INSTALL" ]]; then
 else
   # Download data
   print info "Installing data..."
-  download_models
+  download_model
   download_tests
 fi
 
