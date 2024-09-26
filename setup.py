@@ -19,7 +19,7 @@ class PostDevelopCommand(develop):
     def run(self):
 
         develop.run(self)
-        check_call("download_models")
+        check_call("download_model")
         check_call("download_tests")
 
 
@@ -52,7 +52,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-           'download_models = AxonDeepSeg.download_model:main',
+           'download_model = AxonDeepSeg.download_model:main',
            'download_tests = AxonDeepSeg.download_tests:main',
            'axondeepseg = AxonDeepSeg.segment:main',
            'axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test', 
