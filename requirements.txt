@@ -16,7 +16,7 @@ jupyter
 openpyxl
 qtconsole<5.4.2
 napari
-acvl_utils<0.2.1
+acvl_utils!=0.2.1
 nnunetv2==2.2.1
 loguru
 torch<2.4.0
