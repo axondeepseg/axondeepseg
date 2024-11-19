@@ -157,6 +157,12 @@ def main(argv=None):
         help='Toggles morphometrics for unmyelinated axons. This will only process masks with \n'
             +f'the "{unmyelinated_suffix}" suffix.'
     )
+    ap.add_argument(
+        '-d', '--detect-holes',
+        required=False,
+        action='store_true',
+        help='Detect holes in the axonmyelin objects and compute their area.'
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -166,6 +172,8 @@ def main(argv=None):
     border_info_flag = args["border_info"]
     colorization_flag = args["colorize"]
     unmyelinated_mode = args["unmyelinated"]
+    detect_holes = args["detect_holes"]
+
     if unmyelinated_mode:
         if colorization_flag:
             logger.warning("Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
@@ -250,7 +258,8 @@ def main(argv=None):
                 axon_shape=axon_shape, 
                 return_index_image=True,
                 return_border_info=border_info_flag,
-                return_instance_seg=colorization_flag
+                return_instance_seg=colorization_flag,
+                detect_holes=detect_holes,
             )
             # unpack the morphometrics output
             stats_dataframe, index_image_array = morph_output[0:2]
