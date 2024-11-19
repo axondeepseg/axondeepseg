@@ -189,7 +189,7 @@ ads_conda\envs\venv_ads\Scripts\pip install -e . plugins\ --use-pep517 || goto e
 rem Install external dependencies
 echo:
 echo ### Downloading model files and test data...
-ads_conda\envs\venv_ads\Scripts\download_model
+ads_conda\envs\venv_ads\Scripts\download_model -d AxonDeepSeg/models/ || goto error
 ads_conda\envs\venv_ads\Scripts\download_tests
 
 rem Copying ADS scripts to an isolated folder (so we can add scripts to the PATH without adding the entire venv_ads)
