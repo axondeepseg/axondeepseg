@@ -16,7 +16,7 @@ def download_model(model='generalist', model_type='light', destination=None):
     full_model_name = f'{MODELS[model]["name"]}_{model_suffix}'
 
     if destination is None:
-        model_destination = Path(".") / str(f"{full_model_name}")
+        model_destination = Path(".") / "models" / str(f"{full_model_name}")
     else:
         destination = Path(destination)
         model_destination = destination / full_model_name
@@ -40,7 +40,7 @@ def download_model(model='generalist', model_type='light', destination=None):
     if model_destination.exists():
         logger.info("Model folder already existed - deleting old one")
         shutil.rmtree(str(model_destination))
-    
+
     shutil.move(folder_name, str(model_destination))
 
 def main(argv=None):
