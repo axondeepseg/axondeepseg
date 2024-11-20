@@ -70,7 +70,7 @@ def main(argv=None):
         "-d", "--dir",
         required=False,
         help="Directory to download the model to. Default: current directory",
-        default='.',
+        default=str(Path('.') / 'models'),
         type=str,
     )
     args = vars(ap.parse_args(argv))
