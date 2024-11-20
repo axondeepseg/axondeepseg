@@ -19,7 +19,7 @@ class PostDevelopCommand(develop):
     def run(self):
 
         develop.run(self)
-        check_call("download_model -d \"AxonDeepSeg/models\"")
+        check_call("download_model -d AxonDeepSeg/models")
         check_call("download_tests")
 
 
