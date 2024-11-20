@@ -84,9 +84,8 @@ class TestCore(object):
     def test_main_cli_downloads_to_path(self):
         cli_test_path = self.tmpPath / 'cli_test'
         cli_test_model_path = cli_test_path / 'model_seg_generalist_light'
-        breakpoint()
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.download_model.main(["-d", str(cli_test_path)])
+
+        AxonDeepSeg.download_model.main(["-d", str(cli_test_path)])
 
         assert cli_test_model_path.exists()
 
