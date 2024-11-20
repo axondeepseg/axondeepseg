@@ -80,7 +80,15 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
-    @pytest.mark.single
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_no_options(self):
+        cli_test_model_path = Path('.') / 'model_seg_generalist_light'
+
+        AxonDeepSeg.download_model.main()
+
+        assert cli_test_model_path.exists()
+
+    @pytest.mark.integration
     def test_main_cli_downloads_to_path(self):
         cli_test_path = self.tmpPath / 'cli_test'
         cli_test_model_path = cli_test_path / 'model_seg_generalist_light'
