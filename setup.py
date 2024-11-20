@@ -14,16 +14,6 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-class PostDevelopCommand(develop):
-    """Post-installation for installation mode."""
-    def run(self):
-
-        develop.run(self)
-        check_call("download_model -d AxonDeepSeg/models")
-        check_call("download_tests")
-
-
-
 setup(
     name='AxonDeepSeg',
     python_requires='>=3.11',
@@ -58,9 +48,6 @@ setup(
            'axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test', 
            'axondeepseg_morphometrics = AxonDeepSeg.morphometrics.launch_morphometrics_computation:main'
         ],
-    },
-    cmdclass={
-        'develop': PostDevelopCommand,
     },
 
 )
