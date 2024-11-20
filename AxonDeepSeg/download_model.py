@@ -14,9 +14,11 @@ def download_model(model='generalist', model_type='light', destination=None):
     
     model_suffix = 'light' if model_type == 'light' else 'ensemble'
     full_model_name = f'{MODELS[model]["name"]}_{model_suffix}'
+
     if destination is None:
-        model_destination = Path(f"AxonDeepSeg/models/{full_model_name}")
+        model_destination = Path(".") / "models" / full_model_name
     else:
+        destination = Path(destination)
         model_destination = destination / full_model_name
 
     url_model_destination = MODELS[model]['weights'][model_type]
@@ -38,7 +40,7 @@ def download_model(model='generalist', model_type='light', destination=None):
     if model_destination.exists():
         logger.info("Model folder already existed - deleting old one")
         shutil.rmtree(str(model_destination))
-    
+
     shutil.move(folder_name, str(model_destination))
 
 def main(argv=None):
@@ -64,6 +66,13 @@ def main(argv=None):
         default=False,
         action='store_true',
     )
+    ap.add_argument(
+        "-d", "--dir",
+        required=False,
+        help="Directory to download the model to. Default: current directory",
+        default=str(Path('.') / 'models'),
+        type=str,
+    )
     args = vars(ap.parse_args(argv))
 
     if args["list"]:
@@ -79,7 +88,7 @@ def main(argv=None):
             pprint.pprint(model_details)
         sys.exit(SUCCESS)
     else:
-        download_model(args["model_name"], args["model_type"])
+        download_model(args["model_name"], args["model_type"], args["dir"])
 
 if __name__ == "__main__":
     with logger.catch():

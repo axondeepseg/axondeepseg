@@ -683,7 +683,7 @@ if [[ -n "$NO_DATA_INSTALL" ]]; then
 else
   # Download data
   print info "Installing data..."
-  download_model
+  download_model -d AxonDeepSeg/models
   download_tests
 fi
 

@@ -81,6 +81,24 @@ class TestCore(object):
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
     @pytest.mark.integration
+    def test_main_cli_runs_succesfully_no_destination(self):
+        cli_test_model_path = Path('.') / 'models' / 'model_seg_generalist_light'
+
+        AxonDeepSeg.download_model.main(["-t","light"])
+
+        assert cli_test_model_path.exists()
+
+    @pytest.mark.integration
+    def test_main_cli_downloads_to_path(self):
+        cli_test_path = self.tmpPath / 'cli_test'
+        cli_test_model_path = cli_test_path / 'model_seg_generalist_light'
+
+        AxonDeepSeg.download_model.main(["-d", str(cli_test_path)])
+
+        assert cli_test_model_path.exists()
+
+
+    @pytest.mark.integration
     def test_main_cli_fails_for_model_that_does_not_exist(self):
         model_name = "no_model"
         with pytest.raises(SystemExit) as pytest_wrapped_e:
