@@ -18,6 +18,7 @@ def download_model(model='generalist', model_type='light', destination=None):
     if destination is None:
         model_destination = Path(".") / str(f"{full_model_name}")
     else:
+        destination = Path(destination)
         model_destination = destination / full_model_name
 
     url_model_destination = MODELS[model]['weights'][model_type]
@@ -69,8 +70,8 @@ def main(argv=None):
         "-d", "--dir",
         required=False,
         help="Directory to download the model to. Default: current directory",
-        default=False,
-        action='store_true',
+        default='.',
+        type=str,
     )
     args = vars(ap.parse_args(argv))
 
