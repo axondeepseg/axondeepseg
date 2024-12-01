@@ -77,7 +77,7 @@ class TestCore(object):
 
     # --------------extract_from_nnunet_prediction tests-------------- #
     @pytest.mark.unit
-    def test_extract_from_nnunet_prediction_throws_value_error_for_class(self):
+    def test_extract_from_nnunet_prediction_does_not_throws_value_error_for_class(self):
         pred_path = self.nnunetFile
         pred = ads_utils.imread(pred_path)
         class_name = 'TestClass'
@@ -85,9 +85,9 @@ class TestCore(object):
         try:
             extract_from_nnunet_prediction(pred, pred_path, class_name, class_value)
         except ValueError:
-            pass
+            pytest.fail('Case must not throw error, only warning')
         else:
-            pytest.fail('Excepted pred not to be a value in the file ' + pred_path)
+            pass
 
     @pytest.mark.unit
     def test_extract_from_nnunet_prediction_throws_name_error_for_nnunet_file(self):
