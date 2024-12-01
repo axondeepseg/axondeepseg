@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from loguru import logger
 from typing import List, Literal, NoReturn
-import warnings
 
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.merge_masks import merge_masks
@@ -75,7 +74,7 @@ def extract_from_nnunet_prediction(pred, pred_path, class_name, class_value) -> 
     pred_path = ads_utils.convert_path(pred_path)
 
     if not np.any(pred == class_value):
-        warnings.warn(f'Class value {class_value} not found in the raw prediction.')
+        logger.warning(f'Class value {class_value} not found in the raw prediction.')
     
     if not pred_path.name.endswith(str(nnunet_suffix)):
         raise NameError(f'Raw nnunet pred file does not end with "{nnunet_suffix}".')
