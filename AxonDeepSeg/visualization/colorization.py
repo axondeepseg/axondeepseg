@@ -5,8 +5,6 @@ import random
 from collections import deque
 
 import numpy as np
-# import pandas as pd
-from skimage.future import graph
 from PIL import Image, ImageDraw
 
 from loguru import logger

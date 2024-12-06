@@ -1,6 +1,6 @@
 Introduction
 ============
-AxonDeepSeg is an open-source software using deep learning and aiming at automatically segmenting axons and myelin sheaths from microscopy images. It performs 3-class semantic segmentation using a convolutional neural network.
+AxonDeepSeg is an open-source software using deep learning and aiming at automatically segmenting axons and myelin sheaths from microscopy images. It performs multi-class semantic segmentation using a convolutional neural network.
 
 AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University of Montreal, Canada.
 
@@ -32,66 +32,21 @@ Installation
 ============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
-.. NOTE :: Starting with Version 2.0, AxonDeepSeg supports the Windows operating system. However, please note that our continuous integration testing framework (TravisCI) only tests AxonDeepSeg for Unix-style systems, so releases may be more unstable for Windows than Linux/macOS.
-
-Miniconda
----------
-Starting with version 4.0.0, AxonDeepSeg is only supported using Python 3.8.x. Although your system may already have a Python environment installed, we strongly recommend that AxonDeepSeg be used with `Miniconda <https://conda.io/docs/glossary.html#miniconda-glossary>`_, which is a lightweight version of the `Anaconda distribution <https://www.anaconda.com/distribution/>`_. Miniconda is typically used to create virtual Python environments, which provides a separation of installation dependencies between different Python projects. Although it can be possible to install AxonDeepSeg without Miniconda or virtual environments, we will only provide instructions for this recommended installation setup.
-
-First, verify if you already have an AxonDeepSeg-compatible version of Miniconda or Anaconda properly installed and is in your systems path. 
-
-In a new terminal window (macOS or Linux) or Anaconda Prompt (Windows – if it is installed), run the following command:::
-
-    conda search python
-
-If a list of available Python versions are displayed and versions >=3.8.0 are available, you may skip to the next section (git).
-
-Linux
-~~~~~
-
-To install Miniconda, run the following commands in your terminal:::
-
-    cd ~
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-    bash ~/miniconda.sh -b -p $HOME/miniconda
-    echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
-    source ~/.bashrc
-
-.. NOTE :: If ``conda`` isn't available on new terminal sessions after running these steps, it's possible that your system is configured to use a different startup script. Try adding the line ``source ~/.bashrc`` to your ``~/.bash_profile`` file. `See here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ for more details.
-
-macOS
-~~~~~
-
-To install Miniconda, run the following commands in your terminal:::
-
-    cd ~
-    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh
-    bash ~/miniconda.sh -b -p $HOME/miniconda
-    echo ". ~/miniconda/etc/profile.d/conda.sh" >> ~/.bash_profile
-    source ~/.bash_profile
-
-Windows
-~~~~~~~
-
-.. NOTE :: The AxonDeepSeg installation instruction using the Miniconda have only been tested for Windows 10. Older versions of Windows may not be compatible with the tools required to run AxonDeepSeg.
-
-To install Miniconda, go to the `Miniconda installation website <https://conda.io/miniconda.html>`_ and click on the Python 3.x version installer compatible with your Windows system (64 bit recommended). After the download is complete, execute the downloaded file, and follow the instructions. If you are unsure about any of the installation options, we recommend you use the default settings.
-
-git
----
-``git`` is a software version control system. Because AxonDeepSeg is hosted on GitHub, a service that hosts ``git`` repositories, having ``git`` installed on your system allows you to download the most up-to-date development version of AxonDeepSeg from a terminal, and also allows you to contribute to the project if you wish to do so.
-
-To install ``git``, please follow instructions for your operating system on the `git website <https://git-scm.com/downloads>`_
-
 Install AxonDeepSeg
 -------------------
 
-To install AxonDeepSeg, in a terminal window (macOS or Linux) or Anaconda Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
 
     git clone https://github.com/neuropoly/axondeepseg.git
     cd axondeepseg
 
-Virtual environments are a tool to separate the Python environment and packages used between Python projects. They allow for different versions of Python packages to be installed and managed for the specific needs of your projects. There are several virtual environment managers available, but the one we recommend and will use in our installation guide is `conda <https://conda.io/docs/>`_, which is installed by default with Miniconda. We strongly recommend you install into a virtual environment.
+Then, for Linux or macOS systems, run::
+
+    ./install_ads
+
+and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
+
+    ./install_ads -y
 
 .. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`_, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`_ before continuing:
    ::
@@ -107,39 +62,20 @@ Virtual environments are a tool to separate the Python environment and packages 
             We don't document them publically because they are rare and the distraction will sew confusion.
             People in these situations can ask us for help.
 
+For Windows systems, run::
 
-To setup the Python virtual environment with all the required packages, run the following command::
+    install_ads.bat
 
-    conda env create
+Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
 
-.. WARNING :: For some users, the installation may take up to 30 minutes as many dependencies have shared subdependencies, and resolving these potential conflicts takes time. If that's the case, we encourage you to take a break from your screen and go for a walk while listening to the `AxonDeepSeg Spotify playlist <https://open.spotify.com/playlist/27LVNnfhTKjVOli6bPCaV5?si=OydcwxoOSamwCsg3xcqybw>`_.
-
-Then, activate your virtual environment::
-
-    conda activate ads_venv
-
-.. NOTE :: To switch back to your default environment, run:
-  ::
-
-       conda deactivate
-
-Once your virtual environment is installed and activated, install the AxonDeepSeg software with the following commands::
-
-    pip install -e . plugins/
-
-.. NOTE :: To update an already cloned AxonDeepSeg package, pull the latest version of the project from GitHub and re-install the application:
-   ::
-
-        cd axondeepseg
-        git pull
-        pip install -e . plugins/
-
-.. WARNING :: When re-installing the application, the model folders in ``AxonDeepSeg/models`` will be deleted and re-downloaded. Please do not store valuable data in these folders.
-
+1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
+2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
+3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
+4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
+5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 
 Testing the installation
 ------------------------
-.. WARNING :: Ensure that the virtual environment is activated.
 
 Quick test
 ~~~~~~~~~~
@@ -155,13 +91,13 @@ This integrity test automatically performs the axon and myelin segmentation of a
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
 
-To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal and run ``py.test``::
+To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal, activate the virtual environment, and then run ``py.test``::
 
     cd axondeepseg
+    ads_activate
     py.test --cov AxonDeepSeg/ --cov-report term-missing
 
 If all tests pass, AxonDeepSeg was installed succesfully.
-
 
 Graphical User Interface (GUI)
 -----------------------------------------
@@ -172,41 +108,59 @@ AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Termi
 
 Launch Napari ::
 
-           napari
+           ads_napari
 
 In Napari, do the following:
 - Click on ``Plugins -> ADS plugin (napari-ads)``
 
-Below is a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
+In the [Manual Correction](#manual-correction-of-segmentation-masks) section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 
 .. raw:: html
 
    <iframe width="700" height="394" src="https://www.youtube.com/embed/zibDbpko6ko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-Existing models
-===============
 
-Three models are available and shipped together with the installation package, so you don't need to install them separately.
-The three models are described below:
+Software Development with AxonDeepSeg
+-----------------------------------------
 
-* **SEM** model (*model_seg_rat_axon-myelin_sem*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
-* **TEM** model (*model_seg_mouse_axon-myelin_tem*), that works at a resolution of 0.01 micrometer per pixel. For more information, please visit the `TEM model repository <https://github.com/axondeepseg/default-TEM-model>`_.
-* **BF** (bright-field) model (*model_seg_rat_axon-myelin_bf*, formerly called *model_seg_pns_bf*), that works at a resolution of 0.1 micrometer per pixel. For more information, please visit the `BF model repository <https://github.com/axondeepseg/default-BF-model>`_.
+To develop code in the AxonDeepSeg software package and use it in a python shell, and to run the full test suite, you'll need to first activate your virtual environment::
 
-Using AxonDeepSeg
-=================
-
-Activate the virtual environment
---------------------------------
-
-To use AxonDeepSeg, you must first activate the virtual environment if it isn't currently activated. To do so, run::
-
-    conda activate ads_venv
+    ads_activate
 
 .. NOTE :: To switch back to your default environment, run:
   ::
 
        conda deactivate
+
+If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open Jupyter notebook from within an activated virtual environment. 
+
+Existing models
+===============
+
+The **generalist** model is shipped together with the installation package and is recommended for initial use of the software.
+
+Several other more specialized models are available.
+
+For each model, a *light* and/or *ensemble* version is available. *Light* models are smaller size, whereas the *ensemble* versions may have slightly better segmentation performance.
+
+Here are the details of all the models currently supported by AxonDeepSeg:
+
+* **generalist** model (*model_seg_generalist*): Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data. For more information, please visit the `generalist model repository <https://github.com/axondeepseg/model_seg_generalist>`_.
+* **dedicated-SEM** model (*model_seg_rat_axon-myelin_SEM*): Axon and myelin segmentation model trained on Scanning Electron Microscopy data. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
+* **dedicated-BF** (bright-field) model (*model_seg_generalist_BF*): Axon and myelin segmentation model trained on Bright-Field data. For more information, please visit the `BF release of the generalist model repository <https://github.com/axondeepseg/model_seg_generalist/releases/tag/r20240416>`_.
+* **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`_.
+* **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`_.
+
+To download these models, you must first have AxonDeepSeg installed. Afterwards, run::
+
+    download_model -m <model name> -t <model type>
+
+where <model name> is the full name (e.g. *model_seg_rat_axon-myelin_SEM*) and <model type> is either *light* or *ensemble*. To view available models and their details, run::
+
+    download_model --list
+
+Using AxonDeepSeg
+=================
 
 Example dataset
 ---------------
@@ -224,24 +178,12 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 **Required arguments:**
 
--t MODALITY            
-                    Type of acquisition to segment.
-
-                        **SEM**: scanning electron microscopy samples. 
-
-                        **TEM**: transmission electron microscopy samples.
-
-                        **BF**: bright field optical microscopy samples.
-
 -i IMGPATH
                     Path to the image to segment or path to the folder where the image(s) to segment is/are located.
 
 **Optional arguments:**
 
 -m MODEL            Folder where the model is located, if different from the default model.
-
--s SIZEPIXEL        Pixel size of the image(s) to segment, in micrometers. 
-                    If no pixel size is specified, a **pixel_size_in_micrometer.txt** file needs to be added to the image folder path ( that file should contain a single float number corresponding to the resolution of the image, i.e. the pixel size). The pixel size in that file will be used for the segmentation.
 
 -v VERBOSITY        
                     Verbosity level. 
@@ -250,17 +192,7 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
                         **1**: Developer mode. Shows more information on the terminal, useful for debugging.. 
 
---overlap OVERLAP   Overlap value (in pixels) of the patches when doing the segmentation.
-                    Higher values of overlap can improve the segmentation at patch borders, but also increase the segmentation time. Default value: 48. Recommended range of values: [10-100]. 
-
--z ZOOM             Zoom factor.
-                    When applying the model, the size of the segmentation patches relative to the image size will change according to this factor.
-
---no-patch          Flag to segment the image without using patches.
-                    The "no-patch" flag supersedes the "overlap" flag.
-                    This option could potentially produce better results but may not be suitable with large images depending on computer RAM capacity.
-
---gpu-id GPU_ID     Number representing the GPU ID for segmentation if available. Default: 0.
+--gpu-id GPU_ID     Number representing the GPU ID for segmentation if available. Default: None.
 
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
@@ -272,35 +204,16 @@ Segment a single image
 
 To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image **'77.png'** of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png
 
-The script will use the explicitely specified size argument (here, 0.07) for the segmentation. If no pixel size is provided in the arguments, it will automatically read the image resolution encoded in the file **'pixel_size_in_micrometer.txt'** if that file exists in the folder containing the image to segment.
 The segmented acquisition will be saved in the same folder as the acquisition image, with the suffix **'_seg-axonmyelin.png'**, in *png* format, along with the binary axon and myelin segmentation masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). In our example, the following output files will be generated: **'77_seg-axonmyelin.png'**, **'77_seg-axon.png'** and **'77_seg-myelin.png'**.
-
-To segment the same image by using the **'pixel_size_in_micrometer.txt'** file in the folder (i.e. not specifying the pixel size as argument in the command), use the following command::
-
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png
 
 Segment multiple images of the same resolution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'** of the test dataset that have a pixel size of 0.07 micrometers, use the following command::
+To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'**, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ -s 0.07
-
-To segment multiple images of the same folder and of the same resolution by using the **'pixel_size_in_micrometer.txt'** file in the folder (i.e. not specifying the pixel size as argument in the command), use the following folder structure::
-
-    folder_with_samples/
-    ├── image_1.png
-    ├── image_2.png
-    ├── image_3.png
-    ├── ...
-    └── pixel_size_in_micrometer.txt
-
-
-Then, use the following command::
-
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/
 
 Please note that when using ``axondeepseg``, a file called *axondeepseg.log* will be saved in the current working directory. The console output will be saved in this file so you can review it later (useful to process large folders).
 
@@ -309,29 +222,7 @@ Segment images from multiple folders
 
 To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
-
-Segment images using a zoom factor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Sometimes, the quality of the segmentation can be improved by changing the size of the segmentation patches so that, for example, the size of the axons within the segmentation patches are closer to the size that they were during the training of the model. 
-This is why we provide the **-z** argument, which lets you specify a zoom factor to adjust the segmentation patch sizes relative to the image size. Note that this option also works for multiple images or multiple folders. 
-
-For example, using a zoom value of 2.0 will make the patches 2x smaller relative to the image ::
-
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.07 -z 2.0
-
-Using the zoom factor can also be useful when your image size is too small for a given resolution, as our segmentation models resample images to a standard pixel size. Using the zoom factor effectively enlarges your image so that the patches can then fit inside it. If you encounter this issue but have not set a zoom factor, an error message will appear informing you of the minimum zoom factor you should use.
-
-Segment an image using a range of zoom factors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-As mentioned above, choosing an appropriate zoom factor can enhance the quality of your segmentations. To facilitate the process of finding the best zoom value, we provide a feature that sweeps a range of zoom factors. 
-To use the zoom factor sweep on a single image, you can adjust the range of values to sweep using the **-r** argument and the number of equidistant values to sample within this range using the **-l** argument. The lower bound of the range is inclusive whereas the upper bound is exclusive.
-
-For example, using a range of 0.5 to 3 and a length of 5 on the the **'77.png'** image image will create a folder called **'77_sweep'** in that folder containing segmentations for zoom factors 0.5, 1.0, 1.5, 2.0, and 2.5::
-
-    axondeepseg -t SEM -i test_segmentation/test_sem_image/image1_sem/77.png -s 0.13 -r 0.5 3.0 -l 5 
+    axondeepseg -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
 Morphometrics
 -------------
@@ -583,33 +474,6 @@ because they are easier to compute.
 .. comment: We need to add explanation for perimeter estimation, but this 
             part would need to be refactored beforehand.
 
-Jupyter notebooks
------------------
-
-Here is a list of useful Jupyter notebooks available with AxonDeepSeg:
-
-* `00-getting_started.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/00-getting_started.ipynb>`_:
-    Notebook that shows how to perform axon and myelin segmentation of a given sample using a Jupyter notebook (i.e. not using the command line tool of AxonDeepSeg). You can also launch this specific notebook without installing and/or cloning the repository by using the `Binder link <https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2F00-getting_started.ipynb>`_.
-
-* `01-performance_metrics.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/03-performance_metrics.ipynb>`_:
-    Notebook that computes a large set of segmentation metrics to assess the axon and myelin segmentation quality of a given sample (compared against a ground truth mask). Metrics include sensitivity, specificity, precision, accuracy, Dice, Jaccard, F1 score, Hausdorff distance.
-
-* `02-morphometrics_extraction.ipynb <https://github.com/neuropoly/axondeepseg/blob/master/notebooks/04-morphometrics_extraction.ipynb>`_:
-    Notebook that shows how to extract morphometrics from a sample segmented with AxonDeepSeg. The user can extract and save morphometrics for each axon (diameter, solidity, ellipticity, centroid, ...), estimate aggregate morphometrics of the sample from the axon/myelin segmentation (g-ratio, AVF, MVF, myelin thickness, axon density, ...), and generate overlays of axon/myelin segmentation masks, colocoded for axon diameter.
-
-.. NOTE ::
-     To open a notebook, go to the notebooks/ subfolder of AxonDeepSeg and launch a particular notebook as follows::
-     
-         cd notebooks
-         jupyter notebook name_of_the_notebook.ipynb 
-
-.. WARNING ::
-   The current models available for segmentation are trained for patches of 256x256 pixels for SEM and 512x512 pixels for TEM and BF. This means that your input image(s) should be at least 256x256 or 512x512 pixels in size **after the resampling to the target pixel size of the model you are using to segment**. 
-
-   For instance, the TEM model currently available has a target resolution of 0.01 micrometers per pixel, which means that the minimum size of the input image (in micrometers) is 5.12x5.12.
-
-   **Option:** If your image to segment is too small, you can use padding to artificially increase its size (i.e. add empty pixels around the borders).
-
 Manual correction of segmentation masks
 =======================================
 
@@ -621,7 +485,7 @@ Napari plugin
 Open image and mask
 ~~~~~~~~~~~~~~~~~~~
 
-* Open Napari by entering `napari` in the terminal (virtual environment must be activated).
+* Open Napari by entering `ads_napari` in the terminal.
 * Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS plugin (napari-ads)
 * Load the microscopy image using the Napari toolbar: File -> Open file(s)
 * If no segmentation masks already exists:
@@ -695,7 +559,10 @@ GIMP software
 Training Models
 ===============
 
-To train your own model for use in AxonDeepSeg, please refer to the `IVADOMED documentation <https://ivadomed.org/tutorials/two_class_microscopy_seg_2d_unet.html>`_ on model training for two-class microscopy images.
+
+If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your appliucations and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg to schedule a video-call to discuss more.
+
+.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`_ 
 
 Help
 ====
