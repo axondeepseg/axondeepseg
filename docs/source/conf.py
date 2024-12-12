@@ -93,7 +93,7 @@ html_theme = "sphinx_rtd_theme"
 # html_theme_options = {}
 html_theme_options = {
     'collapse_navigation': False,
-    'display_version': False,
+    'version_selector': False,
     'navigation_depth': 4,
 }
 html_logo = '_static/logo_ads-alpha.png'
