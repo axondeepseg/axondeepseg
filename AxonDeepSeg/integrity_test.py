@@ -72,8 +72,8 @@ def main():
 
     parser = argparse.ArgumentParser(description='Run AxonDeepSeg tests.')
 
-    parser.add_argument('--integrity', action='store_true', help='Run the integrity test. (default)')
-    parser.add_argument('--full', action='store_true', help='Run the the full test suite.')
+    parser.add_argument('--full', action='store_true', help='Run the the full test suite.'
+                        'If not specified, then only the integrity tests will be run.')
 
     args = parser.parse_args()
 
