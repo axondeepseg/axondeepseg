@@ -61,11 +61,11 @@ def integrity_test():
         print("* * * Integrity test passed. AxonDeepSeg is correctly installed. * * * ")
         return 0
 
-        except IOError:
+    except IOError:
 
-            # Else, there is a problem in the installation
-            print("Integrity test failed... ")
-            return -1
+        # Else, there is a problem in the installation
+        print("Integrity test failed... ")
+        return -1
 
 def main():
     # argparse CLI arguments, default is to run the integrity test only
