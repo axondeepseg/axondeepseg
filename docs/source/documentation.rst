@@ -6,7 +6,7 @@ AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University o
 
 Testimonials
 ============
-Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`_. Thank you 😊
+Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`__. Thank you 😊
 
 .. admonition:: Anne Wheeler, PhD | Hospital for Sick Children | Canada 🇨🇦
    :class: testimonial
@@ -48,7 +48,7 @@ and follow the prompts. Or, if you want to install AxonDeepSeg with default sett
 
     ./install_ads -y
 
-.. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`_, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`_ before continuing:
+.. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
    ::
 
         # ~/.config/pip/pip.conf
@@ -102,7 +102,7 @@ If all tests pass, AxonDeepSeg was installed succesfully.
 Graphical User Interface (GUI)
 -----------------------------------------
 
-AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `Napari <https://napari.org/stable/>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if needed).
+AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `Napari <https://napari.org/stable/>`__. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if needed).
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_image.png
 
@@ -145,11 +145,11 @@ For each model, a *light* and/or *ensemble* version is available. *Light* models
 
 Here are the details of all the models currently supported by AxonDeepSeg:
 
-* **generalist** model (*model_seg_generalist*): Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data. For more information, please visit the `generalist model repository <https://github.com/axondeepseg/model_seg_generalist>`_.
-* **dedicated-SEM** model (*model_seg_rat_axon-myelin_SEM*): Axon and myelin segmentation model trained on Scanning Electron Microscopy data. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
-* **dedicated-BF** (bright-field) model (*model_seg_generalist_BF*): Axon and myelin segmentation model trained on Bright-Field data. For more information, please visit the `BF release of the generalist model repository <https://github.com/axondeepseg/model_seg_generalist/releases/tag/r20240416>`_.
-* **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`_.
-* **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`_.
+* **generalist** model (*model_seg_generalist*): Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data. For more information, please visit the `generalist model repository <https://github.com/axondeepseg/model_seg_generalist>`__.
+* **dedicated-SEM** model (*model_seg_rat_axon-myelin_SEM*): Axon and myelin segmentation model trained on Scanning Electron Microscopy data. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`__.
+* **dedicated-BF** (bright-field) model (*model_seg_generalist_BF*): Axon and myelin segmentation model trained on Bright-Field data. For more information, please visit the `BF release of the generalist model repository <https://github.com/axondeepseg/model_seg_generalist/releases/tag/r20240416>`__.
+* **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`__.
+* **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`__.
 
 To download these models, you must first have AxonDeepSeg installed. Afterwards, run::
 
@@ -165,7 +165,7 @@ Using AxonDeepSeg
 Example dataset
 ---------------
 
-You can demo the AxonDeepSeg by downloading the test data available `here <https://api.github.com/repos/axondeepseg/data-example/zipball>`_. It contains two SEM test samples and one TEM test sample.
+You can demo the AxonDeepSeg by downloading the test data available `here <https://api.github.com/repos/axondeepseg/data-example/zipball>`__. It contains two SEM test samples and one TEM test sample.
 
 Segmentation
 ------------
@@ -389,7 +389,7 @@ Ellipse
 Morphometrics file
 ~~~~~~~~~~~~~~~~~~
 
-The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_. 
+The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`__. 
 
 By default for axon shape, that is, `circle`, the equivalent diameter is used. For `ellipse` axon shape, minor axis is used as the diameter. The equivalent diameter is defined as the diameter of a circle with the same area as the region. 
 
@@ -552,9 +552,9 @@ Modify the mask
 GIMP software
 --------------------------------
 
-* To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`_).
+* To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`__).
 * If you are making correction on an existing segmentation mask, note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). You can then manually correct the myelin mask and create a corrected axon+myelin mask.
-* For a detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
+* For a detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`__.
 
 Training Models
 ===============
@@ -562,19 +562,19 @@ Training Models
 
 If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your appliucations and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg to schedule a video-call to discuss more.
 
-.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`_ 
+.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
 
 Help
 ====
 
 Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
 
-* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`_. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
-* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
+* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`__. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
+* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`__.
 
 Citation
 ========
 
 If you use this work in your research, please cite:
 
-Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`_.
+Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`__.
