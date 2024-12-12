@@ -92,13 +92,6 @@ html_theme = "sphinx_rtd_theme"
 #
 # html_theme_options = {}
 html_theme_options = {
-    'github_user': 'neuropoly',
-    'github_repo': 'axondeepseg',
-    'github_button': True,
-    'github_banner': True,
-}
-
-html_theme_options = {
     'collapse_navigation': False,
     'display_version': False,
     'navigation_depth': 4,
