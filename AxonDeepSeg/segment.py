@@ -25,7 +25,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
                                    get_imshape, imwrite, imread)
 import AxonDeepSeg.ads_utils
-from config import valid_extensions, side_effect_suffixes
+from AxonDeepSeg.params import valid_extensions, side_effect_suffixes
 
 # Global variables
 DEFAULT_MODEL_NAME = "model_seg_generalist_light"

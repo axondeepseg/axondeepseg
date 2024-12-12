@@ -8,7 +8,7 @@ from typing import List, Literal, NoReturn
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.merge_masks import merge_masks
 from AxonDeepSeg import ads_utils
-from config import nnunet_suffix
+from AxonDeepSeg.params import nnunet_suffix
 from AxonDeepSeg.params import intensity
 
 os.environ['nnUNet_raw'] = 'UNDEFINED'

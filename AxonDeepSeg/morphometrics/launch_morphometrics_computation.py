@@ -23,7 +23,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
     write_aggregate_morphometrics
 )
 import AxonDeepSeg.ads_utils as ads
-from config import (
+from AxonDeepSeg.params import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
     morph_suffix, unmyelinated_morph_suffix, instance_suffix, 

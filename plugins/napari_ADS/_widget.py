@@ -24,7 +24,7 @@ from qtpy.QtGui import QPixmap
 
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 import napari
 from napari.utils.notifications import show_info
