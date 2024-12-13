@@ -29,7 +29,9 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.11',
     ],
-
+    install_requires=[
+    'gitpython',
+    ],
     keywords='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     package_dir={'AxonDeepSeg': 'AxonDeepSeg'},
