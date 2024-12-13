@@ -255,8 +255,8 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
-
-    if "version" in args:
+    breakpoint()
+    if args['version']==True and args['imgpath']==None:
         print(f"AxonDeepSeg v.{AxonDeepSeg.__version__} ({git.Repo(search_parent_directories=True).head.object.hexsha})")
         sys.exit(0)
 
