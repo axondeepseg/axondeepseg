@@ -79,7 +79,7 @@ def main():
 
     if args.full:
         # Run the full test suite
-        sys.exit(pytest.main(["-x", Path(__file__).resolve().parent.parent / "test"]))
+        sys.exit(pytest.main([Path(__file__).resolve().parent.parent / "test"]))
 
     else:
         # Run the integrity test
