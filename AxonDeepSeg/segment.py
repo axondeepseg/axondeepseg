@@ -217,7 +217,7 @@ def main(argv=None):
     # Setting the arguments of the segmentation
     requiredName.add_argument(
         '-i', '--imgpath', 
-        required=False, 
+        required=True, 
         nargs='+', 
         help='Path to the image to segment or path to the folder \n'
             + 'where the image(s) to segment is/are located.',
@@ -238,10 +238,11 @@ def main(argv=None):
         default=0,
     )
     ap.add_argument(
+        '-V',
         '--version', 
-        required=False, 
+        action='version', 
+        version=AxonDeepSeg.__version_string__,
         help='Displays the version and commit hash of AxonDeepSeg.',
-        action='store_true'
     )
     ap.add_argument(
         "--gpu-id",
@@ -255,10 +256,6 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
-    breakpoint()
-    if args['version']==True and args['imgpath']==None:
-        print(f"AxonDeepSeg v.{AxonDeepSeg.__version__} ({git.Repo(search_parent_directories=True).head.object.hexsha})")
-        sys.exit(0)
 
     logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__} ({git.Repo(search_parent_directories=True).head.object.hexsha})")
 
