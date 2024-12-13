@@ -257,7 +257,7 @@ def main(argv=None):
     # Processing the arguments
     args = vars(ap.parse_args(argv))
 
-    logger.info(f"AxonDeepSeg v{AxonDeepSeg.__version__} ({git.Repo(search_parent_directories=True).head.object.hexsha})")
+    logger.info(AxonDeepSeg.__version_string__)
 
     verbosity_level = int(args["verbose"])
     path_target_list = [Path(p) for p in args["imgpath"]]
