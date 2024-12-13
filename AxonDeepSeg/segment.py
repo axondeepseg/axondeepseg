@@ -17,6 +17,7 @@ from argparse import RawTextHelpFormatter
 import pkg_resources
 from typing import Literal, List, NoReturn
 from loguru import logger
+import git
 
 # AxonDeepSeg imports
 import AxonDeepSeg
@@ -205,8 +206,9 @@ def main(argv=None):
         1: Invalid extension
         2: Invalid input
     '''
+
+
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
-    logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__}")
 
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -215,7 +217,7 @@ def main(argv=None):
     # Setting the arguments of the segmentation
     requiredName.add_argument(
         '-i', '--imgpath', 
-        required=True, 
+        required=False, 
         nargs='+', 
         help='Path to the image to segment or path to the folder \n'
             + 'where the image(s) to segment is/are located.',
@@ -236,6 +238,12 @@ def main(argv=None):
         default=0,
     )
     ap.add_argument(
+        '--version', 
+        required=False, 
+        help='Displays the version and commit hash of AxonDeepSeg.',
+        action='store_true'
+    )
+    ap.add_argument(
         "--gpu-id",
         dest="gpu_id",
         required=False,
@@ -247,6 +255,13 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
+
+    if "version" in args:
+        print(f"AxonDeepSeg v.{AxonDeepSeg.__version__} ({git.Repo(search_parent_directories=True).head.object.hexsha})")
+        sys.exit(0)
+
+    logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__} ({git.Repo(search_parent_directories=True).head.object.hexsha})")
+
     verbosity_level = int(args["verbose"])
     path_target_list = [Path(p) for p in args["imgpath"]]
     path_model = Path(args["model"]) if args["model"] else DEFAULT_MODEL_PATH
