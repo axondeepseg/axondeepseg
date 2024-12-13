@@ -65,7 +65,7 @@ release = AxonDeepSeg.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -92,15 +92,8 @@ html_theme = "sphinx_rtd_theme"
 #
 # html_theme_options = {}
 html_theme_options = {
-    'github_user': 'neuropoly',
-    'github_repo': 'axondeepseg',
-    'github_button': True,
-    'github_banner': True,
-}
-
-html_theme_options = {
     'collapse_navigation': False,
-    'display_version': False,
+    'version_selector': False,
     'navigation_depth': 4,
 }
 html_logo = '_static/logo_ads-alpha.png'
