@@ -184,11 +184,6 @@ echo ### Installing ADS and its dependencies from %requirements_file%...
 rem Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
 ads_conda\envs\venv_ads\python -m pip install -U "pip^!=21.2.*" || goto error
 ads_conda\envs\venv_ads\Scripts\pip install -r %requirements_file% || goto error
-
-
-rem Install GitPython before running pip install -e .
-ads_conda\envs\venv_ads\Scripts\pip install GitPython || goto error
-
 ads_conda\envs\venv_ads\Scripts\pip install -e . plugins\ --use-pep517 || goto error
 
 rem Install external dependencies
