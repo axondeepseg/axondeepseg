@@ -91,11 +91,9 @@ This integrity test automatically performs the axon and myelin segmentation of a
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
 
-To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal, activate the virtual environment, and then run ``py.test``::
+To run the entire testing suite (more code coverage), run::
 
-    cd axondeepseg
-    ads_activate
-    py.test --cov AxonDeepSeg/ --cov-report term-missing
+    axondeepseg_test --full
 
 If all tests pass, AxonDeepSeg was installed succesfully.
 

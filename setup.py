@@ -45,7 +45,7 @@ setup(
            'download_model = AxonDeepSeg.download_model:main',
            'download_tests = AxonDeepSeg.download_tests:main',
            'axondeepseg = AxonDeepSeg.segment:main',
-           'axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test', 
+           'axondeepseg_test = AxonDeepSeg.integrity_test:main', 
            'axondeepseg_morphometrics = AxonDeepSeg.morphometrics.launch_morphometrics_computation:main'
         ],
     },
