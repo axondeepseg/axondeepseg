@@ -2,7 +2,7 @@
 
 name: docs
 channels:
-  - defaults
+  - conda-forge
 dependencies:
   - sphinx>=5.0.0
   - sphinx_rtd_theme>=0.2.4
