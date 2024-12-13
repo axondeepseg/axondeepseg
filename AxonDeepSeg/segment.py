@@ -17,7 +17,6 @@ from argparse import RawTextHelpFormatter
 import pkg_resources
 from typing import Literal, List, NoReturn
 from loguru import logger
-import git
 
 # AxonDeepSeg imports
 import AxonDeepSeg
