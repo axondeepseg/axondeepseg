@@ -8,6 +8,11 @@ from pathlib import Path
 import numpy as np
 import tempfile
 import shutil
+import sys
+import pytest
+from loguru import logger
+
+import argparse
 
 # AxonDeepSeg imports
 from AxonDeepSeg.testing.segmentation_scoring import pw_dice
@@ -17,7 +22,6 @@ import AxonDeepSeg.ads_utils
 from AxonDeepSeg.params import axonmyelin_suffix
 
 def integrity_test():
-
     try:
 
         # get path of directory where AxonDeepSeg was installed
@@ -62,3 +66,26 @@ def integrity_test():
         # Else, there is a problem in the installation
         print("Integrity test failed... ")
         return -1
+
+def main():
+    # argparse CLI arguments, default is to run the integrity test only
+
+    parser = argparse.ArgumentParser(description='Run AxonDeepSeg tests.')
+
+    parser.add_argument('--full', action='store_true', help='Run the the full test suite.'
+                        'If not specified, then only the integrity tests will be run.')
+
+    args = parser.parse_args()
+
+    if args.full:
+        # Run the full test suite
+        sys.exit(pytest.main([Path(__file__).resolve().parent.parent / "test"]))
+
+    else:
+        # Run the integrity test
+        integrity_test()
+    return 0
+
+if __name__ == "__main__":
+    with logger.catch():
+        main()
