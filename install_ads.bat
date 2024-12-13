@@ -62,9 +62,7 @@ if [%ADS_INSTALL_TYPE%]==[] (
 )
 
 rem Fetch the version of ADS from the source file
-rem This assumes that the last non-empty line is `__version__ = "X.Y.Z"` (version == 5-char string starting at pos 15)
-for /F "delims=" %%g IN (%ADS_SOURCE%\AxonDeepSeg\__init__.py) do (set LAST_LINE=%%g)
-set ADS_VERSION=%LAST_LINE:~15,5%
+set /p ADS_VERSION=<%ADS_SOURCE%\AxonDeepSeg\version.txt
 
 echo:
 echo ### ADS version ......... %ADS_VERSION%
