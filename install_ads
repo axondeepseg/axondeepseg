@@ -428,7 +428,7 @@ if [[ -z "$ADS_INSTALL_TYPE" ]]; then
 fi
 
 # Fetch the version of ADS from the source file
-ADS_VERSION=$(< "$ADS_SOURCE/AxonDeepSeg/__init__.py" cut -d ' ' -f 3 | cut -d '"' -f 2)
+ADS_VERSION=$(< "$ADS_SOURCE/AxonDeepSeg/version.txt")
 
 # Define sh files
 get_shell_rc_path
