@@ -10,7 +10,7 @@ from AxonDeepSeg.segment import (
     prepare_inputs
 )
 import AxonDeepSeg
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 class TestCore(object):
     def setup_method(self):

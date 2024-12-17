@@ -10,7 +10,7 @@ import pytest
 
 from AxonDeepSeg.testing.segmentation_scoring import score_analysis, dice, pw_dice, Metrics_calculator
 from AxonDeepSeg import ads_utils
-from config import axonmyelin_suffix
+from AxonDeepSeg.params import axonmyelin_suffix
 
 
 class TestCore(object):
