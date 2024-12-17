@@ -205,8 +205,9 @@ def main(argv=None):
         1: Invalid extension
         2: Invalid input
     '''
+
+
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
-    logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__}")
 
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -236,6 +237,13 @@ def main(argv=None):
         default=0,
     )
     ap.add_argument(
+        '-V',
+        '--version', 
+        action='version', 
+        version=AxonDeepSeg.__version_string__,
+        help='Displays the version and commit hash of AxonDeepSeg.',
+    )
+    ap.add_argument(
         "--gpu-id",
         dest="gpu_id",
         required=False,
@@ -247,6 +255,9 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
+
+    logger.info(AxonDeepSeg.__version_string__)
+
     verbosity_level = int(args["verbose"])
     path_target_list = [Path(p) for p in args["imgpath"]]
     path_model = Path(args["model"]) if args["model"] else DEFAULT_MODEL_PATH
