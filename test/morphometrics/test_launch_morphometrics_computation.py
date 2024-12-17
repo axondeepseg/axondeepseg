@@ -14,7 +14,7 @@ from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_mo
 from AxonDeepSeg.params import (
     axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, 
     index_suffix, axonmyelin_index_suffix, instance_suffix,
-    unmyelinated_suffix, unmyelinated_morph_suffix, unmyelinated_index_suffix,
+    unmyelinated_suffix, unmyelinated_morph_suffix,
 )
 
 
