@@ -10,11 +10,13 @@ Welcome to the AxonDeepSeg framework. In this site you will find the documentati
 
 AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It is based on convolutional neural networks. The package also includes a tool for automatic morphometrics computation.
 
-.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig0.png
-   :alt: Figure of a Convolutional Neural Network (CNN) architecture, including the neural network's layers. The figure shows an input nerve fibre image, as well as the output predictions of the axon/myelin within the image.
+* Graphical user interface: 
+
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/animations/napari.gif
+   :alt: Animation of the AxonDeepSeg plugin for Napari showing the segmentation of axon/myelin in a microscopy image.
    :align: center
 
-|
+
 
 * AxonDeepSeg pipeline:
 
