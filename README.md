@@ -1,4 +1,9 @@
-<img src="https://github.com/neuropoly/axondeepseg/blob/master/docs/source/_static/logo_ads-alpha.png" width="385">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-dark.png?raw=true" width="385">
+  <img alt="" src=https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-light.png?raw=true" width="385">
+</picture>
+
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb)
 [![Build Status](https://github.com/axondeepseg/axondeepseg/actions/workflows/run_tests.yaml/badge.svg)](https://github.com/axondeepseg/axondeepseg/actions/workflows/run_tests.yaml)
@@ -11,7 +16,7 @@ Based on a convolutional neural network architecture. Pixels are classified as e
 
 For more information, see the [documentation website](http://axondeepseg.readthedocs.io/).
 
-![alt tag](https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig0.png)
+![alt tag](https://github.com/axondeepseg/doc-figures/blob/main/animations/napari.gif?raw=true)
 
 
 
