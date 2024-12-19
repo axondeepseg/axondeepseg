@@ -12,7 +12,7 @@ AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It i
 
 * Graphical user interface: 
 
-.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/animations/napari.png
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/animations/napari.gif
    :alt: Animation of the AxonDeepSeg plugin for Napari showing the segmentation of axon/myelin in a microscopy image.
    :align: center
 
