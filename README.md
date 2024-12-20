@@ -1,7 +1,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-dark-alpha.png?raw=true" width="385">
-  <img alt="" src=https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-alpha.png?raw=true" width="385">
+  <img alt="ADS logo (simplified image of segmented axons/myelin in blue and red beside the text 'AxonDeepSeg')" src=https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-alpha.png?raw=true" width="385">
 </picture>
 
 
