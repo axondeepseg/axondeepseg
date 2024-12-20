@@ -1,7 +1,7 @@
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-dark.png?raw=true" width="385">
-  <img alt="" src=https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-light.png?raw=true" width="385">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-dark-alpha.png?raw=true" width="385">
+  <img alt="" src=https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-alpha.png?raw=true" width="385">
 </picture>
 
 
