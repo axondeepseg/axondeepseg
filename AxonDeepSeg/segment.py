@@ -255,8 +255,15 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
+    
+    # Load log file without logger to write
+    with open("axondeepseg.log", "a") as f:
+        f.write("===================================================================================\n")
 
     logger.info(AxonDeepSeg.__version_string__)
+
+    # Log command line arguments
+    logger.info(f"Command line arguments: {args}")
 
     verbosity_level = int(args["verbose"])
     path_target_list = [Path(p) for p in args["imgpath"]]
