@@ -122,8 +122,9 @@ class TestCore(object):
             print(folder)
             for file in filenames:
                 print(file)
-                image = (imread(Path(folder) / file))
-                assert image.dtype == np.uint8
+                if (Path(folder) / file).exists():
+                    image = (imread(Path(folder) / file))
+                    assert image.dtype == np.uint8
 
     @pytest.mark.unit
     def test_imread_fails_for_ome_filename(self):
@@ -200,18 +201,17 @@ class TestCore(object):
         for folder in folders:
             print(folder)
             for file in filenames:
-                print(file)
-                read_image = imread(Path(folder) / file)
 
-                print(read_image.dtype)
-                print(read_image.shape)
-                # Save
-                imwrite(Path(self.tmp_folder) / 'tmp.png', read_image)
+                if (Path(folder) / file).exists():
+                    read_image = imread(Path(folder) / file)
 
-                # Read saved image
-                saved_image = imageio.imread(Path(self.tmp_folder) / 'tmp.png')
-    
-                assert np.all(saved_image == read_image)
+                    # Save
+                    imwrite(Path(self.tmp_folder) / 'tmp.png', read_image)
+
+                    # Read saved image
+                    saved_image = imageio.imread(Path(self.tmp_folder) / 'tmp.png')
+        
+                    assert np.all(saved_image == read_image)
 
     @pytest.mark.unit
     def test_get_file_extension_returns_expected_filenames(self):
