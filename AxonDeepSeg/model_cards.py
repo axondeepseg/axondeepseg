@@ -19,7 +19,7 @@ MODELS = {
         "task": "myelinated-axon-segmentation",
         "n_classes": 2,
         "model-info": "Axon and myelin segmentation model trained on Bright-Field data.",
-        "training-data": "3 different BF datasets were aggregated. For a detailed description of the dataset used for training, see <insert paper>.",
+        "training-data": "3 different BF datasets were aggregated. For a detailed description of the dataset used for training, see https://arxiv.org/abs/2409.11552.",
         "weights": {
             "ensemble": None,
             "light": "https://github.com/axondeepseg/model_seg_generalist/releases/download/r20240416/model_seg_generalist_bf_light.zip"
