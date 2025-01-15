@@ -74,6 +74,15 @@ Then, to use ADS's command-line scripts in Command Prompt, please follow these i
 4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
 5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 
+Updating AxonDeepSeg
+-------------------
+
+To update the AxonDeepSeg to the latest version, run::
+
+    git checkout master && git fetch && git pull
+
+and then follow the installation instructions above specified for your operating system.
+
 Testing the installation
 ------------------------
 
