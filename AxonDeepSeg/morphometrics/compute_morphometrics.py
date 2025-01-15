@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from pathlib import Path
-from string import Template
 from loguru import logger
 
 # Scientific modules imports

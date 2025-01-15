@@ -2,7 +2,7 @@ name: napari-ADS
 contributions:
   commands:
     - id: napari-ADS.make_qwidget
-      python_name: plugins.napari_ADS._widget:ADSplugin
+      python_name: napari_ADS._widget:ADSplugin
       title: Make ADS plugin
   widgets:
     - command: napari-ADS.make_qwidget

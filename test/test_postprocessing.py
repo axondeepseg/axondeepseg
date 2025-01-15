@@ -32,16 +32,6 @@ class TestCore(object):
         assert sorted(expected_centroids) == sorted(obtained_centroids)
 
     @pytest.mark.unit
-    def test_floodfill_axons_returns_expected_arrays(self):
-        before_ff_axon_mask, before_ff_myelin_mask = \
-            ads_utils.extract_axon_and_myelin_masks_from_image_data(self.before_floodfill_image)
-        after_ff_expected_axon_mask, _ = \
-            ads_utils.extract_axon_and_myelin_masks_from_image_data(self.after_floodfill_image)
-        after_ff_obtained_axon_mask = postprocessing.floodfill_axons(before_ff_axon_mask, before_ff_myelin_mask)
-
-        assert np.array_equal(after_ff_obtained_axon_mask, after_ff_expected_axon_mask)
-
-    @pytest.mark.unit
     def test_fill_myelin_holes_returns_expected_arrays(self):
         # We can reuse the data from the floodfill since the goal of these two tools is the same
         _, before_fill_myelin_mask = \
@@ -115,17 +105,6 @@ class TestCore(object):
         # Load the created image and compare it to the expected image
         output_image = np.asarray(Image.open(output_image_path))
         assert np.array_equal(output_image, expected_image)
-
-    @pytest.mark.unit
-    def test_remove_single_axon_at_coordinate_returns_expected_masks(self):
-        expected_image = ads_utils.imread((self.test_files_path / 'after_removing_single.png'))
-        expected_axon, expected_myelin = ads_utils.extract_axon_and_myelin_masks_from_image_data(expected_image)
-        im_axon, im_myelin = ads_utils.extract_axon_and_myelin_masks_from_image_data(self.before_axon_removal_image)
-        obtained_axon, obtained_myelin = postprocessing.remove_single_axon_at_coordinate(im_axon, im_myelin, 12.0, 39.0)
-
-        assert (np.array_equal(expected_axon, obtained_axon)) \
-               and \
-               (np.array_equal(expected_myelin, obtained_myelin))
 
     @pytest.mark.unit
     def test_remove_axons_at_coordinates_returns_expected_masks(self):

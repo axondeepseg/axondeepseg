@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from AxonDeepSeg.testing.launch_performance_metrics import launch_performance_metrics
-from config import axonmyelin_suffix
+from AxonDeepSeg.params import axonmyelin_suffix
 
 
 class TestCore(object):

@@ -10,18 +10,18 @@ Welcome to the AxonDeepSeg framework. In this site you will find the documentati
 
 AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It is based on convolutional neural networks. The package also includes a tool for automatic morphometrics computation.
 
-.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig0.png
-   :scale: 35 %
-   :alt: alternate text
+* Graphical user interface: 
+
+.. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/animations/napari.gif
+   :alt: Animation of the AxonDeepSeg plugin for Napari showing the segmentation of axon/myelin in a microscopy image.
    :align: center
 
-|
+
 
 * AxonDeepSeg pipeline:
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig1.png
-   :scale: 35 %
-   :alt: alternate text
+   :alt: Figure of AxonDeepSeg's processing pipeline, including the following steps: A) Data Preparation, B) Learning (training of a deep leaning model), C) Evaluation, and D) Prediction on unseen data.
    :align: center
 
 |
@@ -29,8 +29,7 @@ AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It i
 * Segmentation of axon/myelin from various species/contrasts:
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig2.png
-   :scale: 35 %
-   :alt: alternate text
+   :alt: Figure showing detailed sample segmentation results, comparing AxonDeepSeg's predictions of axon/myelin with "Gold standard" ground truth data.
    :align: center
 
 |
@@ -38,8 +37,7 @@ AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It i
 * Segmentation of full slice histology and morphometrics extraction:
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig3.png
-   :scale: 35 %
-   :alt: alternate text
+   :alt: Figure showing a cross section of a rat spinal cord, as well as heatmaps of the spinal cord displaying metrics such as "axon diameter mean", "axon diameter standard deviation", "axon density", "axon volume fraction", "myelin volume fraction", and "g-ratio".
    :align: center
 
 |

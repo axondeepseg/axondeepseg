@@ -43,7 +43,7 @@ class TestCore(object):
             shutil.rmtree(tmpPath)
             pass
 
-    # --------------download_models tests-------------- #
+    # --------------download_model tests-------------- #
     @pytest.mark.unit
     def test_download_tests_works(self):
         assert not self.test_files_path.exists()

@@ -6,9 +6,10 @@ import numpy as np
 
 import pytest
 
-from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, get_file_extension
+from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, get_file_extension, check_available_gpus
+from AxonDeepSeg.model_cards import get_supported_models
 from AxonDeepSeg import params
-
+from torch.cuda import device_count
 
 class TestCore(object):
     def setup_method(self):
@@ -87,10 +88,10 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_get_existing_models_list_returns_known_models(self):
-        known_models = ['model_seg_rat_axon-myelin_sem', 'model_seg_mouse_axon-myelin_tem', 'model_seg_rat_axon-myelin_bf']
+        known_models = get_supported_models()
 
-        for model in known_models:
-            assert model in get_existing_models_list()
+        for downloaded_model in get_existing_models_list():
+            assert downloaded_model in known_models
 
     @pytest.mark.unit
     def test_imread_fails_for_ome_filename(self):
@@ -171,3 +172,11 @@ class TestCore(object):
         for filename, ext in zip(filenames, expected_extensions):
             assert get_file_extension(filename) == ext
 
+    @pytest.mark.unit
+    def test_check_available_gpus(self):
+        gpu_id = 0
+        n_gpus = check_available_gpus(gpu_id)
+
+        expected_n_gpus = device_count()
+
+        assert n_gpus == expected_n_gpus

@@ -3,31 +3,23 @@ from setuptools.command.develop import develop
 from subprocess import check_call
 
 from codecs import open
-from os import path
-
-import AxonDeepSeg
+import os
 
 
 # Get the directory where this current file is saved
-here = path.abspath(path.dirname(__file__))
+here = os.path.abspath(os.path.dirname(__file__))
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-class PostDevelopCommand(develop):
-    """Post-installation for installation mode."""
-    def run(self):
-
-        develop.run(self)
-        check_call("download_models")
-        check_call("download_tests")
-
-
+version_file = os.path.abspath(os.path.join(__file__, os.pardir, "AxonDeepSeg", "version.txt"))
+with open(version_file, 'r') as f:
+    __version__ = f.read().rstrip()
 
 setup(
     name='AxonDeepSeg',
-    python_requires='>=3.8, <3.9',
-    version=AxonDeepSeg.__version__,
+    python_requires='>=3.11',
+    version=__version__,
     description='Python tool for automatic axon and myelin segmentation',
     long_description=long_description,
     url='https://github.com/neuropoly/axondeepseg',
@@ -37,7 +29,7 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.11',
     ],
 
     keywords='',
@@ -52,15 +44,12 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-           'download_models = AxonDeepSeg.download_model:main',
+           'download_model = AxonDeepSeg.download_model:main',
            'download_tests = AxonDeepSeg.download_tests:main',
            'axondeepseg = AxonDeepSeg.segment:main',
-           'axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test', 
+           'axondeepseg_test = AxonDeepSeg.integrity_test:main', 
            'axondeepseg_morphometrics = AxonDeepSeg.morphometrics.launch_morphometrics_computation:main'
         ],
-    },
-    cmdclass={
-        'develop': PostDevelopCommand,
     },
 
 )
