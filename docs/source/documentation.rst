@@ -120,7 +120,7 @@ Launch Napari ::
 In Napari, do the following:
 - Click on ``Plugins -> ADS plugin (napari-ads)``
 
-In the [Manual Correction](#manual-correction-of-segmentation-masks) section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
+In the [Manual Correction](:ref:`my-figure`) section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 
 .. raw:: html
 
@@ -482,6 +482,8 @@ because they are easier to compute.
 .. comment: We need to add explanation for perimeter estimation, but this 
             part would need to be refactored beforehand.
 
+
+.. _manual-correction-label:
 Manual correction of segmentation masks
 =======================================
 
