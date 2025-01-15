@@ -79,7 +79,7 @@ Updating AxonDeepSeg
 
 To update the AxonDeepSeg to the latest version, run::
 
-    git checkout master && git fetch && git pull
+    git checkout master && git pull
 
 and then follow the installation instructions above specified for your operating system.
 
