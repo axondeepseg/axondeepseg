@@ -484,6 +484,7 @@ because they are easier to compute.
 
 
 .. _manual-correction-label:
+
 Manual correction of segmentation masks
 =======================================
 
