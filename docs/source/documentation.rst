@@ -75,7 +75,7 @@ Then, to use ADS's command-line scripts in Command Prompt, please follow these i
 5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 
 Updating AxonDeepSeg
--------------------
+--------------------
 
 To update the AxonDeepSeg to the latest version, run::
 
