@@ -120,7 +120,7 @@ Launch Napari ::
 In Napari, do the following:
 - Click on ``Plugins -> ADS plugin (napari-ads)``
 
-In the *:ref:`manual-correction-label`* section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
+In the * :ref:`manual-correction-label` * section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 
 .. raw:: html
 
