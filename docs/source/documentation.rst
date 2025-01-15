@@ -74,6 +74,15 @@ Then, to use ADS's command-line scripts in Command Prompt, please follow these i
 4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
 5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 
+Updating AxonDeepSeg
+--------------------
+
+To update the AxonDeepSeg to the latest version, run::
+
+    git checkout master && git pull
+
+and then follow the installation instructions above specified for your operating system.
+
 Testing the installation
 ------------------------
 
@@ -131,6 +140,7 @@ To develop code in the AxonDeepSeg software package and use it in a python shell
        conda deactivate
 
 If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open Jupyter notebook from within an activated virtual environment. 
+
 
 Existing models
 ===============
@@ -557,10 +567,10 @@ GIMP software
 Training Models
 ===============
 
-
 If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your appliucations and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg to schedule a video-call to discuss more.
 
 .. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
+
 
 Help
 ====
