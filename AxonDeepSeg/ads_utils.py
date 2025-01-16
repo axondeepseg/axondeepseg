@@ -107,23 +107,64 @@ def imread(filename):
                                f"supported. AxonDeepSeg supports the following "
                                f"file extensions:  '.png', '.tif', '.tiff', '.jpg' and '.jpeg'.")
 
-    # Load image
-    if str(file_ext) in ['.tif', '.tiff']:
-        raw_img = imageio.v2.imread(filename, format='tiff-pil')
-        if len(raw_img.shape) > 2:
-            raw_img = imageio.v2.imread(filename, format='tiff-pil', mode='L')
-    else:
-        raw_img = imageio.v2.imread(filename)
-        if len(raw_img.shape) > 2:
-            raw_img = imageio.v2.imread(filename, mode='L')
-    img = imageio.core.image_as_uint(raw_img, bitdepth=8)
+    props = imageio.v3.improps(filename) # new in v3 - standardized metadata
+    _img = imageio.v3.imread(filename)
+
+    if _img.dtype==np.float32 or _img.dtype==np.float64:
+        if len(_img.shape) > 2:
+            raise IOError(f"Multichannel 32bit and 64bit float images are not supported. Please convert the image to 8bit or 16bit, or make a single channel image.")
+
+    # brute force fall back to support backward compatibility 
+    if '.tif' in file_ext:
+        img = np.expand_dims(
+            imageio.v3.imread(filename, plugin='TIFF-PIL'),
+            axis=-1).astype(np.uint8)
+                
+        if len(img.shape) > 3:
+            img = np.expand_dims(
+                imageio.v3.imread(filename, plugin='TIFF-PIL', as_gray=True),
+                axis=-1).astype(np.uint8)
+
+    # c.f for more details: https://github.com/ivadomed/ivadomed/pull/1297#discussion_r1267563980 and 
+    # https://github.com/ivadomed/ivadomed/pull/1297#discussion_r1267563980 
+            
+    # TIFF is a "wild" format. A few assumptions greatly simplify the code below:
+    # 1. the image is interleaved/channel-last (not planar)
+    # 2. the colorspace is one of: binary, gray, RGB, RGBA (not aliasing ones like YUV or CMYK)
+    # 3. the image is flat (not a volume or time-series)
+    # Note: All of these are trivially true for JPEG and PNG due to limitations of these formats.
+
+    # make grayscale (treats binary as 1-bit grayscale)
+    colorspace_idx = 2
+    if _img.ndim <= colorspace_idx:  # binary or gray
+        pass  # nothing to do
+    elif _img.shape[colorspace_idx] == 2:  # gray with alpha channel
+        _img = _img[:, :, 0]
+    elif _img.shape[colorspace_idx] == 3:  # RGB
+        _img = np.sum(_img * (.299, .587, .114), axis=-1)
+    else:  # RGBA
+        # discards alpha
+        _img = np.sum(_img * (.299, .587, .114, 0), axis=-1)
+    if len(_img.shape) < 3:
+        _img = np.expand_dims(_img, axis=-1)
+
+    img = imageio.core.image_as_uint(_img, bitdepth=8)
+
+    # Remove singleton dimension
+    print(img.ndim)
+    print(img.shape)
+    if img.ndim == 3 and img.shape[-1] == 1:
+       img = img[:, :, 0]
+
     return img
 
 def imwrite(filename, img, format='png'):
     """ Write image.
     """
     # check datatype:
-    if img.dtype == 'float64':
+    conversion_list = ['float64', 'float32', 'float16', 'uint16']
+
+    if img.dtype in conversion_list:
         img = img.astype(np.uint8)
     imageio.imwrite(filename, img, format=format)
 

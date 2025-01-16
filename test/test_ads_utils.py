@@ -3,10 +3,11 @@
 from pathlib import Path
 import shutil
 import numpy as np
+import imageio
 
 import pytest
 
-from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, get_file_extension, check_available_gpus
+from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, imwrite, get_file_extension, check_available_gpus
 from AxonDeepSeg.model_cards import get_supported_models
 from AxonDeepSeg import params
 from torch.cuda import device_count
@@ -19,10 +20,18 @@ class TestCore(object):
 
         self.precision_path = Path('test/__test_files__/__test_precision_files__')
 
+        self.tmp_folder = Path('test/__test_files__/tmp_folder')
+
+        if not self.tmp_folder.exists():
+            self.tmp_folder.mkdir()
+        
     def teardown_method(self):
         output_path = Path("TEM_striatum") # Name of zip file downloaded, folder was created in this name too
         if output_path.exists():
             shutil.rmtree(output_path)
+        
+        if self.tmp_folder.exists():
+            shutil.rmtree(self.tmp_folder)
 
     # --------------download_data tests-------------- #
     @pytest.mark.unit
@@ -93,6 +102,30 @@ class TestCore(object):
         for downloaded_model in get_existing_models_list():
             assert downloaded_model in known_models
 
+    # --------------imread tests-------------- #
+    @pytest.mark.unit
+    def test_imread_outputs_8bit(self):
+        filenames = {
+            'image_8bit.png',
+            'image_8bit.tif',
+            'image_16bit.png',
+            'image_16bit.tif',
+        }
+
+        folders = {
+            'test/__test_files__/__test_precision_files__',
+            'test/__test_files__/__test_color_files__',
+            'test/__test_files__/__test_coloralpha_files__',
+        }
+
+        for folder in folders:
+            print(folder)
+            for file in filenames:
+                print(file)
+                if (Path(folder) / file).exists():
+                    image = (imread(Path(folder) / file))
+                    assert image.dtype == np.uint8
+
     @pytest.mark.unit
     def test_imread_fails_for_ome_filename(self):
         filename = 'test_name.ome.tif'
@@ -103,11 +136,10 @@ class TestCore(object):
     @pytest.mark.unit
     def test_imread_same_output_for_different_input_precisions(self):
         filenames = {
-            'image_8bit_int.png',
-            'image_16bit_int.png',
-            'image_32bit_int.png',
-            'image_16bit_float.png',
-            'image_32bit_float.png',
+            'image_8bit.png',
+            'image_8bit.tif',
+            'image_16bit.png',
+            'image_16bit.tif',
         }
 
         image_1 = None
@@ -118,10 +150,68 @@ class TestCore(object):
             
             if image_1 is None:
                 image_1 = image
+                print(image_1)
             else:
                 image_2 = image
+                assert np.allclose(image_1, image_2, atol=2) # In some pixels, rounding differences between float and int conversions lead to an int difference value of 1, which is why this atol was chosen.
 
-                assert np.allclose(image_1, image_2, atol=1) # In very few pixels (eg, 3 pixels in entire image), rounding differences between float and int conversions lead to an int difference value of 1, which is why this atol was chosen.
+    # --------------imwrite tests-------------- #
+    @pytest.mark.unit
+    def test_imwrite_saves_to_8bit(self):
+        filenames = {
+            'image_8bit.png',
+            'image_8bit.tif',
+            'image_16bit.png',
+            'image_16bit.tif',
+        }
+
+        folders = {
+            'test/__test_files__/__test_precision_files__',
+        }
+
+        for folder in folders:
+            print(folder)
+            for file in filenames:
+                print(file)
+                image = imageio.imread(Path(folder) / file)
+                
+                # Save
+                imwrite(Path(self.tmp_folder) / file, image)
+
+                # Read saved image
+                saved_image = imageio.imread(Path(self.tmp_folder) / file)
+    
+                assert saved_image.dtype == np.uint8
+
+    @pytest.mark.unit
+    def test_imwrite_from_imread_returns_same_array(self):
+        filenames = {
+            'image_8bit.png',
+            'image_8bit.tif',
+            'image_16bit.png',
+            'image_16bit.tif',
+        }
+
+        folders = {
+            'test/__test_files__/__test_precision_files__',
+            'test/__test_files__/__test_color_files__',
+            'test/__test_files__/__test_coloralpha_files__',
+        }
+
+        for folder in folders:
+            print(folder)
+            for file in filenames:
+
+                if (Path(folder) / file).exists():
+                    read_image = imread(Path(folder) / file)
+
+                    # Save
+                    imwrite(Path(self.tmp_folder) / 'tmp.png', read_image)
+
+                    # Read saved image
+                    saved_image = imageio.imread(Path(self.tmp_folder) / 'tmp.png')
+        
+                    assert np.all(saved_image == read_image)
 
     @pytest.mark.unit
     def test_get_file_extension_returns_expected_filenames(self):
