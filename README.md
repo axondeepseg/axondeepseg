@@ -40,6 +40,7 @@ A tutorial demonstrating the basic features of our plugin for Napari is hosted o
 
 * [Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data.* Montreal Artificial Intelligence and Neuroscience 2019](https://arxiv.org/abs/1907.05143) - \[[**source code**](https://github.com/neuropoly/deep-active-learning)\]
 * [Zaimi et al. *AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks.* Scientific Reports 2018](https://www.nature.com/articles/s41598-018-22181-4)
+* [Collin et al. *Multi-Domain Data Aggregation for Axon and Myelin Segmentation in Histology Images*. preprint](https://arxiv.org/abs/2409.11552v1) - \[[**source code**](https://github.com/axondeepseg/model_seg_generalist)]
 
 **Applications**
 
