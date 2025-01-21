@@ -4,7 +4,7 @@ import os, sys
 from pathlib import Path
 
 import AxonDeepSeg
-import config
+import AxonDeepSeg.params as config
 import numpy as np
 import qtpy.QtCore
 from qtpy import QtWidgets, QtCore
