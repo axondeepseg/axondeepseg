@@ -1,7 +1,7 @@
 Changelog
 ===============================================================================
 
-## v5.0.0 (2025-01-20)
+## v5.0.0 (2025-01-22)
 [View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v4.1.0...v5.0.0)
 
 **BUG**
@@ -12,6 +12,7 @@ Changelog
  - Change imageio as_gray to mode=L due to imageio v2->v3.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/739)
  - Remove unicode in units names.  [View pull request](ttps://github.com/axondeepseg/axondeepseg/pull/780)
  - Fix download_models bug - download to path.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/836)
+ - Update _widget.py [View pull request](https://github.com/axondeepseg/axondeepseg/pull/861)
 
 **ENHANCEMENT**
 
@@ -25,6 +26,7 @@ Changelog
  - Segment images without patches.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/696)
  - Add GPU ID setting in CLI and FSLeyes.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/701)
 - `ivadomed` to `nnunetv2` backend migration.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/800)
+ - Log CLI args, add breakline [View pull request](https://github.com/neuropoly/axondeepseg/pull/854)
 
 
 **DOCUMENTATION**
@@ -39,6 +41,10 @@ Changelog
  - Set `fail_on_warning = True` and resolve documentation warnings to ensure docs pass.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/846)
  - Add Napari Plugin animation in doc.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/850)
  - README: Add dark/light mode compatibility.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/853)
+ - Add reinstallation documentation [View pull request](https://github.com/neuropoly/axondeepseg/pull/788)
+ - Add preprint link to model_cards [View pull request](https://github.com/neuropoly/axondeepseg/pull/851)
+ - Fix crosslink bug in documentation [View pull request](https://github.com/neuropoly/axondeepseg/pull/858)
+ - Add generalist preprint in readme [View pull request](https://github.com/neuropoly/axondeepseg/pull/859)
 
 **GUI**
 
@@ -58,6 +64,7 @@ Changelog
  - Update ivadomed version to 2.9.10.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/792)
  - Pin acvl_utils!=0.2.1.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/834)
  - Pin skimage<0.25.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/848)
+ - Remove scikitlearn pinned version and use updated reference pickle for morphometrics data testing   [View pull request](https://github.com/axondeepseg/axondeepseg/pull/860)
 
 **REFACTORING**
 
@@ -73,6 +80,8 @@ Changelog
  - Github Actions failure: macos " No installed conda 'base' environment found at !".  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/801)
  - Consolidate coveralls services.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/819)
  - Add CLI option to run all tests.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/845)
+ - Update imread/imwrite functionality and tests  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/855)
+ - Change test image(s) in rtd [View pull request](https://github.com/axondeepseg/axondeepseg/pull/852)
 
 ## v4.1.0 (2022-10-07)
 [View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v4.0.0...v4.1.0)
