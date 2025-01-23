@@ -25,7 +25,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
                                    get_imshape, imwrite, imread)
 import AxonDeepSeg.ads_utils
-from config import valid_extensions, side_effect_suffixes
+from AxonDeepSeg.params import valid_extensions, side_effect_suffixes
 
 # Global variables
 DEFAULT_MODEL_NAME = "model_seg_generalist_light"
@@ -205,8 +205,9 @@ def main(argv=None):
         1: Invalid extension
         2: Invalid input
     '''
+
+
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
-    logger.info(f"AxonDeepSeg v.{AxonDeepSeg.__version__}")
 
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -236,6 +237,13 @@ def main(argv=None):
         default=0,
     )
     ap.add_argument(
+        '-V',
+        '--version', 
+        action='version', 
+        version=AxonDeepSeg.__version_string__,
+        help='Displays the version and commit hash of AxonDeepSeg.',
+    )
+    ap.add_argument(
         "--gpu-id",
         dest="gpu_id",
         required=False,
@@ -247,6 +255,16 @@ def main(argv=None):
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
+    
+    # Load log file without logger to write
+    with open("axondeepseg.log", "a") as f:
+        f.write("===================================================================================\n")
+
+    logger.info(AxonDeepSeg.__version_string__)
+
+    # Log command line arguments
+    logger.info(f"Command line arguments: {args}")
+
     verbosity_level = int(args["verbose"])
     path_target_list = [Path(p) for p in args["imgpath"]]
     path_model = Path(args["model"]) if args["model"] else DEFAULT_MODEL_PATH

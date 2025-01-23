@@ -10,7 +10,7 @@ from AxonDeepSeg.apply_model import (
 )
 
 from AxonDeepSeg import ads_utils
-from config import nnunet_suffix
+from AxonDeepSeg.params import nnunet_suffix
 
 import numpy as np
 

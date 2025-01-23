@@ -1,4 +1,9 @@
-<img src="https://github.com/neuropoly/axondeepseg/blob/master/docs/source/_static/logo_ads-alpha.png" width="385">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-dark-alpha.png?raw=true" width="385">
+  <img alt="ADS logo (simplified image of segmented axons/myelin in blue and red beside the text 'AxonDeepSeg')" src=https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-alpha.png?raw=true" width="385">
+</picture>
+
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb)
 [![Build Status](https://github.com/axondeepseg/axondeepseg/actions/workflows/run_tests.yaml/badge.svg)](https://github.com/axondeepseg/axondeepseg/actions/workflows/run_tests.yaml)
@@ -11,7 +16,7 @@ Based on a convolutional neural network architecture. Pixels are classified as e
 
 For more information, see the [documentation website](http://axondeepseg.readthedocs.io/).
 
-![alt tag](https://raw.githubusercontent.com/axondeepseg/doc-figures/main/index/fig0.png)
+![alt tag](https://github.com/axondeepseg/doc-figures/blob/main/animations/napari.gif?raw=true)
 
 
 
@@ -35,6 +40,7 @@ A tutorial demonstrating the basic features of our plugin for Napari is hosted o
 
 * [Lubrano et al. *Deep Active Leaning for Myelin Segmentation on Histology Data.* Montreal Artificial Intelligence and Neuroscience 2019](https://arxiv.org/abs/1907.05143) - \[[**source code**](https://github.com/neuropoly/deep-active-learning)\]
 * [Zaimi et al. *AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks.* Scientific Reports 2018](https://www.nature.com/articles/s41598-018-22181-4)
+* [Collin et al. *Multi-Domain Data Aggregation for Axon and Myelin Segmentation in Histology Images*. preprint](https://arxiv.org/abs/2409.11552v1) - \[[**source code**](https://github.com/axondeepseg/model_seg_generalist)]
 
 **Applications**
 

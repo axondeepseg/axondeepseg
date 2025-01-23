@@ -3,21 +3,23 @@ from setuptools.command.develop import develop
 from subprocess import check_call
 
 from codecs import open
-from os import path
-
-import AxonDeepSeg
+import os
 
 
 # Get the directory where this current file is saved
-here = path.abspath(path.dirname(__file__))
+here = os.path.abspath(os.path.dirname(__file__))
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+
+version_file = os.path.abspath(os.path.join(__file__, os.pardir, "AxonDeepSeg", "version.txt"))
+with open(version_file, 'r') as f:
+    __version__ = f.read().rstrip()
 
 setup(
     name='AxonDeepSeg',
     python_requires='>=3.11',
-    version=AxonDeepSeg.__version__,
+    version=__version__,
     description='Python tool for automatic axon and myelin segmentation',
     long_description=long_description,
     url='https://github.com/neuropoly/axondeepseg',
@@ -45,7 +47,7 @@ setup(
            'download_model = AxonDeepSeg.download_model:main',
            'download_tests = AxonDeepSeg.download_tests:main',
            'axondeepseg = AxonDeepSeg.segment:main',
-           'axondeepseg_test = AxonDeepSeg.integrity_test:integrity_test', 
+           'axondeepseg_test = AxonDeepSeg.integrity_test:main', 
            'axondeepseg_morphometrics = AxonDeepSeg.morphometrics.launch_morphometrics_computation:main'
         ],
     },

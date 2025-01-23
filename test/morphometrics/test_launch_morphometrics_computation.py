@@ -11,10 +11,10 @@ import sys
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
-from config import (
+from AxonDeepSeg.params import (
     axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, 
     index_suffix, axonmyelin_index_suffix, instance_suffix,
-    unmyelinated_suffix, unmyelinated_morph_suffix, unmyelinated_index_suffix,
+    unmyelinated_suffix, unmyelinated_morph_suffix,
 )
 
 

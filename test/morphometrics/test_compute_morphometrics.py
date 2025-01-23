@@ -25,7 +25,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 write_aggregate_morphometrics,
                                                                 get_watershed_segmentation
                                                             )
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 
 class TestCore(object):

@@ -6,7 +6,7 @@ AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University o
 
 Testimonials
 ============
-Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`_. Thank you 😊
+Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`__. Thank you 😊
 
 .. admonition:: Anne Wheeler, PhD | Hospital for Sick Children | Canada 🇨🇦
    :class: testimonial
@@ -48,7 +48,7 @@ and follow the prompts. Or, if you want to install AxonDeepSeg with default sett
 
     ./install_ads -y
 
-.. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`_, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`_ before continuing:
+.. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
    ::
 
         # ~/.config/pip/pip.conf
@@ -74,6 +74,15 @@ Then, to use ADS's command-line scripts in Command Prompt, please follow these i
 4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
 5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 
+Updating AxonDeepSeg
+--------------------
+
+To update the AxonDeepSeg to the latest version, run::
+
+    git checkout master && git pull
+
+and then follow the installation instructions above specified for your operating system.
+
 Testing the installation
 ------------------------
 
@@ -91,18 +100,16 @@ This integrity test automatically performs the axon and myelin segmentation of a
 Comprehensive test
 ~~~~~~~~~~~~~~~~~~
 
-To run the entire testing suite (more code coverage), go to your AxonDeepSeg project directory on the terminal, activate the virtual environment, and then run ``py.test``::
+To run the entire testing suite (more code coverage), run::
 
-    cd axondeepseg
-    ads_activate
-    py.test --cov AxonDeepSeg/ --cov-report term-missing
+    axondeepseg_test --full
 
 If all tests pass, AxonDeepSeg was installed succesfully.
 
 Graphical User Interface (GUI)
 -----------------------------------------
 
-AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `Napari <https://napari.org/stable/>`_. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if needed).
+AxonDeepSeg can be run via a Graphical User Interface (GUI) instead of the Terminal command line. This GUI is a plugin for the software `Napari <https://napari.org/stable/>`__. Beyond the convenience of running AxonDeepSeg with the click of a button, this GUI is also an excellent way to manually correct output segmentations (if needed).
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/napari_image.png
 
@@ -113,7 +120,7 @@ Launch Napari ::
 In Napari, do the following:
 - Click on ``Plugins -> ADS plugin (napari-ads)``
 
-In the [Manual Correction](#manual-correction-of-segmentation-masks) section of the documentation, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
+In the :ref:`manual-correction-label` section, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 
 .. raw:: html
 
@@ -134,6 +141,7 @@ To develop code in the AxonDeepSeg software package and use it in a python shell
 
 If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open Jupyter notebook from within an activated virtual environment. 
 
+
 Existing models
 ===============
 
@@ -145,11 +153,11 @@ For each model, a *light* and/or *ensemble* version is available. *Light* models
 
 Here are the details of all the models currently supported by AxonDeepSeg:
 
-* **generalist** model (*model_seg_generalist*): Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data. For more information, please visit the `generalist model repository <https://github.com/axondeepseg/model_seg_generalist>`_.
-* **dedicated-SEM** model (*model_seg_rat_axon-myelin_SEM*): Axon and myelin segmentation model trained on Scanning Electron Microscopy data. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`_.
-* **dedicated-BF** (bright-field) model (*model_seg_generalist_BF*): Axon and myelin segmentation model trained on Bright-Field data. For more information, please visit the `BF release of the generalist model repository <https://github.com/axondeepseg/model_seg_generalist/releases/tag/r20240416>`_.
-* **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`_.
-* **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`_.
+* **generalist** model (*model_seg_generalist*): Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data. For more information, please visit the `generalist model repository <https://github.com/axondeepseg/model_seg_generalist>`__.
+* **dedicated-SEM** model (*model_seg_rat_axon-myelin_SEM*): Axon and myelin segmentation model trained on Scanning Electron Microscopy data. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`__.
+* **dedicated-BF** (bright-field) model (*model_seg_generalist_BF*): Axon and myelin segmentation model trained on Bright-Field data. For more information, please visit the `BF release of the generalist model repository <https://github.com/axondeepseg/model_seg_generalist/releases/tag/r20240416>`__.
+* **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`__.
+* **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`__.
 
 To download these models, you must first have AxonDeepSeg installed. Afterwards, run::
 
@@ -165,7 +173,7 @@ Using AxonDeepSeg
 Example dataset
 ---------------
 
-You can demo the AxonDeepSeg by downloading the test data available `here <https://api.github.com/repos/axondeepseg/data-example/zipball>`_. It contains two SEM test samples and one TEM test sample.
+You can demo the AxonDeepSeg by downloading the test data available `here <https://api.github.com/repos/axondeepseg/data-example/zipball>`__. It contains two SEM test samples and one TEM test sample.
 
 Segmentation
 ------------
@@ -202,11 +210,11 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 Segment a single image
 ^^^^^^^^^^^^^^^^^^^^^^
 
-To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the SEM image **'77.png'** of the test dataset that has a pixel size of 0.07 micrometers, use the following command::
+To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the demo image used in our software tests (**'test/__test_files__/__test_demo_files__/image.png'**), use the following command::
 
-    axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png
+    axondeepseg -i test/__test_files__/__test_demo_files__/image.png
 
-The segmented acquisition will be saved in the same folder as the acquisition image, with the suffix **'_seg-axonmyelin.png'**, in *png* format, along with the binary axon and myelin segmentation masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). In our example, the following output files will be generated: **'77_seg-axonmyelin.png'**, **'77_seg-axon.png'** and **'77_seg-myelin.png'**.
+The segmented acquisition will be saved in the same folder as the acquisition image, with the suffix **'_seg-axonmyelin.png'**, in *png* format, along with the binary axon and myelin segmentation masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). In our example, the following output files will be generated: **image_seg-axonmyelin.png'**, **'image_seg-axon.png'** and **'image_seg-myelin.png'**.
 
 Segment multiple images of the same resolution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -264,16 +272,16 @@ Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
 
-    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle -f axon_morphometrics 
+    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a circle -f axon_morphometrics 
 
-This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
+This generates a **'image_axon_morphometrics.xlsx'** file in the image directory::
 
-    image1_sem/
-    ├── 77.png
-    ├── 77_seg-axon.png
-    ├── 77_seg-axonmyelin.png
-    ├── 77_seg-myelin.png
-    ├── 77_axon_morphometrics.xlsx
+    __test_demo_files__/
+    ├── image.png
+    ├── image_seg-axon.png
+    ├── image_seg-axonmyelin.png
+    ├── image_seg-myelin.png
+    ├── image_axon_morphometrics.xlsx
     └── pixel_size_in_micrometer.txt
 
 .. NOTE 1:: If name of the excel file is not provided using the `-f` flag of the CLI, the morphometrics will be saved as the original image name with suffix "axon_morphometrics.xlsx". However, if custom filename is provided, then the morphometrics will be saved as the original image name with suffix "custom filename".
@@ -284,73 +292,55 @@ This generates a **'77_axon_morphometrics.xlsx'** file in the image directory::
            If you wish to treat axon shape as an ellipse, you can set the  **-a** argument to be **ellipse**.
            When axon shape is set to ellipse, the calculation of the diameter is based on ellipse minor axis::
             
-            axondeepseg -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
+            axondeepseg -i test/__test_files__/__test_demo_files__/image.png -a ellipse
 
 Morphometrics of a specific image from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argument of the CLI separated by space. For instance, to compute morphometrics of the image **'77.png'** and **'image.png'** present in the folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** respectively of the test dataset, use the following command::
+To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argument of the CLI separated by space. For instance, to compute morphometrics of the image **'image.png'** and **'image_2.png'** present in the folders **'test/__test_files__/__test_demo_files__/'** and **'test/__test_files__/__test_segment_files__/'** respectively of the test dataset, use the following command::
 
-    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png test_segmentation/test_sem_image/image2_sem/image.png
+    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png test/__test_files__/__test_segment_files__/image_2.png
 
-This will generate **'77_axon_morphometrics.xlsx'** and **'image_axon_morphometrics.xlsx'** files in the **'image1_sem'** and **'image2_sem'** folders:: 
+This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morphometrics.xlsx'** files in the **'__test_demo_files__'** and **'__test_segment_files__'** folders:: 
 
-    --image1_sem/
-    ---- 77.png
-    ---- 77_seg-axon.png
-    ---- 77_seg-axonmyelin.png
-    ---- 77_seg-myelin.png
-    ---- 77_axon_morphometrics.xlsx
-    ---- pixel_size_in_micrometer.txt
-
-    ...
-
-    --image2_sem/
+    --__test_demo_files__/
     ---- image.png
     ---- image_seg-axon.png
     ---- image_seg-axonmyelin.png
     ---- image_seg-myelin.png
     ---- image_axon_morphometrics.xlsx
+    ---- pixel_size_in_micrometer.txt
+
+    ...
+
+    --__test_segment_files__/
+    ---- image_2.png
+    ---- image_2_seg-axon.png
+    ---- image_2_seg-axonmyelin.png
+    ---- image_2_seg-myelin.png
+    ---- image_2_axon_morphometrics.xlsx
     ---- pixel_size_in_micrometer.txt
 
 Morphometrics of all the images present in folder(s)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To compute the morphometrics of batches of images present in folder(s), input the path of the directories using the **-i** argument separated by space. For example, the morphometrics files of the images present in the directories  **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** are computed using the following CLI command::
+To compute the morphometrics of batches of images present in folder(s), input the path of the directories using the **-i** argument separated by space. For example, the morphometrics files of the images present in the directory  **test/__test_files__/__test_segment_files__/** is computed using the following CLI command::
 
-    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem test_segmentation/test_sem_image/image2_sem
+    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__
  
-This will generate **'77_axon_morphometrics.xlsx'** and **'78_axon_morphometrics.xlsx'** morphometrics files in the **'image1_sem'** directory. And, the **'image_axon_morphometrics.xlsx'** and **'image2_axon_morphometrics.xlsx'** morphometrics files are generated in the **'image2_sem'** directory:: 
+This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morphometrics.xlsx'** morphometrics files in the **'test/__test_files__/__test_demo_files__'** directory:: 
 
-    --image1_sem/
-    ---- 77.png
-    ---- 77_seg-axon.png
-    ---- 77_seg-axonmyelin.png
-    ---- 77_seg-myelin.png
-    ---- 77_axon_morphometrics.xlsx
-
-    ---- 78.png
-    ---- 78_seg-axon.png
-    ---- 78_seg-axonmyelin.png
-    ---- 78_seg-myelin.png
-    ---- 78_axon_morphometrics.xlsx
-
-    ---- pixel_size_in_micrometer.txt
-
-    ...
-
-    --image2_sem/
+    --__test_demo_files__/
     ---- image.png
     ---- image_seg-axon.png
     ---- image_seg-axonmyelin.png
     ---- image_seg-myelin.png
     ---- image_axon_morphometrics.xlsx
 
-    ---- image2.png
-    ---- image2_seg-axon.png
-    ---- image2_seg-axonmyelin.png
-    ---- image2_seg-myelin.png
-    ---- image2_axon_morphometrics.xlsx
-    
-    ---- pixel_size_in_micrometer.txt 
+    ---- image_2.png
+    ---- image_2_seg-axon.png
+    ---- image_2_seg-axonmyelin.png
+    ---- image_2_seg-myelin.png
+    ---- image_2_axon_morphometrics.xlsx
+
 
 Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
     
@@ -361,7 +351,7 @@ Circle
 ^^^^^^
 **Usage** ::
 
-    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a circle
+    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a circle
 
 **Studies using Circle as axon shape:**
 
@@ -372,7 +362,7 @@ Ellipse
 ^^^^^^^
 **Usage** ::
 
-    axondeepseg_morphometrics -i test_segmentation/test_sem_image/image1_sem/77.png -a ellipse
+    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a ellipse
 
 **Studies using Ellipse as axon shape:**
 
@@ -389,7 +379,7 @@ Ellipse
 Morphometrics file
 ~~~~~~~~~~~~~~~~~~
 
-The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`_. 
+The resulting **'axon_morphometrics.csv/xlsx'** file will contain the following columns headings. Most of the metrics are computed using `skimage.measure.regionprops <https://scikit-image.org/docs/stable/api/skimage.measure.html#regionprops>`__. 
 
 By default for axon shape, that is, `circle`, the equivalent diameter is used. For `ellipse` axon shape, minor axis is used as the diameter. The equivalent diameter is defined as the diameter of a circle with the same area as the region. 
 
@@ -474,6 +464,9 @@ because they are easier to compute.
 .. comment: We need to add explanation for perimeter estimation, but this 
             part would need to be refactored beforehand.
 
+
+.. _manual-correction-label:
+
 Manual correction of segmentation masks
 =======================================
 
@@ -552,29 +545,29 @@ Modify the mask
 GIMP software
 --------------------------------
 
-* To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`_).
+* To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`__).
 * If you are making correction on an existing segmentation mask, note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). You can then manually correct the myelin mask and create a corrected axon+myelin mask.
-* For a detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`_.
+* For a detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`__.
 
 Training Models
 ===============
 
-
 If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your appliucations and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg to schedule a video-call to discuss more.
 
-.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`_ 
+.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
+
 
 Help
 ====
 
 Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
 
-* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`_. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
-* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`_.
+* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`__. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
+* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`__.
 
 Citation
 ========
 
 If you use this work in your research, please cite:
 
-Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`_.
+Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional neural networks. Scientific Reports, 8(1), 3816. `Link to the paper <https://doi.org/10.1038/s41598-018-22181-4>`__.

@@ -4,7 +4,7 @@ import os, sys
 from pathlib import Path
 
 import AxonDeepSeg
-import config
+import AxonDeepSeg.params as config
 import numpy as np
 import qtpy.QtCore
 from qtpy import QtWidgets, QtCore
@@ -25,7 +25,7 @@ from qtpy.QtGui import QPixmap
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
 from AxonDeepSeg.qa.metrics_qa import MetricsQA
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
-from config import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 import napari
 from napari.utils.notifications import show_info

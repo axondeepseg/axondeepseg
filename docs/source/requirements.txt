@@ -1,0 +1,4 @@
+ sphinx>=5.0.0
+ sphinx_rtd_theme>=0.2.4
+ recommonmark
+ pygit2

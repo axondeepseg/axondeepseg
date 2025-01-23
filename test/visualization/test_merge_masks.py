@@ -8,7 +8,7 @@ import pytest
 
 from AxonDeepSeg.visualization.merge_masks import merge_masks
 from AxonDeepSeg.ads_utils import imread, imwrite
-from config import axon_suffix, myelin_suffix, axonmyelin_suffix
+from AxonDeepSeg.params import axon_suffix, myelin_suffix, axonmyelin_suffix
 
 
 class TestCore(object):
