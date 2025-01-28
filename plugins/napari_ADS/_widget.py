@@ -29,7 +29,11 @@ from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 import napari
 from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
+from vispy.util import keys
 
+_SHIFT = keys.SHIFT,
+_CONTROL =  keys.CONTROL
+_ALT = keys.ALT
 
 class ADSsettings:
     """Plugin settings class.
@@ -230,14 +234,22 @@ class ADSplugin(QWidget):
 
         Args:
             layer: The image layer that was clicked.
-            event: The event object containing the click position.
+            event: The event object containing the click position and keyboard modifiers.
 
         Returns:
             None
         """
-        data_coordinates = layer.world_to_data(event.position)
-        cords = np.round(data_coordinates).astype(int)
-        show_info(f"Clicked at {cords}")
+        if _CONTROL in event.modifiers:  # Command key on macOS
+            data_coordinates = layer.world_to_data(event.position)
+            cords = np.round(data_coordinates).astype(int)
+            show_info(f"Clicked at {cords} with Command key pressed")
+        elif _ALT in event.modifiers:  # Option key on macOS
+            data_coordinates = layer.world_to_data(event.position)
+            cords = np.round(data_coordinates).astype(int)
+            show_info(f"Clicked at {cords} with Alt key pressed")
+        else:
+            show_info(f"Clicked at {cords})
+            return
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
