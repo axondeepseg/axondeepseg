@@ -242,14 +242,70 @@ class ADSplugin(QWidget):
         if _CONTROL in event.modifiers:  # Command key on macOS
             data_coordinates = layer.world_to_data(event.position)
             cords = np.round(data_coordinates).astype(int)
-            show_info(f"Clicked at {cords} with Command key pressed")
+            
+            # Ensure the coordinates are within the bounds of the image
+            if 0 <= cords[1] < self.im_instance_seg.shape[1] and 0 <= cords[0] < self.im_instance_seg.shape[0]:
+                # Get the RGB value at the clicked position
+                rgb_value = self.im_instance_seg[cords[0], cords[1]]
+                
+                # If you need to convert the RGB value to a unique identifier (e.g., for segmentation)
+                # You can hash the RGB tuple to a single value (e.g., using a tuple as a dictionary key)
+                axon_num = tuple(rgb_value)  # Use the RGB tuple as the identifier
+                
+                print("Image instance segmentation array:")
+                print(self.im_instance_seg)
+                print("Image shape:", self.im_instance_seg.shape)
+                print(f"RGB value at clicked position: {rgb_value}")
+                print(f"Axon identifier (RGB tuple): {axon_num}")
+
+                # Get the indices for each region with the same RGB value
+                idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
+                print(f"Shape of idx tuple: {len(idx)}")
+                print(f"Indices of axon {axon_num}: {idx}")
+                
+                show_info(f"Clicked at {cords} with Command key pressed, on axon {axon_num}")
+
+
+                axon_layer = self.get_axon_layer()
+                myelin_layer = self.get_myelin_layer()
+
+                if (axon_layer is None) or (myelin_layer is None):
+                    self.show_info_message("One or more masks missing")
+                    return
+
+                
+                axon_layer._save_history(
+                    (
+                        idx,
+                        np.array(axon_layer.data[idx], copy=True),
+                        0,
+                    )
+                )
+                axon_layer.data[idx] = 0
+                axon_layer.refresh()
+
+                myelin_layer._save_history(
+                    (
+                        idx,
+                        np.array(myelin_layer.data[idx], copy=True),
+                        0,
+                    )
+                )
+                myelin_layer.data[idx] = 0
+                myelin_layer.refresh()
+            else:
+                show_info("Clicked position is out of bounds.")
         elif _ALT in event.modifiers:  # Option key on macOS
             data_coordinates = layer.world_to_data(event.position)
             cords = np.round(data_coordinates).astype(int)
             show_info(f"Clicked at {cords} with Alt key pressed")
         else:
-            show_info(f"Clicked at {cords})
+            data_coordinates = layer.world_to_data(event.position)
+            cords = np.round(data_coordinates).astype(int)
+            show_info(f"Clicked at {cords}")
             return
+
+
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
@@ -573,12 +629,14 @@ class ADSplugin(QWidget):
         (
             stats_dataframe,
             index_image_array,
+            im_instance_seg,
         ) = compute_morphs.get_axon_morphometrics(
             im_axon=axon_data,
             im_myelin=myelin_data,
             pixel_size=pixel_size,
             axon_shape=self.settings.axon_shape,
             return_index_image=True,
+            return_instance_seg=True,
         )
         try:
             compute_morphs.save_axon_morphometrics(file_name, stats_dataframe)
@@ -593,6 +651,11 @@ class ADSplugin(QWidget):
             blending="additive",
             name="numbers",
         )
+
+
+        self.stats_dataframe = stats_dataframe
+        self.index_image_array = index_image_array
+        self.im_instance_seg = im_instance_seg
 
     def _on_settings_menu_clicked(self):
         """Create and display the settings menu when the settings menu button is clicked.
