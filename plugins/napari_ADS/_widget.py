@@ -384,8 +384,6 @@ class ADSplugin(QWidget):
         Returns:
             None
         """
-        print(napari.components.LayerList())
-
         microscopy_image_layer = self.get_microscopy_image()
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
