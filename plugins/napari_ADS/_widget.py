@@ -209,6 +209,36 @@ class ADSplugin(QWidget):
         self.layout().addWidget(settings_menu_button)
         self.layout().addStretch()
 
+        # Connect the mouse click event to the handler
+        self.viewer.layers.events.inserted.connect(self._on_layer_added)
+
+    def _on_layer_added(self, event):
+        """Handler for when a layer is added to the viewer.
+
+        Args:
+            event: The event object containing the layer that was added.
+
+        Returns:
+            None
+        """
+        layer = event.value
+        if isinstance(layer, napari.layers.Image):
+            layer.mouse_drag_callbacks.append(self._on_image_click)
+
+    def _on_image_click(self, layer, event):
+        """Handler for when an image layer is clicked.
+
+        Args:
+            layer: The image layer that was clicked.
+            event: The event object containing the click position.
+
+        Returns:
+            None
+        """
+        data_coordinates = layer.world_to_data(event.position)
+        cords = np.round(data_coordinates).astype(int)
+        show_info(f"Clicked at {cords}")
+
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
         This method attempts to retrieve the pixel size of the image represented by the layer passed as input parameter.
@@ -354,6 +384,8 @@ class ADSplugin(QWidget):
         Returns:
             None
         """
+        print(napari.components.LayerList())
+
         microscopy_image_layer = self.get_microscopy_image()
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
@@ -738,7 +770,6 @@ class ADSplugin(QWidget):
             "Link to paper: https://doi.org/10.1038/s41598-018-22181-4. \n"
             "Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)"
         )
-
 
 class ApplyModelThread(QtCore.QThread):
     """QThread class used to segment an image by applying a model in a separate thread.
