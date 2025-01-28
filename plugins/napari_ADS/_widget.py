@@ -244,12 +244,10 @@ class ADSplugin(QWidget):
             cords = np.round(data_coordinates).astype(int)
             
             # Ensure the coordinates are within the bounds of the image
-            if 0 <= cords[1] < self.im_instance_seg.shape[1] and 0 <= cords[0] < self.im_instance_seg.shape[0]:
+            if 0 <= cords[0] < self.im_instance_seg.shape[0] and 0 <= cords[1] < self.im_instance_seg.shape[1]:
                 # Get the RGB value at the clicked position
                 rgb_value = self.im_instance_seg[cords[0], cords[1]]
                 
-                # If you need to convert the RGB value to a unique identifier (e.g., for segmentation)
-                # You can hash the RGB tuple to a single value (e.g., using a tuple as a dictionary key)
                 axon_num = tuple(rgb_value)  # Use the RGB tuple as the identifier
                 
                 print("Image instance segmentation array:")
@@ -265,14 +263,12 @@ class ADSplugin(QWidget):
                 
                 show_info(f"Clicked at {cords} with Command key pressed, on axon {axon_num}")
 
-
                 axon_layer = self.get_axon_layer()
                 myelin_layer = self.get_myelin_layer()
 
                 if (axon_layer is None) or (myelin_layer is None):
                     self.show_info_message("One or more masks missing")
                     return
-
                 
                 axon_layer._save_history(
                     (
@@ -294,11 +290,7 @@ class ADSplugin(QWidget):
                 myelin_layer.data[idx] = 0
                 myelin_layer.refresh()
             else:
-                show_info("Clicked position is out of bounds.")
-        elif _ALT in event.modifiers:  # Option key on macOS
-            data_coordinates = layer.world_to_data(event.position)
-            cords = np.round(data_coordinates).astype(int)
-            show_info(f"Clicked at {cords} with Alt key pressed")
+                show_info("Clicked pixel is out of bounds of the image.")
         else:
             data_coordinates = layer.world_to_data(event.position)
             cords = np.round(data_coordinates).astype(int)
