@@ -202,6 +202,11 @@ class ADSplugin(QWidget):
             self._on_compute_morphometrics_button
         )
 
+        show_axon_metrics_button = QPushButton("Show axon metrics")
+        show_axon_metrics_button.clicked.connect(
+            self._on_show_axon_metrics
+        )
+
         settings_menu_button = QPushButton("Settings")
         settings_menu_button.clicked.connect(self._on_settings_menu_clicked)
 
@@ -218,14 +223,15 @@ class ADSplugin(QWidget):
         self.layout().addWidget(remove_axons_button)
         self.layout().addWidget(save_segmentation_button)
         self.layout().addWidget(compute_morphometrics_button)
+        self.layout().addWidget(show_axon_metrics_button)
         self.layout().addWidget(settings_menu_button)
         self.layout().addStretch()
 
         # Connect the mouse click event to the handler
         self.viewer.layers.events.inserted.connect(self._on_layer_added)
 
-        # Set remove axon state to false
         self.remove_axon_state = False
+        self.show_axon_metrics_state = False
 
         self.im_instance_seg = None
         self.stats_dataframe = None
@@ -316,6 +322,64 @@ class ADSplugin(QWidget):
                 cords = np.round(data_coordinates).astype(int)
                 show_info(f"Clicked at {cords}")                    
                 return
+        
+        if self.show_axon_metrics_state:
+            if _CONTROL in event.modifiers:
+                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
+                    show_info("Clicked with CONTROL key pressed")
+                
+                    data_coordinates = layer.world_to_data(event.position)
+                    cords = np.round(data_coordinates).astype(int)
+                    show_info(f"Clicked at {cords}")
+
+                    axon_layer = self.get_axon_layer()
+                    myelin_layer = self.get_myelin_layer()
+
+
+                    if (axon_layer is None) or (myelin_layer is None):
+                        self.show_info_message("One or more masks missing")
+                        return
+
+                    # Find the value of self.im_instance_seg at the clicked position
+                    rgb_value = self.im_instance_seg[cords[0], cords[1]]
+                    axon_num = tuple(rgb_value)  # Use the RGB tuple as the identifier
+
+                    # Get the indices for each region with the same RGB value
+                    idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
+
+                    # Get a list of all x and y coordinates for the axon
+                    x_coords = idx[0]
+                    y_coords = idx[1]
+                    index_value = None
+
+                    # Save the x0 y0 coordinates of the all axons in the self.stats_dataframe in a "xycoords" dictionnary as ints, with their corresponding dataframe index as key
+                    xycoords = {}
+                    for index, row in self.stats_dataframe.iterrows():
+                        x0 = int(row["x0"])
+                        y0 = int(row["y0"])
+                        xycoords[index] = (y0, x0)
+
+                    # Find the xycoords of the clicked axon
+                    for index, xycoord in xycoords.items():
+                        if xycoord in zip(x_coords, y_coords):
+                            index_value = index
+                            break
+                    print(index_value)
+                    print(xycoords[index_value])
+
+
+
+                    # Get the morphometrics statistics for the axon that was clicked, there is no index key
+                    axon_stats = self.stats_dataframe[self.stats_dataframe.index == index_value]
+
+                    # Open a window and show the following metrics for the axon at index_value: axon index, axon diameter, myelin thickness, g-ratio, and touching border
+                    axon_diameter = axon_stats["axon_diam"].values[0]
+                    myelin_thickness = axon_stats["myelin_thickness"].values[0]
+                    g_ratio = axon_stats["gratio"].values[0]
+                    touching_border = axon_stats["image_border_touching"].values[0]
+                    if index_value is not None:
+                        show_info(f"Axon index: {index_value}\nAxon diameter: {axon_diameter}\nMyelin thickness: {myelin_thickness}\nG-ratio: {g_ratio}\nTouching border: {touching_border}")
+
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
@@ -545,6 +609,28 @@ class ADSplugin(QWidget):
             self.remove_axon_state = not self.remove_axon_state
 
 
+    def _on_show_axon_metrics(self):
+        """Handles the click event of the 'Show axo metrics' button.
+
+        Switches the state of the show_axon_metrices_state attribute, which is used to determine whether the user can click axons to remove
+
+        Returns:
+            None
+        """
+
+        axon_layer = self.get_axon_layer()
+        myelin_layer = self.get_myelin_layer()
+
+        if (axon_layer is None) or (myelin_layer is None):
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\n Please load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            return
+        else:
+            if self.stats_dataframe is None:
+
+                self._on_compute_morphometrics_button()
+
+            self.show_axon_metrics_state = not self.show_axon_metrics_state
+
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.
 
@@ -681,6 +767,7 @@ class ADSplugin(QWidget):
             pixel_size=pixel_size,
             axon_shape=self.settings.axon_shape,
             return_index_image=True,
+            return_border_info=True,
             return_instance_seg=True,
         )
         try:
