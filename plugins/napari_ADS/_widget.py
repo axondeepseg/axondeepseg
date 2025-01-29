@@ -22,9 +22,12 @@ from qtpy.QtWidgets import (
 from qtpy.QtCore import QStringListModel, QObject, Signal
 from qtpy.QtGui import QPixmap
 
+from skimage import measure
+
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
 
 import napari
 from napari.utils.notifications import show_info
@@ -60,6 +63,7 @@ class ADSsettings:
         self.n_gpus = ads_utils.check_available_gpus(None)
         self.max_gpu_id = self.n_gpus - 1 if self.n_gpus > 0 else 0
         self.setup_settings_menu()
+        
 
     def setup_settings_menu(self):
         """Sets up the settings menu for the AxonDeepSeg plugin.
@@ -223,6 +227,10 @@ class ADSplugin(QWidget):
         # Set remove axon state to false
         self.remove_axon_state = False
 
+        self.im_instance_seg = None
+        self.stats_dataframe = None
+        self.index_image_array = None
+
     def _on_layer_added(self, event):
         """Handler for when a layer is added to the viewer.
 
@@ -249,11 +257,10 @@ class ADSplugin(QWidget):
 
         if self.remove_axon_state:
             if _CONTROL in event.modifiers:  # Command key on macOS
-                print(layer.metadata.keys())
                 if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
                     data_coordinates = layer.world_to_data(event.position)
                     cords = np.round(data_coordinates).astype(int)
-                    
+
                     # Ensure the coordinates are within the bounds of the image
                     if 0 <= cords[0] < self.im_instance_seg.shape[0] and 0 <= cords[1] < self.im_instance_seg.shape[1]:
                         # Get the RGB value at the clicked position
@@ -512,8 +519,30 @@ class ADSplugin(QWidget):
             None
         """
 
-        # Switch the bool value of the remove_axon_state
-        self.remove_axon_state = not self.remove_axon_state
+        axon_layer = self.get_axon_layer()
+        myelin_layer = self.get_myelin_layer()
+
+        if (axon_layer is None) or (myelin_layer is None):
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\n Please load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            return
+        else:
+            if self.im_instance_seg is None:
+
+                axon_data = axon_layer.data
+                myelin_data = myelin_layer.data
+
+                # Label each axon object
+                im_axon_label = measure.label(axon_data)
+                # Measure properties for each axon object
+                axon_objects = measure.regionprops(im_axon_label)
+
+                ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
+                                [int(props.centroid[1]) for props in axon_objects])
+
+                im_axonmyelin_label = compute_morphs.get_watershed_segmentation(axon_data, myelin_data, ind_centroid)
+                self.im_instance_seg = colorize_instance_segmentation(im_axonmyelin_label)
+
+            self.remove_axon_state = not self.remove_axon_state
 
 
     def _on_fill_axons_click(self):
