@@ -27,7 +27,8 @@ from AxonDeepSeg.params import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
     morph_suffix, unmyelinated_morph_suffix, instance_suffix, 
-    unmyelinated_suffix, unmyelinated_index_suffix
+    unmyelinated_suffix, unmyelinated_index_suffix,
+    nerve_suffix, nerve_morph_suffix
 )
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
@@ -157,6 +158,13 @@ def main(argv=None):
         help='Toggles morphometrics for unmyelinated axons. This will only process masks with \n'
             +f'the "{unmyelinated_suffix}" suffix.'
     )
+    ap.add_argument(
+        '-n', '--nerve',
+        required=False,
+        action='store_true',
+        help='Toggles morphometrics for nerve sections. This will only process masks with \n'
+            +f'the "{nerve_suffix}" suffix.'
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -166,15 +174,23 @@ def main(argv=None):
     border_info_flag = args["border_info"]
     colorization_flag = args["colorize"]
     unmyelinated_mode = args["unmyelinated"]
-    if unmyelinated_mode:
+    nerve_mode = args["nerve"]
+    if nerve_mode:
+        morphometrics_mode = 'nerve'
+        if filename is str(morph_suffix):
+            # change to appropriate morphometrics output filename
+            filename = str(nerve_morph_suffix)
+    elif unmyelinated_mode:
+        morphometrics_mode = 'unmyelinated'
+        if filename is str(morph_suffix):
+            filename = str(unmyelinated_morph_suffix)
         if colorization_flag:
             logger.warning("Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
             colorization_flag = False
         if border_info_flag:
             logger.warning("Border information not supported for unmyelinated axons. Ignoring the -b flag.")
-    if unmyelinated_mode and filename is str(morph_suffix):
-        # change to appropriate unmyelinated axon morphometrics filename
-        filename = str(unmyelinated_morph_suffix)
+    else:
+        morphometrics_mode = 'myelinated'
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -191,6 +207,16 @@ def main(argv=None):
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
     logger.info(f'Logging initialized for morphometrics in "{os.getcwd()}".')
 
+    def check_mask_exists(path_target, morph_mode, search_dir):
+        match morph_mode:
+            case 'myelinated':
+                mask_suffix = axonmyelin_suffix
+            case 'unmyelinated':
+                mask_suffix = unmyelinated_suffix
+            case 'nerve':
+                mask_suffix = nerve_suffix
+        return (Path(path_target.stem + str(mask_suffix)) in os.listdir(search_dir))
+
     for dir_iter in path_target_list:
         if dir_iter.is_dir(): # batch morphometrics
             flag_morp_batch = True
@@ -203,9 +229,9 @@ def main(argv=None):
                     and not path_target.endswith(str(myelin_suffix))
                     and not path_target.endswith(str(axonmyelin_suffix))
                     and not path_target.endswith(str(unmyelinated_suffix))
+                    and not path_target.endswith(str(nerve_suffix))
                     and (
-                        (Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter)
-                        or (Path(path_target).stem + str(unmyelinated_suffix)) in os.listdir(dir_iter)
+                        check_mask_exists(Path(path_target), morphometrics_mode, dir_iter)
                     )
                 )
             ]
