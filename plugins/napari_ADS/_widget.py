@@ -185,6 +185,9 @@ class ADSplugin(QWidget):
         fill_axons_button = QPushButton("Fill axons")
         fill_axons_button.clicked.connect(self._on_fill_axons_click)
 
+        remove_axons_button = QPushButton("Toggle Remove axons")
+        remove_axons_button.clicked.connect(self._on_remove_axons_click)
+
         save_segmentation_button = QPushButton("Save segmentation")
         save_segmentation_button.clicked.connect(
             self._on_save_segmentation_button
@@ -208,6 +211,7 @@ class ADSplugin(QWidget):
         self.layout().addWidget(self.apply_model_button)
         self.layout().addWidget(load_mask_button)
         self.layout().addWidget(fill_axons_button)
+        self.layout().addWidget(remove_axons_button)
         self.layout().addWidget(save_segmentation_button)
         self.layout().addWidget(compute_morphometrics_button)
         self.layout().addWidget(settings_menu_button)
@@ -215,6 +219,9 @@ class ADSplugin(QWidget):
 
         # Connect the mouse click event to the handler
         self.viewer.layers.events.inserted.connect(self._on_layer_added)
+
+        # Set remove axon state to false
+        self.remove_axon_state = False
 
     def _on_layer_added(self, event):
         """Handler for when a layer is added to the viewer.
@@ -239,63 +246,65 @@ class ADSplugin(QWidget):
         Returns:
             None
         """
-        if _CONTROL in event.modifiers:  # Command key on macOS
-            data_coordinates = layer.world_to_data(event.position)
-            cords = np.round(data_coordinates).astype(int)
-            
-            # Ensure the coordinates are within the bounds of the image
-            if 0 <= cords[0] < self.im_instance_seg.shape[0] and 0 <= cords[1] < self.im_instance_seg.shape[1]:
-                # Get the RGB value at the clicked position
-                rgb_value = self.im_instance_seg[cords[0], cords[1]]
-                
-                axon_num = tuple(rgb_value)  # Use the RGB tuple as the identifier
-                
-                print("Image instance segmentation array:")
-                print(self.im_instance_seg)
-                print("Image shape:", self.im_instance_seg.shape)
-                print(f"RGB value at clicked position: {rgb_value}")
-                print(f"Axon identifier (RGB tuple): {axon_num}")
 
-                # Get the indices for each region with the same RGB value
-                idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
-                print(f"Shape of idx tuple: {len(idx)}")
-                print(f"Indices of axon {axon_num}: {idx}")
+        if self.remove_axon_state:
+            if _CONTROL in event.modifiers:  # Command key on macOS
+                data_coordinates = layer.world_to_data(event.position)
+                cords = np.round(data_coordinates).astype(int)
                 
-                show_info(f"Clicked at {cords} with Command key pressed, on axon {axon_num}")
+                # Ensure the coordinates are within the bounds of the image
+                if 0 <= cords[0] < self.im_instance_seg.shape[0] and 0 <= cords[1] < self.im_instance_seg.shape[1]:
+                    # Get the RGB value at the clicked position
+                    rgb_value = self.im_instance_seg[cords[0], cords[1]]
+                    
+                    axon_num = tuple(rgb_value)  # Use the RGB tuple as the identifier
+                    
+                    print("Image instance segmentation array:")
+                    print(self.im_instance_seg)
+                    print("Image shape:", self.im_instance_seg.shape)
+                    print(f"RGB value at clicked position: {rgb_value}")
+                    print(f"Axon identifier (RGB tuple): {axon_num}")
 
-                axon_layer = self.get_axon_layer()
-                myelin_layer = self.get_myelin_layer()
+                    # Get the indices for each region with the same RGB value
+                    idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
+                    print(f"Shape of idx tuple: {len(idx)}")
+                    print(f"Indices of axon {axon_num}: {idx}")
+                    
+                    show_info(f"Clicked at {cords} with Command key pressed, on axon {axon_num}")
 
-                if (axon_layer is None) or (myelin_layer is None):
-                    self.show_info_message("One or more masks missing")
-                    return
-                
-                axon_layer._save_history(
-                    (
-                        idx,
-                        np.array(axon_layer.data[idx], copy=True),
-                        0,
+                    axon_layer = self.get_axon_layer()
+                    myelin_layer = self.get_myelin_layer()
+
+                    if (axon_layer is None) or (myelin_layer is None):
+                        self.show_info_message("One or more masks missing")
+                        return
+                    
+                    axon_layer._save_history(
+                        (
+                            idx,
+                            np.array(axon_layer.data[idx], copy=True),
+                            0,
+                        )
                     )
-                )
-                axon_layer.data[idx] = 0
-                axon_layer.refresh()
+                    axon_layer.data[idx] = 0
+                    axon_layer.refresh()
 
-                myelin_layer._save_history(
-                    (
-                        idx,
-                        np.array(myelin_layer.data[idx], copy=True),
-                        0,
+                    myelin_layer._save_history(
+                        (
+                            idx,
+                            np.array(myelin_layer.data[idx], copy=True),
+                            0,
+                        )
                     )
-                )
-                myelin_layer.data[idx] = 0
-                myelin_layer.refresh()
+                    myelin_layer.data[idx] = 0
+                    myelin_layer.refresh()
+                else:
+                    show_info("Clicked pixel is out of bounds of the image.")
             else:
-                show_info("Clicked pixel is out of bounds of the image.")
-        else:
-            data_coordinates = layer.world_to_data(event.position)
-            cords = np.round(data_coordinates).astype(int)
-            show_info(f"Clicked at {cords}")
-            return
+                data_coordinates = layer.world_to_data(event.position)
+                cords = np.round(data_coordinates).astype(int)
+                show_info(f"Clicked at {cords}")
+                return
 
 
 
@@ -491,6 +500,19 @@ class ADSplugin(QWidget):
         microscopy_image_layer.metadata[
             "associated_myelin_mask_name"
         ] = myelin_mask_name
+
+    def _on_remove_axons_click(self):
+        """Handles the click event of the 'Remove Axons' button.
+
+        Switches the state of the remove_axon_state attribute, which is used to determine whether the user can click axons to remove
+
+        Returns:
+            None
+        """
+
+        # Switch the bool value of the remove_axon_state
+        self.remove_axon_state = not self.remove_axon_state
+
 
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.
