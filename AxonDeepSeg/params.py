@@ -11,6 +11,7 @@ unmyelinated_suffix = Path('_seg-uaxon.png')            # unmyelinated axon segm
 unmyelinated_index_suffix = Path('_uaxon_index.png')    # Colored unmyelinated axon segmentation + the index image
 nnunet_suffix=Path('_seg-nnunet.png')                   # nnunet raw segmentation suffix
 nerve_suffix=Path('_seg-nerve.png')                     # nerve segmentation suffix
+nerve_index_suffix=Path('_nerve_index.png')             # Colored nerve segmentation + the index image
 
 side_effect_suffixes = tuple(
     [

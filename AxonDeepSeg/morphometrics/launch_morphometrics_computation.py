@@ -28,7 +28,7 @@ from AxonDeepSeg.params import (
     index_suffix, axonmyelin_index_suffix,
     morph_suffix, unmyelinated_morph_suffix, instance_suffix, 
     unmyelinated_suffix, unmyelinated_index_suffix,
-    nerve_suffix, nerve_morph_suffix
+    nerve_suffix, nerve_morph_suffix, nerve_index_suffix
 )
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
@@ -177,11 +177,16 @@ def main(argv=None):
     nerve_mode = args["nerve"]
     if nerve_mode:
         morphometrics_mode = 'nerve'
+        target_suffix = nerve_suffix
+        target_index_suffix = nerve_index_suffix
+        colorization_flag = False
         if filename is str(morph_suffix):
             # change to appropriate morphometrics output filename
             filename = str(nerve_morph_suffix)
     elif unmyelinated_mode:
         morphometrics_mode = 'unmyelinated'
+        target_suffix = unmyelinated_suffix
+        target_index_suffix = unmyelinated_index_suffix
         if filename is str(morph_suffix):
             filename = str(unmyelinated_morph_suffix)
         if colorization_flag:
@@ -191,6 +196,8 @@ def main(argv=None):
             logger.warning("Border information not supported for unmyelinated axons. Ignoring the -b flag.")
     else:
         morphometrics_mode = 'myelinated'
+        target_suffix = axonmyelin_suffix
+        target_index_suffix = axonmyelin_index_suffix
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -207,15 +214,8 @@ def main(argv=None):
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
     logger.info(f'Logging initialized for morphometrics in "{os.getcwd()}".')
 
-    def check_mask_exists(path_target, morph_mode, search_dir):
-        match morph_mode:
-            case 'myelinated':
-                mask_suffix = axonmyelin_suffix
-            case 'unmyelinated':
-                mask_suffix = unmyelinated_suffix
-            case 'nerve':
-                mask_suffix = nerve_suffix
-        return (Path(path_target.stem + str(mask_suffix)) in os.listdir(search_dir))
+    def check_mask_exists(path_target, mask_suffix, search_dir):
+        return (Path(path_target).stem + str(mask_suffix)) in os.listdir(search_dir)
 
     for dir_iter in path_target_list:
         if dir_iter.is_dir(): # batch morphometrics
@@ -231,7 +231,7 @@ def main(argv=None):
                     and not path_target.endswith(str(unmyelinated_suffix))
                     and not path_target.endswith(str(nerve_suffix))
                     and (
-                        check_mask_exists(Path(path_target), morphometrics_mode, dir_iter)
+                        check_mask_exists(path_target, target_suffix, dir_iter)
                     )
                 )
             ]
@@ -242,13 +242,17 @@ def main(argv=None):
     for current_path_target in tqdm(path_target_list):
         if current_path_target.suffix.lower() in validExtensions:
 
-            if unmyelinated_mode:
-                # load the unmyelinated axon mask
-                pred_uaxon = load_mask(current_path_target, 'unmyelinated axon', unmyelinated_suffix)
-            else:
-                # load the axon and myelin masks
-                pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
-                pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+            match morphometrics_mode:
+                case 'myelinated':
+                    # load the axon and myelin masks
+                    pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
+                    pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+                case 'unmyelinated':
+                    # load the unmyelinated axon mask
+                    pred_uaxon = load_mask(current_path_target, 'unmyelinated axon', unmyelinated_suffix)
+                case 'nerve':
+                    # load the nerve mask
+                    pred_nerve = load_mask(current_path_target, 'nerve', nerve_suffix)
 
             if args["sizepixel"] is not None:
                 psm = float(args["sizepixel"])
@@ -269,9 +273,21 @@ def main(argv=None):
                     sys.exit(3)
 
             # Compute statistics
+            
+            match morphometrics_mode:
+                case 'myelinated':
+                    arg1 = pred_axon
+                    arg2 = pred_myelin
+                case 'unmyelinated':
+                    arg1 = pred_uaxon
+                    arg2 = None
+                case 'nerve':
+                    arg1 = pred_nerve
+                    arg2 = None
+
             morph_output = get_axon_morphometrics(
-                im_axon=pred_uaxon if unmyelinated_mode else pred_axon, 
-                im_myelin=None if unmyelinated_mode else pred_myelin, 
+                im_axon=arg1, 
+                im_myelin=arg2, 
                 pixel_size=psm, 
                 axon_shape=axon_shape, 
                 return_index_image=True,
@@ -299,13 +315,9 @@ def main(argv=None):
                     outfile_basename = str(current_path_target.with_suffix(""))
                 ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
 
-                # Generate the colored image; note that its background image is different in unmyelinated mode
-                if not unmyelinated_mode:
-                    bg_image_path = str(current_path_target.with_suffix("")) + str(axonmyelin_suffix)
-                    index_overlay_fname = outfile_basename + str(axonmyelin_index_suffix)
-                else:
-                    bg_image_path = str(current_path_target.with_suffix("")) + str(unmyelinated_suffix)
-                    index_overlay_fname = outfile_basename + str(unmyelinated_index_suffix)
+                # Generate the colored image
+                bg_image_path = str(current_path_target.with_suffix("")) + str(target_suffix)
+                index_overlay_fname = outfile_basename + str(target_index_suffix)
                 postprocessing.generate_and_save_colored_image_with_index_numbers(
                     filename=index_overlay_fname,
                     axonmyelin_image_path=bg_image_path,
