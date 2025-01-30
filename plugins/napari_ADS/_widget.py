@@ -609,8 +609,10 @@ class ADSplugin(QWidget):
                 self.im_instance_seg = colorize_instance_segmentation(im_axonmyelin_label)
 
             self.remove_axon_state = not self.remove_axon_state
-        
+
             if self.remove_axon_state:
+                image_label = self.viewer.layers[0]
+                self.viewer.layers.selection.select_only(image_label)
                 show_info(f"How to use the remove axons feature.\nRaw histology image must be selected in the layers list.\nHold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.\nTo undo, select the axon layer and press CTRL+Z, then repeat with the myelin mask.")
 
 
@@ -639,8 +641,10 @@ class ADSplugin(QWidget):
                 self._on_compute_morphometrics_button()
 
             self.show_axon_metrics_state = not self.show_axon_metrics_state
-        
+            
             if self.show_axon_metrics_state:
+                image_label = self.viewer.layers[0]
+                self.viewer.layers.selection.select_only(image_label)
                 show_info(f"How to use the show axon metrics feature.\nRaw histology image must be selected in the layers list.\nHold ALT/OPTION and click on an axon to show its metrics.")
 
 
