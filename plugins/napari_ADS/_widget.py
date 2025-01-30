@@ -36,7 +36,7 @@ from vispy.util import keys
 
 _SHIFT = keys.SHIFT,
 _CONTROL =  keys.CONTROL
-_ALT = keys.ALT
+_ALT = 'Alt'
 
 class ADSsettings:
     """Plugin settings class.
@@ -192,6 +192,11 @@ class ADSplugin(QWidget):
         remove_axons_button = QPushButton("Toggle Remove axons")
         remove_axons_button.clicked.connect(self._on_remove_axons_click)
 
+        remove_axons_button.setCheckable(True) 
+        remove_axons_button.setStyleSheet(  
+            "QPushButton:checked{background-color:blue;}"
+        )
+
         save_segmentation_button = QPushButton("Save segmentation")
         save_segmentation_button.clicked.connect(
             self._on_save_segmentation_button
@@ -205,6 +210,11 @@ class ADSplugin(QWidget):
         show_axon_metrics_button = QPushButton("Show axon metrics")
         show_axon_metrics_button.clicked.connect(
             self._on_show_axon_metrics
+        )
+
+        show_axon_metrics_button.setCheckable(True) 
+        show_axon_metrics_button.setStyleSheet(  
+            "QPushButton:checked{background-color:blue;}"
         )
 
         settings_menu_button = QPushButton("Settings")
@@ -324,7 +334,7 @@ class ADSplugin(QWidget):
                 return
         
         if self.show_axon_metrics_state:
-            if _CONTROL in event.modifiers:
+            if _ALT in event.modifiers:
                 if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
                     show_info("Clicked with CONTROL key pressed")
                 
