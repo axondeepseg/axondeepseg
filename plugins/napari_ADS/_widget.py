@@ -368,7 +368,7 @@ class ADSplugin(QWidget):
 
                     # Show the metrics in a window with two decimal places
                     if index_value is not None:
-                        show_info(f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)}\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)}\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}")
+                        show_info(f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)} \u03bcm\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)} \u03bcm\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}")
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
@@ -584,7 +584,7 @@ class ADSplugin(QWidget):
         myelin_layer = self.get_myelin_layer()
 
         if (axon_layer is None) or (myelin_layer is None):
-            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\n Please load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\nPlease load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
 
             # Uncheck the button
             self.remove_axon_state = False
@@ -635,7 +635,7 @@ class ADSplugin(QWidget):
         myelin_layer = self.get_myelin_layer()
 
         if (axon_layer is None) or (myelin_layer is None):
-            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\n Please load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\nPlease load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
             # Uncheck the button
             self.show_axon_metrics_state = False
             self.show_axon_metrics_button.setChecked(False)
