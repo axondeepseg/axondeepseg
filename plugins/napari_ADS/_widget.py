@@ -197,6 +197,8 @@ class ADSplugin(QWidget):
             "QPushButton:checked{background-color:blue;}"
         )
 
+        self.remove_axons_button = remove_axons_button
+
         save_segmentation_button = QPushButton("Save segmentation")
         save_segmentation_button.clicked.connect(
             self._on_save_segmentation_button
@@ -211,6 +213,8 @@ class ADSplugin(QWidget):
         show_axon_metrics_button.clicked.connect(
             self._on_show_axon_metrics
         )
+
+        self.show_axon_metrics_button = show_axon_metrics_button
 
         show_axon_metrics_button.setCheckable(True) 
         show_axon_metrics_button.setStyleSheet(  
@@ -282,21 +286,9 @@ class ADSplugin(QWidget):
                         # Get the RGB value at the clicked position
                         rgb_value = self.im_instance_seg[cords[0], cords[1]]
                         
-                        axon_num = tuple(rgb_value)  # Use the RGB tuple as the identifier
-                        
-                        print("Image instance segmentation array:")
-                        print(self.im_instance_seg)
-                        print("Image shape:", self.im_instance_seg.shape)
-                        print(f"RGB value at clicked position: {rgb_value}")
-                        print(f"Axon identifier (RGB tuple): {axon_num}")
-
                         # Get the indices for each region with the same RGB value
                         idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
-                        print(f"Shape of idx tuple: {len(idx)}")
-                        print(f"Indices of axon {axon_num}: {idx}")
                         
-                        show_info(f"Clicked at {cords} with Command key pressed, on axon {axon_num}")
-
                         axon_layer = self.get_axon_layer()
                         myelin_layer = self.get_myelin_layer()
 
@@ -335,12 +327,9 @@ class ADSplugin(QWidget):
         
         if self.show_axon_metrics_state:
             if _ALT in event.modifiers:
-                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
-                    show_info("Clicked with CONTROL key pressed")
-                
+                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:                
                     data_coordinates = layer.world_to_data(event.position)
                     cords = np.round(data_coordinates).astype(int)
-                    show_info(f"Clicked at {cords}")
 
                     axon_layer = self.get_axon_layer()
                     myelin_layer = self.get_myelin_layer()
@@ -376,8 +365,6 @@ class ADSplugin(QWidget):
                             break
                     print(index_value)
                     print(xycoords[index_value])
-
-
 
                     # Get the morphometrics statistics for the axon that was clicked, there is no index key
                     axon_stats = self.stats_dataframe[self.stats_dataframe.index == index_value]
@@ -598,6 +585,11 @@ class ADSplugin(QWidget):
 
         if (axon_layer is None) or (myelin_layer is None):
             self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\n Please load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+
+            # Uncheck the button
+            self.remove_axon_state = False
+            self.remove_axons_button.setChecked(False)
+
             return
         else:
             if self.im_instance_seg is None:
@@ -617,6 +609,10 @@ class ADSplugin(QWidget):
                 self.im_instance_seg = colorize_instance_segmentation(im_axonmyelin_label)
 
             self.remove_axon_state = not self.remove_axon_state
+        
+            if self.remove_axon_state:
+                show_info(f"How to use the remove axons feature.\nRaw histology image must be selected in the layers list.\nHold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.\nTo undo, select the axon layer and press CTRL+Z, then repeat with the myelin mask.")
+
 
 
     def _on_show_axon_metrics(self):
@@ -633,13 +629,20 @@ class ADSplugin(QWidget):
 
         if (axon_layer is None) or (myelin_layer is None):
             self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\n Please load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            # Uncheck the button
+            self.remove_axon_state = False
+            self.remove_axons_button.setChecked(False)
             return
         else:
             if self.stats_dataframe is None:
-
+                self.show_info_message(f"Morphometrics for this image hasn't been computed yet - starting the Compute morphometrics process.")
                 self._on_compute_morphometrics_button()
 
             self.show_axon_metrics_state = not self.show_axon_metrics_state
+        
+            if self.show_axon_metrics_state:
+                show_info(f"How to use the show axon metrics feature.\nRaw histology image must be selected in the layers list.\nHold ALT/OPTION and click on an axon to show its metrics.")
+
 
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.
@@ -875,13 +878,19 @@ class ADSplugin(QWidget):
             return None
 
         if type_of_mask == "axon":
-            return self.get_layer_by_name(
-                image_label.metadata["associated_axon_mask_name"]
-            )
+            if "associated_axon_mask_name" not in image_label.metadata:
+                return None
+            else:
+                return self.get_layer_by_name(
+                    image_label.metadata["associated_axon_mask_name"]
+                )
         elif type_of_mask == "myelin":
-            return self.get_layer_by_name(
-                image_label.metadata["associated_myelin_mask_name"]
-            )
+            if "associated_myelin_mask_name" not in image_label.metadata:
+                return None
+            else:
+                return self.get_layer_by_name(
+                    image_label.metadata["associated_myelin_mask_name"]
+                )
         return None
 
     def get_axon_layer(self):
