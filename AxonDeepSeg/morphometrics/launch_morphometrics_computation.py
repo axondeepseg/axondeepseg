@@ -299,6 +299,16 @@ def main(argv=None):
             if colorization_flag:
                 instance_seg_image = morph_output[2]
 
+            #TODO: IN NERVE_AREA MODE, ADD SUM OF AREAS
+            if morphometrics_mode == 'nerve':
+                # drop some columns
+                to_drop = ['axon_perimeter', 'axon_diam', 'solidity', 'eccentricity', 'orientation']
+                stats_dataframe = stats_dataframe.drop(columns=to_drop)
+                stats_dataframe = stats_dataframe.rename(columns={'axon_area': 'nerve_area'})
+                # add row with total nerve area (other columns are empty) named 'total'
+                stats_dataframe.loc['total'] = pd.Series(dtype='float64')
+                stats_dataframe.loc['total', 'nerve_area'] = stats_dataframe['nerve_area'].sum()
+
             morph_filename = current_path_target.stem + "_" + filename
 
             # save the current contents in the file
