@@ -34,7 +34,6 @@ from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
 from vispy.util import keys
 
-_SHIFT = keys.SHIFT,
 _CONTROL =  keys.CONTROL
 _ALT = 'Alt'
 
@@ -63,7 +62,6 @@ class ADSsettings:
         self.n_gpus = ads_utils.check_available_gpus(None)
         self.max_gpu_id = self.n_gpus - 1 if self.n_gpus > 0 else 0
         self.setup_settings_menu()
-        
 
     def setup_settings_menu(self):
         """Sets up the settings menu for the AxonDeepSeg plugin.
@@ -192,8 +190,8 @@ class ADSplugin(QWidget):
         remove_axons_button = QPushButton("Toggle Remove axons")
         remove_axons_button.clicked.connect(self._on_remove_axons_click)
 
-        remove_axons_button.setCheckable(True) 
-        remove_axons_button.setStyleSheet(  
+        remove_axons_button.setCheckable(True)
+        remove_axons_button.setStyleSheet(
             "QPushButton:checked{background-color:blue;}"
         )
 
@@ -216,8 +214,8 @@ class ADSplugin(QWidget):
 
         self.show_axon_metrics_button = show_axon_metrics_button
 
-        show_axon_metrics_button.setCheckable(True) 
-        show_axon_metrics_button.setStyleSheet(  
+        show_axon_metrics_button.setCheckable(True)
+        show_axon_metrics_button.setStyleSheet(
             "QPushButton:checked{background-color:blue;}"
         )
 
@@ -319,11 +317,6 @@ class ADSplugin(QWidget):
                         show_info("Clicked pixel is out of bounds of the image.")
                 else:
                     self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.")
-            else:
-                data_coordinates = layer.world_to_data(event.position)
-                cords = np.round(data_coordinates).astype(int)
-                show_info(f"Clicked at {cords}")                    
-                return
         
         if self.show_axon_metrics_state:
             if _ALT in event.modifiers:
@@ -334,14 +327,12 @@ class ADSplugin(QWidget):
                     axon_layer = self.get_axon_layer()
                     myelin_layer = self.get_myelin_layer()
 
-
                     if (axon_layer is None) or (myelin_layer is None):
                         self.show_info_message("One or more masks missing")
                         return
 
                     # Find the value of self.im_instance_seg at the clicked position
                     rgb_value = self.im_instance_seg[cords[0], cords[1]]
-                    axon_num = tuple(rgb_value)  # Use the RGB tuple as the identifier
 
                     # Get the indices for each region with the same RGB value
                     idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
@@ -363,8 +354,6 @@ class ADSplugin(QWidget):
                         if xycoord in zip(x_coords, y_coords):
                             index_value = index
                             break
-                    print(index_value)
-                    print(xycoords[index_value])
 
                     # Get the morphometrics statistics for the axon that was clicked, there is no index key
                     axon_stats = self.stats_dataframe[self.stats_dataframe.index == index_value]
