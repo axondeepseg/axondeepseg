@@ -240,6 +240,7 @@ class ADSplugin(QWidget):
         self.layout().addStretch()
 
         # Connect the mouse click event to the handler
+        self.image_loaded_after_plugin_start = False
         self.viewer.layers.events.inserted.connect(self._on_layer_added)
 
         self.remove_axon_state = False
@@ -261,6 +262,7 @@ class ADSplugin(QWidget):
         layer = event.value
         if isinstance(layer, napari.layers.Image):
             layer.mouse_drag_callbacks.append(self._on_image_click)
+            self.image_loaded_after_plugin_start = True
 
     def _on_image_click(self, layer, event):
         """Handler for when an image layer is clicked.
@@ -283,17 +285,17 @@ class ADSplugin(QWidget):
                     if 0 <= cords[0] < self.im_instance_seg.shape[0] and 0 <= cords[1] < self.im_instance_seg.shape[1]:
                         # Get the RGB value at the clicked position
                         rgb_value = self.im_instance_seg[cords[0], cords[1]]
-                        
+
                         # Get the indices for each region with the same RGB value
                         idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
-                        
+
                         axon_layer = self.get_axon_layer()
                         myelin_layer = self.get_myelin_layer()
 
                         if (axon_layer is None) or (myelin_layer is None):
                             self.show_info_message("One or more masks missing")
                             return
-                        
+
                         axon_layer._save_history(
                             (
                                 idx,
@@ -317,10 +319,10 @@ class ADSplugin(QWidget):
                         show_info("Clicked pixel is out of bounds of the image.")
                 else:
                     self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.")
-        
+
         if self.show_axon_metrics_state:
             if _ALT in event.modifiers:
-                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:                
+                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
                     data_coordinates = layer.world_to_data(event.position)
                     cords = np.round(data_coordinates).astype(int)
 
@@ -570,6 +572,14 @@ class ADSplugin(QWidget):
             None
         """
 
+        if not self.image_loaded_after_plugin_start:
+            self.show_info_message("Please load an image first. If you loaded an image and are seeing this, you loaded the image prior to the plugin. Please remove and relopen the image and masks.")
+            
+            # Uncheck the button
+            self.remove_axon_state = False
+            self.remove_axons_button.setChecked(False)
+            return
+
         axon_layer = self.get_axon_layer()
         myelin_layer = self.get_myelin_layer()
 
@@ -605,16 +615,21 @@ class ADSplugin(QWidget):
                 self.viewer.layers.selection.select_only(image_label)
                 show_info(f"How to use the remove axons feature.\nRaw histology image must be selected in the layers list.\nHold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.\nTo undo, select the axon layer and press CTRL+Z, then repeat with the myelin mask.")
 
-
-
     def _on_show_axon_metrics(self):
-        """Handles the click event of the 'Show axo metrics' button.
+        """Handles the click event of the 'Show axon metrics' button.
 
         Switches the state of the show_axon_metrices_state attribute, which is used to determine whether the user can click axons to remove
 
         Returns:
             None
         """
+
+        if not self.image_loaded_after_plugin_start:
+            self.show_info_message("Please load an image first. If you loaded an image and are seeing this, you loaded the image prior to the plugin. Please remove and relopen the image and masks.")
+            # Uncheck the button
+            self.remove_axon_state = False
+            self.remove_axons_button.setChecked(False)
+            return
 
         axon_layer = self.get_axon_layer()
         myelin_layer = self.get_myelin_layer()
@@ -631,7 +646,7 @@ class ADSplugin(QWidget):
                 self._on_compute_morphometrics_button()
 
             self.show_axon_metrics_state = not self.show_axon_metrics_state
-            
+
             if self.show_axon_metrics_state:
                 image_label = self.viewer.layers[0]
                 self.viewer.layers.selection.select_only(image_label)
