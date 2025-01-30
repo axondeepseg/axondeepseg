@@ -187,7 +187,7 @@ class ADSplugin(QWidget):
         fill_axons_button = QPushButton("Fill axons")
         fill_axons_button.clicked.connect(self._on_fill_axons_click)
 
-        remove_axons_button = QPushButton("Toggle Remove axons")
+        remove_axons_button = QPushButton("Axon removal toggle")
         remove_axons_button.clicked.connect(self._on_remove_axons_click)
 
         remove_axons_button.setCheckable(True)
@@ -628,7 +628,7 @@ class ADSplugin(QWidget):
             self.show_info_message("Please load an image first. If you loaded an image and are seeing this, you loaded the image prior to the plugin. Please remove and relopen the image and masks.")
             # Uncheck the button
             self.show_axon_metrics_state = False
-            self.show_axon_metrics_state.setChecked(False)
+            self.show_axon_metrics_button.setChecked(False)
             return
 
         axon_layer = self.get_axon_layer()
@@ -638,7 +638,7 @@ class ADSplugin(QWidget):
             self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\n Please load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
             # Uncheck the button
             self.show_axon_metrics_state = False
-            self.show_axon_metrics_state.setChecked(False)
+            self.show_axon_metrics_button.setChecked(False)
             return
         else:
             if self.stats_dataframe is None:
