@@ -374,9 +374,10 @@ class ADSplugin(QWidget):
                     myelin_thickness = axon_stats["myelin_thickness"].values[0]
                     g_ratio = axon_stats["gratio"].values[0]
                     touching_border = axon_stats["image_border_touching"].values[0]
-                    if index_value is not None:
-                        show_info(f"Axon index: {index_value}\nAxon diameter: {axon_diameter}\nMyelin thickness: {myelin_thickness}\nG-ratio: {g_ratio}\nTouching border: {touching_border}")
 
+                    # Show the metrics in a window with two decimal places
+                    if index_value is not None:
+                        show_info(f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)}\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)}\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}")
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
