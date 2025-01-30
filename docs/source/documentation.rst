@@ -533,8 +533,33 @@ Modify the mask
 
 .. warning:: The "Fill axons" functionality will not behave properly if there are myelin objects not closed, or if multiple myelin objects touch each other to form a big closed cluster.
 
-Modify the mask
-~~~~~~~~~~~~~~~
+Axon removal toggle
+~~~~~~~~~~~~~~~~~~~
+
+.. note::
+   To use this feature, the image must have been loaded after the plugin, and the mask must have been loaded or generated. Lastly, the image layer must be selected.
+
+* The "Axon removal toggle" button in the AxonDeepSeg plugin (right panel) can be used to remove axons from the mask.
+* After activated, CTRL-click on the axon you want to remove. The axon will be removed from the mask.
+
+.. note::
+   To undo, select the axon layer and press CTRL+Z, then repeat with the myelin mask.
+
+* To deactivate the "Axon removal toggle" mode, click on the button again.
+
+
+Show axon metrics
+~~~~~~~~~~~~~~~~~
+
+.. note::
+   To use this feature, the image must have been loaded after the plugin, and the mask must have been loaded or generated. Lastly, the image layer must be selected.
+
+* The "Show axon metrics" button in the AxonDeepSeg plugin (right panel) can be used to pview some key metrics of a clicked axon.
+* After activated, ALT/OPTION-click on the axon you want to view the metrics of. A pop-up window will show the metrics of the clicked axon at the bottom right of the image viewer.
+* To deactivate the "Toggle axon removal" mode, click on the button again.
+
+Save the mask
+~~~~~~~~~~~~~
 
 * Click the "Save segmentation" button in the AxonDeepSeg plugin (right panel).
 * Note: In case of an overlap between the axons mask and the myelin mask, the myelin will have priority when saving the new segmentation.

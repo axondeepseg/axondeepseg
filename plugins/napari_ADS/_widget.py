@@ -564,7 +564,7 @@ class ADSplugin(QWidget):
         ] = myelin_mask_name
 
     def _on_remove_axons_click(self):
-        """Handles the click event of the 'Remove Axons' button.
+        """Handles the click event of the 'Toggle axon removal' button.
 
         Switches the state of the remove_axon_state attribute, which is used to determine whether the user can click axons to remove
 
