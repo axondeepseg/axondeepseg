@@ -116,6 +116,10 @@ jobs:
 
   plugin_test:
     name: Napari Plugin Test
+
+    # Matrix driven OS
+    runs-on: ${{ matrix.os }}
+
     # Default shell for ALL subsequent steps.
     defaults:
       run:
