@@ -181,13 +181,13 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           source ads_conda/bin/activate ads_conda/envs/venv_ads
-          pytest  ./plugin/test/ -v --cov ./plugin/napari_ADS/ --cov-report=lcov
+          pytest  ./plugins/test/ -v --cov ./plugins/napari_ADS/ --cov-report=lcov
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads
-          pytest.exe ./plugin/test/ -v --cov ./plugin/napari_ADS/ --cov-report=lcov
+          pytest.exe ./plugins/test/ -v --cov ./plugins/napari_ADS/ --cov-report=lcov
 
       # Step 4: Submnit to coveralls
       - name: Submit to coveralls
