@@ -85,7 +85,7 @@ def get_axon_morphometrics(
         pixel_size=None, 
         axon_shape="circle", 
         return_index_image=False, 
-        return_border_info=False,
+        return_border_info=True,
         return_instance_seg=False
     ):
     """

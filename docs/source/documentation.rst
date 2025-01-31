@@ -260,10 +260,6 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 -f FILENAME         Name of the excel file in which the morphometrics will be stored.
                     The excel file extension can either be **.xlsx** or **.csv**.
                     If name of the excel file is not provided, the morphometrics will be saved as **axon_morphometrics.xlsx**.
-
--b                  Flag to extract additionnal bounding box information on axonmyelin objects.
-                    Specifying this option ``-b`` flag will add a boolean value indicating if the axon touches one of the image border. It will also output every axon's bounding box (including its myelin). For more information, see the morphometrics file description in the subsection below.
-
 -c                  Flag to save the colorized instance segmentation. For more information about this feature, see the *Colorization* subsection below.
 
 -u                  Toggles *unmyelinated mode*. This will compute morphometrics for unmyelinated axons. Note that this requires a separate unmyelinated axon segmentation mask with suffix ``_seg-uaxon``.

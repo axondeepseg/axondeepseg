@@ -151,8 +151,6 @@ def imread(filename):
     img = imageio.core.image_as_uint(_img, bitdepth=8)
 
     # Remove singleton dimension
-    print(img.ndim)
-    print(img.shape)
     if img.ndim == 3 and img.shape[-1] == 1:
        img = img[:, :, 0]
 
