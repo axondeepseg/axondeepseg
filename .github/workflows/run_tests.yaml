@@ -114,6 +114,84 @@ jobs:
           flag-name: ${matrix.os}
           parallel: true
 
+  plugin_test:
+    name: Napari Plugin Test
+    # Default shell for ALL subsequent steps.
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    # Defining matrix for OS and Python
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest", "macos-latest", "windows-latest"]
+        python-version: [ ">=3.11" ]
+
+    # Main steps for the test to be reproduced across OS x Python
+    steps:
+      # Step 0: Checkout code.
+      - uses: actions/checkout@v2
+
+      # Step 1: List main repo by time modified, and print path
+      - name: List all current repository files and modification date
+        # Parameters.
+        run: |
+          ls -lasth
+          pwd
+
+      # Step 2: Install environment.
+      - name: Install ADS from release branch (Unix)
+        if: runner.os != 'Windows'
+        run: ./install_ads -y
+      - name: Install ADS from release branch (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: install_ads.bat
+
+      # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
+      # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
+      - name: Set MKL_THREADING_LAYER
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "MKL_THREADING_LAYER=GNU" >> $GITHUB_ENV
+
+      # Step 2b: Add ADS to the PATH
+      - name: Update environment variables
+        # NB: I'm not sure what GHA's syntax is for cmd.exe, so we use bash just for this one change
+        # In a user install, the user would perform this step using the Windows PATH-changing GUI.
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            echo "${GITHUB_WORKSPACE}" >> $ADS_DIR
+            echo "${GITHUB_WORKSPACE}\bin" >> $GITHUB_PATH
+          else
+            # NB: install_ads edits ~/.bashrc, but those environment changes don't get passed to subsequent steps in GH Actions.
+            # So, we filter through the .bashrc and pass the values to $GITHUB_ENV and $GITHUB_PATH.
+            # Relevant documentation: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#environment-files
+            cat ~/.bashrc | grep "export ADS_DIR" | cut -d " " -f 2 >> $GITHUB_ENV
+            cat ~/.bashrc | grep "export PATH" | grep -o "/.*" | cut -d ':' -f 1 >> $GITHUB_PATH
+          fi
+
+      # Step 3: Full PyTest
+      - name: Test with pytest (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          source ads_conda/bin/activate ads_conda/envs/venv_ads
+          pytest  ./plugin/test/ -v --cov ./plugin/napari_ADS/ --cov-report=lcov
+      - name: Test with pytest (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads
+          pytest.exe ./plugin/test/ -v --cov ./plugin/napari_ADS/ --cov-report=lcov
+
+      # Step 4: Submnit to coveralls
+      - name: Submit to coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          flag-name: ${matrix.os}
+          parallel: true
+
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
   finish:
