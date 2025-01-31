@@ -323,7 +323,9 @@ def main(argv=None):
                 else:
                     # in case current_path_target already contains the parent directory
                     outfile_basename = str(current_path_target.with_suffix(""))
-                ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
+                
+                if morphometrics_mode == 'myelinated':
+                    ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
 
                 # Generate the colored image
                 bg_image_path = str(current_path_target.with_suffix("")) + str(target_suffix)
