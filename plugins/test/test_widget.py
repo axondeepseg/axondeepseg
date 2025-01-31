@@ -17,7 +17,7 @@ class TestCore(object):
     # --------------initial tests-------------- #
     @pytest.mark.unit
     def test_on_layer_added_updates_image_loaded_after_plugin_start(self, make_napari_viewer):
-        viewer = make_napari_viewer()
+        viewer = make_napari_viewer(show=False)
         wdg = ADSplugin(viewer)
 
         # Check initial conditions
