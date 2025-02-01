@@ -193,7 +193,7 @@ jobs:
       - name: Submit to coveralls
         uses: coverallsapp/github-action@v2
         with:
-          flag-name: ${matrix.os}
+          flag-name: ${matrix.os}-napari
           parallel: true
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
@@ -208,4 +208,4 @@ jobs:
       with:
         github-token: ${{ secrets.github_token }}
         parallel-finished: true
-        carryforward: "ubuntu-latest,macos-12,windows-latest"
+        carryforward: "ubuntu-latest,macos-12,windows-latest, macos-12-napari,windows-latest-napari"
