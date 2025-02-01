@@ -522,7 +522,6 @@ class ADSplugin(QWidget):
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
             return
-
         mask_file_path, _ = QFileDialog.getOpenFileName(
             self, "Select the mask you wish to load"
         )
@@ -533,7 +532,6 @@ class ADSplugin(QWidget):
             "The mask will be associated with " + microscopy_image_layer.name
         ):
             return
-
         img_png2D = ads_utils.imread(mask_file_path)
         # Extract the Axon mask
         axon_data = img_png2D > 200
