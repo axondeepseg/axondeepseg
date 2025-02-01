@@ -250,6 +250,7 @@ class ADSplugin(QWidget):
         self.im_instance_seg = None
         self.stats_dataframe = None
         self.index_image_array = None
+        self.im_axonmyelin_label = None
 
     def _on_layer_added(self, event):
         """Handler for when a layer is added to the viewer.
@@ -283,12 +284,13 @@ class ADSplugin(QWidget):
                     cords = np.round(data_coordinates).astype(int)
 
                     # Ensure the coordinates are within the bounds of the image
-                    if 0 <= cords[0] < self.im_instance_seg.shape[0] and 0 <= cords[1] < self.im_instance_seg.shape[1]:
+                    if 0 <= cords[0] < self.im_axonmyelin_label.shape[0] and 0 <= cords[1] < self.im_axonmyelin_label.shape[1]:
                         # Get the RGB value at the clicked position
-                        rgb_value = self.im_instance_seg[cords[0], cords[1]]
+                        index = self.im_axonmyelin_label[cords[0], cords[1]]
 
                         # Get the indices for each region with the same RGB value
-                        idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
+                        idx = np.where(self.im_axonmyelin_label == index)
+
 
                         axon_layer = self.get_axon_layer()
                         myelin_layer = self.get_myelin_layer()
@@ -334,11 +336,11 @@ class ADSplugin(QWidget):
                         self.show_info_message("One or more masks missing")
                         return
 
-                    # Find the value of self.im_instance_seg at the clicked position
-                    rgb_value = self.im_instance_seg[cords[0], cords[1]]
+                    # Find the value of self.im_axonmyelin_label at the clicked position
+                    index = self.im_axonmyelin_label[cords[0], cords[1]]
 
-                    # Get the indices for each region with the same RGB value
-                    idx = np.where((self.im_instance_seg == rgb_value).all(axis=-1))
+                    # Get the indices for each region with the same index value
+                    idx = np.where(self.im_axonmyelin_label == index)
 
                     # Get a list of all x and y coordinates for the axon
                     x_coords = idx[0]
@@ -593,7 +595,7 @@ class ADSplugin(QWidget):
 
             return
         else:
-            if self.im_instance_seg is None:
+            if self.im_axonmyelin_label is None:
 
                 axon_data = axon_layer.data
                 myelin_data = myelin_layer.data
@@ -606,8 +608,7 @@ class ADSplugin(QWidget):
                 ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
                                 [int(props.centroid[1]) for props in axon_objects])
 
-                im_axonmyelin_label = compute_morphs.get_watershed_segmentation(axon_data, myelin_data, ind_centroid)
-                self.im_instance_seg = colorize_instance_segmentation(im_axonmyelin_label)
+                self.im_axonmyelin_label = compute_morphs.get_watershed_segmentation(axon_data, myelin_data, ind_centroid)
 
             self.remove_axon_state = not self.remove_axon_state
 
@@ -784,6 +785,7 @@ class ADSplugin(QWidget):
             stats_dataframe,
             index_image_array,
             im_instance_seg,
+            im_axonmyelin_label
         ) = compute_morphs.get_axon_morphometrics(
             im_axon=axon_data,
             im_myelin=myelin_data,
@@ -792,6 +794,7 @@ class ADSplugin(QWidget):
             return_index_image=True,
             return_border_info=True,
             return_instance_seg=True,
+            return_im_axonmyelin_label=True
         )
         try:
             compute_morphs.save_axon_morphometrics(file_name, stats_dataframe)
@@ -811,6 +814,7 @@ class ADSplugin(QWidget):
         self.stats_dataframe = stats_dataframe
         self.index_image_array = index_image_array
         self.im_instance_seg = im_instance_seg
+        self.im_axonmyelin_label = im_axonmyelin_label
 
     def _on_settings_menu_clicked(self):
         """Create and display the settings menu when the settings menu button is clicked.
