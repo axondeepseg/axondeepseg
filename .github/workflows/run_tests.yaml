@@ -108,8 +108,8 @@ jobs:
           pytest.exe ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
 
       - name: Debug flag-name
-        run: echo "Flag name: ${{ matrix.os }}"
-
+        run: |
+          echo "Flag name: ${{ matrix.os }}"
       # Step 4: Submnit to coveralls
       - name: Submit to coveralls
         uses: coverallsapp/github-action@v2
@@ -192,7 +192,8 @@ jobs:
           CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads
           pytest.exe ./plugins/test/ -v --cov ./plugins/napari_ADS/ --cov-report=lcov
       - name: Debug flag-name
-        run: echo "Flag name: ${{ matrix.os }}-napari"
+        run: |
+          echo "Flag name: ${{ matrix.os }}-napari"
       # Step 4: Submnit to coveralls
       - name: Submit to coveralls
         uses: coverallsapp/github-action@v2
