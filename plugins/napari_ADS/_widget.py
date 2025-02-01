@@ -183,6 +183,7 @@ class ADSplugin(QWidget):
 
         load_mask_button = QPushButton("Load mask")
         load_mask_button.clicked.connect(self._on_load_mask_button_click)
+        self.load_mask_button = load_mask_button
 
         fill_axons_button = QPushButton("Fill axons")
         fill_axons_button.clicked.connect(self._on_fill_axons_click)
@@ -614,6 +615,10 @@ class ADSplugin(QWidget):
                 image_label = self.viewer.layers[0]
                 self.viewer.layers.selection.select_only(image_label)
                 show_info(f"How to use the remove axons feature.\nRaw histology image must be selected in the layers list.\nHold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.\nTo undo, select the axon layer and press CTRL+Z, then repeat with the myelin mask.")
+
+            print(f"remove_axon_state: {self.remove_axon_state}")
+            print('hi')
+            print(f"Button checked state: {self.remove_axons_button.isChecked()}")
 
     def _on_show_axon_metrics(self):
         """Handles the click event of the 'Show axon metrics' button.
