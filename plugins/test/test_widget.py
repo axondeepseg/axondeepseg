@@ -6,7 +6,7 @@ from napari_ADS._widget import ADSplugin
 import numpy as np
 from unittest.mock import patch
 from pathlib import Path
-from AxonDeepSeg.ads_utils import imread
+from AxonDeepSeg.ads_utils import imread, imwrite
 from qtpy.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
 from PyQt5.QtCore import Qt
@@ -24,8 +24,11 @@ class TestCore(object):
         self.mask_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image_seg-axonmyelin.png')
         self.image_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image.png')
     
-        self.known_axon_world_coords = (86.5,248.25)
-        self.known_axon_data_coods = (0,0)
+        self.known_axon_world_coords = (512.5,249.5)
+        self.known_axon_data_coords = (5,-6)
+
+        self.known_myelin_world_coords = (484.8,249.5)
+        self.known_myelin_data_coords = (5,-106)
     def teardown_method(self):
         pass
 
@@ -137,7 +140,7 @@ class TestCore(object):
         assert wdg.im_axonmyelin_label is not None
 
     @pytest.mark.integration
-    def test_on_remove_axons_click_pixel(self, make_napari_viewer):
+    def test_on_remove_axons_click_axon_pixel(self, make_napari_viewer):
         ## User opens plugin
         viewer = make_napari_viewer(show=False)
         wdg = ADSplugin(viewer)
@@ -160,19 +163,73 @@ class TestCore(object):
             QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
 
         # Find a pixel in the canvase where axon is 0
-        # Verify value of axon or myelin at (0,0) is 1
         axon_layer = wdg.get_axon_layer()
+        myelin_layer = wdg.get_myelin_layer()
+
         world_coords = self.known_axon_world_coords
-        assert axon_layer.data[int(world_coords[0]), int(world_coords[1])] == 1
+        data_coords = self.known_axon_data_coords
+        print('hi')
+        print(axon_layer.data[5,-6])
+        print(axon_layer.data.shape)
+
+
+        assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
+        assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
 
         ## Click that pixel
         viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
 
         # Assert that axon label is now 0
         axon_layer.refresh()
-        assert axon_layer.data[int(world_coords[0]), int(world_coords[0])] == 0
+        assert axon_layer.data[data_coords[0], data_coords[1]] == 0
 
         # Also assert that myelin is 0
+        myelin_layer.refresh()
+        assert myelin_layer.data[data_coords[0], data_coords[1]] == 0
+
+
+    @pytest.mark.integration
+    def test_on_remove_axons_click_myelin_pixel(self, make_napari_viewer):
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(imread(self.image_path), rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        ## User loads mask
+        with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
+            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+                QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
+
+        ## User omits computing morphometrics via button
+        assert wdg.im_axonmyelin_label is None
+
+        ## Simulate Remove Axons button click
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            # Simulate a button click
+            QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
+
+        # Find a pixel in the canvase where myelin is 1
+        axon_layer = wdg.get_axon_layer()
         myelin_layer = wdg.get_myelin_layer()
 
-        assert myelin_layer.data[int(world_coords[0]), int(world_coords[1])] == 0
+        world_coords = self.known_myelin_world_coords
+        data_coords = self.known_myelin_data_coords
+
+        assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
+        assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
+
+        ## Click that pixel
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+
+        # Assert that axon label is now 0
+        axon_layer.refresh()
+        assert axon_layer.data[int(data_coords[0]), int(data_coords[0])] == 0
+
+        # Also assert that myelin is 0
+        myelin_layer.refresh()
+        myelin_layer = wdg.get_myelin_layer()
+
+        assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0

@@ -281,10 +281,8 @@ class ADSplugin(QWidget):
         if self.remove_axon_state:
             if _CONTROL in event.modifiers:  # Command key on macOS
                 if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
-                    print(event.position)
                     data_coordinates = layer.world_to_data(event.position)
                     cords = np.round(data_coordinates).astype(int)
-                    print(cords)
                     # Ensure the coordinates are within the bounds of the image
                     if 0 <= cords[0] < self.im_axonmyelin_label.shape[0] and 0 <= cords[1] < self.im_axonmyelin_label.shape[1]:
                         # Get the RGB value at the clicked position
@@ -292,7 +290,6 @@ class ADSplugin(QWidget):
 
                         # Get the indices for each region with the same RGB value
                         idx = np.where(self.im_axonmyelin_label == index)
-
 
                         axon_layer = self.get_axon_layer()
                         myelin_layer = self.get_myelin_layer()
@@ -320,6 +317,7 @@ class ADSplugin(QWidget):
                         )
                         myelin_layer.data[idx] = 0
                         myelin_layer.refresh()
+
                     else:
                         show_info("Clicked pixel is out of bounds of the image.")
                 else:
@@ -340,7 +338,7 @@ class ADSplugin(QWidget):
 
                     # Find the value of self.im_axonmyelin_label at the clicked position
                     index = self.im_axonmyelin_label[cords[0], cords[1]]
-
+                    
                     # Get the indices for each region with the same index value
                     idx = np.where(self.im_axonmyelin_label == index)
 
@@ -618,7 +616,6 @@ class ADSplugin(QWidget):
                 show_info(f"How to use the remove axons feature.\nRaw histology image must be selected in the layers list.\nHold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.\nTo undo, select the axon layer and press CTRL+Z, then repeat with the myelin mask.")
 
             print(f"remove_axon_state: {self.remove_axon_state}")
-            print('hi')
             print(f"Button checked state: {self.remove_axons_button.isChecked()}")
 
     def _on_show_axon_metrics(self):
