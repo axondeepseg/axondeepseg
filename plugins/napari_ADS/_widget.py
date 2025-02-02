@@ -649,7 +649,12 @@ class ADSplugin(QWidget):
         else:
             if self.stats_dataframe is None:
                 self.show_info_message(f"Morphometrics for this image hasn't been computed yet - starting the Compute morphometrics process.")
-                self._on_compute_morphometrics_button()
+                status = self._on_compute_morphometrics_button()
+                if status == False:
+                    # Uncheck the button
+                    self.show_axon_metrics_state = False
+                    self.show_axon_metrics_button.setChecked(False)
+                    return
 
             self.show_axon_metrics_state = not self.show_axon_metrics_state
 
@@ -748,7 +753,7 @@ class ADSplugin(QWidget):
         Finally, adds an image to the viewer showing the index image array.
 
         Returns:
-            None
+            bool: True = success, False == failure
         """
         axon_layer = self.get_axon_layer()
         myelin_layer = self.get_myelin_layer()
@@ -771,7 +776,7 @@ class ADSplugin(QWidget):
             pixel_size = microscopy_image_layer.metadata["pixel_size"]
 
         if pixel_size is None:
-            return
+            return False
 
         # Ask the user where to save
         default_name = Path(os.getcwd()) / "Morphometrics.csv"
@@ -782,7 +787,7 @@ class ADSplugin(QWidget):
             filter="CSV file(*.csv)",
         )
         if file_name == "":
-            return
+            return False
 
         # Compute statistics
         (
@@ -805,6 +810,7 @@ class ADSplugin(QWidget):
 
         except IOError:
             self.show_info_message("Cannot save morphometrics")
+            return False
 
         self.viewer.add_image(
             data=index_image_array,
@@ -819,6 +825,8 @@ class ADSplugin(QWidget):
         self.index_image_array = index_image_array
         self.im_instance_seg = im_instance_seg
         self.im_axonmyelin_label = im_axonmyelin_label
+
+        return True
 
     def _on_settings_menu_clicked(self):
         """Create and display the settings menu when the settings menu button is clicked.

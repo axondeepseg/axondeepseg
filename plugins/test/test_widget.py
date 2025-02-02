@@ -286,6 +286,41 @@ class TestCore(object):
         assert wdg.im_axonmyelin_label is not None
 
     @pytest.mark.integration
+    def test_on_show_axon_metrics_click_no_morphometrics_computed_user_cancels_pixel(self, make_napari_viewer):
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(imread(self.image_path), rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        ## User loads mask
+        with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
+            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+                QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
+
+        ## User omits computing morphometrics via button
+        assert wdg.im_axonmyelin_label is None
+
+        ## Assert that image_loaded_after_plugin_start state changed
+        # Default state
+        assert wdg.show_axon_metrics_state == False
+        assert wdg.show_axon_metrics_button.isChecked() == False
+        assert wdg.im_axonmyelin_label is None
+
+        ## Simulate Show Axon Morphometris button click
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, False)):
+                    # Simulate a button click
+                    QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
+
+        # Expected state
+        assert wdg.show_axon_metrics_state == False
+        assert wdg.show_axon_metrics_button.isChecked() == False
+        assert wdg.im_axonmyelin_label is None
+
+    @pytest.mark.integration
     def test_on_show_axon_metrics_click_axon_pixel(self, make_napari_viewer):
         ## User opens plugin
         viewer = make_napari_viewer(show=False)
