@@ -253,6 +253,8 @@ class ADSplugin(QWidget):
         self.index_image_array = None
         self.im_axonmyelin_label = None
 
+        self.last_message = None
+
     def _on_layer_added(self, event):
         """Handler for when a layer is added to the viewer.
 
@@ -372,6 +374,7 @@ class ADSplugin(QWidget):
                     # Show the metrics in a window with two decimal places
                     if index_value is not None:
                         show_info(f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)} \u03bcm\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)} \u03bcm\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}")
+                        self.last_message = f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)} \u03bcm\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)} \u03bcm\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}"
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.

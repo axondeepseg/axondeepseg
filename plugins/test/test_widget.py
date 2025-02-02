@@ -30,6 +30,7 @@ class TestCore(object):
 
         self.known_myelin_world_coords = (484.8,249.5)
         self.known_myelin_data_coords = (5,-106)
+        self.expected_myelin_metrics_message = "Axon index: 9\nAxon diameter: 6.66 μm\nMyelin thickness: 0.85 μm\ng-ratio: 0.80\nTouches border: True"
     def teardown_method(self):
         pass
 
@@ -64,7 +65,7 @@ class TestCore(object):
             with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
         
-        # Print napari's viewer layers
+        # Asserts napari's viewer layers
         assert 'Image_seg-axon' in viewer.layers
         assert 'Image_seg-myelin' in viewer.layers
 
@@ -169,10 +170,6 @@ class TestCore(object):
 
         world_coords = self.known_axon_world_coords
         data_coords = self.known_axon_data_coords
-        print('hi')
-        print(axon_layer.data[5,-6])
-        print(axon_layer.data.shape)
-
 
         assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
         assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
@@ -275,7 +272,7 @@ class TestCore(object):
         assert wdg.show_axon_metrics_button.isChecked() == False
         assert wdg.im_axonmyelin_label is None
 
-        ## Simulate Remove Axons button click
+        ## Simulate Show Axon Morphometris button click
         with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
             with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, True)):
                 with tempfile.NamedTemporaryFile(prefix='Morphometrics', suffix='.csv', delete=False) as temp_file:
@@ -287,3 +284,45 @@ class TestCore(object):
         assert wdg.show_axon_metrics_state == True
         assert wdg.show_axon_metrics_button.isChecked() == True
         assert wdg.im_axonmyelin_label is not None
+
+    @pytest.mark.integration
+    def test_on_show_axon_metrics_click_axon_pixel(self, make_napari_viewer):
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(imread(self.image_path), rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        ## User loads mask
+        with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
+            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+                QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
+
+        ## User omits computing morphometrics via button
+        assert wdg.im_axonmyelin_label is None
+
+        ## Simulate Show Axon Morphometris button click
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, True)):
+                with tempfile.NamedTemporaryFile(prefix='Morphometrics', suffix='.csv', delete=False) as temp_file:
+                    with patch("PyQt5.QtWidgets.QFileDialog.getSaveFileName", return_value=(temp_file.name, None)):
+                        # Simulate a button click
+                        QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
+
+        # Find a pixel in the canvase where axon is 1
+        axon_layer = wdg.get_axon_layer()
+        myelin_layer = wdg.get_myelin_layer()
+
+        world_coords = self.known_axon_world_coords
+        data_coords = self.known_axon_data_coords
+
+        assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
+        assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
+
+        ## Click that pixel
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.ALT]), button=0)
+
+        # Assert expected message was shown for this pixel
+        assert wdg.last_message == self.expected_myelin_metrics_message
