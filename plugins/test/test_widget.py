@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtTest import QTest
 from vispy.util import keys
+import tempfile
 
 class ImageLoadedEvent(object):
     def __init__(self, data):
@@ -24,8 +25,8 @@ class TestCore(object):
         self.mask_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image_seg-axonmyelin.png')
         self.image_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image.png')
     
-        self.known_axon_world_coords = (512.5,249.5)
-        self.known_axon_data_coords = (5,-6)
+        self.known_axon_world_coords = (512.5,249.5) # x,y here are flipped l-r from data coords, as image is flipped l-r when placed in viewer
+        self.known_axon_data_coords = (5,-6) # Top right of image
 
         self.known_myelin_world_coords = (484.8,249.5)
         self.known_myelin_data_coords = (5,-106)
@@ -187,7 +188,6 @@ class TestCore(object):
         myelin_layer.refresh()
         assert myelin_layer.data[data_coords[0], data_coords[1]] == 0
 
-
     @pytest.mark.integration
     def test_on_remove_axons_click_myelin_pixel(self, make_napari_viewer):
         ## User opens plugin
@@ -233,3 +233,57 @@ class TestCore(object):
         myelin_layer = wdg.get_myelin_layer()
 
         assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
+
+    @pytest.mark.integration
+    def test_on_show_axon_metrics_with_missing_axonmyelin(self, make_napari_viewer):
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(imread(self.image_path), rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        # Assert that image_loaded_after_plugin_start state changed
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
+        
+        assert wdg.show_axon_metrics_state == False
+        assert wdg.show_axon_metrics_button.isChecked() == False
+
+    @pytest.mark.integration
+    def test_on_show_axon_metrics_click_no_morphometrics_computed(self, make_napari_viewer):
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(imread(self.image_path), rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        ## User loads mask
+        with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
+            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+                QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
+
+        ## User omits computing morphometrics via button
+        assert wdg.im_axonmyelin_label is None
+
+        ## Assert that image_loaded_after_plugin_start state changed
+        # Default state
+        assert wdg.show_axon_metrics_state == False
+        assert wdg.show_axon_metrics_button.isChecked() == False
+        assert wdg.im_axonmyelin_label is None
+
+        ## Simulate Remove Axons button click
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, True)):
+                with tempfile.NamedTemporaryFile(prefix='Morphometrics', suffix='.csv', delete=False) as temp_file:
+                    with patch("PyQt5.QtWidgets.QFileDialog.getSaveFileName", return_value=(temp_file.name, None)):
+                        # Simulate a button click
+                        QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
+
+        # Expected state
+        assert wdg.show_axon_metrics_state == True
+        assert wdg.show_axon_metrics_button.isChecked() == True
+        assert wdg.im_axonmyelin_label is not None
