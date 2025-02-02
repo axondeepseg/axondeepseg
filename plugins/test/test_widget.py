@@ -11,6 +11,7 @@ from qtpy.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtTest import QTest
+from vispy.util import keys
 
 class ImageLoadedEvent(object):
     def __init__(self, data):
@@ -22,6 +23,9 @@ class TestCore(object):
         self.current_folder = Path(__file__).parent.resolve()
         self.mask_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image_seg-axonmyelin.png')
         self.image_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image.png')
+    
+        self.known_axon_world_coords = (86.5,248.25)
+        self.known_axon_data_coods = (0,0)
     def teardown_method(self):
         pass
 
@@ -122,7 +126,7 @@ class TestCore(object):
         assert wdg.remove_axons_button.isChecked() == False
         assert wdg.im_axonmyelin_label is None
 
-        # Simulate Remove Axons button click
+        ## Simulate Remove Axons button click
         with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
             # Simulate a button click
             QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
@@ -131,3 +135,44 @@ class TestCore(object):
         assert wdg.remove_axon_state == True
         assert wdg.remove_axons_button.isChecked() == True
         assert wdg.im_axonmyelin_label is not None
+
+    @pytest.mark.integration
+    def test_on_remove_axons_click_pixel(self, make_napari_viewer):
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(imread(self.image_path), rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        ## User loads mask
+        with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
+            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+                QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
+
+        ## User omits computing morphometrics via button
+        assert wdg.im_axonmyelin_label is None
+
+        ## Simulate Remove Axons button click
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            # Simulate a button click
+            QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
+
+        # Find a pixel in the canvase where axon is 0
+        # Verify value of axon or myelin at (0,0) is 1
+        axon_layer = wdg.get_axon_layer()
+        world_coords = self.known_axon_world_coords
+        assert axon_layer.data[int(world_coords[0]), int(world_coords[1])] == 1
+
+        ## Click that pixel
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+
+        # Assert that axon label is now 0
+        axon_layer.refresh()
+        assert axon_layer.data[int(world_coords[0]), int(world_coords[0])] == 0
+
+        # Also assert that myelin is 0
+        myelin_layer = wdg.get_myelin_layer()
+
+        assert myelin_layer.data[int(world_coords[0]), int(world_coords[1])] == 0
