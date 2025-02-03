@@ -599,6 +599,12 @@ class TestCore(object):
         with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
             QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
 
+        world_coords = self.known_axon_world_coords
+
+        ## Click that pixel
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+
+
         elapsed_time = time.time() - start_time
         
         assert elapsed_time < 10.0  # Adjust threshold as needed
@@ -634,6 +640,7 @@ class TestCore(object):
 
         # Time the morphometrics computation
         start_time = time.time()
+
         ## Simulate Show Axon Morphometris button click
         with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
             with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, True)):
@@ -641,6 +648,11 @@ class TestCore(object):
                     with patch("PyQt5.QtWidgets.QFileDialog.getSaveFileName", return_value=(temp_file.name, None)):
                         # Simulate a button click
                         QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
+
+        world_coords = self.known_axon_world_coords
+
+        ## Click that pixel
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.ALT]), button=0)
 
         elapsed_time = time.time() - start_time
         
