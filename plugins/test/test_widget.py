@@ -14,6 +14,7 @@ from PyQt5.QtTest import QTest
 from vispy.util import keys
 import tempfile
 import copy
+import time
 
 class ImageLoadedEvent(object):
     def __init__(self, data):
@@ -555,10 +556,6 @@ class TestCore(object):
                         # Simulate a button click
                         QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
 
-        # Find a pixel in the canvase where axon is 1
-        axon_layer = wdg.get_axon_layer()
-        myelin_layer = wdg.get_myelin_layer()
-
         world_coords = self.known_background_world_coords
 
         ## Click that pixel
@@ -566,3 +563,105 @@ class TestCore(object):
 
         # Assert expected message was shown for this pixel
         assert wdg.last_message == "Backround pixel - no morphometrics to report"
+
+    @pytest.mark.integration
+    def test_on_remove_axons_performance_large_image(self,make_napari_viewer):
+        # Create a large synthetic int image (e.g., 5000,5000)
+        large_image = np.random.randint(0, 256, size=(5000, 5000), dtype=np.uint8)
+        large_mask = np.zeros((5000, 5000))
+        large_mask[self.known_axon_data_coords]=255
+
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(large_image, rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        # Create temp file for axonmyelin mask using large_image data
+        with tempfile.NamedTemporaryFile(prefix='large_image_mask', suffix='.png', delete=False) as temp_file:
+            imwrite(temp_file.name, large_mask)
+            self.mask_path = Path(temp_file.name)
+
+        ## User loads mask
+        with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(temp_file.name), '')):
+            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+                QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
+
+        ## User omits computing morphometrics via button
+        assert wdg.im_axonmyelin_label is None
+
+        # Time the morphometrics computation
+        start_time = time.time()
+
+        ## Simulate Remove Axon button click
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
+
+        elapsed_time = time.time() - start_time
+        
+        assert elapsed_time < 10.0  # Adjust threshold as needed
+
+
+    @pytest.mark.integration
+    def test_on_show_axon_metrics_performance_large_image(self,make_napari_viewer):
+        # Create a large synthetic int image (e.g., 5000,5000)
+        large_image = np.random.randint(0, 256, size=(5000, 5000), dtype=np.uint8)
+        large_mask = np.zeros((5000, 5000))
+        large_mask[self.known_axon_data_coords]=255
+
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(large_image, rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        # Create temp file for axonmyelin mask using large_image data
+        with tempfile.NamedTemporaryFile(prefix='large_image_mask', suffix='.png', delete=False) as temp_file:
+            imwrite(temp_file.name, large_mask)
+            self.mask_path = Path(temp_file.name)
+
+        ## User loads mask
+        with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(temp_file.name), '')):
+            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+                QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
+
+        ## User omits computing morphometrics via button
+        assert wdg.im_axonmyelin_label is None
+
+        # Time the morphometrics computation
+        start_time = time.time()
+        ## Simulate Show Axon Morphometris button click
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, True)):
+                with tempfile.NamedTemporaryFile(prefix='Morphometrics', suffix='.csv', delete=False) as temp_file:
+                    with patch("PyQt5.QtWidgets.QFileDialog.getSaveFileName", return_value=(temp_file.name, None)):
+                        # Simulate a button click
+                        QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
+
+        elapsed_time = time.time() - start_time
+        
+        assert elapsed_time < 10.0  # Adjust threshold as needed
+
+    @pytest.mark.integration
+    def test_on_show_axon_metrics_warns_user_slow_very_large_image(self,make_napari_viewer):
+        # Create a large synthetic int image (e.g., 5001,5000)
+        large_image = np.random.randint(0, 256, size=(5001, 5000), dtype=np.uint8)
+        large_mask = np.zeros((5001, 500))
+        large_mask[self.known_axon_data_coords]=255
+
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        
+        ## User loads image
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            viewer.add_image(large_image, rgb=False)
+
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        # Assert expected message was shown 
+        assert wdg.last_message == "Large image loaded (greater than 5000 * 5000 pixels) - some plugin features may be slow"

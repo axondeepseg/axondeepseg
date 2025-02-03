@@ -254,6 +254,7 @@ class ADSplugin(QWidget):
         self.im_axonmyelin_label = None
 
         self.last_message = None
+        self.large_image_warning_state = False
 
     def _on_layer_added(self, event):
         """Handler for when a layer is added to the viewer.
@@ -268,7 +269,13 @@ class ADSplugin(QWidget):
         if isinstance(layer, napari.layers.Image):
             layer.mouse_drag_callbacks.append(self._on_image_click)
             self.image_loaded_after_plugin_start = True
-        
+
+            if np.size(layer.data) > 5000*5000:
+                if self.large_image_warning_state == False:
+                    self.show_info_message("Large image loaded (greater than 5000 * 5000 pixels) - some plugin features may be slow")
+                    self.last_message = "Large image loaded (greater than 5000 * 5000 pixels) - some plugin features may be slow"
+                    self.large_image_warning_state = True
+
         if isinstance(layer, napari.layers.Labels):
             layer.mouse_drag_callbacks.append(self._on_label_click)
 
