@@ -245,6 +245,67 @@ class TestCore(object):
         assert axon_layer.data[int(self.known_axon_data_coords[0]), int(self.known_axon_data_coords[1])] == 0
         assert myelin_layer.data[int(self.known_axon_data_coords[0]), int(self.known_axon_data_coords[1])] == 0
 
+    @pytest.mark.integration
+    def test_remove_axon_undo(self, make_napari_viewer):
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.add_image(imread(self.image_path), rgb=False)
+        
+        ## User loads image
+        wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
+
+        ## User loads mask
+        with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
+            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+                QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
+
+        ## User omits computing morphometrics via button
+        assert wdg.im_axonmyelin_label is None
+
+        ## Simulate Remove Axons button click
+        with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            # Simulate a button click
+            QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
+
+        # Find a pixel in the canvase where axon is 0
+        axon_layer = wdg.get_axon_layer()
+        myelin_layer = wdg.get_myelin_layer()
+
+        world_coords = self.known_axon_world_coords
+        data_coords = self.known_axon_data_coords
+
+        assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
+        assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
+        assert axon_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
+        assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 1
+
+        ## Click that pixel
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+
+        # Assert that axon label is now 0
+        axon_layer.refresh()
+        assert axon_layer.data[data_coords[0], data_coords[1]] == 0
+
+        # Also assert that myelin is 0
+        myelin_layer.refresh()
+        assert myelin_layer.data[data_coords[0], data_coords[1]] == 0
+
+        # Assert that myelin pixel label was also set to 0 for this axon
+        assert axon_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
+        assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
+
+        
+        ## Trigger undo (simulate CTRL+Z)
+        viewer.layers[axon_layer.name].undo()
+        viewer.layers[myelin_layer.name].undo()
+        
+        # Assert original axon is restored
+        assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
+        assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
+        assert axon_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
+        assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 1
+
 
     @pytest.mark.integration
     def test_on_show_axon_metrics_with_missing_axonmyelin(self, make_napari_viewer):
