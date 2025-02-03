@@ -285,6 +285,7 @@ class ADSplugin(QWidget):
                 if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
                     data_coordinates = layer.world_to_data(event.position)
                     cords = np.round(data_coordinates).astype(int)
+
                     # Ensure the coordinates are within the bounds of the image
                     if 0 <= cords[0] < self.im_axonmyelin_label.shape[0] and 0 <= cords[1] < self.im_axonmyelin_label.shape[1]:
                         # Get the RGB value at the clicked position
