@@ -301,6 +301,10 @@ class ADSplugin(QWidget):
                             self.show_info_message("One or more masks missing")
                             return
 
+                        # Check if background pixel
+                        if axon_layer.data[cords[0], cords[1]] == 0 and myelin_layer.data[cords[0], cords[1]] == 0:
+                            return
+
                         axon_layer._save_history(
                             (
                                 idx,

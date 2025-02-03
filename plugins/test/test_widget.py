@@ -356,18 +356,7 @@ class TestCore(object):
         axon_layer.refresh()
 
         myelin_layer.refresh()
-        print(original_axon.shape)
-        print(axon_layer.data.shape)
-        print(original_myelin.shape)
-        print(myelin_layer.data.shape)
-
-        print(np.sum(original_axon))
-        print(np.sum(axon_layer.data))
-
-        print(np.where(original_axon != axon_layer.data))
-        print(np.where(original_myelin != myelin_layer.data))
-        imwrite('originalmyelin.png',original_myelin)
-        imwrite('myelin.png',myelin_layer.data)
+        
         assert np.all(axon_layer.data == original_axon)
         assert np.all(myelin_layer.data == original_myelin)
 
