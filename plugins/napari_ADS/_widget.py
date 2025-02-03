@@ -268,6 +268,9 @@ class ADSplugin(QWidget):
         if isinstance(layer, napari.layers.Image):
             layer.mouse_drag_callbacks.append(self._on_image_click)
             self.image_loaded_after_plugin_start = True
+        
+        if isinstance(layer, napari.layers.Labels):
+            layer.mouse_drag_callbacks.append(self._on_label_click)
 
     def _on_image_click(self, layer, event):
         """Handler for when an image layer is clicked.
@@ -380,6 +383,15 @@ class ADSplugin(QWidget):
                     if index_value is not None:
                         show_info(f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)} \u03bcm\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)} \u03bcm\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}")
                         self.last_message = f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)} \u03bcm\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)} \u03bcm\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}"
+
+    def _on_label_click(self, layer, event):
+        if self.remove_axon_state:
+            if _CONTROL in event.modifiers:  # Command key on macOS
+                message = "Image layer must be selected."
+                self.show_info_message(message)
+                self.last_message = message
+                return
+
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
