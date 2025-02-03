@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 # AxonDeepSeg imports
-from AxonDeepSeg.morphometrics.compute_morphometrics import (
+from ads_base.morphometrics.compute_morphometrics import (
     get_axon_morphometrics,
     save_axon_morphometrics,
     draw_axon_diameter,
@@ -22,20 +22,20 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
     get_aggregate_morphometrics,
     write_aggregate_morphometrics
 )
-import AxonDeepSeg.ads_utils as ads
-from AxonDeepSeg.params import (
+import ads_base.ads_utils as ads
+from ads_base.params import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
     morph_suffix, unmyelinated_morph_suffix, instance_suffix, 
     unmyelinated_suffix, unmyelinated_index_suffix
 )
-from AxonDeepSeg.ads_utils import convert_path
-from AxonDeepSeg import postprocessing, params
+from ads_base.ads_utils import convert_path
+from ads_base import postprocessing, params
 
 
 def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle"):
     """
-    This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
+    This function is equivalent to the morphometrics_extraction notebook of ads_base.
     It automatically performs all steps (computations, savings, displays,...) of the
     morphometrics extraction of a given sample.
     :param path_img: path of the input image (microscopy sample)
@@ -178,7 +178,7 @@ def main(argv=None):
     flag_morp_batch = False # True, if batch morphometrics is to be computed else False
     target_list = []        # list of image paths for batch morphometrics computations
 
-    logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
+    logger.add("ads_base.log", level='DEBUG', enqueue=True)
     logger.info(f'Logging initialized for morphometrics in "{os.getcwd()}".')
 
     for dir_iter in path_target_list:

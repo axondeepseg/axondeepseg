@@ -3,14 +3,14 @@
 from pathlib import Path
 import pytest
 
-from AxonDeepSeg.apply_model import (
+from ads_base.apply_model import (
     get_checkpoint_name, 
     extract_from_nnunet_prediction,
     find_folds
 )
 
-from AxonDeepSeg import ads_utils
-from AxonDeepSeg.params import nnunet_suffix
+from ads_base import ads_utils
+from ads_base.params import nnunet_suffix
 
 import numpy as np
 
@@ -41,7 +41,7 @@ class TestCore(object):
 
         self.nnunetModelLight = (
             self.projectPath /
-            'AxonDeepSeg' /
+            'ads_base' /
             'models' /
             'model_seg_generalist_light'
         )

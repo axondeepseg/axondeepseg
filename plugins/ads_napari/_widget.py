@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 import os, sys
 from pathlib import Path
 
-import AxonDeepSeg
-import AxonDeepSeg.params as config
+import ads_base
+import ads_base.params as config
 import numpy as np
 import qtpy.QtCore
 from qtpy import QtWidgets, QtCore
@@ -24,10 +24,10 @@ from qtpy.QtGui import QPixmap
 
 from skimage import measure
 
-from AxonDeepSeg import ads_utils, segment, postprocessing, params
-import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
-from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
-from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
+from ads_base import ads_utils, segment, postprocessing, params
+import ads_base.morphometrics.compute_morphometrics as compute_morphs
+from ads_base.params import axonmyelin_suffix, axon_suffix, myelin_suffix
+from ads_base.visualization.colorization import colorize_instance_segmentation
 
 import napari
 from napari.utils.notifications import show_info
@@ -163,10 +163,20 @@ class ADSplugin(QWidget):
         hyperlink_label = QLabel()
         hyperlink_label.setOpenExternalLinks(True)
         hyperlink_label.setText(
-            '<a href="https://axondeepseg.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
+            '<a href="https://ads_base.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
         )
 
         self.available_models = ads_utils.get_existing_models_list()
+        print(self.available_models)
+        if self.available_models == None:
+            if self.show_ok_cancel_message('First time opening pluging - models must be downloaded'):
+                # Call download models from the ads_base/download_model.py module
+                import ads_base.download_model as download_model
+                download_model.main()
+                self.available_models = ads_utils.get_existing_models_list()
+            else:
+                return
+                
         self.model_selection_combobox = QComboBox()
         self.model_selection_combobox.addItems(
             ["Select the model"] + self.available_models
@@ -469,7 +479,7 @@ class ADSplugin(QWidget):
             self.show_info_message("No model selected")
             return
         else:
-            ads_path = Path(AxonDeepSeg.__file__).parents[0]
+            ads_path = Path(ads_base.__file__).parents[0]
             model_path = ads_path / "models" / selected_model
         if len(selected_layers) != 1:
             self.show_info_message("No single image selected")
@@ -1028,7 +1038,7 @@ class ADSplugin(QWidget):
         Returns:
             QLabel: A QLabel object with the AxonDeepSeg logo as its pixmap.
         """
-        ads_path = Path(AxonDeepSeg.__file__).parents[0]
+        ads_path = Path(ads_base.__file__).parents[0]
         logo_file = ads_path / "logo_ads-alpha_small.png"
         logo_label = QLabel(self)
         logo_pixmap = QPixmap(str(logo_file))

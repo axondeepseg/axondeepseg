@@ -19,17 +19,17 @@ from typing import Literal, List, NoReturn
 from loguru import logger
 
 # AxonDeepSeg imports
-import AxonDeepSeg
-import AxonDeepSeg.ads_utils as ads
-from AxonDeepSeg.apply_model import axon_segmentation
-from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
+import ads_base
+import ads_base.ads_utils as ads
+from ads_base.apply_model import axon_segmentation
+from ads_base.ads_utils import (convert_path, get_file_extension, 
                                    get_imshape, imwrite, imread)
-import AxonDeepSeg.ads_utils
-from AxonDeepSeg.params import valid_extensions, side_effect_suffixes
+import ads_base.ads_utils
+from ads_base.params import valid_extensions, side_effect_suffixes
 
 # Global variables
 DEFAULT_MODEL_NAME = "model_seg_generalist_light"
-MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
+MODELS_PATH = pkg_resources.resource_filename('ads_base', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
 DEFAULT_MODEL_PATH = MODELS_PATH / DEFAULT_MODEL_NAME
@@ -207,7 +207,7 @@ def main(argv=None):
     '''
 
 
-    logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
+    logger.add("ads_base.log", level='DEBUG', enqueue=True)
 
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -250,7 +250,7 @@ def main(argv=None):
     args = vars(ap.parse_args(argv))
     
     # Load log file without logger to write
-    with open("axondeepseg.log", "a") as f:
+    with open("ads_base.log", "a") as f:
         f.write("===================================================================================\n")
 
     # Log command line arguments

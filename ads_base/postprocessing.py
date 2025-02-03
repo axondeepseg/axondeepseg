@@ -4,8 +4,8 @@ Tools for the FSLeyes plugin and other functions for manipulating masks.
 from skimage import measure, morphology, segmentation
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
-from AxonDeepSeg import params
-import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
+from ads_base import params
+import ads_base.morphometrics.compute_morphometrics as compute_morphs
 from matplotlib import font_manager
 
 def get_centroids(mask):

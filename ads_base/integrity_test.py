@@ -15,17 +15,17 @@ from loguru import logger
 import argparse
 
 # AxonDeepSeg imports
-from AxonDeepSeg.testing.segmentation_scoring import pw_dice
-from AxonDeepSeg.apply_model import axon_segmentation
-import AxonDeepSeg.ads_utils as ads
-import AxonDeepSeg.ads_utils
-from AxonDeepSeg.params import axonmyelin_suffix
+from ads_base.testing.segmentation_scoring import pw_dice
+from ads_base.apply_model import axon_segmentation
+import ads_base.ads_utils as ads
+import ads_base.ads_utils
+from ads_base.params import axonmyelin_suffix
 
 def integrity_test():
     try:
 
         # get path of directory where AxonDeepSeg was installed
-        dir_path = Path(AxonDeepSeg.__file__).parent
+        dir_path = Path(ads_base.__file__).parent
 
         # input parameters
         path = Path('folder_name') / 'file_name'

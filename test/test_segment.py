@@ -3,14 +3,14 @@
 from pathlib import Path
 import pytest
 
-from AxonDeepSeg.segment import (
+from ads_base.segment import (
     segment_folder, 
     segment_images,
     get_model_type,
     prepare_inputs
 )
-import AxonDeepSeg
-from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
+import ads_base
+from ads_base.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 class TestCore(object):
     def setup_method(self):
@@ -20,7 +20,7 @@ class TestCore(object):
 
         self.modelPath = (
             self.projectPath /
-            'AxonDeepSeg' /
+            'ads_base' /
             'models' /
             'model_seg_generalist_light'
             )
@@ -64,7 +64,7 @@ class TestCore(object):
 
         self.nnunetModelLight = (
             self.projectPath /
-            'AxonDeepSeg' /
+            'ads_base' /
             'models' /
             'model_seg_generalist_light'
         )
@@ -102,7 +102,7 @@ class TestCore(object):
             'image_2_grayscale' + str(axonmyelin_suffix)
             ]
 
-        logfile = testPath / 'axondeepseg.log'
+        logfile = testPath / 'ads_base.log'
 
         for fileName in outputFiles:
 
@@ -193,7 +193,7 @@ class TestCore(object):
     def test_segment_image_exits_for_nonexistent_file(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-i", str(Path('/image/does/not/exist/image.png'))])
+            ads_base.segment.main(["-i", str(Path('/image/does/not/exist/image.png'))])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 2)
 
@@ -268,7 +268,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-i", str(self.imagePath), "-v", "1"])
+            ads_base.segment.main(["-i", str(self.imagePath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -276,7 +276,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_with_valid_inputs_for_folder_input(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-i", str(self.imageFolderPath), "-v", "1"])
+            ads_base.segment.main(["-i", str(self.imageFolderPath), "-v", "1"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
@@ -284,14 +284,14 @@ class TestCore(object):
     def test_main_cli_creates_logfile(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-i", str(self.imagePath), "-v", "1"])
+            ads_base.segment.main(["-i", str(self.imagePath), "-v", "1"])
 
-        assert Path('axondeepseg.log').exists()
+        assert Path('ads_base.log').exists()
 
     @pytest.mark.integration
     def test_main_cli_fails_for_incorrect_file_extention(self):
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.segment.main(["-i", str(self.modelPath / 'dataset.json')])
+            ads_base.segment.main(["-i", str(self.modelPath / 'dataset.json')])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 1)

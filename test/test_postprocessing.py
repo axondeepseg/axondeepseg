@@ -5,8 +5,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from AxonDeepSeg import ads_utils
-from AxonDeepSeg import postprocessing
+from ads_base import ads_utils
+from ads_base import postprocessing
 
 class TestCore(object):
     def setup_method(self):

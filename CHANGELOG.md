@@ -322,7 +322,7 @@ Version [0.4.1] - 2018-05-16
 **Changed:**
 
 - The documentation website is now hosted on ReadTheDocs.
-- Updated documentation on the usage of AxonDeepSeg.
+- Updated documentation on the usage of ads_base.
 - Change of axon and myelin masks filenames for better clarity.
 
 Version [0.3] - 2018-02-22

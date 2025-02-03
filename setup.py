@@ -10,7 +10,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Read the version from version.txt
-version_file = os.path.join(here, 'AxonDeepSeg', 'version.txt')
+version_file = os.path.join(here, 'ads_base', 'version.txt')
 with open(version_file, 'r') as f:
     __version__ = f.read().strip()
 
@@ -22,7 +22,7 @@ if os.path.exists(requirements_file):
         requirements = f.read().splitlines()
 
 setup(
-    name='AxonDeepSeg',
+    name='ads_base',
     python_requires='>=3.11',
     version=__version__,
     description='Python tool for automatic axon and myelin segmentation',
@@ -39,9 +39,9 @@ setup(
     ],
     keywords='axon myelin segmentation microscopy',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    package_dir={'AxonDeepSeg': 'AxonDeepSeg'},
+    package_dir={'ads_base': 'ads_base'},
     package_data={
-        "AxonDeepSeg": [
+        "ads_base": [
             'models/default_SEM_model/*',
             'models/default_TEM_model/*',
             'models/default_BF_model/*',
@@ -53,11 +53,11 @@ setup(
     install_requires=requirements,  # Use the requirements from requirements.txt
     entry_points={
         'console_scripts': [
-           'download_model = AxonDeepSeg.download_model:main',
-           'download_tests = AxonDeepSeg.download_tests:main',
-           'axondeepseg = AxonDeepSeg.segment:main',
-           'axondeepseg_test = AxonDeepSeg.integrity_test:main', 
-           'axondeepseg_morphometrics = AxonDeepSeg.morphometrics.launch_morphometrics_computation:main'
+           'download_model = ads_base.download_model:main',
+           'download_tests = ads_base.download_tests:main',
+           'axondeepseg = ads_base.segment:main',
+           'axondeepseg_test = ads_base.integrity_test:main', 
+           'axondeepseg_morphometrics = ads_base.morphometrics.launch_morphometrics_computation:main'
         ],
     },
 )

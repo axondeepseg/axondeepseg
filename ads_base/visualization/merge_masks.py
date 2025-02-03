@@ -2,8 +2,8 @@
 from pathlib import Path
 import numpy as np
 
-import AxonDeepSeg.ads_utils as ads
-from AxonDeepSeg.ads_utils import convert_path
+import ads_base.ads_utils as ads
+from ads_base.ads_utils import convert_path
 
 def merge_masks(path_axon, path_myelin):
     '''

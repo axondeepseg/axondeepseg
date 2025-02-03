@@ -1,6 +1,6 @@
-import AxonDeepSeg
-from AxonDeepSeg.ads_utils import convert_path, download_data
-from AxonDeepSeg.model_cards import MODELS
+import ads_base
+from ads_base.ads_utils import convert_path, download_data
+from ads_base.model_cards import MODELS
 from pathlib import Path
 import shutil
 from loguru import logger
@@ -17,7 +17,7 @@ def download_model(model='generalist', model_type='light', destination=None):
     full_model_name = f'{MODELS[model]["name"]}_{model_suffix}'
 
     if destination is None:
-        package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
+        package_dir = Path(ads_base.__file__).parent  # Get AxonDeepSeg installation path
         model_destination = package_dir / "models" / full_model_name
 
     else:

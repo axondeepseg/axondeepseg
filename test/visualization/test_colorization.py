@@ -4,10 +4,10 @@ import pytest
 import numpy as np
 from skimage import measure
 
-from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation, color_generator
-from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
-from AxonDeepSeg.morphometrics.compute_morphometrics import get_watershed_segmentation
-from AxonDeepSeg import ads_utils as adsutils
+from ads_base.visualization.colorization import colorize_instance_segmentation, color_generator
+from ads_base.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
+from ads_base.morphometrics.compute_morphometrics import get_watershed_segmentation
+from ads_base import ads_utils as adsutils
 
 
 class TestCore(object):

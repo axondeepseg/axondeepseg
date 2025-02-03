@@ -7,13 +7,13 @@ import math
 import shutil
 import numpy as np
 import pandas as pd
-from AxonDeepSeg import ads_utils as ads
-from AxonDeepSeg import params
+from ads_base import ads_utils as ads
+from ads_base import params
 import pytest
 
 # AxonDeepSeg imports
-from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
-from AxonDeepSeg.morphometrics.compute_morphometrics import (
+from ads_base.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
+from ads_base.morphometrics.compute_morphometrics import (
                                                                 get_pixelsize,
                                                                 get_axon_morphometrics,
                                                                 rearrange_column_names_for_saving,
@@ -25,7 +25,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 write_aggregate_morphometrics,
                                                                 get_watershed_segmentation
                                                             )
-from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
+from ads_base.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 
 
 class TestCore(object):

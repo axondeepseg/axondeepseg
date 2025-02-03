@@ -6,9 +6,9 @@ from loguru import logger
 from typing import List, Literal, NoReturn
 
 # AxonDeepSeg imports
-from AxonDeepSeg.visualization.merge_masks import merge_masks
-from AxonDeepSeg import ads_utils
-from AxonDeepSeg.params import nnunet_suffix, intensity
+from ads_base.visualization.merge_masks import merge_masks
+from ads_base import ads_utils
+from ads_base.params import nnunet_suffix, intensity
 
 os.environ['nnUNet_raw'] = 'UNDEFINED'
 os.environ['nnUNet_results'] = 'UNDEFINED'

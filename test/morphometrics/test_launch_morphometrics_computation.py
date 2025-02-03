@@ -8,10 +8,10 @@ import shutil
 import glob
 import sys
 
-import AxonDeepSeg
-import AxonDeepSeg.ads_utils as ads
-from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
-from AxonDeepSeg.params import (
+import ads_base
+import ads_base.ads_utils as ads
+from ads_base.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
+from ads_base.params import (
     axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, 
     index_suffix, axonmyelin_index_suffix, instance_suffix,
     unmyelinated_suffix, unmyelinated_morph_suffix,
@@ -35,7 +35,7 @@ class TestCore(object):
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
 
-        logfile = self.testPath / 'axondeepseg.log'
+        logfile = self.testPath / 'ads_base.log'
         if logfile.exists():
             logfile.unlink()
         
@@ -91,7 +91,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", str(morph_suffix)])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", str(morph_suffix)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
     
@@ -100,7 +100,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
@@ -112,7 +112,7 @@ class TestCore(object):
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', (morph_suffix.stem + '.csv')])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', (morph_suffix.stem + '.csv')])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
@@ -129,7 +129,7 @@ class TestCore(object):
         shutil.copy(axonMaskPath, uAxonMaskPath)
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", (unmyelinated_morph_suffix.stem + '.csv'), "-u"])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", (unmyelinated_morph_suffix.stem + '.csv'), "-u"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.uMorphometricsPath.exists()
 
@@ -146,7 +146,7 @@ class TestCore(object):
         self.morphometricsPath = self.dataPath / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', 'axon_morphometrics.csv'])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), '-f', 'axon_morphometrics.csv'])
 
         assert expected_outut_images_filenames[0].exists() and expected_outut_images_filenames[1].exists()
 
@@ -157,7 +157,7 @@ class TestCore(object):
         self.morphometricsPath = self.dataPath / (pathImg.stem + '_' + self.morphometricsFile)
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", "test_morphometrics.xlsx"])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-f", "test_morphometrics.xlsx"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
@@ -169,7 +169,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-a", "ellipse"])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-a", "ellipse"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
     
@@ -178,7 +178,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-a", "circle"])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-a", "circle"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
@@ -196,7 +196,7 @@ class TestCore(object):
         morphometricsPathCopy = self.dataPath.parent / '__test_demo_files_copy__' / self.morphometricsFile
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgCopy)])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgCopy)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathCopy.exists()
         
@@ -225,7 +225,7 @@ class TestCore(object):
         indexImgPathCopy = self.dataPath.parent / '__test_demo_files_copy__' / ('img_axonmyelin_index.png') # index image
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathDirCopy)])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathDirCopy)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and morphometricsImagePathCopy.exists() and morphometricsImgPathCopy.exists()
         
@@ -249,7 +249,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
     
@@ -268,7 +268,7 @@ class TestCore(object):
             pathMyelin.unlink()
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         # Save the myelin mask back to the `__test_demo_files__`
         ads.imwrite(str(pathMyelin), myelinMask)
@@ -289,7 +289,7 @@ class TestCore(object):
             pathAxon.unlink()
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg)])
 
         # Save the axon mask back to the `__test_demo_files__`
         ads.imwrite(str(pathAxon), axonMask)
@@ -301,7 +301,7 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
         
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-u"])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-u"])
         
         assert (pytest_wrapped_e.type == SystemExit)
 
@@ -310,9 +310,9 @@ class TestCore(object):
         pathImg = self.dataPath / 'image.png'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", str(morph_suffix)])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", str(morph_suffix)])
 
-        assert Path('axondeepseg.log').exists()
+        assert Path('ads_base.log').exists()
 
     @pytest.mark.integration
     def test_main_cli_successfully_outputs_colorized_image(self):
@@ -320,6 +320,6 @@ class TestCore(object):
         filename = self.dataPath / f'image{instance_suffix}'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-c"])
+            ads_base.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-c"])
         
         assert filename.exists()

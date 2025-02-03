@@ -15,9 +15,9 @@ import pandas as pd
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from AxonDeepSeg.ads_utils import convert_path
-from AxonDeepSeg import postprocessing, params
-from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
+from ads_base.ads_utils import convert_path
+from ads_base import postprocessing, params
+from ads_base.visualization.colorization import colorize_instance_segmentation
 
 
 def get_pixelsize(path_pixelsize_file):
@@ -428,9 +428,9 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=
     """
     :param img: sample grayscale image (png)
     :param path_prediction: full path to the segmented file (*_seg-axonmyelin.png)
-        from axondeepseg segmentation output
-    :param pred_axon: axon mask from axondeepseg segmentation output
-    :param pred_myelin: myelin mask from axondeepseg segmentation output
+        from ads_base segmentation output
+    :param pred_axon: axon mask from ads_base segmentation output
+    :param pred_myelin: myelin mask from ads_base segmentation output
     :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
                             if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
                             if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
@@ -485,8 +485,8 @@ def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
 
 def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape="circle"):
     """
-    :param pred_axon: axon mask from axondeepseg segmentation output
-    :param pred_myelin: myelin mask from axondeepseg segmentation output
+    :param pred_axon: axon mask from ads_base segmentation output
+    :param pred_myelin: myelin mask from ads_base segmentation output
     :param path_folder: absolute path of folder containing pixel size file
     :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
                             if shape of axon = 'circle', equivalent diameter is the diameter of the axon.

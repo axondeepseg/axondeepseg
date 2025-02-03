@@ -6,9 +6,9 @@ import numpy as np
 
 import pytest
 
-from AxonDeepSeg.visualization.merge_masks import merge_masks
-from AxonDeepSeg.ads_utils import imread, imwrite
-from AxonDeepSeg.params import axon_suffix, myelin_suffix, axonmyelin_suffix
+from ads_base.visualization.merge_masks import merge_masks
+from ads_base.ads_utils import imread, imwrite
+from ads_base.params import axon_suffix, myelin_suffix, axonmyelin_suffix
 
 
 class TestCore(object):

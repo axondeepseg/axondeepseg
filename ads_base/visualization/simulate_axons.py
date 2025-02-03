@@ -1,7 +1,7 @@
 """Simulate axons as histology slides
 This module is for simulating axons as an image of a histology slide.
   Typical usage example:
-    from AxonDeepSeg.visualization.simulate_axons import SimulateAxons
+    from ads_base.visualization.simulate_axons import SimulateAxons
 
     obj=SimulateAxons()
 
@@ -17,7 +17,7 @@ import numpy as np
 import numpy as np
 from scipy.ndimage import rotate
 import imageio
-import AxonDeepSeg.ads_utils
+import ads_base.ads_utils
 
 
 class SimulateAxons:
