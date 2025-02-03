@@ -173,6 +173,8 @@ class TestCore(object):
 
         assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
         assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
+        assert axon_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
+        assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 1
 
         ## Click that pixel
         viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
@@ -184,6 +186,10 @@ class TestCore(object):
         # Also assert that myelin is 0
         myelin_layer.refresh()
         assert myelin_layer.data[data_coords[0], data_coords[1]] == 0
+
+        # Assert that myelin pixel label was also set to 0 for this axon
+        assert axon_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
+        assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
 
     @pytest.mark.integration
     def test_on_remove_axons_click_myelin_pixel(self, make_napari_viewer):
@@ -218,6 +224,10 @@ class TestCore(object):
         assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
         assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
 
+        assert axon_layer.data[int(self.known_axon_data_coords[0]), int(self.known_axon_data_coords[1])] == 1
+        assert myelin_layer.data[int(self.known_axon_data_coords[0]), int(self.known_axon_data_coords[1])] == 0
+
+
         ## Click that pixel
         viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
 
@@ -230,6 +240,11 @@ class TestCore(object):
         myelin_layer = wdg.get_myelin_layer()
 
         assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
+
+        # Assert that myelin pixel label was also set to 0 for this axon
+        assert axon_layer.data[int(self.known_axon_data_coords[0]), int(self.known_axon_data_coords[1])] == 0
+        assert myelin_layer.data[int(self.known_axon_data_coords[0]), int(self.known_axon_data_coords[1])] == 0
+
 
     @pytest.mark.integration
     def test_on_show_axon_metrics_with_missing_axonmyelin(self, make_napari_viewer):
