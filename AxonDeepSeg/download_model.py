@@ -1,3 +1,4 @@
+import AxonDeepSeg
 from AxonDeepSeg.ads_utils import convert_path, download_data
 from AxonDeepSeg.model_cards import MODELS
 from pathlib import Path
@@ -11,12 +12,14 @@ import pprint
 SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
 
 def download_model(model='generalist', model_type='light', destination=None):
-    
+    print(destination)
     model_suffix = 'light' if model_type == 'light' else 'ensemble'
     full_model_name = f'{MODELS[model]["name"]}_{model_suffix}'
 
     if destination is None:
-        model_destination = Path(".") / "models" / full_model_name
+        package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
+        model_destination = package_dir / "models" / full_model_name
+
     else:
         destination = Path(destination)
         model_destination = destination / full_model_name
@@ -70,8 +73,7 @@ def main(argv=None):
         "-d", "--dir",
         required=False,
         help="Directory to download the model to. Default: current directory",
-        default=str(Path('.') / 'models'),
-        type=str,
+        default=None,
     )
     args = vars(ap.parse_args(argv))
 
@@ -88,7 +90,7 @@ def main(argv=None):
             pprint.pprint(model_details)
         sys.exit(SUCCESS)
     else:
-        download_model(args["model_name"], args["model_type"], args["dir"])
+        download_model(args["model_name"], args["model_type"])
 
 if __name__ == "__main__":
     with logger.catch():

@@ -25,7 +25,7 @@ def integrity_test():
     try:
 
         # get path of directory where AxonDeepSeg was installed
-        dir_path = Path(__file__).resolve().parent
+        dir_path = Path(AxonDeepSeg.__file__).parent
 
         # input parameters
         path = Path('folder_name') / 'file_name'

@@ -237,13 +237,6 @@ def main(argv=None):
         default=0,
     )
     ap.add_argument(
-        '-V',
-        '--version', 
-        action='version', 
-        version=AxonDeepSeg.__version_string__,
-        help='Displays the version and commit hash of AxonDeepSeg.',
-    )
-    ap.add_argument(
         "--gpu-id",
         dest="gpu_id",
         required=False,
@@ -259,8 +252,6 @@ def main(argv=None):
     # Load log file without logger to write
     with open("axondeepseg.log", "a") as f:
         f.write("===================================================================================\n")
-
-    logger.info(AxonDeepSeg.__version_string__)
 
     # Log command line arguments
     logger.info(f"Command line arguments: {args}")

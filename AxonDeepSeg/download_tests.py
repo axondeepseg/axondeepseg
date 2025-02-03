@@ -1,11 +1,12 @@
 from AxonDeepSeg.ads_utils import download_data, convert_path
 from pathlib import Path
 import shutil
-
+import AxonDeepSeg
 
 def download_tests(destination=None):
+    package_dir = Path(AxonDeepSeg.__file__).parent
     if destination is None:
-        test_files_destination = Path("test/__test_files__")
+        test_files_destination =package_dir / "test" / "__test_files__"
     else:
         destination = convert_path(destination)
         test_files_destination = destination / "__test_files__"
