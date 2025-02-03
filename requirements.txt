@@ -22,3 +22,4 @@ loguru
 torch<2.4.0
 pydicom<3
 pygit2
+pytest-qt
