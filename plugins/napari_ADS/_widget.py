@@ -345,6 +345,12 @@ class ADSplugin(QWidget):
                     if (axon_layer is None) or (myelin_layer is None):
                         self.show_info_message("One or more masks missing")
                         return
+                    
+                    # Check if background pixel
+                    if axon_layer.data[cords[0], cords[1]] == 0 and myelin_layer.data[cords[0], cords[1]] == 0:
+                        show_info("Backround pixel - no morphometrics to report")
+                        self.last_message = "Backround pixel - no morphometrics to report"
+                        return
 
                     # Find the value of self.im_axonmyelin_label at the clicked position
                     index = self.im_axonmyelin_label[cords[0], cords[1]]
