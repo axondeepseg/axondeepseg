@@ -195,7 +195,7 @@ class ADSplugin(QWidget):
         remove_axons_button.setStyleSheet(
             "QPushButton:checked{background-color:blue;}"
         )
-        remove_axons_button.setToolTip("Hold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.")
+        remove_axons_button.setToolTip("Hold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.\nHistology image must be active layer.")
         self.remove_axons_button = remove_axons_button
 
         save_segmentation_button = QPushButton("Save segmentation")
@@ -212,7 +212,7 @@ class ADSplugin(QWidget):
         show_axon_metrics_button.clicked.connect(
             self._on_show_axon_metrics
         )
-        show_axon_metrics_button.setToolTip("Hold ALT/OPTION and click on an axon to show key metrics.")
+        show_axon_metrics_button.setToolTip("Hold ALT/OPTION and click on an axon to show key metrics.\nHistology image must be active layer.")
 
         self.show_axon_metrics_button = show_axon_metrics_button
 
