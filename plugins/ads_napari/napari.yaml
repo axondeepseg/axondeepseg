@@ -1,4 +1,6 @@
 name: ads_napari
+visibility: public
+categories: ["Annotation", "Segmentation"]
 contributions:
   commands:
     - id: ads_napari.make_qwidget
