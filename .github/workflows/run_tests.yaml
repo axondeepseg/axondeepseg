@@ -116,7 +116,7 @@ jobs:
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
   finish:
-    needs: [ultra_matrix_test, plugin_test]
+    needs: ultra_matrix_test
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
