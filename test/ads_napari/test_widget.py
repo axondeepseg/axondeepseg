@@ -15,6 +15,7 @@ from vispy.util import keys
 import tempfile
 import copy
 import time
+import sys
 
 class ImageLoadedEvent(object):
     def __init__(self, data):
