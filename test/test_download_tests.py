@@ -6,7 +6,7 @@ import imageio
 
 import pytest
 
-from ads_base.download_tests import download_tests
+from AxonDeepSeg.download_tests import download_tests
 
 
 class TestCore(object):

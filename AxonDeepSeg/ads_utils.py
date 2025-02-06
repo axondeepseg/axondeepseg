@@ -16,7 +16,7 @@ import imageio
 import numpy as np
 from loguru import logger
 
-from ads_base.params import valid_extensions
+from AxonDeepSeg.params import valid_extensions
 
 def download_data(url_data):
     """ Downloads and extracts zip files from the web.

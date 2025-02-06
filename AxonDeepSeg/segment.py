@@ -19,17 +19,18 @@ from typing import Literal, List, NoReturn
 from loguru import logger
 
 # AxonDeepSeg imports
-import ads_base
-import ads_base.ads_utils as ads
-from ads_base.apply_model import axon_segmentation
-from ads_base.ads_utils import (convert_path, get_file_extension, 
+import AxonDeepSeg
+import AxonDeepSeg.ads_utils as ads
+from AxonDeepSeg.apply_model import axon_segmentation
+from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
                                    get_imshape, imwrite, imread)
-import ads_base.ads_utils
-from ads_base.params import valid_extensions, side_effect_suffixes
+import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads_utils
+from AxonDeepSeg.params import valid_extensions, side_effect_suffixes
 
 # Global variables
 DEFAULT_MODEL_NAME = "model_seg_generalist_light"
-MODELS_PATH = pkg_resources.resource_filename('ads_base', 'models')
+MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
 MODELS_PATH = Path(MODELS_PATH)
 
 DEFAULT_MODEL_PATH = MODELS_PATH / DEFAULT_MODEL_NAME
@@ -143,6 +144,23 @@ def segment_images(
 
     path_images = [convert_path(p) for p in path_images]
     path_model = convert_path(path_model)
+
+    available_models = ads_utils.get_existing_models_list()
+    if available_models is None:
+        available_models = []
+    if path_model.stem not in available_models:
+            try:
+                print('Model not found, attempting to download')
+                # Call download models from the AxonDeepSeg/download_model.py module
+
+                import AxonDeepSeg.download_model as download_model
+                download_model.download_model()
+
+                available_models = ads_utils.get_existing_models_list()
+                assert path_model.stem in available_models
+            except:
+                print('Could not download models, try again.')
+                quit()
     (fileformat, n_channels) = get_model_input_format(path_model)
         
     for path_img in path_images:
@@ -207,7 +225,7 @@ def main(argv=None):
     '''
 
 
-    logger.add("ads_base.log", level='DEBUG', enqueue=True)
+    logger.add("AxonDeepSeg.log", level='DEBUG', enqueue=True)
 
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -250,7 +268,7 @@ def main(argv=None):
     args = vars(ap.parse_args(argv))
     
     # Load log file without logger to write
-    with open("ads_base.log", "a") as f:
+    with open("AxonDeepSeg.log", "a") as f:
         f.write("===================================================================================\n")
 
     # Log command line arguments

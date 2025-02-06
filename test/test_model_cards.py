@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-import ads_base.model_cards as cards
+import AxonDeepSeg.model_cards as cards
 
 HTTP_FOUND = 302
 

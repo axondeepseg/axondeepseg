@@ -1,8 +1,7 @@
 import os
 import sys
-import pygit2
 
-__name__ = "ads_base"
+__name__ = "AxonDeepSeg"
 
 version_file = os.path.abspath(os.path.join(__file__, os.pardir, "version.txt"))
 with open(version_file, 'r') as f:

@@ -30,14 +30,14 @@ Do you also use AxonDeepSeg and would like to share your feedback with the commu
 
 Installation
 ============
-The following sections will help you install all the tools you need to run ads_base.
+The following sections will help you install all the tools you need to run AxonDeepSeg.
 
 Install AxonDeepSeg
 -------------------
 
 To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
 
-    git clone https://github.com/neuropoly/ads_base.git
+    git clone https://github.com/neuropoly/AxonDeepSeg.git
     cd axondeepseg
 
 Then, for Linux or macOS systems, run::
@@ -223,7 +223,7 @@ To segment multiple microscopy images of the same resolution that are located in
 
     axondeepseg -i test_segmentation/test_sem_image/image1_sem/
 
-Please note that when using ``axondeepseg``, a file called *ads_base.log* will be saved in the current working directory. The console output will be saved in this file so you can review it later (useful to process large folders).
+Please note that when using ``axondeepseg``, a file called *AxonDeepSeg.log* will be saved in the current working directory. The console output will be saved in this file so you can review it later (useful to process large folders).
 
 Segment images from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -338,7 +338,7 @@ This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morph
     ---- image_2_axon_morphometrics.xlsx
 
 
-Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *ads_base.log* in the current working directory.
+Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *AxonDeepSeg.log* in the current working directory.
     
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

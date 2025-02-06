@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import pytest
-from ads_base.integrity_test import integrity_test
+from AxonDeepSeg.integrity_test import integrity_test
 
 
 class TestCore(object):

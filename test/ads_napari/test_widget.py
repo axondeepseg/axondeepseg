@@ -2,11 +2,11 @@
 
 import pytest
 import napari
-from ads_napari._widget import ADSplugin
+from AxonDeepSeg.ads_napari._widget import ADSplugin
 import numpy as np
 from unittest.mock import patch
 from pathlib import Path
-from ads_base.ads_utils import imread, imwrite
+from AxonDeepSeg.ads_utils import imread, imwrite
 from qtpy.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
 from PyQt5.QtCore import Qt
@@ -71,7 +71,7 @@ class TestCore(object):
 
         # Assert that image_loaded_after_plugin_start state changed
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
         
         # Asserts napari's viewer layers
@@ -128,7 +128,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -162,7 +162,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -212,7 +212,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -266,7 +266,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -326,7 +326,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -374,7 +374,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -426,7 +426,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -465,7 +465,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -500,7 +500,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -542,7 +542,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -586,7 +586,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(temp_file.name), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -632,7 +632,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(temp_file.name), '')):
-            with patch('ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button

@@ -3,8 +3,8 @@
 from pathlib import Path
 import pytest
 
-from ads_base.testing.launch_performance_metrics import launch_performance_metrics
-from ads_base.params import axonmyelin_suffix
+from AxonDeepSeg.testing.launch_performance_metrics import launch_performance_metrics
+from AxonDeepSeg.params import axonmyelin_suffix
 
 
 class TestCore(object):

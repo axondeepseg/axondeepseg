@@ -411,7 +411,7 @@ if [[ -e "AxonDeepSeg/__init__.py" ]]; then
 else
   ADS_SOURCE="$TMP_DIR/axondeepseg"
   echo "Source files not present. Downloading source files (@ $ADS_GIT_REF) to $ADS_SOURCE."
-  git clone -b "$ADS_GIT_REF" --single-branch --depth 1 https://github.com/axondeepseg/ads_base.git "$ADS_SOURCE"
+  git clone -b "$ADS_GIT_REF" --single-branch --depth 1 https://github.com/axondeepseg/AxonDeepSeg.git "$ADS_SOURCE"
   # Since we're git cloning into a TMPDIR, this can never be an "in-place" installation, so we force "package" instead.
   ADS_INSTALL_TYPE="package"
 fi
@@ -533,8 +533,8 @@ if [[ -x "$ADS_DIR/$BIN_DIR" ]]; then
   run mkdir -p "$ADS_DIR/$CONDA_DIR"
 fi
 # Remove old '.egg-info` folder created by editable installs
-if [[ -x "$ADS_DIR"/ads_base.egg-info ]]; then
-  run rm -rf "$ADS_DIR"/ads_base.egg-info
+if [[ -x "$ADS_DIR"/AxonDeepSeg.egg-info ]]; then
+  run rm -rf "$ADS_DIR"/AxonDeepSeg.egg-info
 fi
 
 # Go to installation folder
@@ -636,25 +636,12 @@ fi
 ## Install the axondeepseg into the Conda venv
 print info "Installing Python dependencies..."
 # Check if a frozen version of the requirements exist (for release only)
-if [[ -f "requirements-freeze.txt" ]]; then
-  print info "Using requirements-freeze.txt (release installation)"
-  REQUIREMENTS_FILE="requirements-freeze.txt"
-else
-  # Not a package
-  print info "Using requirements.txt (git installation)"
-  REQUIREMENTS_FILE="requirements.txt"
-fi
-(
-  # We use "--ignore-installed" to preserve the version of `certifi` installed into the conda
-  # env, which prevents https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3609
-  # We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
-  # This is necessary in order to install 'macosx_11_0' wheels. See also:
-  # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
-  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -r "$REQUIREMENTS_FILE" --ignore-installed certifi &&
-  print info "Installing ads_base..." &&
-  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . plugins/
-) ||
-  die "Failed running pip install: $?"
+# We use "--ignore-installed" to preserve the version of `certifi` installed into the conda
+# env, which prevents https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3609
+# We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
+# This is necessary in order to install 'macosx_11_0' wheels. See also:
+# https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
+SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . --ignore-installed certifi && print info "Installing AxonDeepSeg..." || die "Failed running pip install: $?"
 print info "All requirements installed!"
 
 ## Create launchers for Python scripts
@@ -719,7 +706,7 @@ else
     fi
   print info "AxonDeepSeg was succesfully installed. To open the AxonDeepSeg graphical user interface, type: ads_napari"
   print info "For development use of AxonDeepSeg, activate the virtual environment with: ads_activate"
-  print info "Please refer to our documentation on ReadTheDocs for more usage instructions: https://ads_base.readthedocs.io/en/latest/"
+  print info "Please refer to our documentation on ReadTheDocs for more usage instructions: https://AxonDeepSeg.readthedocs.io/en/latest/"
   else
     die "Installation validation Failed!"
   fi

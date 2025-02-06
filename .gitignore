@@ -55,7 +55,7 @@ __MACOSX/
 .DS_Store
 .vscode/
 
-ads_base.log
+AxonDeepSeg.log
 
 Pipfile
 

@@ -2,7 +2,7 @@
 
 import pytest
 
-from ads_base import params
+from AxonDeepSeg import params
 
 
 class TestCore(object):

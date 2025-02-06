@@ -45,7 +45,7 @@ rem So, we need to clone ADS to a TMPDIR to access the source files, and update 
   set ADS_SOURCE=%TMP_DIR%\axondeepseg
   echo:
   echo ### Source files not present. Downloading source files ^(@ !git_ref!^) to !ADS_SOURCE!...
-  git clone -b !git_ref! --single-branch --depth 1 https://github.com/axondeepseg/ads_base.git !ADS_SOURCE!
+  git clone -b !git_ref! --single-branch --depth 1 https://github.com/axondeepseg/AxonDeepSeg.git !ADS_SOURCE!
   rem Since we're git cloning into a TMPDIR, this can never be an "in-place" installation, so we force "package" instead.
   set ADS_INSTALL_TYPE=package
 )
@@ -148,9 +148,9 @@ if exist %ADS_DIR%\ads_conda\ (
   rmdir /s /q %ADS_DIR%\ads_conda\ || goto error
 )
 rem Remove old '.egg-info` folder created by editable installs
-if exist %ADS_DIR%\ads_base.egg-info\ (
+if exist %ADS_DIR%\AxonDeepSeg.egg-info\ (
   echo ### Removing existing '.egg-info' folder inside the ADS directory...
-  rmdir /s /q %ADS_DIR%\ads_base.egg-info\ || goto error
+  rmdir /s /q %ADS_DIR%\AxonDeepSeg.egg-info\ || goto error
 )
 
 rem Move into the ADS installation directory
@@ -172,17 +172,11 @@ CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads || goto error
 echo Virtual environment created and activated successfully!
 
 rem Install ADS and its requirements
-if exist requirements-freeze.txt (
-  set requirements_file=requirements-freeze.txt || goto error
-) else (
-  set requirements_file=requirements.txt || goto error
-)
 echo:
-echo ### Installing ADS and its dependencies from %requirements_file%...
+echo ### Installing ADS and its dependencies
 rem Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
 ads_conda\envs\venv_ads\python -m pip install -U "pip^!=21.2.*" || goto error
-ads_conda\envs\venv_ads\Scripts\pip install -r %requirements_file% || goto error
-ads_conda\envs\venv_ads\Scripts\pip install -e . plugins\ --use-pep517 || goto error
+ads_conda\envs\venv_ads\Scripts\pip install -e . || goto error
 
 rem Install external dependencies
 echo:

@@ -7,9 +7,9 @@ import imageio
 
 import pytest
 
-from ads_base.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, imwrite, get_file_extension, check_available_gpus
-from ads_base.model_cards import get_supported_models
-from ads_base import params
+from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, imwrite, get_file_extension, check_available_gpus
+from AxonDeepSeg.model_cards import get_supported_models
+from AxonDeepSeg import params
 from torch.cuda import device_count
 
 class TestCore(object):

@@ -7,7 +7,7 @@ import os
 from skimage.transform import resize
 import pytest
 
-from ads_base.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
+from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
 
 
 class TestCore(object):

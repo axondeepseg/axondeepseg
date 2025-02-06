@@ -1,5 +1,5 @@
 '''
-Model descriptions and download links for all models supported in ads_base.
+Model descriptions and download links for all models supported in AxonDeepSeg.
 '''
 
 MODELS = {

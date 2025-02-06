@@ -1,20 +1,20 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-dark-alpha.png?raw=true" width="385">
-  <img alt="ADS logo (simplified image of segmented axons/myelin in blue and red beside the text 'ads_base')" src=https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-alpha.png?raw=true" width="385">
+  <img alt="ADS logo (simplified image of segmented axons/myelin in blue and red beside the text 'AxonDeepSeg')" src=https://github.com/axondeepseg/doc-figures/blob/main/logo/logo_ads-alpha.png?raw=true" width="385">
 </picture>
 
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/neuropoly/axondeepseg/master?filepath=notebooks%2Fgetting_started.ipynb)
 [![Build Status](https://github.com/axondeepseg/axondeepseg/actions/workflows/run_tests.yaml/badge.svg)](https://github.com/axondeepseg/axondeepseg/actions/workflows/run_tests.yaml)
-[![Documentation Status](https://readthedocs.org/projects/axondeepseg/badge/?version=stable)](http://ads_base.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/axondeepseg/badge/?version=stable)](http://AxonDeepSeg.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/axondeepseg/axondeepseg/badge.svg?branch=master)](https://coveralls.io/github/axondeepseg/axondeepseg?branch=master)
-[![Twitter Follow](https://img.shields.io/twitter/follow/ads_base.svg?style=social&label=Follow)](https://twitter.com/axondeepseg)
+[![Twitter Follow](https://img.shields.io/twitter/follow/AxonDeepSeg.svg?style=social&label=Follow)](https://twitter.com/axondeepseg)
 
 Segment axon and myelin from microscopy data using deep learning. Written in Python. Using the TensorFlow framework.
 Based on a convolutional neural network architecture. Pixels are classified as either axon, myelin or background.
 
-For more information, see the [documentation website](http://ads_base.readthedocs.io/).
+For more information, see the [documentation website](http://AxonDeepSeg.readthedocs.io/).
 
 ![alt tag](https://github.com/axondeepseg/doc-figures/blob/main/animations/napari.gif?raw=true)
 

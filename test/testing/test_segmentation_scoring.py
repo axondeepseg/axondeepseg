@@ -8,9 +8,9 @@ import pandas as pd
 
 import pytest
 
-from ads_base.testing.segmentation_scoring import score_analysis, dice, pw_dice, Metrics_calculator
-from ads_base import ads_utils
-from ads_base.params import axonmyelin_suffix
+from AxonDeepSeg.testing.segmentation_scoring import score_analysis, dice, pw_dice, Metrics_calculator
+from AxonDeepSeg import ads_utils
+from AxonDeepSeg.params import axonmyelin_suffix
 
 
 class TestCore(object):

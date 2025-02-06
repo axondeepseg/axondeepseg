@@ -15,7 +15,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 # AxonDeepSeg imports
-import ads_base.ads_utils
+import AxonDeepSeg.ads_utils
 
 
 def score_analysis(img, groundtruth, prediction, visualization=False, min_area=2):
