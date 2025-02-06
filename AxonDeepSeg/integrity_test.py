@@ -19,6 +19,7 @@ from AxonDeepSeg.testing.segmentation_scoring import pw_dice
 from AxonDeepSeg.apply_model import axon_segmentation
 import AxonDeepSeg.ads_utils as ads
 import AxonDeepSeg.ads_utils
+import AxonDeepSeg.ads_utils as ads_utils
 from AxonDeepSeg.params import axonmyelin_suffix
 
 def integrity_test():
