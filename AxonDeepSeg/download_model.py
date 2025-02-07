@@ -18,7 +18,7 @@ def download_model(model='generalist', model_type='light', destination=None):
 
     if destination is None:
         package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
-        model_destination = package_dir / "models" / full_model_name
+        model_destination = package_dir.parent / "models" / full_model_name
 
     else:
         destination = Path(destination)
@@ -90,7 +90,7 @@ def main(argv=None):
             pprint.pprint(model_details)
         sys.exit(SUCCESS)
     else:
-        download_model(args["model_name"], args["model_type"])
+        download_model(args["model_name"], args["model_type"], args["dir"])
 
 if __name__ == "__main__":
     with logger.catch():
