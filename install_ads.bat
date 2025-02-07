@@ -45,7 +45,7 @@ rem So, we need to clone ADS to a TMPDIR to access the source files, and update 
   set ADS_SOURCE=%TMP_DIR%\axondeepseg
   echo:
   echo ### Source files not present. Downloading source files ^(@ !git_ref!^) to !ADS_SOURCE!...
-  git clone -b !git_ref! --single-branch --depth 1 https://github.com/axondeepseg/AxonDeepSeg.git !ADS_SOURCE!
+  git clone -b !git_ref! --single-branch --depth 1 https://github.com/axondeepseg/axondeepseg.git !ADS_SOURCE!
   rem Since we're git cloning into a TMPDIR, this can never be an "in-place" installation, so we force "package" instead.
   set ADS_INSTALL_TYPE=package
 )
