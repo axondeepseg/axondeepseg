@@ -533,8 +533,8 @@ if [[ -x "$ADS_DIR/$BIN_DIR" ]]; then
   run mkdir -p "$ADS_DIR/$CONDA_DIR"
 fi
 # Remove old '.egg-info` folder created by editable installs
-if [[ -x "$ADS_DIR"/axondeepseg.egg-info ]]; then
-  run rm -rf "$ADS_DIR"/axondeepseg.egg-info
+if [[ -x "$ADS_DIR"/AxonDeepSeg.egg-info ]]; then
+  run rm -rf "$ADS_DIR"/AxonDeepSeg.egg-info
 fi
 
 # Go to installation folder
