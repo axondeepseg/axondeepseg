@@ -12,7 +12,6 @@ import pprint
 SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
 
 def download_model(model='generalist', model_type='light', destination=None):
-    print(destination)
     model_suffix = 'light' if model_type == 'light' else 'ensemble'
     full_model_name = f'{MODELS[model]["name"]}_{model_suffix}'
 
