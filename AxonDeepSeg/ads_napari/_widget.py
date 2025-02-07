@@ -163,7 +163,7 @@ class ADSplugin(QWidget):
         hyperlink_label = QLabel()
         hyperlink_label.setOpenExternalLinks(True)
         hyperlink_label.setText(
-            '<a href="https://AxonDeepSeg.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
+            '<a href="https://axondeepdeg.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
         )
 
         self.available_models = ads_utils.get_existing_models_list()

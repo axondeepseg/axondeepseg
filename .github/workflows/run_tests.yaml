@@ -110,7 +110,7 @@ jobs:
       - name: Submit to coveralls
         uses: coverallsapp/github-action@v2
         with:
-          flag-name: ${{ matrix.os }}-core
+          flag-name: ${{ matrix.os }}
           parallel: true
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io

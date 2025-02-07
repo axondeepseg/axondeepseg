@@ -35,7 +35,7 @@ class TestCore(object):
         if self.morphometricsPath.exists():
             self.morphometricsPath.unlink()
 
-        logfile = self.testPath / 'AxonDeepSeg.log'
+        logfile = self.testPath / 'axondeepseg.log'
         if logfile.exists():
             logfile.unlink()
         
@@ -312,7 +312,7 @@ class TestCore(object):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-s", "0.07", "-i", str(pathImg), "-f", str(morph_suffix)])
 
-        assert Path('AxonDeepSeg.log').exists()
+        assert Path('axondeepseg.log').exists()
 
     @pytest.mark.integration
     def test_main_cli_successfully_outputs_colorized_image(self):

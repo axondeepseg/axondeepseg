@@ -102,7 +102,7 @@ class TestCore(object):
             'image_2_grayscale' + str(axonmyelin_suffix)
             ]
 
-        logfile = testPath / 'AxonDeepSeg.log'
+        logfile = testPath / 'axondeepseg.log'
 
         for fileName in outputFiles:
 
@@ -286,7 +286,7 @@ class TestCore(object):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.segment.main(["-i", str(self.imagePath), "-v", "1"])
 
-        assert Path('AxonDeepSeg.log').exists()
+        assert Path('axondeepseg.log').exists()
 
     @pytest.mark.integration
     def test_main_cli_fails_for_incorrect_file_extention(self):

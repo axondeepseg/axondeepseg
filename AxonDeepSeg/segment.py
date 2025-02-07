@@ -225,7 +225,7 @@ def main(argv=None):
     '''
 
 
-    logger.add("AxonDeepSeg.log", level='DEBUG', enqueue=True)
+    logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
 
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -268,7 +268,7 @@ def main(argv=None):
     args = vars(ap.parse_args(argv))
     
     # Load log file without logger to write
-    with open("AxonDeepSeg.log", "a") as f:
+    with open("axondeepseg.log", "a") as f:
         f.write("===================================================================================\n")
 
     # Log command line arguments

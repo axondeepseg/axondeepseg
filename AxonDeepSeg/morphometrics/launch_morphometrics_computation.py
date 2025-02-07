@@ -178,7 +178,7 @@ def main(argv=None):
     flag_morp_batch = False # True, if batch morphometrics is to be computed else False
     target_list = []        # list of image paths for batch morphometrics computations
 
-    logger.add("AxonDeepSeg.log", level='DEBUG', enqueue=True)
+    logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
     logger.info(f'Logging initialized for morphometrics in "{os.getcwd()}".')
 
     for dir_iter in path_target_list:

@@ -428,9 +428,9 @@ def draw_axon_diameter(img, path_prediction, pred_axon, pred_myelin, axon_shape=
     """
     :param img: sample grayscale image (png)
     :param path_prediction: full path to the segmented file (*_seg-axonmyelin.png)
-        from AxonDeepSeg segmentation output
-    :param pred_axon: axon mask from AxonDeepSeg segmentation output
-    :param pred_myelin: myelin mask from AxonDeepSeg segmentation output
+        from axondeepseg segmentation output
+    :param pred_axon: axon mask from axondeepseg segmentation output
+    :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
                             if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
                             if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
@@ -485,8 +485,8 @@ def save_map_of_axon_diameters(path_folder, axon_diameter_figure):
 
 def get_aggregate_morphometrics(pred_axon, pred_myelin, path_folder, axon_shape="circle"):
     """
-    :param pred_axon: axon mask from AxonDeepSeg segmentation output
-    :param pred_myelin: myelin mask from AxonDeepSeg segmentation output
+    :param pred_axon: axon mask from axondeepseg segmentation output
+    :param pred_myelin: myelin mask from axondeepseg segmentation output
     :param path_folder: absolute path of folder containing pixel size file
     :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
                             if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
