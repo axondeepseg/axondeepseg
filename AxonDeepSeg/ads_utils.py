@@ -192,6 +192,11 @@ def get_existing_models_list():
     """
     ADS_path = os.path.dirname(os.path.realpath(__file__))
     models_path = os.path.join(ADS_path, "models")
+
+    # If models folder doesn't exist or it's empty, return None
+    if not os.path.exists(models_path) or not os.listdir(models_path):
+        return None
+
     models_list = next(os.walk(models_path))[1]
     if "__pycache__" in models_list:
         models_list.remove("__pycache__")
