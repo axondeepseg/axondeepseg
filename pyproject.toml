@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=63", "wheel", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "AxonDeepSeg"
+dynamic = ["version"]
+description = "Axon/Myelin segmentation using AI"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{"name" = "NeuroPoly Lab, Polytechnique Montreal", "email" = "axondeepseg@googlegroups.com"}
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: napari",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+
+dependencies =[
+    "numpy<2",
+    "scipy",
+    "scikit-image",
+    "tabulate",
+    "pandas",
+    "matplotlib",
+    "mpld3",
+    "tqdm",
+    "requests",
+    "pillow!=9.0.0",
+    "imageio>=2.28.0",
+    "pytest",
+    "pytest-cov",
+    "prettytable",
+    "jupyter",
+    "openpyxl",
+    "qtconsole<5.4.2",
+    "napari[all]",
+    "acvl_utils!=0.2.1",
+    "nnunetv2==2.2.1",
+    "loguru",
+    "torch<2.4.0",
+    "pydicom<3",
+    "pytest-qt",
+    "magicgui",
+    "qtpy"
+]
+
+keywords = ["axon", "myelin", "segmentation", "microscopy"]
+
+[project.entry-points."napari.manifest"]
+AxonDeepSeg = "plugins.napari_ADS:napari.yaml"
+
+[project.urls]
+"Homepage" = "https://github.com/neuropoly/axondeepseg"
+"Bug Tracker" = "https://github.com/axondeepseg/axondeepseg/issues"
+"Documentation" = "https://github.com/axondeepseg/axondeepseg#README.md"
+"Source Code" = "https://github.com/axondeepseg/axondeepseg"
+"User Support" = "https://github.com/axondeepseg/axondeepseg/issues"
+
+[project.scripts]
+download_model = "AxonDeepSeg.download_model:main"
+download_tests = "AxonDeepSeg.download_tests:main"
+axondeepseg = "AxonDeepSeg.segment:main"
+axondeepseg_test = "AxonDeepSeg.integrity_test:main"
+axondeepseg_morphometrics = "AxonDeepSeg.morphometrics.launch_morphometrics_computation:main"
+
+[tool.setuptools]
+packages = ["AxonDeepSeg"]
+package-dir = {AxonDeepSeg = "AxonDeepSeg"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml"]
+
+[tool.setuptools.dynamic]
+version = {attr = "AxonDeepSeg.__init__.__version__"}
