@@ -1,11 +1,24 @@
+import AxonDeepSeg
 from AxonDeepSeg.ads_utils import download_data, convert_path
 from pathlib import Path
+from loguru import logger
 import shutil
+import argparse
 
 
 def download_tests(destination=None):
+    '''
+    Download test data for AxonDeepSeg.
+    
+    Parameters
+    ----------
+    destination : str
+        Directory to download the tests to. Default: test/
+    '''
+    # Get AxonDeepSeg installation path
+    package_dir = Path(AxonDeepSeg.__file__).parent
     if destination is None:
-        test_files_destination = Path("test/__test_files__")
+        test_files_destination =  package_dir.parent / "test" / "__test_files__"
     else:
         destination = convert_path(destination)
         test_files_destination = destination / "__test_files__"
@@ -38,4 +51,16 @@ def download_tests(destination=None):
     shutil.rmtree(folder_name_test_files)
 
 def main(argv=None):
-    download_tests()
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-d", "--dir",
+        required=False,
+        help="Directory to download the tests to. Default: test/",
+        default = None,
+    )
+    args = vars(ap.parse_args(argv))
+    download_tests(args["dir"])
+
+if __name__ == "__main__":
+    with logger.catch():
+        main()
