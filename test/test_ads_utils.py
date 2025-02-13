@@ -4,9 +4,11 @@ from pathlib import Path
 import shutil
 import numpy as np
 import imageio
+import os
 
 import pytest
 
+import AxonDeepSeg
 from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, imwrite, get_file_extension, check_available_gpus
 from AxonDeepSeg.model_cards import get_supported_models
 from AxonDeepSeg import params
@@ -20,7 +22,11 @@ class TestCore(object):
 
         self.precision_path = Path('test/__test_files__/__test_precision_files__')
 
-        self.tmp_folder = Path('test/__test_files__/tmp_folder')
+        # Get models folder
+        self.package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
+        self.model_dir = self.package_dir / "models"
+
+        self.tmp_folder =  self.package_dir.parent /'test/__test_files__/tmp_folder'
 
         if not self.tmp_folder.exists():
             self.tmp_folder.mkdir()
@@ -30,6 +36,12 @@ class TestCore(object):
         if output_path.exists():
             shutil.rmtree(output_path)
         
+        # If tmp/models folder isn't empty, move it back
+        if (self.tmp_folder / "models").exists():
+            for file in (self.tmp_folder / "models").iterdir():
+                shutil.move(file, self.model_dir)
+                shutil.rmtree(self.tmp_folder / "models")
+
         if self.tmp_folder.exists():
             shutil.rmtree(self.tmp_folder)
 
@@ -101,6 +113,26 @@ class TestCore(object):
 
         for downloaded_model in get_existing_models_list():
             assert downloaded_model in known_models
+
+    @pytest.mark.unit
+    def test_get_existing_models_list_returns_none_for_no_existing_models(self):
+        # Move content inside model folder to test/__test_files__/tmp_folder, without moving the folder itself
+        if not (self.tmp_folder / "models").exists():
+            (self.tmp_folder / "models").mkdir()
+
+        for file in self.model_dir.iterdir():
+            print(file)
+            # Make temp dir
+            shutil.move(file, self.tmp_folder / "models")
+        
+        # Main test
+        assert get_existing_models_list() == None
+
+        # Could leave it to teardown, but might as well try now in case other tests in this file use the model
+        if (self.tmp_folder / "models").exists:
+            for file in (self.tmp_folder / "models").iterdir():
+                shutil.move(file, self.model_dir)
+                shutil.rmtree(self.tmp_folder / "models")
 
     # --------------imread tests-------------- #
     @pytest.mark.unit
