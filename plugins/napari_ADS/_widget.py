@@ -161,6 +161,16 @@ class ADSplugin(QWidget):
         )
 
         self.available_models = ads_utils.get_existing_models_list()
+
+        if self.available_models == None:
+            if self.show_ok_cancel_message('First time opening pluging - models must be downloaded'):
+                # Call download models from the AxonDeepSeg/download_model.py module
+                import AxonDeepSeg.download_model as download_model
+                download_model.main()
+                self.available_models = ads_utils.get_existing_models_list()
+            else:
+                return
+
         self.model_selection_combobox = QComboBox()
         self.model_selection_combobox.addItems(
             ["Select the model"] + self.available_models
