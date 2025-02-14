@@ -86,7 +86,8 @@ def get_axon_morphometrics(
         axon_shape="circle", 
         return_index_image=False, 
         return_border_info=True,
-        return_instance_seg=False
+        return_instance_seg=False,
+        return_im_axonmyelin_label=False
     ):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
@@ -255,6 +256,9 @@ def get_axon_morphometrics(
     
     if return_instance_seg:
         output = (*output, im_instance_seg)
+    
+    if return_im_axonmyelin_label:
+        output = (*output, im_axonmyelin_label)
 
     return output
 
