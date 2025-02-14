@@ -183,7 +183,6 @@ class ADSplugin(QWidget):
 
         load_mask_button = QPushButton("Load mask")
         load_mask_button.clicked.connect(self._on_load_mask_button_click)
-        self.load_mask_button = load_mask_button
 
         fill_axons_button = QPushButton("Fill axons")
         fill_axons_button.clicked.connect(self._on_fill_axons_click)
