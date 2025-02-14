@@ -15,7 +15,7 @@ from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
-        self.testPath = Path(__file__).resolve().parent
+        self.testPath = Path(AxonDeepSeg.__file__).parent / '../test/'
         self.projectPath = self.testPath.parent
 
         self.modelPath = (
@@ -83,7 +83,6 @@ class TestCore(object):
     def teardown_method(self):
 
         testPath = Path(__file__).resolve().parent
-        projectPath = testPath.parent
         imageFolderPath = testPath / '__test_files__' / '__test_segment_files__'
 
         imageFolderPathWithPixelSize = (
@@ -239,6 +238,9 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_prepare_inputs_rgb_to_3channel_valid(self):
+        # Generate axonmyelin index through morphometrics
+        AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(self.testPath / '__test_files__'/ '__test_demo_files__' / 'image.png')])
+
         path_imgs = [self.testPath / '__test_files__'/ '__test_demo_files__' / 'image_axonmyelin_index.png']
         file_format = '.png'
         n_channels = 3
@@ -250,6 +252,9 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_prepare_inputs_rgb_to_grayscale(self):
+        # Generate axonmyelin index through morphometrics
+        AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(self.testPath / '__test_files__'/ '__test_demo_files__' / 'image.png')])
+
         path_imgs = [self.testPath / '__test_files__'/ '__test_demo_files__' / 'image_axonmyelin_index.png']
         file_format = '.png'
         n_channels = 1
