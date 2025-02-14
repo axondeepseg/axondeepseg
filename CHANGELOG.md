@@ -1,6 +1,13 @@
 Changelog
 ===============================================================================
 
+## v5.0.1 (2025-02-07)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.0.0...v5.0.7)
+
+**BUG** 
+
+ - Remove pygit2 & commit logging - breaks when ADS not downloaded as a git repo [View pull request](https://github.com/axondeepseg/axondeepseg/issues/876)
+
 ## v5.0.0 (2025-01-23)
 [View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v4.1.0...v5.0.0)
 
