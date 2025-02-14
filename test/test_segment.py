@@ -15,7 +15,7 @@ from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
-        self.testPath = Path(AxonDeepSeg.__file__).parent / '../test/'
+        self.testPath = (Path(AxonDeepSeg.__file__).parent).parent / 'test'
         self.projectPath = self.testPath.parent
 
         self.modelPath = (
