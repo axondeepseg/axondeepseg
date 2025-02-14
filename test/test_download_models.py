@@ -16,37 +16,38 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent 
-        
+
+        self.package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
+        self.model_dir = self.package_dir / "models"
+
+        self.test_path =  self.package_dir.parent / 'test'
         # Create temp folder
         # Get the directory where this current file is saved
-        self.tmpPath = self.testPath / '__tmp__'
-        if not self.tmpPath.exists():
-            self.tmpPath.mkdir()
+        self.tmp_path = self.test_path / '__tmp__'
+        if not self.tmp_path.exists():
+            self.tmp_path.mkdir()
 
         self.valid_model = 'generalist'
-        self.valid_model_path = self.tmpPath / 'model_seg_generalist_light'
+        self.valid_model_path = self.tmp_path / 'model_seg_generalist_light'
         self.invalid_model = 'dedicated-BF' # (ensembled version unavailable)
         self.invalid_model_type = 'ensemble'
 
     def teardown_method(self):
-        # Get the directory where this current file is saved
-        fullPath = Path(__file__).resolve().parent
-        print(fullPath)
-        # Move up to the test directory, "test/"
-        testPath = fullPath.parent 
-        tmpPath = testPath / '__tmp__'
-
+        # If tmp/models folder isn't empty, move it back
+        if (self.tmp_path / "models").exists() & (not self.model_dir.exists()):
+            for file in (self.tmp_path / "models").iterdir():
+                shutil.move(file, self.model_dir)
+                shutil.rmtree(self.tmp_path / "models")
         
-        if tmpPath.exists():
-            shutil.rmtree(tmpPath)
-            pass
+        if self.tmp_path.exists():
+            shutil.rmtree(self.tmp_path)
 
     # --------------download_model tests-------------- #
     @pytest.mark.unit
     def test_download_valid_model_works(self):
 
         assert not self.valid_model_path.exists()
-        download_model(self.valid_model, 'light', self.tmpPath)
+        download_model(self.valid_model, 'light', self.tmp_path)
         assert self.valid_model_path.exists()
 
     @pytest.mark.unit
@@ -62,8 +63,8 @@ class TestCore(object):
     @pytest.mark.unit
     def test_redownload_model_multiple_times_works(self):
 
-        download_model(self.valid_model, 'light', self.tmpPath)
-        download_model(self.valid_model, 'light', self.tmpPath)
+        download_model(self.valid_model, 'light', self.tmp_path)
+        download_model(self.valid_model, 'light', self.tmp_path)
         
     @pytest.mark.unit
     def test_list_models(self):
@@ -80,17 +81,26 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
 
-    @pytest.mark.integration
+    @pytest.mark.integratikon
     def test_main_cli_runs_succesfully_no_destination(self):
-        cli_test_model_path = Path('.') / 'models' / 'model_seg_generalist_light'
+        # Move content inside model folder to test/__test_files__/tmp_folder, without moving the folder itself
+        if not (self.tmp_path / "models").exists():
+            (self.tmp_path / "models").mkdir()
 
-        AxonDeepSeg.download_model.main(["-t","light"])
+        for file in self.model_dir.iterdir():
+            # Make temp dir
+            shutil.move(file, self.tmp_path / "models")
 
-        assert cli_test_model_path.exists()
+        AxonDeepSeg.download_model.main([])
+        assert (self.package_dir / 'models/model_seg_generalist_light').exists()
+
+        # Move content back
+        for file in (self.tmp_path / "models").iterdir():
+            shutil.rmtree(self.tmp_path / "models")
 
     @pytest.mark.integration
     def test_main_cli_downloads_to_path(self):
-        cli_test_path = self.tmpPath / 'cli_test'
+        cli_test_path = self.tmp_path / 'cli_test'
         cli_test_model_path = cli_test_path / 'model_seg_generalist_light'
 
         AxonDeepSeg.download_model.main(["-d", str(cli_test_path)])
