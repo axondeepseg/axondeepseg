@@ -91,7 +91,7 @@ class TestCore(object):
 
         download_tests(self.tmpPath)
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_precision_images_expected_types(self):
 
         precision_path = Path('test/__test_files__/__test_precision_files__')
