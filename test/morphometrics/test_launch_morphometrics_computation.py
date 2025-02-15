@@ -200,8 +200,8 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathCopy.exists()
         
-        # unlink the morphometrics file
-        morphometricsPathCopy.unlink() 
+        # Remove __test_demo_files_copy__ directory
+        shutil.rmtree(pathDirCopy)
 
     @pytest.mark.unit
     def test_main_cli_runs_successfully_for_batch_morphometrics_multiple_images(self):
@@ -233,9 +233,8 @@ class TestCore(object):
         assert indexImagePathCopy.exists()
         assert indexImgPathCopy.exists()
 
-        # unlink the morphometrics file
-        morphometricsImagePathCopy.unlink() 
-        morphometricsImgPathCopy.unlink() 
+        # Remove __test_demo_files_copy__ directory
+        shutil.rmtree(pathDirCopy)
 
         # remove the duplicated images
         list_images = glob.glob(str(pathDirCopy / 'img*.png')) # list of duplicated images
