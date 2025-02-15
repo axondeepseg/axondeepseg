@@ -67,7 +67,7 @@ class TestCore(object):
 
         assert self.test_files_path.exists()
 
-    @pytest.mark.integration
+    @pytest.mark.single
     def test_main_cli_runs_succesfully_no_destination(self):
         if not (self.testPath / '__test_files__').exists():
             (self.testPath / '__test_files__').mkdir()
@@ -82,16 +82,16 @@ class TestCore(object):
 
         assert (self.testPath / '__test_files__').exists()
 
-        # Remove copied file if it was succesful
-        shutil.rmtree(self.test_files_path)
+        # Remove generated files if it was succesful
+        shutil.rmtree(self.testPath / '__test_files__')
 
         # Move content back
         if not (self.testPath / '__test_files__').exists():
             (self.testPath / '__test_files__').mkdir()
 
-        for file in (self.testPath / '__test_files__').iterdir():
-            shutil.move(file, self.testPath)
-            shutil.rmtree(self.testPath / '__test_files__')
+        for file in (self.test_files_path).iterdir():
+            shutil.move(file, self.testPath / '__test_files__')
+        shutil.rmtree(self.test_files_path)
 
     @pytest.mark.unit
     def test_redownload_test_files_multiple_times_works(self):
