@@ -237,7 +237,7 @@ class TestCore(object):
         morphometricsImagePathCopy.unlink() 
         morphometricsImgPathCopy.unlink() 
 
-        remove the duplicated images
+        # remove the duplicated images
         list_images = glob.glob(str(pathDirCopy / 'img*.png')) # list of duplicated images
         for image in list_images:
             if  Path(image).exists():
