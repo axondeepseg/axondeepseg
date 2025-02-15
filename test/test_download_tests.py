@@ -85,6 +85,14 @@ class TestCore(object):
         # Remove copied file if it was succesful
         shutil.rmtree(self.test_files_path)
 
+        # Move content back
+        if not (self.testPath / '__test_files__').exists():
+            (self.testPath / '__test_files__').mkdir()
+
+        for file in (self.testPath / '__test_files__').iterdir():
+            shutil.move(file, self.testPath)
+            shutil.rmtree(self.testPath / '__test_files__')
+
     @pytest.mark.unit
     def test_redownload_test_files_multiple_times_works(self):
 
