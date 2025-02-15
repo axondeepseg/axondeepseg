@@ -161,8 +161,8 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists()
 
-        # unlink the morphometrics file
-        self.morphometricsPath.unlink()
+        ## unlink the morphometrics file
+        #self.morphometricsPath.unlink()
     
     @pytest.mark.unit
     def test_main_cli_runs_successfully_with_valid_inputs_with_axon_shape_as_ellipse(self):
@@ -200,8 +200,8 @@ class TestCore(object):
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathCopy.exists()
         
-        # Remove __test_demo_files_copy__ directory
-        shutil.rmtree(pathDirCopy)
+        # unlink the morphometrics file
+        morphometricsPathCopy.unlink() 
 
     @pytest.mark.unit
     def test_main_cli_runs_successfully_for_batch_morphometrics_multiple_images(self):
@@ -233,14 +233,15 @@ class TestCore(object):
         assert indexImagePathCopy.exists()
         assert indexImgPathCopy.exists()
 
-        # Remove __test_demo_files_copy__ directory
-        shutil.rmtree(pathDirCopy)
+        # unlink the morphometrics file
+        #morphometricsImagePathCopy.unlink() 
+        #morphometricsImgPathCopy.unlink() 
 
         # remove the duplicated images
-        list_images = glob.glob(str(pathDirCopy / 'img*.png')) # list of duplicated images
-        for image in list_images:
-            if  Path(image).exists():
-                Path(image).unlink()
+        #list_images = glob.glob(str(pathDirCopy / 'img*.png')) # list of duplicated images
+        #for image in list_images:
+        #    if  Path(image).exists():
+        #        Path(image).unlink()
 
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
