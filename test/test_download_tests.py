@@ -70,7 +70,6 @@ class TestCore(object):
     @pytest.mark.integration
     def test_main_cli_runs_succesfully_no_destination(self):
         if not (self.testPath / '__test_files__').exists():
-            shutil.rmtree(self.testPath / '__test_files__')
             (self.testPath / '__test_files__').mkdir()
         for file in (self.testPath / '__test_files__').iterdir():
             # Make temp dir
