@@ -34,8 +34,9 @@ class TestCore(object):
 
     def teardown_method(self):
         # If tmp/models folder isn't empty, move it back
+        dirtree = list((self.tmp_path / "models").iterdir())
         if (self.tmp_path / "models").exists() & (not self.model_dir.exists()):
-            for file in (self.tmp_path / "models").iterdir():
+            for file in dirtree:
                 shutil.move(file, self.model_dir)
                 shutil.rmtree(self.tmp_path / "models")
         
@@ -86,8 +87,9 @@ class TestCore(object):
         # Move content inside model folder to test/__test_files__/tmp_folder, without moving the folder itself
         if not (self.tmp_path / "models").exists():
             (self.tmp_path / "models").mkdir()
-
-        for file in self.model_dir.iterdir():
+        
+        dirtree = list(self.model_dir.iterdir())
+        for file in dirtree:
             # Make temp dir
             shutil.move(file, self.tmp_path / "models")
 
@@ -95,7 +97,8 @@ class TestCore(object):
         assert (self.package_dir / 'models/model_seg_generalist_light').exists()
 
         # Move content back
-        for file in (self.tmp_path / "models").iterdir():
+        dirtree = list((self.tmp_path / "models").iterdir())
+        for file in dirtree:
             shutil.rmtree(self.tmp_path / "models")
 
     @pytest.mark.integration

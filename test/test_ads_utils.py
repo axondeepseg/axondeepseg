@@ -36,9 +36,11 @@ class TestCore(object):
         if output_path.exists():
             shutil.rmtree(output_path)
         
+        dirtree = list((self.tmp_folder / "models").iterdir())
+
         # If tmp/models folder isn't empty, move it back
         if (self.tmp_folder / "models").exists():
-            for file in (self.tmp_folder / "models").iterdir():
+            for file in dirtree:
                 shutil.move(file, self.model_dir)
                 shutil.rmtree(self.tmp_folder / "models")
 
@@ -120,7 +122,8 @@ class TestCore(object):
         if not (self.tmp_folder / "models").exists():
             (self.tmp_folder / "models").mkdir()
 
-        for file in self.model_dir.iterdir():
+        dirtree = list(self.model_dir.iterdir())
+        for file in dirtree:
             print(file)
             # Make temp dir
             shutil.move(file, self.tmp_folder / "models")
@@ -129,8 +132,9 @@ class TestCore(object):
         assert get_existing_models_list() == None
 
         # Could leave it to teardown, but might as well try now in case other tests in this file use the model
+        dirtree = list(self.tmp_folder / "models").iterdir()
         if (self.tmp_folder / "models").exists:
-            for file in (self.tmp_folder / "models").iterdir():
+            for file in dirtree:
                 shutil.move(file, self.model_dir)
                 shutil.rmtree(self.tmp_folder / "models")
 

@@ -187,8 +187,9 @@ def segment_folder(
     path_model = convert_path(path_model)
 
     # Update list of images to segment by selecting only image files (not masks)
+    dirtree = list(path_folder)
     img_files = [
-        file for file in path_folder.iterdir() 
+        file for file in dirtree
             if (file.suffix.lower() in valid_extensions)
             and not str(file).endswith(side_effect_suffixes)
     ]
