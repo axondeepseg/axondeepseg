@@ -36,10 +36,9 @@ class TestCore(object):
         if output_path.exists():
             shutil.rmtree(output_path)
         
-        dirtree = list((self.tmp_folder / "models").iterdir())
-
         # If tmp/models folder isn't empty, move it back
         if (self.tmp_folder / "models").exists():
+            dirtree = list((self.tmp_folder / "models").iterdir())
             for file in dirtree:
                 shutil.move(file, self.model_dir)
                 shutil.rmtree(self.tmp_folder / "models")
