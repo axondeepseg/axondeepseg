@@ -67,11 +67,12 @@ class TestCore(object):
 
         assert self.test_files_path.exists()
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_main_cli_runs_succesfully_no_destination(self):
 
         if self.test_files_path.exists():
             shutil.rmtree(self.test_files_path)
+            shutil.mkdir(self.test_files_path)
         dirtree = list((self.testPath / '__test_files__').iterdir())
         for file in dirtree:
             # Make temp dir
@@ -95,6 +96,7 @@ class TestCore(object):
         dirtree = list((self.test_files_path).iterdir())
         for file in dirtree:
             shutil.move(file, self.testPath / '__test_files__')
+
         shutil.rmtree(self.test_files_path)
 
     @pytest.mark.unit

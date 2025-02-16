@@ -131,8 +131,8 @@ class TestCore(object):
         assert get_existing_models_list() == None
 
         # Could leave it to teardown, but might as well try now in case other tests in this file use the model
-        dirtree = list(self.tmp_folder / "models").iterdir()
         if (self.tmp_folder / "models").exists:
+            dirtree = list(self.tmp_folder / "models").iterdir()
             for file in dirtree:
                 shutil.move(file, self.model_dir)
                 shutil.rmtree(self.tmp_folder / "models")
