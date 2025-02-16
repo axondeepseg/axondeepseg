@@ -34,11 +34,12 @@ class TestCore(object):
 
     def teardown_method(self):
         # If tmp/models folder isn't empty, move it back
-        dirtree = list((self.tmp_path / "models").iterdir())
-        if (self.tmp_path / "models").exists() & (not self.model_dir.exists()):
-            for file in dirtree:
-                shutil.move(file, self.model_dir)
-                shutil.rmtree(self.tmp_path / "models")
+        if (self.tmp_path / "models").exists():
+            dirtree = list((self.tmp_path / "models").iterdir())
+            if not self.model_dir.exists():
+                for file in dirtree:
+                    shutil.move(file, self.model_dir)
+                    shutil.rmtree(self.tmp_path / "models")
         
         if self.tmp_path.exists():
             shutil.rmtree(self.tmp_path)
