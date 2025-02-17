@@ -52,7 +52,7 @@ class TestCore(object):
     @pytest.mark.single
     def test_main_cli_runs_succesfully_no_destination(self):
         cli_test_model_path =  Path(AxonDeepSeg.__file__).parent / 'models' / 'model_seg_generalist_light'
-        output_dir = AxonDeepSeg.download_model.main([])
+        output_dir = download_model(destination=None)
         assert output_dir == cli_test_model_path
 
     @pytest.mark.unit

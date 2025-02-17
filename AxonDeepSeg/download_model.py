@@ -102,8 +102,7 @@ def main(argv=None):
             pprint.pprint(model_details)
         sys.exit(SUCCESS)
     else:
-        output_dir = download_model(args["model_name"], args["model_type"], args["dir"])
-    return output_dir
+        download_model(args["model_name"], args["model_type"], args["dir"])
 
 if __name__ == "__main__":
     with logger.catch():

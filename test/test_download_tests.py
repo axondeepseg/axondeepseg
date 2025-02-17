@@ -65,7 +65,7 @@ class TestCore(object):
     def test_main_cli_runs_succesfully_no_destination(self):
         cli_test_model_path =  Path(AxonDeepSeg.__file__).parent.parent / 'test' / '__test_files__'
 
-        output_dir = AxonDeepSeg.download_tests.main([])
+        output_dir = download_tests(destination=None)
 
         assert output_dir == cli_test_model_path
 

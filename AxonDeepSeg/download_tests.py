@@ -63,9 +63,7 @@ def main(argv=None):
         default = None,
     )
     args = vars(ap.parse_args(argv))
-    output_dir = download_tests(args["dir"])
-
-    return output_dir
+    download_tests(args["dir"])
 
 if __name__ == "__main__":
     with logger.catch():
