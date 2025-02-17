@@ -1,5 +1,5 @@
 # coding: utf-8
-
+import AxonDeepSeg
 from pathlib import Path
 import shutil
 import imageio
@@ -52,6 +52,23 @@ class TestCore(object):
         download_tests(self.tmpPath)
 
         assert self.test_files_path.exists()
+
+    @pytest.mark.integration
+    def test_download_tests_runs_succesfully_with_destination(self):
+        assert not self.test_files_path.exists()
+
+        download_tests(self.tmpPath)
+
+        assert self.test_files_path.exists()
+
+    @pytest.mark.single
+    def test_main_cli_runs_succesfully_no_destination(self):
+        cli_test_model_path =  Path(AxonDeepSeg.__file__).parent.parent / 'test' / '__test_files__'
+
+        output_dir = AxonDeepSeg.download_tests.main([])
+
+        assert output_dir == cli_test_model_path
+
 
     @pytest.mark.unit
     def test_redownload_test_files_multiple_times_works(self):

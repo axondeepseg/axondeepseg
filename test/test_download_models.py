@@ -49,6 +49,12 @@ class TestCore(object):
         download_model(self.valid_model, 'light', self.tmpPath)
         assert self.valid_model_path.exists()
 
+    @pytest.mark.single
+    def test_main_cli_runs_succesfully_no_destination(self):
+        cli_test_model_path =  Path(AxonDeepSeg.__file__).parent / 'models' / 'model_seg_generalist_light'
+        output_dir = AxonDeepSeg.download_model.main([])
+        assert output_dir == cli_test_model_path
+
     @pytest.mark.unit
     def test_download_model_cli_throws_error_for_unavailable_model(self):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -79,14 +85,6 @@ class TestCore(object):
             AxonDeepSeg.download_model.main(["--list"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_no_destination(self):
-        cli_test_model_path = Path('.') / 'models' / 'model_seg_generalist_light'
-
-        AxonDeepSeg.download_model.main(["-t","light"])
-
-        assert cli_test_model_path.exists()
 
     @pytest.mark.integration
     def test_main_cli_downloads_to_path(self):
