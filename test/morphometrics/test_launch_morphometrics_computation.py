@@ -199,9 +199,6 @@ class TestCore(object):
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), str(pathImgCopy)])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0) and self.morphometricsPath.exists() and morphometricsPathCopy.exists()
-        
-        # unlink the morphometrics file
-        morphometricsPathCopy.unlink() 
 
         if (self.dataPath.parent / '__test_demo_files_copy__').exists():
             shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
@@ -235,16 +232,6 @@ class TestCore(object):
         # Assert that the index images are created.
         assert indexImagePathCopy.exists()
         assert indexImgPathCopy.exists()
-
-        # unlink the morphometrics file
-        morphometricsImagePathCopy.unlink() 
-        morphometricsImgPathCopy.unlink() 
-
-        # remove the duplicated images
-        list_images = glob.glob(str(pathDirCopy / 'img*.png')) # list of duplicated images
-        for image in list_images:
-            if  Path(image).exists():
-                Path(image).unlink()
         
         if (self.dataPath.parent / '__test_demo_files_copy__').exists():
             shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
