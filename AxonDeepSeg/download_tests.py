@@ -6,7 +6,7 @@ import shutil
 import argparse
 
 
-def download_tests(destination=None):
+def download_tests(destination=None, overwrite=True):
     '''
     Download test data for AxonDeepSeg.
     
@@ -42,12 +42,14 @@ def download_tests(destination=None):
     folder_name_test_files = ''.join([str(x) for x in test_folder if 'data-testing' in str(x)])
     output_dir=test_files_destination.resolve()
 
-    if test_files_destination.exists():
-        print('Test files folder already existed - deleting old one.')
-        shutil.rmtree(str(test_files_destination))
+    if overwrite==True:
+        if test_files_destination.exists():
+            print('Test files folder already existed - deleting old one.')
+            shutil.rmtree(str(test_files_destination))
 
-    shutil.move(Path(folder_name_test_files).joinpath("__test_files__"), str(test_files_destination))
-
+        shutil.move(Path(folder_name_test_files).joinpath("__test_files__"), str(test_files_destination))
+    else:
+        print('Test files folder already existed, overwrite set to False - not deleting old one.')
     # remove temporary folder
     shutil.rmtree(folder_name_test_files)
 

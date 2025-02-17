@@ -11,7 +11,7 @@ import pprint
 # exit codes
 SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
 
-def download_model(model='generalist', model_type='light', destination=None):
+def download_model(model='generalist', model_type='light', destination=None, overwrite=True):
     '''
     Download a model for AxonDeepSeg.
     Parameters
@@ -49,12 +49,14 @@ def download_model(model='generalist', model_type='light', destination=None):
     # retrieving unknown model folder name
     folder_name = list(set(files_after) - set(files_before))[0]
     output_dir = model_destination.resolve()
+    if overwrite==True:
+        if model_destination.exists():
+            logger.info("Model folder already existed - deleting old one")
+            shutil.rmtree(str(model_destination))
 
-    if model_destination.exists():
-        logger.info("Model folder already existed - deleting old one")
-        shutil.rmtree(str(model_destination))
-
-    shutil.move(folder_name, str(model_destination))
+        shutil.move(folder_name, str(model_destination))
+    else:
+        logger.info("Model folder already existed, overwrite set to False - not deleting old one")
 
     return output_dir
 
