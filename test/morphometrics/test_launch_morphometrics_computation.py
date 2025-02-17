@@ -42,6 +42,9 @@ class TestCore(object):
         if (self.dataPath / f'image{instance_suffix}').exists():
             (self.dataPath / f'image{instance_suffix}').unlink()
 
+        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
+            (self.dataPath.parent / '__test_demo_files_copy__').unlink()
+
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
     def test_launch_morphometrics_computation_saves_expected_files(self):
