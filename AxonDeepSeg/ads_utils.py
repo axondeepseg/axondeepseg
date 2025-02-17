@@ -108,7 +108,8 @@ def imread(filename):
                                f"file extensions:  '.png', '.tif', '.tiff', '.jpg' and '.jpeg'.")
 
     props = imageio.v3.improps(filename) # new in v3 - standardized metadata
-    _img = imageio.v3.imread(filename)
+    with open(filename, "rb") as f:
+        _img = imageio.v3.imread(f)
 
     if _img.dtype==np.float32 or _img.dtype==np.float64:
         if len(_img.shape) > 2:
