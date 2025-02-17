@@ -42,9 +42,6 @@ class TestCore(object):
         if (self.dataPath / f'image{instance_suffix}').exists():
             (self.dataPath / f'image{instance_suffix}').unlink()
 
-        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
-            shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
-
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
     def test_launch_morphometrics_computation_saves_expected_files(self):
@@ -206,6 +203,9 @@ class TestCore(object):
         # unlink the morphometrics file
         morphometricsPathCopy.unlink() 
 
+        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
+            shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
+
     @pytest.mark.unit
     def test_main_cli_runs_successfully_for_batch_morphometrics_multiple_images(self):
         
@@ -245,6 +245,9 @@ class TestCore(object):
         for image in list_images:
             if  Path(image).exists():
                 Path(image).unlink()
+        
+        if (self.dataPath.parent / '__test_demo_files_copy__').exists():
+            shutil.rmtree(self.dataPath.parent / '__test_demo_files_copy__')
 
     @pytest.mark.exceptionhandling
     def test_main_cli_handles_exception_if_image_is_not_segmented(self):
