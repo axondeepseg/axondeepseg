@@ -32,7 +32,10 @@ def download_model(model='generalist', model_type='light', destination=None, ove
     else:
         destination = Path(destination)
         model_destination = destination / full_model_name
-
+    if model_destination.exists() and overwrite == False:
+        logger.info("Overwrite set to False - not deleting old model.")
+        return model_destination
+    
     url_model_destination = MODELS[model]['weights'][model_type]
     if url_model_destination is None:
         logger.error('Model not found.')
@@ -49,14 +52,12 @@ def download_model(model='generalist', model_type='light', destination=None, ove
     # retrieving unknown model folder name
     folder_name = list(set(files_after) - set(files_before))[0]
     output_dir = model_destination.resolve()
-    if overwrite==True:
-        if model_destination.exists():
-            logger.info("Model folder already existed - deleting old one")
-            shutil.rmtree(str(model_destination))
 
-        shutil.move(folder_name, str(model_destination))
-    else:
-        logger.info("Model folder already existed, overwrite set to False - not deleting old one")
+    if model_destination.exists():
+        logger.info("Model folder already existed - deleting old one")
+        shutil.rmtree(str(model_destination))
+
+    shutil.move(folder_name, str(model_destination))
 
     return output_dir
 
@@ -104,7 +105,7 @@ def main(argv=None):
             pprint.pprint(model_details)
         sys.exit(SUCCESS)
     else:
-        download_model(args["model_name"], args["model_type"], args["dir"])
+        download_model(args["model_name"], args["model_type"], args["dir"], overwrite=True)
 
 if __name__ == "__main__":
     with logger.catch():

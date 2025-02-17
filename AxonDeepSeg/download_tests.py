@@ -23,6 +23,10 @@ def download_tests(destination=None, overwrite=True):
         destination = convert_path(destination)
         test_files_destination = destination / "__test_files__"
 
+    if test_files_destination.exists() and overwrite == False:
+        logger.info("Overwrite set to False - not deleting old test files.")
+        return test_files_destination
+
     url_tests = "https://github.com/axondeepseg/data-testing/archive/refs/tags/r20250117.zip"  
     files_before = list(Path.cwd().iterdir())
 
@@ -42,14 +46,13 @@ def download_tests(destination=None, overwrite=True):
     folder_name_test_files = ''.join([str(x) for x in test_folder if 'data-testing' in str(x)])
     output_dir=test_files_destination.resolve()
 
-    if overwrite==True:
-        if test_files_destination.exists():
-            print('Test files folder already existed - deleting old one.')
-            shutil.rmtree(str(test_files_destination))
 
-        shutil.move(Path(folder_name_test_files).joinpath("__test_files__"), str(test_files_destination))
-    else:
-        print('Test files folder already existed, overwrite set to False - not deleting old one.')
+    if test_files_destination.exists():
+        print('Test files folder already existed - deleting old one.')
+        shutil.rmtree(str(test_files_destination))
+
+    shutil.move(Path(folder_name_test_files).joinpath("__test_files__"), str(test_files_destination))
+
     # remove temporary folder
     shutil.rmtree(folder_name_test_files)
 
@@ -65,7 +68,7 @@ def main(argv=None):
         default = None,
     )
     args = vars(ap.parse_args(argv))
-    download_tests(args["dir"])
+    download_tests(args["dir"], overwrite=True)
 
 if __name__ == "__main__":
     with logger.catch():
