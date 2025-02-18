@@ -268,7 +268,7 @@ def main(argv=None):
     with open("axondeepseg.log", "a") as f:
         f.write("===================================================================================\n")
 
-    # Log command line arguments
+    logger.info(AxonDeepSeg.__version_string__)
     logger.info(f"Command line arguments: {args}")
 
     verbosity_level = int(args["verbose"])
