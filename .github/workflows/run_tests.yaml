@@ -12,7 +12,6 @@ on:
   push:
     branches:
       - master
-      - mb/879-retry
 
   # Trigger current workflow on PR from ANY branch
   pull_request:
