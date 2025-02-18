@@ -171,17 +171,10 @@ ads_conda\Scripts\conda create -y -p ads_conda\envs\venv_ads python=3.11 || goto
 CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads || goto error
 echo Virtual environment created and activated successfully!
 
-rem Install ADS and its requirements
-if exist requirements-freeze.txt (
-  set requirements_file=requirements-freeze.txt || goto error
-) else (
-  set requirements_file=requirements.txt || goto error
-)
 echo:
-echo ### Installing ADS and its dependencies from %requirements_file%...
+echo ### Installing ADS and its dependencies
 rem Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
 ads_conda\envs\venv_ads\python -m pip install -U "pip^!=21.2.*" || goto error
-ads_conda\envs\venv_ads\Scripts\pip install -r %requirements_file% || goto error
 ads_conda\envs\venv_ads\Scripts\pip install -e . plugins\ --use-pep517 || goto error
 
 rem Install external dependencies
