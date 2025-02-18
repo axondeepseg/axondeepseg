@@ -145,9 +145,7 @@ def segment_images(
     path_model = convert_path(path_model)
 
     available_models = ads.get_existing_models_list()
-    if available_models is None:
-        available_models = []
-    if path_model.stem not in available_models:
+    if not available_models or path_model.stem not in available_models:
             try:
                 print('Model not found, attempting to download')
                 # Call download models from the AxonDeepSeg/download_model.py module
