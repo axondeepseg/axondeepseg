@@ -155,9 +155,8 @@ def segment_images(
 
                 available_models = ads.get_existing_models_list()
                 assert path_model.stem in available_models
-            except:
-                print('Could not download models, try again.')
-                quit()
+            except Exception as e:
+                raise Exception('Could not download models, try again.') from e
 
     (fileformat, n_channels) = get_model_input_format(path_model)
         
