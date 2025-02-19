@@ -30,7 +30,7 @@ classifiers = [
 dependencies =[
     "numpy<2",
     "scipy",
-    "scikit-image",
+    "scikit-image>=0.25.2",
     "tabulate",
     "pandas",
     "matplotlib",
