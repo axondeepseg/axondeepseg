@@ -2,7 +2,7 @@
 
 import pytest
 import napari
-from napari_ADS._widget import ADSplugin
+from AxonDeepSeg.ads_napari._widget import ADSplugin
 import numpy as np
 from unittest.mock import patch
 from pathlib import Path
@@ -15,6 +15,7 @@ from vispy.util import keys
 import tempfile
 import copy
 import time
+import sys
 
 class ImageLoadedEvent(object):
     def __init__(self, data):
@@ -44,6 +45,7 @@ class TestCore(object):
         pass
 
     # --------------initial tests-------------- #
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_layer_added_updates_image_loaded_after_plugin_start(self, make_napari_viewer):
         ## User opens plugin
@@ -59,6 +61,7 @@ class TestCore(object):
         # Assert that image_loaded_after_plugin_start state changed
         assert wdg.image_loaded_after_plugin_start == True
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_load_mask_button_click(self, make_napari_viewer):
         ## User opens plugin
@@ -71,7 +74,7 @@ class TestCore(object):
 
         # Assert that image_loaded_after_plugin_start state changed
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
         
         # Asserts napari's viewer layers
@@ -82,6 +85,7 @@ class TestCore(object):
             if isinstance(layer, napari.layers.Labels):
                 assert np.all(np.unique(layer.data) == [0,1])
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_remove_axons_click_user_forgets_to_load_image(self, make_napari_viewer):
         ## User opens plugin
@@ -99,6 +103,7 @@ class TestCore(object):
         assert wdg.remove_axon_state == False
         assert wdg.remove_axons_button.isChecked() == False
         
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_remove_axons_click_with_missing_axonmyelin(self, make_napari_viewer):
         ## User opens plugin
@@ -116,6 +121,7 @@ class TestCore(object):
         assert wdg.remove_axon_state == False
         assert wdg.remove_axons_button.isChecked() == False
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_remove_axons_click_no_morphometrics_computed(self, make_napari_viewer):
         ## User opens plugin
@@ -128,7 +134,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -150,6 +156,7 @@ class TestCore(object):
         assert wdg.remove_axons_button.isChecked() == True
         assert wdg.im_axonmyelin_label is not None
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_remove_axons_click_axon_pixel(self, make_napari_viewer):
         ## User opens plugin
@@ -162,7 +169,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -200,6 +207,7 @@ class TestCore(object):
         assert axon_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
         assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_remove_axons_click_myelin_pixel(self, make_napari_viewer):
         ## User opens plugin
@@ -212,7 +220,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -254,6 +262,7 @@ class TestCore(object):
         assert axon_layer.data[int(self.known_axon_data_coords[0]), int(self.known_axon_data_coords[1])] == 0
         assert myelin_layer.data[int(self.known_axon_data_coords[0]), int(self.known_axon_data_coords[1])] == 0
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_remove_axon_undo(self, make_napari_viewer):
         ## User opens plugin
@@ -266,7 +275,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -314,6 +323,7 @@ class TestCore(object):
         assert axon_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 0
         assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 1
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_remove_axons_click_background_pixel(self, make_napari_viewer):
         ## User opens plugin
@@ -326,7 +336,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -361,7 +371,7 @@ class TestCore(object):
         assert np.all(axon_layer.data == original_axon)
         assert np.all(myelin_layer.data == original_myelin)
 
-
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_remove_axons_click_layer_changed_to_label_prior_click(self, make_napari_viewer):
         ## User opens plugin
@@ -374,7 +384,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -397,6 +407,7 @@ class TestCore(object):
         # Assert expected message was shown for this pixel
         assert wdg.last_message == "Image layer must be selected."
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_show_axon_metrics_with_missing_axonmyelin(self, make_napari_viewer):
         ## User opens plugin
@@ -414,6 +425,7 @@ class TestCore(object):
         assert wdg.show_axon_metrics_state == False
         assert wdg.show_axon_metrics_button.isChecked() == False
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_show_axon_metrics_click_no_morphometrics_computed(self, make_napari_viewer):
         ## User opens plugin
@@ -426,7 +438,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -453,6 +465,7 @@ class TestCore(object):
         assert wdg.im_axonmyelin_label is not None
         assert wdg.stats_dataframe is not None
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_show_axon_metrics_click_no_morphometrics_computed_user_cancels_pixel(self, make_napari_viewer):
         ## User opens plugin
@@ -465,7 +478,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -488,6 +501,7 @@ class TestCore(object):
         assert wdg.show_axon_metrics_button.isChecked() == False
         assert wdg.im_axonmyelin_label is None
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_show_axon_metrics_click_axon_pixel(self, make_napari_viewer):
         ## User opens plugin
@@ -500,7 +514,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -530,6 +544,7 @@ class TestCore(object):
         # Assert expected message was shown for this pixel
         assert wdg.last_message == self.expected_myelin_metrics_message
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_show_axon_metrics_click_background_pixel(self, make_napari_viewer):
         ## User opens plugin
@@ -542,7 +557,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -564,6 +579,7 @@ class TestCore(object):
         # Assert expected message was shown for this pixel
         assert wdg.last_message == "Backround pixel - no morphometrics to report"
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_remove_axons_performance_large_image(self,make_napari_viewer):
         # Create a large synthetic int image (e.g., 5000,5000)
@@ -586,7 +602,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(temp_file.name), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -609,7 +625,7 @@ class TestCore(object):
         
         assert elapsed_time < 10.0  # Adjust threshold as needed
 
-
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_show_axon_metrics_performance_large_image(self,make_napari_viewer):
         # Create a large synthetic int image (e.g., 5000,5000)
@@ -632,7 +648,7 @@ class TestCore(object):
 
         ## User loads mask
         with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(temp_file.name), '')):
-            with patch('napari_ADS._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
+            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
                 QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
 
         ## User omits computing morphometrics via button
@@ -658,6 +674,7 @@ class TestCore(object):
         
         assert elapsed_time < 10.0  # Adjust threshold as needed
 
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_on_show_axon_metrics_warns_user_slow_very_large_image(self,make_napari_viewer):
         # Create a large synthetic int image (e.g., 5001,5000)

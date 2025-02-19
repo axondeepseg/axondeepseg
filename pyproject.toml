@@ -59,7 +59,7 @@ dependencies =[
 keywords = ["axon", "myelin", "segmentation", "microscopy"]
 
 [project.entry-points."napari.manifest"]
-AxonDeepSeg = "plugins.napari_ADS:napari.yaml"
+AxonDeepSeg = "AxonDeepSeg.ads_napari:napari.yaml"
 
 [project.urls]
 "Homepage" = "https://github.com/neuropoly/axondeepseg"

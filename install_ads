@@ -640,7 +640,7 @@ print info "Installing Python dependencies..."
 # We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
 # This is necessary in order to install 'macosx_11_0' wheels. See also:
 # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
-SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . --ignore-installed certifi && print info "Installing axondeepseg..." &&  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . plugins/ || die "Failed running pip install: $?"
+SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . --ignore-installed certifi && print info "Installing axondeepseg..." &&  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . || die "Failed running pip install: $?"
 print info "All requirements installed!"
 
 ## Create launchers for Python scripts
