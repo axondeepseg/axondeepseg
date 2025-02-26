@@ -524,6 +524,10 @@ class ADSplugin(QWidget):
         selected_layer = self.apply_model_thread.selected_layer
         image_directory = self.apply_model_thread.image_directory
         image_name_no_extension = selected_layer.name
+        # check if segment.prepare_inputs changed the target name
+        potential_target_name = image_name_no_extension + "_grayscale.png"
+        if (image_directory / potential_target_name).exists():
+            image_name_no_extension += '_grayscale'
         axon_mask_path = image_directory / (
             image_name_no_extension + str(axon_suffix)
         )
