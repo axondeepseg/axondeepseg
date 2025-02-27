@@ -16,6 +16,8 @@ import tempfile
 import copy
 import time
 import sys
+import shutil
+import trace 
 
 class ImageLoadedEvent(object):
     def __init__(self, data):
@@ -28,6 +30,15 @@ class TestCore(object):
         self.mask_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image_seg-axonmyelin.png')
         self.image_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image.png')
     
+        self.rgb_tmp_dir = Path(self.current_folder / '../../test/__test_files__/__test_color_files__/tmp')
+        self.rgb_tmp_dir.mkdir(exist_ok=True)
+        
+        self.rgb_image_path = Path(self.current_folder / '../../test/__test_files__/__test_color_files__/image_8bit.png')
+        
+        shutil.copy(self.rgb_image_path, self.rgb_tmp_dir)
+        self.rgb_image_tmp_path = self.rgb_tmp_dir / 'image_8bit.png'
+        
+
         self.known_axon_world_coords = (512.5,249.5) # x,y here are flipped l-r from data coords, as image is flipped l-r when placed in viewer
         self.known_axon_data_coords = (5,-6) # Top right of image
 
@@ -42,7 +53,49 @@ class TestCore(object):
 
         self.expected_myelin_metrics_message = "Axon index: 9\nAxon diameter: 6.66 μm\nMyelin thickness: 0.85 μm\ng-ratio: 0.80\nTouches border: True"
     def teardown_method(self):
-        pass
+        if self.rgb_tmp_dir.exists():
+            shutil.rmtree(self.rgb_tmp_dir)
+        else:
+            pass
+
+
+    # ------------------User Workflow tests------------------ #
+    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
+    @pytest.mark.single
+    def test_rgb_to_greyscale_user_workflow(self, make_napari_viewer, qtbot):
+        ## User opens plugin
+        viewer = make_napari_viewer(show=False)
+        wdg = ADSplugin(viewer)
+        viewer.open(self.rgb_image_tmp_path)
+
+        # Print loaded images
+        print(viewer.layers)
+
+        # Select the first layer (index 0)
+        selected_layer = viewer.layers[0]
+        print(selected_layer.name)  # Print the name of the selected layer
+
+        # Select the first model (index 0 is the text to tell the user to select a model)
+        wdg.model_selection_combobox.setCurrentIndex(1)
+        
+        # User clicks apply model
+        with qtbot.waitSignal(wdg.apply_model_thread.model_applied_signal, timeout=2000000):
+            wdg.apply_model_button.click()
+
+        # Check that the output images exist
+        assert self.rgb_tmp_dir.exists()
+        assert any(f.name.endswith('-axon.png') for f in self.rgb_tmp_dir.iterdir())
+        assert any(f.name.endswith('-myelin.png') for f in self.rgb_tmp_dir.iterdir())
+        assert any(f.name.endswith('-axonmyelin.png') for f in self.rgb_tmp_dir.iterdir())
+
+        # Check that they were made using the greyscale converted images
+        for f in self.rgb_tmp_dir.iterdir():
+            if f.name.endswith('-axon.png'):
+                assert '_grayscale' in f.name
+            if f.name.endswith('-myelin.png'):
+                assert '_grayscale' in f.name
+            if f.name.endswith('-axonmyelin.png'):  
+                assert '_grayscale' in f.name
 
     # --------------initial tests-------------- #
     @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
