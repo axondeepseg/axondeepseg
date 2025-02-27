@@ -17,7 +17,6 @@ import copy
 import time
 import sys
 import shutil
-import trace 
 
 class ImageLoadedEvent(object):
     def __init__(self, data):
@@ -61,7 +60,7 @@ class TestCore(object):
 
     # ------------------User Workflow tests------------------ #
     @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_rgb_to_greyscale_user_workflow(self, make_napari_viewer, qtbot):
         ## User opens plugin
         viewer = make_napari_viewer(show=False)
