@@ -160,10 +160,16 @@ class ADSplugin(QWidget):
         citation_textbox.setReadOnly(True)
         citation_textbox.setMaximumHeight(100)
 
+        demo_label = QLabel()
+        demo_label.setOpenExternalLinks(True)
+        demo_label.setText(
+            '<a href="https://axondeepseg.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
+        )
+
         hyperlink_label = QLabel()
         hyperlink_label.setOpenExternalLinks(True)
         hyperlink_label.setText(
-            '<a href="https://axondeepseg.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
+            '<a href="https://raw.githubusercontent.com/axondeepseg/data-testing/refs/heads/main/__test_files__/__test_demo_files__/image.png">New user? Download test image to segment</a>'
         )
 
         self.available_models = ads_utils.get_existing_models_list()
@@ -242,6 +248,7 @@ class ADSplugin(QWidget):
         self.layout().setContentsMargins(10, 20, 20, 10)
         self.layout().addWidget(self.get_logo())
         self.layout().addWidget(citation_textbox)
+        self.layout().addWidget(demo_label)
         self.layout().addWidget(hyperlink_label)
         self.layout().addWidget(self.model_selection_combobox)
         self.layout().addWidget(self.apply_model_button)
@@ -1060,11 +1067,8 @@ class ADSplugin(QWidget):
             The AxonDeepSeg citation
         """
         return (
-            "If you use this work in your research, please cite it as follows: \n"
-            "Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). "
-            "AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional "
-            "neural networks. Scientific Reports, 8(1), 3816. "
-            "Link to paper: https://doi.org/10.1038/s41598-018-22181-4. \n"
+            "If you use this work, please cite us: \n"
+            "Zaimi et al (2018): https://doi.org/10.1038/s41598-018-22181-4. \n"
             "Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)"
         )
 
