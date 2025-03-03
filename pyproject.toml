@@ -49,7 +49,7 @@ dependencies =[
     "acvl_utils!=0.2.1",
     "nnunetv2==2.2.1",
     "loguru",
-    "torch<2.4.0",
+    "torch",
     "pydicom<3",
     "pytest-qt",
     "magicgui",
