@@ -7,6 +7,7 @@ from PIL import Image
 
 from AxonDeepSeg import ads_utils
 from AxonDeepSeg import postprocessing
+import AxonDeepSeg.download_tests as download_tests
 
 class TestCore(object):
     def setup_method(self):
@@ -15,6 +16,9 @@ class TestCore(object):
 
         self.test_files_path = (self.fullPath / '__test_files__' / '__test_postprocessing_files__')
         print(self.test_files_path)
+
+        if not (self.fullPath / '__test_files__' ).exists():
+            download_tests.main()
 
         self.before_floodfill_image = ads_utils.imread((self.test_files_path / 'before_flood_fill.png'))
         self.after_floodfill_image = ads_utils.imread((self.test_files_path / 'after_flood_fill.png'))

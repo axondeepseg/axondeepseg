@@ -9,7 +9,6 @@ import pytest
 
 from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
 
-
 class TestCore(object):
     def setup_method(self):
         self.file_path = Path("simulation_test.png")

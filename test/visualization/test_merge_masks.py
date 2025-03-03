@@ -9,7 +9,7 @@ import pytest
 from AxonDeepSeg.visualization.merge_masks import merge_masks
 from AxonDeepSeg.ads_utils import imread, imwrite
 from AxonDeepSeg.params import axon_suffix, myelin_suffix, axonmyelin_suffix
-
+import AxonDeepSeg.download_tests as download_tests
 
 class TestCore(object):
     def setup_method(self):
@@ -17,6 +17,10 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
+
+        if not (self.testPath / '__test_files__' ).exists():
+            download_tests.main()
+
         self.output_filename =  Path('image' + str(axonmyelin_suffix))
         self.path_folder = (
             self.testPath /

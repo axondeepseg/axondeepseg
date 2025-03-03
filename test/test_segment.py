@@ -11,12 +11,15 @@ from AxonDeepSeg.segment import (
 )
 import AxonDeepSeg
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
-
+import AxonDeepSeg.download_tests as download_tests
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
         self.testPath = Path(__file__).resolve().parent
         self.projectPath = self.testPath.parent
+
+        if not (self.testPath / '__test_files__' ).exists():
+            download_tests.main()
 
         self.modelPath = (
             self.projectPath /
@@ -123,7 +126,7 @@ class TestCore(object):
             file.unlink()
 
     # --------------segment_folder tests-------------- #
-    @pytest.mark.unit
+    @pytest.mark.integration
     def test_segment_folder_creates_expected_files(self):
 
         outputFiles = [

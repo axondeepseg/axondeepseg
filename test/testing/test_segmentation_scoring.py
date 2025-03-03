@@ -11,7 +11,7 @@ import pytest
 from AxonDeepSeg.testing.segmentation_scoring import score_analysis, dice, pw_dice, Metrics_calculator
 from AxonDeepSeg import ads_utils
 from AxonDeepSeg.params import axonmyelin_suffix
-
+import AxonDeepSeg.download_tests as download_tests
 
 class TestCore(object):
     def setup_method(self):
@@ -19,6 +19,9 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
+
+        if not (self.testPath / '__test_files__' ).exists():
+            download_tests.main()
 
         self.folderPath = self.testPath / '__test_files__' / '__test_demo_files__'
 

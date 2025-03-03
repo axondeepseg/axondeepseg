@@ -8,7 +8,7 @@ from AxonDeepSeg.visualization.colorization import colorize_instance_segmentatio
 from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
 from AxonDeepSeg.morphometrics.compute_morphometrics import get_watershed_segmentation
 from AxonDeepSeg import ads_utils as adsutils
-
+import AxonDeepSeg.download_tests as download_tests
 
 class TestCore(object):
     def setup_method(self):
@@ -16,6 +16,9 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
+
+        if not (self.testPath / '__test_files__' ).exists():
+            download_tests.main()
 
         # simulated axons to test --border-info option
         self.simulated_image_path = Path(

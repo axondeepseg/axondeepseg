@@ -7,7 +7,7 @@ import imageio
 import pytest
 
 from AxonDeepSeg.download_tests import download_tests
-
+import AxonDeepSeg.download_tests as download_tests
 
 class TestCore(object):
     def setup_method(self):
@@ -16,7 +16,10 @@ class TestCore(object):
         print(self.fullPath)
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent 
-        
+
+        if not (self.testPath / '__test_files__' ).exists():
+            download_tests.main()
+
         # Create temp folder
         # Get the directory where this current file is saved
         self.tmpPath = self.testPath / '__tmp__'
@@ -61,7 +64,7 @@ class TestCore(object):
 
         assert self.test_files_path.exists()
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_main_cli_runs_succesfully_no_destination(self):
         cli_test_model_path =  Path(AxonDeepSeg.__file__).parent.parent / 'test' / '__test_files__'
 

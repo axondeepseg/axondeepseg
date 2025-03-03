@@ -13,6 +13,9 @@ from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_mode
 from AxonDeepSeg.model_cards import get_supported_models
 from AxonDeepSeg import params
 from torch.cuda import device_count
+import AxonDeepSeg.download_tests as download_tests
+
+
 
 class TestCore(object):
     def setup_method(self):
@@ -25,6 +28,9 @@ class TestCore(object):
         # Get models folder
         self.package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
         self.model_dir = self.package_dir / "models"
+
+        if not (self.package_dir / '..' / 'test' / '__test_files__' ).exists():
+            download_tests.main()
 
         self.tmp_folder =  self.package_dir.parent /'test/__test_files__/tmp_folder'
 
