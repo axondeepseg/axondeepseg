@@ -185,8 +185,6 @@ def main(argv=None):
         if colorization_flag:
             logger.warning("Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
             colorization_flag = False
-        if border_info_flag:
-            logger.warning("Border information not supported for unmyelinated axons. Ignoring the -b flag.")
     else:
         morphometrics_mode = 'myelinated'
         target_suffix = axonmyelin_suffix
