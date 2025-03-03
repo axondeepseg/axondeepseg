@@ -294,7 +294,6 @@ def main(argv=None):
             if colorization_flag:
                 instance_seg_image = morph_output[2]
 
-            #TODO: IN NERVE_AREA MODE, ADD SUM OF AREAS
             if morphometrics_mode == 'nerve':
                 # drop some columns
                 to_drop = ['axon_perimeter', 'axon_diam', 'solidity', 'eccentricity', 'orientation']
@@ -341,6 +340,14 @@ def main(argv=None):
                 )
             except IOError:
                 logger.warning(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
+
+        #TODO if nerve mode, edit the segmentation masks to remove outside of nerve section
+
+        #TODO if nerve mode, launch axon morph computation on updated masks
+        # use axon_morphometrics() function
+
+        #TODO count the number of axons in the axon_morphometrics.xlsx file, print density
+
 
         else:
             logger.warning("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
