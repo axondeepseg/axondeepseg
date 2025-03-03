@@ -32,6 +32,7 @@ from AxonDeepSeg.params import (
 )
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
+import AxonDeepSeg
 
 
 def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle"):
@@ -205,6 +206,8 @@ def main(argv=None):
 
     logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
     logger.info(f'Logging initialized for morphometrics in "{os.getcwd()}".')
+    logger.info(AxonDeepSeg.__version_string__)
+    logger.info(f'Arguments: {args}')
 
     def check_mask_exists(path_target, mask_suffix, search_dir):
         return (Path(path_target).stem + str(mask_suffix)) in os.listdir(search_dir)

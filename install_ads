@@ -635,26 +635,12 @@ fi
 
 ## Install the axondeepseg into the Conda venv
 print info "Installing Python dependencies..."
-# Check if a frozen version of the requirements exist (for release only)
-if [[ -f "requirements-freeze.txt" ]]; then
-  print info "Using requirements-freeze.txt (release installation)"
-  REQUIREMENTS_FILE="requirements-freeze.txt"
-else
-  # Not a package
-  print info "Using requirements.txt (git installation)"
-  REQUIREMENTS_FILE="requirements.txt"
-fi
-(
-  # We use "--ignore-installed" to preserve the version of `certifi` installed into the conda
-  # env, which prevents https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3609
-  # We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
-  # This is necessary in order to install 'macosx_11_0' wheels. See also:
-  # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
-  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -r "$REQUIREMENTS_FILE" --ignore-installed certifi &&
-  print info "Installing axondeepseg..." &&
-  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . plugins/
-) ||
-  die "Failed running pip install: $?"
+# We use "--ignore-installed" to preserve the version of `certifi` installed into the conda
+# env, which prevents https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3609
+# We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
+# This is necessary in order to install 'macosx_11_0' wheels. See also:
+# https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
+SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . --ignore-installed certifi && print info "Installing axondeepseg..." &&  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . || die "Failed running pip install: $?"
 print info "All requirements installed!"
 
 ## Create launchers for Python scripts
