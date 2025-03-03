@@ -86,11 +86,13 @@ jobs:
       - name: Test with pytest (Unix)
         if: runner.os != 'Windows'
         run: |
+          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           pytest ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
+          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           pytest.exe ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
       # Step 4: Submnit to coveralls
       - name: Submit to coveralls
