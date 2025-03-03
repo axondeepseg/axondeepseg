@@ -32,9 +32,21 @@ import math
 from AxonDeepSeg.params import morph_suffix, agg_dir
 
 
-def plot_something():
-    ...
-    # make a function per figure or something
+def plot_statistics(subject_df, subject_name, labels, metrics_df):
+    
+    plt.figure(figsize=(8, 5))
+    sns.barplot(data=subject_df, x='axon_bin', y='axon_diam (um)', estimator=len, order=labels)
+    plt.title(f"Axon diameters for subject {subject_name}")
+    plt.xlabel("Axon Diameter (um)")
+    plt.ylabel("Count")
+
+    plt.table(cellText=metrics_df.values,
+              colLabels=metrics_df.columns,
+              rowLabels=[f"{idx[0]} ({idx[1]})" for idx in metrics_df.index],
+              cellLoc="center", loc="bottom", bbox=[0, -1.2, 1, 0.6])
+
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.2)
+    plt.show()
 
 
 def load_morphometrics(morph_file: Path):
@@ -87,11 +99,12 @@ def concat_metric_df(metric_df):
     return concatenated_df.T.groupby(level=0).first().T
 
 
-def aggregate_subject(subject_df: DataFrame, subject: str):
-    ...
+def aggregate_subject(subject_df: pd.DataFrame, subject: str):
     # this returns a dataframe with the aggregated subject data
     # also saves a file with the aggregated data
     # Binning information
+    
+    # TODO: Change hard-coded bins into inputed value
     bins = [0.5, 1, 1.25, 1.5, 1.75, math.inf]
     labels = ["0.5-1", "1-1.25", "1.25-1.5", "1.5-1.75", "1.75-"]
 
@@ -113,29 +126,17 @@ def aggregate_subject(subject_df: DataFrame, subject: str):
         all_myelin_thickness_stats.append(pd.DataFrame(get_statistics(myelin_thickness), index=[label]).T)
 
     # Concatenate all metric data into the final DataFrame
-    concatenated_df = concat_lists_to_df(all_diameters_stats, all_gratio_stats, all_myelin_thickness_stats)
+    metrics_df = concat_lists_to_df(all_diameters_stats, all_gratio_stats, all_myelin_thickness_stats)
     
-    print(f"Formatted DataFrame:\n{concatenated_df}")
-
-    plt.figure(figsize=(8, 5))
-    sns.barplot(data=subject_df, x='axon_bin', y='axon_diam (um)', estimator=len, order=labels)
-    plt.title(f"Axon diameters for subject {subject}")
-    plt.xlabel("Axon Diameter (um)")
-    plt.ylabel("Count")
-
-    plt.table(cellText=concatenated_df.values,
-              colLabels=concatenated_df.columns,
-              rowLabels=[f"{idx[0]} ({idx[1]})" for idx in concatenated_df.index],
-              cellLoc="center", loc="bottom", bbox=[0, -1.2, 1, 0.6])
-
-    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.2)
-    plt.show()
+    print(f"Formatted DataFrame:\n{metrics_df}")
+    
+    plot_statistics(subject_df, subject_name=subject, labels = labels, metrics_df=metrics_df)
 
 def aggregate(input_dir: Path):
     ...
     # put inter-subject stuff in agg_dir
     
-    df = load_morphometrics(input_dir)
+    df, n_filtered = load_morphometrics(input_dir)
     subjects = pd.unique(df['subject'])
     for subject in subjects:
         subject_df = df[df['subject'] == subject]
@@ -160,6 +161,7 @@ def main():
     # get subjects
     subjects = [x for x in Path(args.input_dir).iterdir() if x.is_dir()]
     logger.info(f'Found these subjects: {subjects}.')
+    
 
 
 if __name__ == '__main__':
