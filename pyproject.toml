@@ -47,7 +47,7 @@ dependencies =[
     "qtconsole<5.4.2",
     "napari[all]",
     "acvl_utils!=0.2.1",
-    "nnunetv2==2.2.1",
+    "nnunetv2",
     "loguru",
     "torch",
     "pydicom<3",
