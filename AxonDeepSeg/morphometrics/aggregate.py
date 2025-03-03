@@ -7,9 +7,7 @@ ranges (e.g. mean g-ratio for axons with diameter between 0.5 and 1 um, between
 ---
 input_dir
 └───subject1
-│   │   img.png
 │   │   img_axon_morphometrics.xlsx
-|   |   img2.png
 |   |   img2_axon_morphometrics.xlsx
 │   │   ...
 └───subject2
@@ -29,7 +27,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from AxonDeepSeg.params import morph_suffix
+from AxonDeepSeg.params import morph_suffix, agg_dir
 
 
 def plot_something():
@@ -40,15 +38,20 @@ def plot_something():
 def load_morphometrics(morph_file: Path):
     ...
     # put post-hoc screening here and return dataframe
+    df = pd.read_excel(morph_file)
+    n_filtered = 0
+    
+    return df, n_filtered
 
 
 def aggregate_subject(subject_dir: Path):
     ...
-    # this returns a dataframe with the aggregated subject data 
-
+    # this returns a dataframe with the aggregated subject data
+    # also saves a file with the aggregated data
 
 def aggregate(input_dir: Path):
     ...
+    # put inter-subject stuff in agg_dir
 
 
 def main():
@@ -64,6 +67,10 @@ def main():
     logger.info(f'Logging initialized for morphometric aggregation in "{Path('.')}".')
     logger.info(AxonDeepSeg.__version_string__)
     logger.info(f'Arguments: {args}')
+
+    # get subjects
+    subjects = [x for x in Path(args.input_dir).iterdir() if x.is_dir()]
+    logger.info(f'Found these subjects: {subjects}.')
 
 
 if __name__ == '__main__':
