@@ -7,7 +7,7 @@ name = "AxonDeepSeg"
 dynamic = ["version"]
 description = "Axon/Myelin segmentation using AI"
 readme = "README.md"
-requires-python = "==3.11, ==3.12"
+requires-python = ">=3.11, <3.13"
 license = {text = "MIT"}
 authors = [{"name" = "NeuroPoly Lab, Polytechnique Montreal", "email" = "axondeepseg@googlegroups.com"}
 ]

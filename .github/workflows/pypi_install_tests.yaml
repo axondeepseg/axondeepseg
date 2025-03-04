@@ -70,7 +70,7 @@ jobs:
       - name: Install Latest pypi version of AxonDeepSeg
         run: |
           pip install --upgrade pip
-          pip install axondeepseg==5.1.0.dev7
+          pip install axondeepseg==5.1.0.dev8
 
       # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
       # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
