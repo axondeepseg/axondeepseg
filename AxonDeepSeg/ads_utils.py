@@ -16,7 +16,7 @@ import numpy as np
 from loguru import logger
 
 from AxonDeepSeg.params import valid_extensions
-from email.message import Message
+import re
 
 def download_data(url_data):
     """ Downloads and extracts zip files from the web.
@@ -31,17 +31,16 @@ def download_data(url_data):
         response = session.get(url_data, stream=True)
 
         if "Content-Disposition" in response.headers:
-            msg = Message()
-            msg["Content-Disposition"] = response.headers["Content-Disposition"]
-            # Extract filename from the header
-            _, params = msg.get_params()[0]
-            zip_filename = params.get("filename")
-            if zip_filename:
-                print(f"Filename: {zip_filename}")
+            header = response.headers["Content-Disposition"]
+            
+            # Extract filename manually using regex
+            match = re.search(r'filename="?(?P<filename>[^";]+)"?', header)
+            if match:
+                zip_filename = match.group("filename")
             else:
-                print("Unexpected: No filename found in Content-Disposition header")
+                print("Unexpected: Unable to extract filename from Content-Disposition")
         else:
-            print("Unexpected: No Content-Disposition header found")
+            print("Unexpected: link doesn't provide a filename")
 
         # Save to temporary directory
         with tempfile.TemporaryDirectory() as tmpdir:
