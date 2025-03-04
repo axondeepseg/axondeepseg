@@ -68,6 +68,9 @@ jobs:
 
       # Step 2: Install environment.
       - name: Install Latest pypi version of AxonDeepSeg
+      - uses: actions/setup-python@v5  # Use the latest version (v4 as of October 2023)
+        with:
+          python-version: ${{ matrix.python-version }}
         run: |
           pip install --upgrade pip
           pip install axondeepseg==5.1.0.dev8
@@ -81,6 +84,9 @@ jobs:
 
       # Step 3: Full PyTest
       - name: Test with pytest (Unix)
+      - uses: actions/setup-python@v5  # Use the latest version (v4 as of October 2023)
+        with:
+          python-version: ${{ matrix.python-version }}
         if: runner.os != 'Windows'
         run: |
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
@@ -88,6 +94,9 @@ jobs:
           pwd
            pytest ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
       - name: Test with pytest (Windows)
+      - uses: actions/setup-python@v5  # Use the latest version (v4 as of October 2023)
+        with:
+          python-version: ${{ matrix.python-version }}
         if: runner.os == 'Windows'
         shell: cmd
         run: |
