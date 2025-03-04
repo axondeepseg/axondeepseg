@@ -73,7 +73,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python --version
-          pip install axondeepseg==5.1.0.dev4
+          pip install axondeepseg==5.1.0.dev5
 
       # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
       # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
