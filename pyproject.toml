@@ -14,7 +14,6 @@ authors = [{"name" = "NeuroPoly Lab, Polytechnique Montreal", "email" = "axondee
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "Framework :: napari",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -47,7 +46,7 @@ dependencies =[
     "qtconsole<5.4.2",
     "napari[all]",
     "acvl_utils!=0.2.1",
-    "nnunetv2",
+    "nnunetv2==2.2.1",
     "loguru",
     "torch",
     "pydicom<3",
