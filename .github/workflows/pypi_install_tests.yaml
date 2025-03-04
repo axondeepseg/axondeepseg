@@ -87,6 +87,8 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
+          ls
+          pwd
           pytest ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
