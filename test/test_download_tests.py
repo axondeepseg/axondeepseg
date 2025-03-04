@@ -7,15 +7,12 @@ import imageio
 import pytest
 
 from AxonDeepSeg.download_tests import download_tests
-import AxonDeepSeg.download_tests as download_tests
 
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
-        print(self.fullPath)
-        # Move up to the test directory, "test/"
-        self.testPath = self.fullPath.parent 
+        self.testPath = self.fullPath
 
         if not (self.testPath / '__test_files__' ).exists():
             download_tests.main()
@@ -55,14 +52,20 @@ class TestCore(object):
         download_tests(self.tmpPath)
 
         assert self.test_files_path.exists()
+        
+        # Remove it
+        shutil.rmtree(self.test_files_path)
 
     @pytest.mark.integration
     def test_download_tests_runs_succesfully_with_destination(self):
         assert not self.test_files_path.exists()
 
         download_tests(self.tmpPath)
-
+ 
         assert self.test_files_path.exists()
+
+        # Remove it
+        shutil.rmtree(self.test_files_path)
 
     @pytest.mark.integration
     def test_main_cli_runs_succesfully_no_destination(self):
@@ -75,8 +78,12 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_redownload_test_files_multiple_times_works(self):
-
+        assert not self.test_files_path.exists()
         download_tests(self.tmpPath)
+        download_tests(self.tmpPath)
+
+        # Remove it
+        shutil.rmtree(self.test_files_path)
 
     @pytest.mark.unit
     def test_precision_images_expected_types(self):
