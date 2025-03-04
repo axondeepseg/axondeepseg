@@ -55,6 +55,9 @@ jobs:
     steps:
       # Step 0: Checkout code.
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v5  # Use the latest version (v4 as of October 2023)
+        with:
+          python-version: ${{ matrix.python-version }}
 
       # Step 1: List main repo by time modified, and print path
       - name: List all current repository files and modification date
@@ -62,11 +65,6 @@ jobs:
         run: |
           ls -lasth
           pwd
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5  # Use the latest version (v4 as of October 2023)
-        with:
-          python-version: ${{ matrix.python-version }}
 
       # Step 2: Install environment.
       - name: Install Latest pypi version of AxonDeepSeg
