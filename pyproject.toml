@@ -52,7 +52,8 @@ dependencies =[
     "pydicom<3",
     "pytest-qt",
     "magicgui",
-    "qtpy"
+    "qtpy",
+    "cgi"
 ]
 
 keywords = ["axon", "myelin", "segmentation", "microscopy"]
