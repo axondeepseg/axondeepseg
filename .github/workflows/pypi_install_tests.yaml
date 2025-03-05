@@ -76,7 +76,7 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest ./test/visualization/test_simiulate_axons.py
+          pytest ./test/visualization/test_simulate_axons.py
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
@@ -87,5 +87,5 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest.exe ./test/visualization/test_simiulate_axons.py
+          pytest.exe ./test/visualization/test_simulate_axons.py
  
