@@ -6,6 +6,7 @@ import pytest
 from AxonDeepSeg.testing.launch_performance_metrics import launch_performance_metrics
 from AxonDeepSeg.params import axonmyelin_suffix
 
+
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved

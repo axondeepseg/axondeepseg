@@ -26,7 +26,6 @@ class TestCore(object):
     def setup_method(self):
         # Get current file folder
         self.current_folder = Path(__file__).parent.resolve()
-
         self.mask_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image_seg-axonmyelin.png')
         self.image_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image.png')
     

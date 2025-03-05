@@ -10,13 +10,13 @@ from AxonDeepSeg.visualization.merge_masks import merge_masks
 from AxonDeepSeg.ads_utils import imread, imwrite
 from AxonDeepSeg.params import axon_suffix, myelin_suffix, axonmyelin_suffix
 
+
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
-
         self.output_filename =  Path('image' + str(axonmyelin_suffix))
         self.path_folder = (
             self.testPath /

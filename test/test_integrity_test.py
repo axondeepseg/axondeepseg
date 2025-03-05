@@ -2,7 +2,6 @@
 
 import pytest
 from AxonDeepSeg.integrity_test import integrity_test
-from pathlib import Path
 
 class TestCore(object):
     def setup_method(self):

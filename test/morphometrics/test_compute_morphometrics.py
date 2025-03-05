@@ -27,6 +27,7 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                             )
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 
+
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved

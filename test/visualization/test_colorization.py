@@ -9,6 +9,7 @@ from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_
 from AxonDeepSeg.morphometrics.compute_morphometrics import get_watershed_segmentation
 from AxonDeepSeg import ads_utils as adsutils
 
+
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved

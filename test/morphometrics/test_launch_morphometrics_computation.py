@@ -18,12 +18,12 @@ from AxonDeepSeg.params import (
 )
 
 class TestCore(object):
+
     def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
-
         self.dataPath = self.testPath / '__test_files__' / '__test_demo_files__'
 
         self.morphometricsFile =  "image" + "_" + str(morph_suffix)

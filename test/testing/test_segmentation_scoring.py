@@ -12,6 +12,7 @@ from AxonDeepSeg.testing.segmentation_scoring import score_analysis, dice, pw_di
 from AxonDeepSeg import ads_utils
 from AxonDeepSeg.params import axonmyelin_suffix
 
+
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
