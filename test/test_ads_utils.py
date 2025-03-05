@@ -26,7 +26,10 @@ class TestCore(object):
         self.package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
         self.model_dir = self.package_dir / "models"
 
-        self.tmp_folder =  self.package_dir.parent /'test/__test_files__/tmp_folder'
+        # Get current file path
+        self.test_file_dir = Path(__file__).resolve().parent
+
+        self.tmp_folder =  self.test_file_dir /'test/__test_files__/tmp_folder'
 
         if not self.tmp_folder.exists():
             self.tmp_folder.mkdir()
