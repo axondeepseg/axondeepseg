@@ -78,6 +78,7 @@ jobs:
 
           pytest ./test/visualization/test_simulate_axons.py
           pytest ./test/test_params.py
+          pytest ./test/test_model_cards.py
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
@@ -90,3 +91,4 @@ jobs:
 
           pytest.exe ./test/visualization/test_simulate_axons.py
           pytest.exe ./test/test_params.py
+          pytest.exe ./test/test_model_cards.py

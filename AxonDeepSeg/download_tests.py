@@ -19,6 +19,7 @@ def download_tests(destination=None, overwrite=True):
     package_dir = Path(AxonDeepSeg.__file__).parent
     if destination is None:
         test_files_destination =  package_dir.parent / "test" / "__test_files__"
+        print('Downloading test files to default location: {}'.format(test_files_destination))
     else:
         destination = convert_path(destination)
         test_files_destination = destination / "__test_files__"
