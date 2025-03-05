@@ -71,6 +71,9 @@ jobs:
       - name: Test with pytest (Unix)
         if: runner.os != 'Windows'
         run: |
+          pwd
+          ls
+
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
@@ -79,11 +82,15 @@ jobs:
           pytest ./test/visualization/test_simulate_axons.py
           pytest ./test/test_params.py
           pytest ./test/test_model_cards.py
+          pytest ./test/visualization/test_colorization.py
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
+          pwd
+          ls
+
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
@@ -92,3 +99,4 @@ jobs:
           pytest.exe ./test/visualization/test_simulate_axons.py
           pytest.exe ./test/test_params.py
           pytest.exe ./test/test_model_cards.py
+          pytest.exe ./test/visualization/test_colorization.py
