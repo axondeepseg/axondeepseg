@@ -89,6 +89,7 @@ jobs:
           pytest ./test/visualization/test_merge_masks.py -v
           pytest ./test/testing/test_launch_performance_metrics.py -v
           pytest ./test/morphometrics/test_launch_morphometrics_computation.py -v
+          pytest ./test/morphometrics/test_compute_morphometrics.py -v
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
@@ -112,3 +113,4 @@ jobs:
           pytest.exe ./test/visualization/test_merge_masks.py -v
           pytest.exe ./test/testing/test_launch_performance_metrics.py -v
           pytest.exe ./test/morphometrics/test_launch_morphometrics_computation.py -v
+          pytest.exe ./test/morphometrics/test_compute_morphometrics.py -v
