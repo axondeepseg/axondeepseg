@@ -78,7 +78,7 @@ class TestCore(object):
         wdg.model_selection_combobox.setCurrentIndex(1)
         
         # User clicks apply model
-        with qtbot.waitSignal(wdg.apply_model_thread.model_applied_signal, timeout=300):
+        with qtbot.waitSignal(wdg.apply_model_thread.model_applied_signal, timeout=1):
             wdg.apply_model_button.click()
 
         # Check that the output images exist
