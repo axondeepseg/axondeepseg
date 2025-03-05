@@ -81,23 +81,7 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest ./test/visualization/test_simulate_axons.py -v
-          pytest ./test/test_params.py -v
-          pytest ./test/test_model_cards.py -v
-          pytest ./test/visualization/test_colorization.py -v
-          pytest ./test/testing/test_segmentation_scoring.py -v
-          pytest ./test/visualization/test_merge_masks.py -v
-          pytest ./test/testing/test_launch_performance_metrics.py -v
-          pytest ./test/morphometrics/test_launch_morphometrics_computation.py -v
-          pytest ./test/morphometrics/test_compute_morphometrics.py -v
-          pytest ./test/test_postprocessing.py -v
-          pytest ./test/test_download_tests.py -v
-          pytest ./test/test_download_models.py -v
-          pytest ./test/test_ads_utils.py -v
-          pytest ./test/test_apply_model.py -v
-          pytest ./test/test_segment.py -v
-          pytest ./test/test_integrity_test.py -v
-          pytest ./test/ads_napari/test_widget.py -v
+          pytest ./ -v
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
@@ -113,20 +97,4 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest.exe ./test/visualization/test_simulate_axons.py -v
-          pytest.exe ./test/test_params.py -v
-          pytest.exe ./test/test_model_cards.py -v
-          pytest.exe ./test/visualization/test_colorization.py -v
-          pytest.exe ./test/testing/test_segmentation_scoring.py -v
-          pytest.exe ./test/visualization/test_merge_masks.py -v
-          pytest.exe ./test/testing/test_launch_performance_metrics.py -v
-          pytest.exe ./test/morphometrics/test_launch_morphometrics_computation.py -v
-          pytest.exe ./test/morphometrics/test_compute_morphometrics.py -v
-          pytest.exe ./test/test_postprocessing.py -v
-          pytest.exe ./test/test_download_tests.py -v
-          pytest.exe ./test/test_download_models.py -v
-          pytest.exe ./test/test_ads_utils.py -v
-          pytest.exe ./test/test_apply_model.py -v
-          pytest.exe ./test/test_segment.py -v
-          pytest.exe ./test/test_integrity_test.py -v
-          pytest.exe ./test/ads_napari/test_widget.py -v
+          pytest.exe ./ -v

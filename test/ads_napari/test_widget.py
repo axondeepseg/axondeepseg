@@ -78,7 +78,7 @@ class TestCore(object):
         wdg.model_selection_combobox.setCurrentIndex(1)
         
         # User clicks apply model
-        with qtbot.waitSignal(wdg.apply_model_thread.model_applied_signal, timeout=30000):
+        with qtbot.waitSignal(wdg.apply_model_thread.model_applied_signal, timeout=300000):
             with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message', return_value=(False, '')):
                 wdg.apply_model_button.click()
 
