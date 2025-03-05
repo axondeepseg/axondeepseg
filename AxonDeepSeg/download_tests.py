@@ -59,7 +59,6 @@ def download_tests(destination=None, overwrite=True):
     return output_dir
 
 def main(argv=None):
-    download_tests()
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "-d", "--dir",
@@ -68,7 +67,8 @@ def main(argv=None):
         default = None,
     )
     args = vars(ap.parse_args(argv))
-    download_tests(args["dir"], overwrite=True)
+    print(args["dir"])
+    download_tests(destination=args["dir"], overwrite=True)
 
 if __name__ == "__main__":
     with logger.catch():
