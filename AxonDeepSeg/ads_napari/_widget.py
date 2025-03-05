@@ -1025,7 +1025,11 @@ class ADSplugin(QWidget):
         message_box.setIcon(QMessageBox.Information)
         message_box.setText(message)
         message_box.setStandardButtons(QMessageBox.Ok)
-        message_box.exec()
+
+        if message_box.exec() == QMessageBox.Ok:
+            return True
+        else:
+            return False
 
     def show_ok_cancel_message(self, message):
         """Displays a message box with an Ok and Cancel button and prompts the user to confirm an action.
