@@ -50,7 +50,7 @@ jobs:
     steps:
       # Step 1: Checkout code.
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v5  # Use the latest version (v4 as of October 2023)
+      - uses: actions/setup-python@v5 
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -74,10 +74,11 @@ jobs:
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           ls
           pwd
-           pytest ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
+          pytest .
+
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
-          pytest.exe ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
+          pytest.exe .

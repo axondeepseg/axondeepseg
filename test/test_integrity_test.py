@@ -3,6 +3,7 @@
 import pytest
 from AxonDeepSeg.integrity_test import integrity_test
 
+
 class TestCore(object):
     def setup_method(self):
         pass

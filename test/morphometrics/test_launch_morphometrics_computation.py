@@ -17,8 +17,8 @@ from AxonDeepSeg.params import (
     unmyelinated_suffix, unmyelinated_morph_suffix,
 )
 
-class TestCore(object):
 
+class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent

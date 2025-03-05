@@ -7,6 +7,8 @@ import imageio
 import pytest
 
 from AxonDeepSeg.download_tests import download_tests
+
+
 class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
@@ -14,7 +16,7 @@ class TestCore(object):
 
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent 
-
+        
         # Create temp folder
         # Get the directory where this current file is saved
         self.tmpPath = self.testPath / '__tmp__'
@@ -56,7 +58,7 @@ class TestCore(object):
         assert not self.test_files_path.exists()
 
         download_tests(self.tmpPath)
- 
+        
         assert self.test_files_path.exists()
 
     @pytest.mark.integration
@@ -70,6 +72,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_redownload_test_files_multiple_times_works(self):
+    
         download_tests(self.tmpPath)
 
     @pytest.mark.unit
