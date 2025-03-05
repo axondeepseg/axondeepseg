@@ -73,8 +73,8 @@ jobs:
         run: |
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
-          python -c "import AxonDeepSeg.download_models as download_models; download_models.main()"
-          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './AxonDeepSeg/models'])"
+          python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
+          python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
           pytest ./test/ads_napari/test_widget.py
           pytest ./test/test_ads_utils.py
@@ -100,8 +100,8 @@ jobs:
         run: |
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
-          python -c "import AxonDeepSeg.download_models as download_models; download_models.main()"
-          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './AxonDeepSeg/models'])"
+          python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
+          python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
           pytest.exe ./test/test_ads_utils.py
           pytest.exe ./test/test_apply_model.py
