@@ -97,6 +97,7 @@ jobs:
           pytest ./test/test_apply_model.py -v
           pytest ./test/test_segment.py -v
           pytest ./test/test_integrity_test.py -v
+          pytest ./test/ads_napari/test_widget.py -v
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
@@ -128,3 +129,4 @@ jobs:
           pytest.exe ./test/test_apply_model.py -v
           pytest.exe ./test/test_segment.py -v
           pytest.exe ./test/test_integrity_test.py -v
+          pytest.exe ./test/ads_napari/test_widget.py -v
