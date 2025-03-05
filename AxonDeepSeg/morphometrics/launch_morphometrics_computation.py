@@ -110,9 +110,17 @@ def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
     """
     Removes axons and myelin that are outside the nerve section.
     """
+    # ensure all masks are binary
+    pred_nerve = pred_nerve > 0  
+    pred_axon = pred_axon > 0    
+    pred_myelin = pred_myelin > 0 
+
+    # apply removal
     pred_axon = np.logical_and(pred_axon, pred_nerve)
     pred_myelin = np.logical_and(pred_myelin, pred_nerve)
+
     return pred_axon, pred_myelin
+
 
 def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path):
     """
@@ -381,13 +389,15 @@ def main(argv=None):
 
             # if nerve mode, edit the segmentation masks to remove outside of nerve section
             if morphometrics_mode == 'nerve':
-                pred_axon, pred_myelin = remove_outside_nerve(pred_axon, pred_myelin, pred_nerve)
+                print(f"Axons before removal: {np.sum(pred_axon)}")
+                new_pred_axon, new_pred_myelin = remove_outside_nerve(pred_axon, pred_myelin, pred_nerve)
+                print(f"Axons after removal: {np.sum(pred_axon)}")
 
                 # if nerve mode, launch axon morph computation on updated masks
                 logger.warning(f"File path: {current_path_target / morph_filename}")
                 morph_output = get_axon_morphometrics(
-                    im_axon=pred_axon, 
-                    im_myelin=pred_myelin, 
+                    im_axon=new_pred_axon, 
+                    im_myelin=new_pred_myelin, 
                     pixel_size=psm, 
                     axon_shape=axon_shape, 
                     return_index_image=True,
