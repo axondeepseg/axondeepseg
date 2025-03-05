@@ -59,7 +59,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install axondeepseg==5.1.0.dev9 --no-cache-dir
-          rm -rf ./AxonDeepSeg/
 
       # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
       # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
@@ -75,6 +74,8 @@ jobs:
           pwd
           ls
 
+          rm -rf ./AxonDeepSeg/
+
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
@@ -85,6 +86,7 @@ jobs:
           pytest ./test/test_model_cards.py
           pytest ./test/visualization/test_colorization.py
           pytest ./test/testing/test_segmentation_scoring.py
+          pytest ./test/visualization/test_merge_masks.py
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
@@ -92,6 +94,8 @@ jobs:
         run: |
           pwd
           ls
+
+          rmdir ./AxonDeepSeg/
 
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
@@ -103,3 +107,4 @@ jobs:
           pytest.exe ./test/test_model_cards.py
           pytest.exe ./test/visualization/test_colorization.py
           pytest.exe ./test/testing/test_segmentation_scoring.py
+          pytest.exe ./test/visualization/test_merge_masks.py
