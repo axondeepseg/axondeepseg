@@ -74,11 +74,12 @@ jobs:
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           ls
           pwd
-          pytest .
+          pytest . -vvv  
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
-          pytest.exe .
+          pytest.exe . -vvv  
+ 
