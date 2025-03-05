@@ -83,6 +83,7 @@ jobs:
           pytest ./test/test_params.py
           pytest ./test/test_model_cards.py
           pytest ./test/visualization/test_colorization.py
+          pytest ./test/testing/test_segmentation_scoring.py
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
@@ -100,3 +101,4 @@ jobs:
           pytest.exe ./test/test_params.py
           pytest.exe ./test/test_model_cards.py
           pytest.exe ./test/visualization/test_colorization.py
+          pytest.exe ./test/testing/test_segmentation_scoring.py
