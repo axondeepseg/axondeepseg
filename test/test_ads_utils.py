@@ -29,7 +29,7 @@ class TestCore(object):
         # Get current file path
         self.test_file_dir = Path(__file__).resolve().parent
 
-        self.tmp_folder =  self.test_file_dir /'test/__test_files__/tmp_folder'
+        self.tmp_folder =  self.test_file_dir /'__test_files__/tmp_folder'
 
         if not self.tmp_folder.exists():
             self.tmp_folder.mkdir()
