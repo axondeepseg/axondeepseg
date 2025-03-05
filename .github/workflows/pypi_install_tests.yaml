@@ -93,6 +93,7 @@ jobs:
           pytest ./test/test_postprocessing.py -v
           pytest ./test/test_download_tests.py -v
           pytest ./test/test_download_models.py -v
+          pytest ./test/test_ads_utils.py -v
 
 
       - name: Test with pytest (Windows)
@@ -121,3 +122,4 @@ jobs:
           pytest.exe ./test/test_postprocessing.py -v
           pytest.exe ./test/test_download_tests.py -v
           pytest.exe ./test/test_download_models.py -v
+          pytest.exe ./test/test_ads_utils.py -v
