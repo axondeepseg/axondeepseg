@@ -81,6 +81,8 @@ class TestCore(object):
         #with qtbot.waitSignal(wdg.apply_model_thread.model_applied_signal, timeout=1):
         wdg.apply_model_button.click()
 
+        time.sleep(180)
+
         # Check that the output images exist
         assert self.rgb_tmp_dir.exists()
         assert any(f.name.endswith('-axon.png') for f in self.rgb_tmp_dir.iterdir())
