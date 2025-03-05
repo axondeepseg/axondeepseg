@@ -16,7 +16,6 @@ from AxonDeepSeg.params import (
     index_suffix, axonmyelin_index_suffix, instance_suffix,
     unmyelinated_suffix, unmyelinated_morph_suffix,
 )
-import AxonDeepSeg.download_tests as download_tests
 
 class TestCore(object):
     def setup_method(self):
@@ -24,10 +23,6 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
-
-        if not (self.testPath / '__test_files__' ).exists():
-            download_tests.main()
-
 
         self.dataPath = self.testPath / '__test_files__' / '__test_demo_files__'
 

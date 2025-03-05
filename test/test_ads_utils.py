@@ -13,8 +13,6 @@ from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_mode
 from AxonDeepSeg.model_cards import get_supported_models
 from AxonDeepSeg import params
 from torch.cuda import device_count
-import AxonDeepSeg.download_tests as download_tests
-
 
 
 class TestCore(object):
@@ -30,8 +28,6 @@ class TestCore(object):
         self.model_dir = self.package_dir / "models"
 
         self.testDirPath = Path(__file__).resolve().parent
-        if not (self.testDirPath / '__test_files__' ).exists():
-            download_tests.main()
 
         self.tmp_folder =  self.testDirPath / '__test_files__/tmp_folder'
 

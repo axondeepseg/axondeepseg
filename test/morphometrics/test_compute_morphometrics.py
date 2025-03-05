@@ -26,7 +26,6 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 get_watershed_segmentation
                                                             )
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
-import AxonDeepSeg.download_tests as download_tests
 
 class TestCore(object):
     def setup_method(self):
@@ -34,10 +33,6 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent
-
-        if not (self.testPath / '__test_files__' ).exists():
-            download_tests.main()
-
 
         self.test_folder_path = (
             self.testPath /

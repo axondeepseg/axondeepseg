@@ -17,7 +17,6 @@ import copy
 import time
 import sys
 import shutil
-import AxonDeepSeg.download_tests as download_tests
 
 class ImageLoadedEvent(object):
     def __init__(self, data):
@@ -27,8 +26,6 @@ class TestCore(object):
     def setup_method(self):
         # Get current file folder
         self.current_folder = Path(__file__).parent.resolve()
-        if not (self.current_folder / '..' / '__test_files__' ).exists():
-            download_tests.main()
 
         self.mask_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image_seg-axonmyelin.png')
         self.image_path = Path(self.current_folder / '../../test/__test_files__/__test_demo_files__/image.png')

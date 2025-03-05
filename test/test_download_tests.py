@@ -12,10 +12,9 @@ class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
-        self.testPath = self.fullPath
 
-        if not (self.testPath / '__test_files__' ).exists():
-            download_tests.main()
+        # Move up to the test directory, "test/"
+        self.testPath = self.fullPath.parent 
 
         # Create temp folder
         # Get the directory where this current file is saved
@@ -53,9 +52,6 @@ class TestCore(object):
 
         assert self.test_files_path.exists()
         
-        # Remove it
-        shutil.rmtree(self.test_files_path)
-
     @pytest.mark.integration
     def test_download_tests_runs_succesfully_with_destination(self):
         assert not self.test_files_path.exists()

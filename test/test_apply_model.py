@@ -11,7 +11,6 @@ from AxonDeepSeg.apply_model import (
 
 from AxonDeepSeg import ads_utils
 from AxonDeepSeg.params import nnunet_suffix
-import AxonDeepSeg.download_tests as download_tests
 
 import numpy as np
 
@@ -20,9 +19,6 @@ class TestCore(object):
         # Get the directory where this current file is saved
         self.testPath = Path(__file__).resolve().parent
         self.projectPath = self.testPath.parent
-        
-        if not (self.testPath / '__test_files__' ).exists():
-            download_tests.main()
 
         self.checkpointFolder = (
             self.projectPath /
