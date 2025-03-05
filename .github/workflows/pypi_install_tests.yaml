@@ -81,12 +81,13 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest ./test/visualization/test_simulate_axons.py
-          pytest ./test/test_params.py
-          pytest ./test/test_model_cards.py
-          pytest ./test/visualization/test_colorization.py
-          pytest ./test/testing/test_segmentation_scoring.py
-          pytest ./test/visualization/test_merge_masks.py
+          pytest ./test/visualization/test_simulate_axons.py -v
+          pytest ./test/test_params.py -v
+          pytest ./test/test_model_cards.py -v
+          pytest ./test/visualization/test_colorization.py -v
+          pytest ./test/testing/test_segmentation_scoring.py -v
+          pytest ./test/visualization/test_merge_masks.py -v
+          pytest ./test/testing/test_launch_performance_metrics.py -v
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
@@ -102,9 +103,10 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest.exe ./test/visualization/test_simulate_axons.py
-          pytest.exe ./test/test_params.py
-          pytest.exe ./test/test_model_cards.py
-          pytest.exe ./test/visualization/test_colorization.py
-          pytest.exe ./test/testing/test_segmentation_scoring.py
-          pytest.exe ./test/visualization/test_merge_masks.py
+          pytest.exe ./test/visualization/test_simulate_axons.py -v
+          pytest.exe ./test/test_params.py -v
+          pytest.exe ./test/test_model_cards.py -v
+          pytest.exe ./test/visualization/test_colorization.py -v
+          pytest.exe ./test/testing/test_segmentation_scoring.py -v
+          pytest.exe ./test/visualization/test_merge_masks.py -v
+          pytest.exe ./test/testing/test_launch_performance_metrics.py -v
