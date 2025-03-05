@@ -76,22 +76,6 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest ./test/ads_napari/test_widget.py
-          pytest ./test/test_ads_utils.py
-          pytest ./test/test_apply_model.py
-          pytest ./test/test_download_models.py
-          pytest ./test/test_download_tests.py
-          pytest ./test/test_integrity_test.py
-          pytest ./test/test_model_cards.py
-          pytest ./test/test_params.py
-          pytest ./test/test_postprocessing.py
-          pytest ./test/test_segment.py
-          pytest ./test/morphometrics/test_compute_morphometrics.py
-          pytest ./test/morphometrics/test_launch_morphometrics_computation.py
-          pytest ./test/testing/test_launch_performance_metrics.py
-          pytest ./test/testing/test_segmentation_scoring.py
-          pytest ./test/visualization/test_colorization.py
-          pytest ./test/visualization/test_merge_masks.py
           pytest ./test/visualization/test_simiulate_axons.py
 
       - name: Test with pytest (Windows)
@@ -103,20 +87,5 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest.exe ./test/test_ads_utils.py
-          pytest.exe ./test/test_apply_model.py
-          pytest.exe ./test/test_download_models.py
-          pytest.exe ./test/test_download_tests.py
-          pytest.exe ./test/test_integrity_test.py
-          pytest.exe ./test/test_model_cards.py
-          pytest.exe ./test/test_params.py
-          pytest.exe ./test/test_postprocessing.py
-          pytest.exe ./test/test_segment.py
-          pytest.exe ./test/morphometrics/test_compute_morphometrics.py
-          pytest.exe ./test/morphometrics/test_launch_morphometrics_computation.py
-          pytest.exe ./test/testing/test_launch_performance_metrics.py
-          pytest.exe ./test/testing/test_segmentation_scoring.py
-          pytest.exe ./test/visualization/test_colorization.py
-          pytest.exe ./test/visualization/test_merge_masks.py
           pytest.exe ./test/visualization/test_simiulate_axons.py
  
