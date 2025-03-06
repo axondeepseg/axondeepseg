@@ -653,7 +653,7 @@ for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*download*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
 cp "$ADS_DIR/$CONDA_DIR/envs/venv_ads/bin/napari" "$ADS_DIR/$BIN_DIR/ads_napari" || die "Problem creating launchers!"
-echo "source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/" > "$ADS_DIR/$BIN_DIR/ads_activate"
+echo "source $ADS_DIR/ads_conda/bin/activate venv_ads" > "$ADS_DIR/$BIN_DIR/ads_activate"
 chmod +x "$ADS_DIR/$BIN_DIR/ads_activate"
 
 # Activate the launchers, particularly download_model, download_tests, and axondeepseg_test
