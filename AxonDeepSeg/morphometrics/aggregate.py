@@ -42,16 +42,18 @@ def plot_statistics(subject_df, subject_name, labels, metrics_df):
     plt.xlabel("Axon Diameter (um)")
     plt.ylabel("Count")
 
+    # TODO: Fix visual of table overlaping with histogram
+
     plt.table(
         cellText=metrics_df.values,
         colLabels=metrics_df.columns,
         rowLabels=[f"{idx[0]} ({idx[1]})" for idx in metrics_df.index],
         cellLoc="center",
         loc="bottom",
-        bbox=[0, -1.2, 1, 0.6],
+        bbox=[0, -0.6, 1, 0.6],
     )
 
-    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.2)
+    plt.subplots_adjust(left=0.1, right=0.9, top=1, bottom=0.3)
     plt.show()
 
 
@@ -151,6 +153,8 @@ def aggregate_subject(subject_df: pd.DataFrame, subject: str):
     )
 
     print(f"Formatted DataFrame:\n{metrics_df}")
+
+    metrics_df.to_excel(f"{subject}_statistics.xlsx", index=True)
 
     plot_statistics(
         subject_df, subject_name=subject, labels=labels, metrics_df=metrics_df
