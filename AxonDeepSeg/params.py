@@ -26,7 +26,7 @@ side_effect_suffixes = tuple(
 # morphometrics file suffix name
 morph_suffix = Path('axon_morphometrics.xlsx')
 unmyelinated_morph_suffix = Path('uaxon_morphometrics.xlsx')
-nerve_morph_suffix = Path('nerve_morphometrics.xlsx')
+nerve_morph_suffix = Path('nerve_morphometrics.json')
 instance_suffix = Path('_instance-map.png')             # Colored instance map of the segmentation
 
 # List of valid image extensions
@@ -78,5 +78,4 @@ column_names_ordered = [
     Morphometrics_Column_Name('myelin_thickness','myelin_thickness (um)'),
     Morphometrics_Column_Name('axonmyelin_area','axonmyelin_area (um^2)'),
     Morphometrics_Column_Name('axonmyelin_perimeter','axonmyelin_perimeter (um)'),
-    Morphometrics_Column_Name('nerve_area','nerve_area (um^2)'),
 ]
