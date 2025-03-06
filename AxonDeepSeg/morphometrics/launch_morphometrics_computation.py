@@ -286,12 +286,9 @@ def main(argv=None):
                     # load the nerve mask
                     pred_nerve = load_mask(current_path_target, 'nerve', nerve_suffix)
                     # also load axon and myelin masks for removal process
-                    # try:
-                    #     pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
-                    #     pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
-                    # except:
-                    #     pred_axon = None
-                    #     pred_myelin = None
+                    # pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
+                    # pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+
 
             if args["sizepixel"] is not None:
                 psm = float(args["sizepixel"])
