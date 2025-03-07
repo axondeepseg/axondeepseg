@@ -29,10 +29,29 @@ import seaborn as sns
 import os
 import math
 
-# from AxonDeepSeg.params import morph_suffix, agg_dir
+import AxonDeepSeg
+from AxonDeepSeg.params import morph_suffix, agg_dir
+
+AXON_MORPHOMETRICS = "axon_morphometrics"
+METRICS_FILE_NAME = "axon_metrics"
+METRICS_NAMES = {
+    ("Axon Diameter", "axon_diam (um)"),
+    ("G-Ratio", "gratio"),
+    ("Myelin Thickness", "myelin_thickness (um)"),
+}
+OUTPUT_FOLDER = "morphometrics_agg"
 
 
-def plot_statistics(subject_df, subject_name, labels, metrics_df):
+def save_axon_count_plot(
+    subject_df, subject_name, subject_folder_name, labels, output_folder=OUTPUT_FOLDER
+):
+
+    morph_subject_path = os.path.join(output_folder, subject_folder_name, subject_name)
+    os.makedirs(morph_subject_path, exist_ok=True)
+    print(f"morph subj {morph_subject_path}")
+    morph_figures_path = os.path.join(morph_subject_path, "figures_axon_count")
+    os.makedirs(morph_figures_path, exist_ok=True)
+    print(f"morph path {morph_figures_path}")
 
     plt.figure(figsize=(8, 5))
     sns.barplot(
@@ -42,18 +61,9 @@ def plot_statistics(subject_df, subject_name, labels, metrics_df):
     plt.xlabel("Axon Diameter (um)")
     plt.ylabel("Count")
 
-    # TODO: Fix visual of table overlaping with histogram
+    save_path = os.path.join(morph_figures_path, f"{subject_name}.png")
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
 
-    plt.table(
-        cellText=metrics_df.values,
-        colLabels=metrics_df.columns,
-        rowLabels=[f"{idx[0]} ({idx[1]})" for idx in metrics_df.index],
-        cellLoc="center",
-        loc="bottom",
-        bbox=[0, -0.6, 1, 0.6],
-    )
-
-    plt.subplots_adjust(left=0.1, right=0.9, top=1, bottom=0.3)
     plt.show()
 
 
@@ -79,15 +89,6 @@ def load_morphometrics(morph_file: Path, filters: dict):
         df = df.drop(outliers.index)
         n_filtered += len(outliers)
 
-    # Visualization of lines remaining
-    # TODO: Fix for current df structure
-    # subjects = pd.unique(df["subject"])
-    # lengths = {}
-    # for sub in subjects:
-    #     nb_axons_left = len(df[df["subject"] == sub])
-    #     lengths[sub] = nb_axons_left
-    #     print(f"Nb of axons left for subject {sub}: {nb_axons_left}")
-
     return df, n_filtered
 
 
@@ -108,12 +109,32 @@ def concat_lists_to_df(axon_df, gratio_df, myelin_df):
     return pd.concat([concated_axon_df, concated_gratio_df, concated_myelin_df])
 
 
-def concat_metric_df(metric_df):
+def concat_metric_df(metric_df: pd.DataFrame):
     concatenated_df = pd.concat(metric_df, axis=1)
     return concatenated_df.T.groupby(level=0).first().T
 
 
-def aggregate_subject(subject_df: pd.DataFrame, subject: str):
+def save_statistics_excel(
+    metrics_df: pd.DataFrame,
+    subject_name: str,
+    subject_folder_name: str,
+    output_folder: Path = OUTPUT_FOLDER,
+):
+    os.makedirs(output_folder, exist_ok=True)
+
+    morph_subject_path = os.path.join(output_folder, subject_folder_name)
+    os.makedirs(morph_subject_path, exist_ok=True)
+    morph_subject_name_path = os.path.join(morph_subject_path, subject_name)
+    os.makedirs(morph_subject_name_path, exist_ok=True)
+
+    metrics_file_name = Path(
+        str(subject_name).replace(AXON_MORPHOMETRICS, METRICS_FILE_NAME)
+    )
+    full_path = os.path.join(morph_subject_name_path, metrics_file_name)
+    metrics_df.to_excel(f"{full_path}", index=True)
+
+
+def aggregate_subject(subject_df: pd.DataFrame, file_name: str, subject_folder: Path):
     # this returns a dataframe with the aggregated subject data
     # also saves a file with the aggregated data
     # Binning information
@@ -127,37 +148,36 @@ def aggregate_subject(subject_df: pd.DataFrame, subject: str):
         subject_df["axon_diam (um)"], bins=bins, labels=labels, right=False
     )
 
-    all_diameters_stats = []
-    all_gratio_stats = []
-    all_myelin_thickness_stats = []
+    # Calculate statistics for each bin
+    metrics_dict = {}
 
-    # Compute statistics for each bin
-    for label in labels:
-        axon_diam = subject_df.loc[subject_df["axon_bin"] == label, "axon_diam (um)"]
-        gratios = subject_df.loc[subject_df["axon_bin"] == label, "gratio"]
-        myelin_thickness = subject_df.loc[
-            subject_df["axon_bin"] == label, "myelin_thickness (um)"
-        ]
+    for metric_name, column in METRICS_NAMES:
+        metric_stats = []
 
-        all_diameters_stats.append(
-            pd.DataFrame(get_statistics(axon_diam), index=[label]).T
-        )
-        all_gratio_stats.append(pd.DataFrame(get_statistics(gratios), index=[label]).T)
-        all_myelin_thickness_stats.append(
-            pd.DataFrame(get_statistics(myelin_thickness), index=[label]).T
-        )
+        for label in labels:
+            data = subject_df.loc[subject_df["axon_bin"] == label, column]
 
-    # Concatenate all metric data into the final DataFrame
-    metrics_df = concat_lists_to_df(
-        all_diameters_stats, all_gratio_stats, all_myelin_thickness_stats
-    )
+            if not data.empty:
+                metric_stats.append(pd.DataFrame(get_statistics(data), index=[label]).T)
+            else:
+                metric_stats.append(
+                    pd.DataFrame(
+                        {label: [None] * len(labels)},
+                        index=["Mean", "Standard Deviation", "Min", "Max", "Median"],
+                    )
+                )
 
-    print(f"Formatted DataFrame:\n{metrics_df}")
+        metrics_dict[metric_name] = pd.concat(metric_stats, axis=1)
 
-    metrics_df.to_excel(f"{subject}_statistics.xlsx", index=True)
+    metrics_df = pd.concat(metrics_dict, axis=0, names=["Metric", "Statistic"])
 
-    plot_statistics(
-        subject_df, subject_name=subject, labels=labels, metrics_df=metrics_df
+    subject_folder_name = subject_folder.name
+    save_statistics_excel(metrics_df, file_name, subject_folder_name)
+    save_axon_count_plot(
+        subject_df,
+        subject_name=file_name,
+        subject_folder_name=subject_folder_name,
+        labels=labels,
     )
 
 
@@ -166,35 +186,38 @@ def aggregate(input_dir: Path):
 
     for subject_folder in input_dir.iterdir():
         if subject_folder.is_dir():
-            print(f"Processing subject: {subject_folder.name}")
 
-            for file_name in subject_folder.glob("*.xlsx"):
+            for file_path in subject_folder.glob("*.xlsx"):
                 df, n_filtered = load_morphometrics(
-                    file_name, {"gratio_null": True, "gratio_sup": True}
+                    file_path, {"gratio_null": True, "gratio_sup": True}
                 )
-                print("after aggregate df")
-                print(df)
-                aggregate_subject(df, file_name)
+
+                file_name = (
+                    str(file_path).replace(str(subject_folder), "").replace("/", "")
+                )
+                aggregate_subject(df, file_name, subject_folder)
+                return
 
 
 def main():
     # TODO: Uncomment when dependencies needed installed
-    # ap = argparse.ArgumentParser()
-    # ap.add_argument(
-    #     '-i', '--input_dir',
-    #     type=str,
-    #     help='Directory containing one subdirectory per subject, each containing one or more morphometrics files.'
-    # )
-    # args = ap.parse_args()
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-i",
+        "--input_dir",
+        type=str,
+        help="Directory containing one subdirectory per subject, each containing one or more morphometrics files.",
+    )
+    args = ap.parse_args()
 
-    # logger.add("axondeepseg.log", level='DEBUG', enqueue=True)
+    logger.add("axondeepseg.log", level="DEBUG", enqueue=True)
     # logger.info(f'Logging initialized for morphometric aggregation in "{Path('.')}".')
-    # logger.info(AxonDeepSeg.__version_string__)
-    # logger.info(f'Arguments: {args}')
+    logger.info(AxonDeepSeg.__version_string__)
+    logger.info(f"Arguments: {args}")
 
-    # # get subjects
-    # subjects = [x for x in Path(args.input_dir).iterdir() if x.is_dir()]
-    # logger.info(f'Found these subjects: {subjects}.')
+    # get subjects
+    subjects = [x for x in Path(args.input_dir).iterdir() if x.is_dir()]
+    logger.info(f"Found these subjects: {subjects}.")
 
     aggregate(Path("../testing_aggregate_morph"))
 
