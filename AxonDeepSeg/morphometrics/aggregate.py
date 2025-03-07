@@ -48,10 +48,8 @@ def save_axon_count_plot(
 
     morph_subject_path = os.path.join(output_folder, subject_folder_name, subject_name)
     os.makedirs(morph_subject_path, exist_ok=True)
-    print(f"morph subj {morph_subject_path}")
     morph_figures_path = os.path.join(morph_subject_path, "figures_axon_count")
     os.makedirs(morph_figures_path, exist_ok=True)
-    print(f"morph path {morph_figures_path}")
 
     plt.figure(figsize=(8, 5))
     sns.barplot(
@@ -76,16 +74,12 @@ def load_morphometrics(morph_file: Path, filters: dict):
     # get rid of null values outliers
     if filters["gratio_null"] == True:
         outliers_nan = df[df["gratio"].isnull()]
-        print("\n")
-        print(f"removing {len(outliers_nan)} lines to exclude NaNs")
         df = df.drop(outliers_nan.index)
-        print(f"are there NaN left in the dataframe? {df.isnull().any().any()}")
         n_filtered += len(outliers_nan)
 
     # get rid of g-ratio superior to 1
     if filters["gratio_sup"] == True:
         outliers = df[df["gratio"] >= 1]
-        print(f"\nremoving {len(outliers)} lines to ensure g-ratio superior to 1")
         df = df.drop(outliers.index)
         n_filtered += len(outliers)
 
@@ -200,7 +194,6 @@ def aggregate(input_dir: Path):
 
 
 def main():
-    # TODO: Uncomment when dependencies needed installed
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "-i",
@@ -211,7 +204,7 @@ def main():
     args = ap.parse_args()
 
     logger.add("axondeepseg.log", level="DEBUG", enqueue=True)
-    # logger.info(f'Logging initialized for morphometric aggregation in "{Path('.')}".')
+    logger.info(f'Logging initialized for morphometric aggregation in "{Path('.')}".')
     logger.info(AxonDeepSeg.__version_string__)
     logger.info(f"Arguments: {args}")
 
