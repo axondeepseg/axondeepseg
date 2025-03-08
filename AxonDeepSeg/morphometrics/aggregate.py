@@ -1,7 +1,7 @@
 """
 This script is used to aggregate morphometric data and compute basic statistics,
-such as mean g-ratio per subject. It also computes statistics per axon diameter 
-ranges (e.g. mean g-ratio for axons with diameter between 0.5 and 1 um, between 
+such as mean g-ratio per subject. It also computes statistics per axon diameter
+ranges (e.g. mean g-ratio for axons with diameter between 0.5 and 1 um, between
 1 and 2, etc.). It assumes the following input directory structure:
 
 ---
@@ -14,8 +14,23 @@ input_dir
 │   │   ...
 ---
 
-The script will create an aggregate morphometrics file per subject and a global 
+The script will create an aggregate morphometrics file per subject and a global
 one with all subjects, in a output directory called "morphometrics_agg".
+
+The structure of the output directory morphometrics_agg should look like this:
+
+---
+morphometrics_agg
+└───subject1
+│   │   subject1-1
+│   │   │   metrics_statistics.xlsx
+│   │   │   axon_count_figure.png
+|   |   subject1-2
+│   │   ...
+└───subject2
+│   │   ...
+---
+
 """
 
 from pathlib import Path
@@ -30,17 +45,37 @@ import os
 import math
 
 import AxonDeepSeg
-from AxonDeepSeg.params import morph_suffix, agg_dir, statistics_file, metrics_names
+from AxonDeepSeg.params import (
+    morph_suffix,
+    agg_dir,
+    statistics_file_name,
+    axon_count_file_name,
+    metrics_names,
+)
+
+
+def create_output_folders(
+    subject_folder_name: str, subject_name: str, output_folder: Path = agg_dir
+):
+    """
+    Creates folder for a subject and a sub folder for its subject name
+    """
+
+    morph_subject_path = os.path.join(output_folder, subject_folder_name)
+    os.makedirs(morph_subject_path, exist_ok=True)
+    morph_subject_name_path = os.path.join(morph_subject_path, subject_name)
+    os.makedirs(morph_subject_name_path, exist_ok=True)
+
+    return morph_subject_name_path
 
 
 def save_axon_count_plot(
-    subject_df, subject_name, subject_folder_name, labels, output_folder=agg_dir
+    subject_df,
+    morph_subject_name_path,
+    labels,
+    subject_name,
+    axon_count_file_name=axon_count_file_name,
 ):
-
-    morph_subject_path = os.path.join(output_folder, subject_folder_name, subject_name)
-    os.makedirs(morph_subject_path, exist_ok=True)
-    morph_figures_path = os.path.join(morph_subject_path, "figures_axon_count")
-    os.makedirs(morph_figures_path, exist_ok=True)
 
     plt.figure(figsize=(8, 5))
     sns.barplot(
@@ -50,10 +85,8 @@ def save_axon_count_plot(
     plt.xlabel("Axon Diameter (um)")
     plt.ylabel("Count")
 
-    save_path = os.path.join(morph_figures_path, f"{subject_name}.png")
+    save_path = os.path.join(morph_subject_name_path, axon_count_file_name)
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
-
-    plt.show()
 
 
 def load_morphometrics(morph_file: Path, filters: dict):
@@ -101,21 +134,11 @@ def concat_metric_df(metric_df: pd.DataFrame):
 
 def save_statistics_excel(
     metrics_df: pd.DataFrame,
-    subject_name: str,
-    subject_folder_name: str,
-    output_folder: Path = agg_dir,
+    morph_subject_name_path: str,
+    statistics_file_name: str = statistics_file_name,
 ):
-    os.makedirs(output_folder, exist_ok=True)
-
-    morph_subject_path = os.path.join(output_folder, subject_folder_name)
-    os.makedirs(morph_subject_path, exist_ok=True)
-    morph_subject_name_path = os.path.join(morph_subject_path, subject_name)
-    os.makedirs(morph_subject_name_path, exist_ok=True)
-
-    metrics_file_name = Path(
-        str(subject_name).replace(morph_suffix, statistics_file)
-    )
-    full_path = os.path.join(morph_subject_name_path, metrics_file_name)
+    full_path = os.path.join(morph_subject_name_path, statistics_file_name)
+    print(f"full path is: {full_path}")
     metrics_df.to_excel(f"{full_path}", index=True)
 
 
@@ -135,7 +158,6 @@ def aggregate_subject(subject_df: pd.DataFrame, file_name: str, subject_folder: 
 
     # Calculate statistics for each bin
     metrics_dict = {}
-
     for metric_name, column in metrics_names:
         metric_stats = []
 
@@ -157,22 +179,21 @@ def aggregate_subject(subject_df: pd.DataFrame, file_name: str, subject_folder: 
     metrics_df = pd.concat(metrics_dict, axis=0, names=["Metric", "Statistic"])
 
     subject_folder_name = subject_folder.name
-    save_statistics_excel(metrics_df, file_name, subject_folder_name)
-    save_axon_count_plot(
-        subject_df,
-        subject_name=file_name,
-        subject_folder_name=subject_folder_name,
-        labels=labels,
-    )
+    subject_name = file_name.replace(str(morph_suffix), "")
+
+    morph_subject_name_path = create_output_folders(subject_folder_name, subject_name)
+
+    save_statistics_excel(metrics_df, morph_subject_name_path)
+    save_axon_count_plot(subject_df, morph_subject_name_path, labels, subject_name)
 
 
-def aggregate(input_dir: Path):
+def aggregate(subjects: list[Path]):
     # put inter-subject stuff in agg_dir
 
-    for subject_folder in input_dir.iterdir():
+    for subject_folder in subjects:
         if subject_folder.is_dir():
 
-            for file_path in subject_folder.glob("*.xlsx"):
+            for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
                 df, n_filtered = load_morphometrics(
                     file_path, {"gratio_null": True, "gratio_sup": True}
                 )
@@ -181,7 +202,6 @@ def aggregate(input_dir: Path):
                     str(file_path).replace(str(subject_folder), "").replace("/", "")
                 )
                 aggregate_subject(df, file_name, subject_folder)
-                return
 
 
 def main():
@@ -204,7 +224,9 @@ def main():
     subjects = [x for x in Path(args.input_dir).iterdir() if x.is_dir()]
     logger.info(f"Found these subjects: {subjects}.")
 
-    aggregate(Path("../testing_aggregate_morph"))
+    os.makedirs(agg_dir, exist_ok=True)
+
+    aggregate(subjects)
 
 
 if __name__ == "__main__":

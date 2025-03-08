@@ -44,7 +44,8 @@ instance_suffix = Path("_instance-map.png")  # Colored instance map of the segme
 agg_dir = Path("morphometrics_agg")
 
 # morphometrics statistics analysis
-statistics_file = "axon_statistics"
+statistics_file_name = "axon_statistics.xlsx"
+axon_count_file_name = "axon_count.png"
 metrics_names = {
     ("Axon Diameter", "axon_diam (um)"),
     ("G-Ratio", "gratio"),
