@@ -30,20 +30,11 @@ import os
 import math
 
 import AxonDeepSeg
-from AxonDeepSeg.params import morph_suffix, agg_dir
-
-AXON_MORPHOMETRICS = "axon_morphometrics"
-METRICS_FILE_NAME = "axon_metrics"
-METRICS_NAMES = {
-    ("Axon Diameter", "axon_diam (um)"),
-    ("G-Ratio", "gratio"),
-    ("Myelin Thickness", "myelin_thickness (um)"),
-}
-OUTPUT_FOLDER = "morphometrics_agg"
+from AxonDeepSeg.params import morph_suffix, agg_dir, statistics_file, metrics_names
 
 
 def save_axon_count_plot(
-    subject_df, subject_name, subject_folder_name, labels, output_folder=OUTPUT_FOLDER
+    subject_df, subject_name, subject_folder_name, labels, output_folder=agg_dir
 ):
 
     morph_subject_path = os.path.join(output_folder, subject_folder_name, subject_name)
@@ -112,7 +103,7 @@ def save_statistics_excel(
     metrics_df: pd.DataFrame,
     subject_name: str,
     subject_folder_name: str,
-    output_folder: Path = OUTPUT_FOLDER,
+    output_folder: Path = agg_dir,
 ):
     os.makedirs(output_folder, exist_ok=True)
 
@@ -122,7 +113,7 @@ def save_statistics_excel(
     os.makedirs(morph_subject_name_path, exist_ok=True)
 
     metrics_file_name = Path(
-        str(subject_name).replace(AXON_MORPHOMETRICS, METRICS_FILE_NAME)
+        str(subject_name).replace(morph_suffix, statistics_file)
     )
     full_path = os.path.join(morph_subject_name_path, metrics_file_name)
     metrics_df.to_excel(f"{full_path}", index=True)
@@ -145,7 +136,7 @@ def aggregate_subject(subject_df: pd.DataFrame, file_name: str, subject_folder: 
     # Calculate statistics for each bin
     metrics_dict = {}
 
-    for metric_name, column in METRICS_NAMES:
+    for metric_name, column in metrics_names:
         metric_stats = []
 
         for label in labels:
