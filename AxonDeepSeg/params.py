@@ -26,6 +26,18 @@ morph_suffix = Path('axon_morphometrics.xlsx')
 unmyelinated_morph_suffix = Path('uaxon_morphometrics.xlsx')
 instance_suffix = Path('_instance-map.png')             # Colored instance map of the segmentation
 
+# aggregate morphometrics file suffix name
+agg_dir = Path('morphometrics_agg')
+
+# morphometrics statistics analysis
+statistics_file_name = 'axon_statistics.xlsx'
+axon_count_file_name = 'axon_count.png'
+metrics_names = {
+    ('Axon Diameter', 'axon_diam (um)'),
+    ('G-Ratio', 'gratio'),
+    ('Myelin Thickness', 'myelin_thickness (um)'),
+}
+
 # List of valid image extensions
 valid_extensions = [
     ".ome.tif",
