@@ -204,7 +204,8 @@ def main():
     args = ap.parse_args()
 
     logger.add("axondeepseg.log", level="DEBUG", enqueue=True)
-    logger.info(f'Logging initialized for morphometric aggregation in "{Path('.')}".')
+    cwd = Path.cwd()
+    logger.info(f'Logging initialized for morphometric aggregation in "{cwd}".')
     logger.info(AxonDeepSeg.__version_string__)
     logger.info(f"Arguments: {args}")
 
