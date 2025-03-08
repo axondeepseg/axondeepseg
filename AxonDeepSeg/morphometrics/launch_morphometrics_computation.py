@@ -6,6 +6,7 @@ from argparse import RawTextHelpFormatter
 from matplotlib import image
 import sys
 import os
+import json
 from tqdm import tqdm
 from loguru import logger
 
@@ -106,6 +107,32 @@ def load_mask(current_path_target: Path, semantic_class: str, suffix: str):
         logger.error(msg)
         sys.exit(3)
 
+def save_nerve_morphometrics_to_json(stats_dataframe, output_path):
+    """
+    Saves nerve morphometrics (fascicle areas and total area) to a JSON file.
+    """
+    to_drop = ['axon_perimeter', 'axon_diam', 'solidity', 'eccentricity', 'orientation']
+    stats_dataframe = stats_dataframe.drop(columns=[col for col in to_drop if col in stats_dataframe.columns])
+
+    # Rename 'axon_area' to 'nerve_area' if needed
+    stats_dataframe = stats_dataframe.rename(columns={'axon_area': 'nerve_area'})
+
+    total_nerve_area = stats_dataframe['nerve_area'].sum()
+
+    fascicle_areas = {
+        str(idx): {"value": row["nerve_area"], "unit": "um^2"}
+        for idx, row in stats_dataframe.iterrows()
+    }
+
+    nerve_morphometrics_data = {
+        "fascicle_areas": fascicle_areas,
+        "total_area": {"value": total_nerve_area, "unit": "um^2"}
+    }
+    
+    with open(output_path, "w", encoding="utf-8") as json_file:
+        json.dump(nerve_morphometrics_data, json_file, indent=4)
+
+
 def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
     """
     Removes axons and myelin that are outside the nerve section.
@@ -121,30 +148,30 @@ def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
 
     return pred_axon, pred_myelin
 
-
 def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path):
     """
-    Computes axon density and adds it to the nerve morphometrics file.
+    Computes axon density and updates the existing JSON file with the axon density value.
     """
-    try:
-        axon_df = pd.read_excel(axon_morphometrics_path)
-        nerve_df = pd.read_excel(nerve_morphometrics_path)
-        nerve_df.set_index(nerve_df.columns[0], inplace=True)
+    axon_df = pd.read_excel(axon_morphometrics_path)
+    num_axons = len(axon_df)
 
-        num_axons = len(axon_df)
-        total_nerve_area = nerve_df.loc['total', 'nerve_area (um^2)']
-        density = num_axons / total_nerve_area if total_nerve_area > 0 else 0
+    with open(nerve_morphometrics_path, "r", encoding="utf-8") as json_file:
+        nerve_data = json.load(json_file)
 
-        logger.info(f"Number of axons: {num_axons}, Total area: {total_nerve_area}, Axon Density: {density:.5f}")
+    if "total_area" not in nerve_data:
+        raise KeyError("total_area not found in nerve_morphometrics JSON")
 
-        # add 'axon density (axon/um^2)' column to nerve morphometrics file
-        nerve_df.loc['total', 'axon density (axon/um^2)'] = density
-        nerve_df.to_excel(nerve_morphometrics_path)
+    total_nerve_area = nerve_data["total_area"]["value"]
+
+    density = num_axons / total_nerve_area if total_nerve_area > 0 else 0
+    logger.info(f"Number of axons: {num_axons}, Total area: {total_nerve_area}, Axon Density: {density:.5f}")
+
+    nerve_data["axon_density"] = {"value": density, "unit": "axon/um^2"}
+
+    with open(nerve_morphometrics_path, "w", encoding="utf-8") as json_file:
+        json.dump(nerve_data, json_file, indent=4)
         
-        return density
-    except Exception as e:
-        print(f"Error in computing axon density: {e}")
-        return 0
+    return density
     
 def main(argv=None):
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -286,8 +313,8 @@ def main(argv=None):
                     # load the nerve mask
                     pred_nerve = load_mask(current_path_target, 'nerve', nerve_suffix)
                     # also load axon and myelin masks for removal process
-                    # pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
-                    # pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+                    pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
+                    pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
 
 
             if args["sizepixel"] is not None:
@@ -335,23 +362,18 @@ def main(argv=None):
             if colorization_flag:
                 instance_seg_image = morph_output[2]
 
-            if morphometrics_mode == 'nerve':
-                # drop some columns
-                to_drop = ['axon_perimeter', 'axon_diam', 'solidity', 'eccentricity', 'orientation']
-                stats_dataframe = stats_dataframe.drop(columns=to_drop)
-                stats_dataframe = stats_dataframe.rename(columns={'axon_area': 'nerve_area'})
-                # add row with total nerve area (other columns are empty) named 'total'
-                stats_dataframe.loc['total'] = pd.Series(dtype='float64')
-                stats_dataframe.loc['total', 'nerve_area'] = stats_dataframe['nerve_area'].sum()
-
             morph_filename = current_path_target.stem + "_" + filename
 
+            if morphometrics_mode == 'nerve':
+                save_nerve_morphometrics_to_json(stats_dataframe, current_path_target.parent / morph_filename)
+
             # save the current contents in the file
-            if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
+            if not (morph_filename.lower().endswith((".xlsx", ".csv", ".json"))):  # If the user didn't add the extension, add it here
                 morph_filename = morph_filename + '.xlsx'
 
             try:
-                save_axon_morphometrics(current_path_target.parent / morph_filename, stats_dataframe)
+                if not morphometrics_mode == 'nerve':
+                    save_axon_morphometrics(current_path_target.parent / morph_filename, stats_dataframe)
 
                 # Generate the index image
                 if str(current_path_target) == str(current_path_target.parts[-1]):
@@ -383,30 +405,28 @@ def main(argv=None):
             except IOError:
                 logger.warning(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
 
-            # # if nerve mode, edit the segmentation masks to remove outside of nerve section
-            # if morphometrics_mode == 'nerve':
-            #     print(f"Axons before removal: {np.sum(pred_axon)}")
-            #     new_pred_axon, new_pred_myelin = remove_outside_nerve(pred_axon, pred_myelin, pred_nerve)
-            #     print(f"Axons after removal: {np.sum(pred_axon)}")
+            # if nerve mode, edit the segmentation masks to remove outside of nerve section
+            if morphometrics_mode == 'nerve':
+                new_pred_axon, new_pred_myelin = remove_outside_nerve(pred_axon, pred_myelin, pred_nerve)
 
-            #     # if nerve mode, launch axon morph computation on updated masks
-            #     logger.warning(f"File path: {current_path_target / morph_filename}")
-            #     morph_output = get_axon_morphometrics(
-            #         im_axon=new_pred_axon, 
-            #         im_myelin=new_pred_myelin, 
-            #         pixel_size=psm, 
-            #         axon_shape=axon_shape, 
-            #         return_index_image=True,
-            #         return_border_info=True,
-            #         return_instance_seg=colorization_flag
-            #     )
-            #     # unpack the morphometrics outputfile
-            #     stats_dataframe, index_image_array = morph_output[0:2]
-            #     axon_morph_filename = current_path_target.stem + "_" + str(morph_suffix)
-            #     save_axon_morphometrics(current_path_target.parent / axon_morph_filename, stats_dataframe)
+                # if nerve mode, launch axon morph computation on updated masks
+                logger.warning(f"File path: {current_path_target / morph_filename}")
+                morph_output = get_axon_morphometrics(
+                    im_axon=new_pred_axon, 
+                    im_myelin=new_pred_myelin, 
+                    pixel_size=psm, 
+                    axon_shape=axon_shape, 
+                    return_index_image=True,
+                    return_border_info=True,
+                    return_instance_seg=colorization_flag
+                )
+                # unpack the morphometrics outputfile
+                stats_dataframe, index_image_array = morph_output[0:2]
+                axon_morph_filename = current_path_target.stem + "_" + str(morph_suffix)
+                save_axon_morphometrics(current_path_target.parent / axon_morph_filename, stats_dataframe)
         
-            #     # count the number of axons in the axon_morphometrics.xlsx file, print density
-            #     compute_axon_density(current_path_target.parent / axon_morph_filename, current_path_target.parent / morph_filename)
+                # count the number of axons in the axon_morphometrics.xlsx file, print density
+                compute_axon_density(current_path_target.parent / axon_morph_filename, current_path_target.parent / morph_filename)
 
         else:
             logger.warning("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
