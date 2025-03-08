@@ -41,7 +41,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
 import math
 
 import AxonDeepSeg
@@ -58,24 +57,37 @@ def create_output_folders(
     subject_folder_name: str, subject_name: str, output_folder: Path = agg_dir
 ):
     """
-    Creates folder for a subject and a sub folder for its subject name
+    Creates an output directory for a subject and its subdirectory for storing aggregated results
+
+    - subject_folder_name (str): Name of the folder containing subject data
+    - subject_name (str): Name of the subject
+    - output_folder (Path): Base output directory
     """
 
-    morph_subject_path = os.path.join(output_folder, subject_folder_name)
-    os.makedirs(morph_subject_path, exist_ok=True)
-    morph_subject_name_path = os.path.join(morph_subject_path, subject_name)
-    os.makedirs(morph_subject_name_path, exist_ok=True)
+    morph_subject_path = Path.joinpath(output_folder, subject_folder_name)
+    Path.mkdir(morph_subject_path, exist_ok=True)
+    morph_subject_name_path = Path.joinpath(morph_subject_path, subject_name)
+    Path.mkdir(morph_subject_name_path, exist_ok=True)
 
     return morph_subject_name_path
 
 
 def save_axon_count_plot(
-    subject_df,
-    morph_subject_name_path,
-    labels,
-    subject_name,
-    axon_count_file_name=axon_count_file_name,
+    subject_df: pd.DataFrame,
+    morph_subject_name_path: Path,
+    labels: list,
+    subject_name: str,
+    axon_count_file_name: str = axon_count_file_name,
 ):
+    """
+    Generates and saves a bar plot of axon diameters per subject
+
+    - subject_df (DataFrame): Data containing axon diameters
+    - morph_subject_name_path (Path): Path to save the plot
+    - labels (list): Axon diameter range labels
+    - subject_name (str): Name of the subject
+    - axon_count_file_name (str): Name of the output plot file
+    """
 
     plt.figure(figsize=(8, 5))
     sns.barplot(
@@ -85,12 +97,17 @@ def save_axon_count_plot(
     plt.xlabel("Axon Diameter (um)")
     plt.ylabel("Count")
 
-    save_path = os.path.join(morph_subject_name_path, axon_count_file_name)
+    save_path = Path.joinpath(morph_subject_name_path, axon_count_file_name)
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
 
 
 def load_morphometrics(morph_file: Path, filters: dict):
-    # put post-hoc screening here and return dataframe
+    """
+    Loads morphometric data from an Excel file and filters it
+
+    - morph_file (Path): Path to the morphometrics file
+    - filters (dict): Dictionary containing filtering conditions
+    """
 
     df = pd.read_excel(morph_file)
     n_filtered = 0
@@ -110,7 +127,12 @@ def load_morphometrics(morph_file: Path, filters: dict):
     return df, n_filtered
 
 
-def get_statistics(metric):
+def get_statistics(metric: pd.Series):
+    """
+    Computes statistics for a given metric
+
+    - metric (Series): Data of the metric analyzed
+    """
     return {
         "Mean": round(metric.mean(), 2),
         "Standard Deviation": round(metric.std(), 2),
@@ -120,7 +142,16 @@ def get_statistics(metric):
     }
 
 
-def concat_lists_to_df(axon_df, gratio_df, myelin_df):
+def concat_lists_to_df(
+    axon_df: pd.DataFrame, gratio_df: pd.DataFrame, myelin_df: pd.DataFrame
+):
+    """
+    Concatenates metric df into a single df
+
+    - axon_df (DataFrame): Axon diameter data
+    - gratio_df (DataFrame): G-ratio data
+    - myelin_df (DataFrame): Myelin thickness data
+    """
     concated_axon_df = concat_metric_df(axon_df)
     concated_gratio_df = concat_metric_df(gratio_df)
     concated_myelin_df = concat_metric_df(myelin_df)
@@ -128,6 +159,11 @@ def concat_lists_to_df(axon_df, gratio_df, myelin_df):
 
 
 def concat_metric_df(metric_df: pd.DataFrame):
+    """
+    Concatenates a metric df
+
+    - metric_df (DataFrame): Metric data to be aggregated
+    """
     concatenated_df = pd.concat(metric_df, axis=1)
     return concatenated_df.T.groupby(level=0).first().T
 
@@ -137,15 +173,25 @@ def save_statistics_excel(
     morph_subject_name_path: str,
     statistics_file_name: str = statistics_file_name,
 ):
-    full_path = os.path.join(morph_subject_name_path, statistics_file_name)
-    print(f"full path is: {full_path}")
+    """
+    Saves computed statistics as an Excel file
+
+    - metrics_df (DataFrame): Computed statistics data
+    - morph_subject_name_path (str): Path to save the file
+    - statistics_file_name (str): Name of the statistics file
+    """
+    full_path = Path.joinpath(morph_subject_name_path, statistics_file_name)
     metrics_df.to_excel(f"{full_path}", index=True)
 
 
 def aggregate_subject(subject_df: pd.DataFrame, file_name: str, subject_folder: Path):
-    # this returns a dataframe with the aggregated subject data
-    # also saves a file with the aggregated data
-    # Binning information
+    """
+    Aggregates morphometric statistics for a subject and generates output files
+
+    - subject_df (DataFrame): Morphometric data of the subject
+    - file_name (str): Name of the file being processed
+    - subject_folder (Path): Path to the subject's folder
+    """
 
     # TODO: Change hard-coded bins into inputed value
     bins = [0.5, 1, 1.25, 1.5, 1.75, math.inf]
@@ -186,9 +232,15 @@ def aggregate_subject(subject_df: pd.DataFrame, file_name: str, subject_folder: 
     save_statistics_excel(metrics_df, morph_subject_name_path)
     save_axon_count_plot(subject_df, morph_subject_name_path, labels, subject_name)
 
+    return metrics_df
+
 
 def aggregate(subjects: list[Path]):
-    # put inter-subject stuff in agg_dir
+    """
+    Aggregates morphometric data for all subjects
+
+    - subjects (list[Path]): List of subject directories.
+    """
 
     for subject_folder in subjects:
         if subject_folder.is_dir():
@@ -224,8 +276,7 @@ def main():
     subjects = [x for x in Path(args.input_dir).iterdir() if x.is_dir()]
     logger.info(f"Found these subjects: {subjects}.")
 
-    os.makedirs(agg_dir, exist_ok=True)
-
+    Path.mkdir(agg_dir, exist_ok=True)
     aggregate(subjects)
 
 
