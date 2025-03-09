@@ -405,11 +405,11 @@ def main(argv=None):
             except IOError:
                 logger.warning(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
 
-            # if nerve mode, edit the segmentation masks to remove outside of nerve section
+            # in nerve mode, edit the segmentation masks to remove outside of nerve section
             if morphometrics_mode == 'nerve':
                 new_pred_axon, new_pred_myelin = remove_outside_nerve(pred_axon, pred_myelin, pred_nerve)
 
-                # if nerve mode, launch axon morph computation on updated masks
+                # re-trigger axon morph computation on updated masks
                 logger.warning(f"File path: {current_path_target / morph_filename}")
                 morph_output = get_axon_morphometrics(
                     im_axon=new_pred_axon, 
@@ -420,7 +420,6 @@ def main(argv=None):
                     return_border_info=True,
                     return_instance_seg=colorization_flag
                 )
-                # unpack the morphometrics outputfile
                 stats_dataframe, index_image_array = morph_output[0:2]
                 axon_morph_filename = current_path_target.stem + "_" + str(morph_suffix)
                 save_axon_morphometrics(current_path_target.parent / axon_morph_filename, stats_dataframe)
