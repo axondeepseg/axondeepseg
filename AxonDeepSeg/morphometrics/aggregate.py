@@ -99,6 +99,7 @@ def save_axon_count_plot(
 
     save_path = Path.joinpath(morph_subject_name_path, axon_count_file_name)
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
 
 
 def load_morphometrics(morph_file: Path, filters: dict):
