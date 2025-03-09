@@ -259,16 +259,15 @@ def aggregate(subjects: list[Path]):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        "-i",
-        "--input_dir",
+        "-i", "--input_dir",
         type=str,
+        required=True,
         help="Directory containing one subdirectory per subject, each containing one or more morphometrics files.",
     )
     args = ap.parse_args()
 
     logger.add("axondeepseg.log", level="DEBUG", enqueue=True)
-    cwd = Path.cwd()
-    logger.info(f'Logging initialized for morphometric aggregation in "{cwd}".')
+    logger.info(f'Logging initialized for morphometric aggregation in "{Path.cwd()}".')
     logger.info(AxonDeepSeg.__version_string__)
     logger.info(f"Arguments: {args}")
 
@@ -281,5 +280,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # with logger.catch():
-    main()
+    with logger.catch():
+        main()
