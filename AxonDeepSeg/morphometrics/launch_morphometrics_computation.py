@@ -223,7 +223,7 @@ def main(argv=None):
         required=False,
         action='store_true',
         help='Toggles morphometrics for nerve sections. This will only process masks with \n'
-            +f'the "{nerve_suffix}" suffix.'
+            +f'the "{nerve_suffix}" suffix, and compute axon density inside the nerve area.'
     )
 
     # Processing the arguments
