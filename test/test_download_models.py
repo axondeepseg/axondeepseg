@@ -31,7 +31,7 @@ class TestCore(object):
     def teardown_method(self):
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
-        print(fullPath)
+
         # Move up to the test directory, "test/"
         testPath = fullPath.parent 
         tmpPath = testPath / '__tmp__'

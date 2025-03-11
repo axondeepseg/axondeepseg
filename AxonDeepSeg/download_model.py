@@ -28,8 +28,6 @@ def download_model(model='generalist', model_type='light', destination=None, ove
 
     if destination is None:
         package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
-        print("Package directory: ")
-        print(package_dir)
         model_destination = package_dir / "models" / full_model_name
         print('Downloading model to default location: {}'.format(model_destination))
     else:

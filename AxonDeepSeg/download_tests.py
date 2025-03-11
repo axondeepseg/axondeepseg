@@ -17,8 +17,6 @@ def download_tests(destination=None, overwrite=True):
     '''
     # Get AxonDeepSeg installation path
     package_dir = Path(AxonDeepSeg.__file__).parent
-    print("Package directory: ")
-    print(package_dir)
     if destination is None:
         test_files_destination =  package_dir.parent / "test" / "__test_files__"
         print('Downloading test files to default location: {}'.format(test_files_destination))

@@ -56,7 +56,7 @@ Before installing the AxonDeepSeg plugin, ensure you meet the following requirem
       pip install "napari[all]"
 
 Installation Steps
------------------
+------------------
 
 1. **Install AxonDeepSeg**:
    Install the AxonDeepSeg plugin via `pip` by running the following command:
@@ -115,7 +115,7 @@ Before installing the AxonDeepSeg plugin, ensure you meet the following requirem
       pip install "napari[all]"
 
 Installation Steps
------------------
+------------------
 
 1. **Launch Napari**:
    After installing Napari, launch it by running the following command in your terminal:
