@@ -141,7 +141,7 @@ def get_statistics(metric: pd.Series):
 
 
 
-def save_statistics_excel(
+def save_subject_statistics(
     metrics_df: pd.DataFrame,
     morph_subject_name_path: str,
     statistics_file_name: str = statistics_file_name,
