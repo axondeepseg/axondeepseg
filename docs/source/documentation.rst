@@ -33,12 +33,12 @@ Installation
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
 Installing AxonDeepSeg via pip (recommended)
-============================================
+--------------------------------------------
 
 This section provides instructions for installing the AxonDeepSeg plugin directly via `pip`. This method is useful if you prefer to manage your Python packages using `pip` instead of the Napari Plugin Manager.
 
 Prerequisites
--------------
+~~~~~~~~~~~~~
 
 Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
 
@@ -56,7 +56,7 @@ Before installing the AxonDeepSeg plugin, ensure you meet the following requirem
       pip install "napari[all]"
 
 Installation Steps
-------------------
+~~~~~~~~~~~~~~~~~~
 
 1. **Install AxonDeepSeg**:
    Install the AxonDeepSeg plugin via `pip` by running the following command:
@@ -84,7 +84,7 @@ Installation Steps
    This will open the AxonDeepSeg plugin interface.
 
 Troubleshooting
----------------
+~~~~~~~~~~~~~~~
 
 - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
 - If the plugin does not appear in the Plugins menu, ensure that the installation was successful and that you are using the correct Python environment.
@@ -92,12 +92,12 @@ Troubleshooting
 
 
 Installing AxonDeepSeg via the Napari Plugin Manager
-====================================================
+----------------------------------------------------
 
 This section provides a step-by-step guide on how to install the AxonDeepSeg plugin for Napari using the Napari Plugin Manager. Follow these instructions to set up the plugin in your environment.
 
 Prerequisites
--------------
+~~~~~~~~~~~~~
 
 Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
 
@@ -115,7 +115,7 @@ Before installing the AxonDeepSeg plugin, ensure you meet the following requirem
       pip install "napari[all]"
 
 Installation Steps
-------------------
+~~~~~~~~~~~~~~~~~~
 
 1. **Launch Napari**:
    After installing Napari, launch it by running the following command in your terminal:
@@ -154,7 +154,7 @@ Installation Steps
       Plugins -> ADS (AxonDeepSeg)
 
 Troubleshooting
----------------
+~~~~~~~~~~~~~~~
 
 - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
 - If the plugin does not appear in the search results, ensure you have an active internet connection and try refreshing the Plugin Manager.
@@ -203,7 +203,7 @@ Then, to use ADS's command-line scripts in Command Prompt, please follow these i
 5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 
 Updating AxonDeepSeg
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 To update the AxonDeepSeg to the latest version, run::
 
