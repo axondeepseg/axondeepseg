@@ -199,7 +199,7 @@ def aggregate_subject(subject_df: pd.DataFrame, subject_name: str, subject_folde
 
     morph_subject_name_path = create_output_folders(subject_name=subject_name)
 
-    save_statistics_excel(metrics_df, morph_subject_name_path)
+    save_subject_statistics(metrics_df, morph_subject_name_path)
     save_axon_count_plot(subject_df, morph_subject_name_path, labels, subject_name=subject_name)
 
     return metrics_df
