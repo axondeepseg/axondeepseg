@@ -53,8 +53,7 @@ from AxonDeepSeg.params import (
 )
 
 
-def create_output_folders(
-    subject_folder_name: str, subject_name: str, output_folder: Path = agg_dir
+def create_output_folders(subject_name: str, output_folder: Path = agg_dir
 ):
     """
     Creates an output directory for a subject and its subdirectory for storing aggregated results
@@ -64,12 +63,10 @@ def create_output_folders(
     - output_folder (Path): Base output directory
     """
 
-    morph_subject_path = Path.joinpath(output_folder, subject_folder_name)
+    morph_subject_path = Path.joinpath(output_folder, subject_name)
     Path.mkdir(morph_subject_path, exist_ok=True)
-    morph_subject_name_path = Path.joinpath(morph_subject_path, subject_name)
-    Path.mkdir(morph_subject_name_path, exist_ok=True)
 
-    return morph_subject_name_path
+    return morph_subject_path
 
 
 def save_axon_count_plot(
@@ -143,31 +140,6 @@ def get_statistics(metric: pd.Series):
     }
 
 
-def concat_lists_to_df(
-    axon_df: pd.DataFrame, gratio_df: pd.DataFrame, myelin_df: pd.DataFrame
-):
-    """
-    Concatenates metric df into a single df
-
-    - axon_df (DataFrame): Axon diameter data
-    - gratio_df (DataFrame): G-ratio data
-    - myelin_df (DataFrame): Myelin thickness data
-    """
-    concated_axon_df = concat_metric_df(axon_df)
-    concated_gratio_df = concat_metric_df(gratio_df)
-    concated_myelin_df = concat_metric_df(myelin_df)
-    return pd.concat([concated_axon_df, concated_gratio_df, concated_myelin_df])
-
-
-def concat_metric_df(metric_df: pd.DataFrame):
-    """
-    Concatenates a metric df
-
-    - metric_df (DataFrame): Metric data to be aggregated
-    """
-    concatenated_df = pd.concat(metric_df, axis=1)
-    return concatenated_df.T.groupby(level=0).first().T
-
 
 def save_statistics_excel(
     metrics_df: pd.DataFrame,
@@ -185,7 +157,7 @@ def save_statistics_excel(
     metrics_df.to_excel(f"{full_path}", index=True)
 
 
-def aggregate_subject(subject_df: pd.DataFrame, file_name: str, subject_folder: Path):
+def aggregate_subject(subject_df: pd.DataFrame, subject_name: str, subject_folder: Path):
     """
     Aggregates morphometric statistics for a subject and generates output files
 
@@ -225,13 +197,10 @@ def aggregate_subject(subject_df: pd.DataFrame, file_name: str, subject_folder: 
 
     metrics_df = pd.concat(metrics_dict, axis=0, names=["Metric", "Statistic"])
 
-    subject_folder_name = subject_folder.name
-    subject_name = file_name.replace(str(morph_suffix), "")
-
-    morph_subject_name_path = create_output_folders(subject_folder_name, subject_name)
+    morph_subject_name_path = create_output_folders(subject_name=subject_name)
 
     save_statistics_excel(metrics_df, morph_subject_name_path)
-    save_axon_count_plot(subject_df, morph_subject_name_path, labels, subject_name)
+    save_axon_count_plot(subject_df, morph_subject_name_path, labels, subject_name=subject_name)
 
     return metrics_df
 
@@ -245,16 +214,18 @@ def aggregate(subjects: list[Path]):
 
     for subject_folder in subjects:
         if subject_folder.is_dir():
+            
+            subject_data = []
 
             for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
-                df, n_filtered = load_morphometrics(
+                df, _ = load_morphometrics(
                     file_path, {"gratio_null": True, "gratio_sup": True}
-                )
-
-                file_name = (
-                    str(file_path).replace(str(subject_folder), "").replace("/", "")
-                )
-                aggregate_subject(df, file_name, subject_folder)
+                )                
+                subject_data.append(df)
+            
+            subject_df = pd.concat(subject_data, ignore_index=True)
+                
+            aggregate_subject(subject_df, subject_folder.name, subject_folder)
 
 
 def main():
