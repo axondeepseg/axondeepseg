@@ -22,10 +22,8 @@ The structure of the output directory morphometrics_agg should look like this:
 ---
 morphometrics_agg
 └───subject1
-│   │   subject1-1
-│   │   │   metrics_statistics.xlsx
-│   │   │   axon_count_figure.png
-|   |   subject1-2
+│   │   metrics_statistics.xlsx
+│   │   axon_count_figure.png
 │   │   ...
 └───subject2
 │   │   ...
