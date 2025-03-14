@@ -32,184 +32,182 @@ Installation
 ============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
-Installing AxonDeepSeg via pip (recommended)
---------------------------------------------
+Install Options
+---------------
 
-This section provides instructions for installing the AxonDeepSeg plugin directly via `pip`. This method is useful if you prefer to manage your Python packages using `pip` instead of the Napari Plugin Manager.
+.. tabs::
 
-Prerequisites
-~~~~~~~~~~~~~
+   .. tab:: Install via ``pip`` (recommended)
 
-Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
+      This section provides instructions for installing the AxonDeepSeg plugin directly via `pip`. This method is useful if you prefer to manage your Python packages using `pip` instead of the Napari Plugin Manager.
 
-1. **Python Version**: You need to have Python 3.11.x or 3.12.x installed. We recommend using a virtual environment to manage dependencies. If you are using ``conda``, you can create a virtual environment with the following command:
+      **Prerequisites**
 
-   .. code-block:: bash
+      Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
 
-      conda create -n napari_venv python==3.12
-      conda activate napari_venv
+      1. **Python Version**: You need to have Python 3.11.x or 3.12.x installed. We recommend using a virtual environment to manage dependencies. If you are using ``conda``, you can create a virtual environment with the following command:
 
-2. **Install Napari**: Install Napari with all its dependencies by running:
+         .. code-block:: bash
+         
+            conda create -n napari_venv python==3.12
+            conda activate napari_venv
 
-   .. code-block:: bash
+      2. **Install Napari**: Install Napari with all its dependencies by running:
 
-      pip install "napari[all]"
+         .. code-block:: bash
+         
+            pip install "napari[all]"
 
-Installation Steps
-~~~~~~~~~~~~~~~~~~
+      **Installation Steps**
 
-1. **Install AxonDeepSeg**:
-   Install the AxonDeepSeg plugin via `pip` by running the following command:
+      1. **Install AxonDeepSeg**:
+         Install the AxonDeepSeg plugin via `pip` by running the following command:
 
-   .. code-block:: bash
+         .. code-block:: bash
+         
+            pip install "axondeepseg>=5"
 
-      pip install "axondeepseg>=5"
+         This will install the latest version of AxonDeepSeg (version 5 or higher) along with its dependencies.
 
-   This will install the latest version of AxonDeepSeg (version 5 or higher) along with its dependencies.
+      2. **Launch Napari**:
+         After installation, launch Napari by running:
 
-2. **Launch Napari**:
-   After installation, launch Napari by running:
+         .. code-block:: bash
+         
+            napari
 
-   .. code-block:: bash
+      3. **Open the AxonDeepSeg Plugin**:
+         Once Napari is open, navigate to the top menu bar and click on:
 
-      napari
+         .. code-block:: text
+         
+            Plugins -> ADS (AxonDeepSeg)
 
-3. **Open the AxonDeepSeg Plugin**:
-   Once Napari is open, navigate to the top menu bar and click on:
+         This will open the AxonDeepSeg plugin interface.
 
-   .. code-block:: text
+      **Troubleshooting**
 
-      Plugins -> ADS (AxonDeepSeg)
+      - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
+      - If the plugin does not appear in the Plugins menu, ensure that the installation was successful and that you are using the correct Python environment.
+      - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
 
-   This will open the AxonDeepSeg plugin interface.
 
-Troubleshooting
-~~~~~~~~~~~~~~~
+   .. tab:: Install via ``napari``
 
-- If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
-- If the plugin does not appear in the Plugins menu, ensure that the installation was successful and that you are using the correct Python environment.
-- For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
+      This section provides a step-by-step guide on how to install the AxonDeepSeg plugin for Napari using the Napari Plugin Manager. Follow these instructions to set up the plugin in your environment.
 
+      **Prerequisites**
 
-Installing AxonDeepSeg via the Napari Plugin Manager
-----------------------------------------------------
+      Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
 
-This section provides a step-by-step guide on how to install the AxonDeepSeg plugin for Napari using the Napari Plugin Manager. Follow these instructions to set up the plugin in your environment.
+      1. **Python Version**: You need to have Python 3.11.x or 3.12.x installed. We recommend using a virtual environment to manage dependencies. If you are using ``conda``, you can create a virtual environment with the following command:
 
-Prerequisites
-~~~~~~~~~~~~~
+         .. code-block:: bash
+         
+            conda create -n napari_venv python==3.12
+            conda activate napari_venv
 
-Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
+      2. **Install Napari**: Install Napari with all its dependencies by running:
 
-1. **Python Version**: You need to have Python 3.11.x or 3.12.x installed. We recommend using a virtual environment to manage dependencies. If you are using ``conda``, you can create a virtual environment with the following command:
+         .. code-block:: bash
+         
+            pip install "napari[all]"
 
-   .. code-block:: bash
+      **Installation Steps**
 
-      conda create -n napari_venv python==3.12
-      conda activate napari_venv
+      1. **Launch Napari**:
+         After installing Napari, launch it by running the following command in your terminal:
 
-2. **Install Napari**: Install Napari with all its dependencies by running:
+         .. code-block:: bash
+         
+            napari
 
-   .. code-block:: bash
+      2. **Open the Plugins Manager**:
+         Once Napari is open, navigate to the top menu bar and click on:
 
-      pip install "napari[all]"
+         .. code-block:: text
+         
+            Plugins -> Install/Uninstall Plugins
 
-Installation Steps
-~~~~~~~~~~~~~~~~~~
+         This will open the Napari Plugin Manager.
 
-1. **Launch Napari**:
-   After installing Napari, launch it by running the following command in your terminal:
+      3. **Search for AxonDeepSeg**:
+         In the Plugin Manager, use the search bar to look for the AxonDeepSeg plugin by typing:
 
-   .. code-block:: bash
+         .. code-block:: text
+         
+            axondeepseg
 
-      napari
+      4. **Install the Plugin**:
+         Once the AxonDeepSeg plugin appears in the search results, click the **Install** button next to it. Napari will automatically download and install the plugin along with its dependencies.
 
-2. **Open the Plugins Manager**:
-   Once Napari is open, navigate to the top menu bar and click on:
+      5. **Restart Napari**:
+         After installation, close and reopen Napari for the changes to take effect.
 
-   .. code-block:: text
+      6. **Open the AxonDeepSeg Plugin**:
+         Once Napari has restarted, you can open the AxonDeepSeg plugin by navigating to:
 
-      Plugins -> Install/Uninstall Plugins
+         .. code-block:: text
+         
+            Plugins -> ADS (AxonDeepSeg)
 
-   This will open the Napari Plugin Manager.
+      **Troubleshooting**
 
-3. **Search for AxonDeepSeg**:
-   In the Plugin Manager, use the search bar to look for the AxonDeepSeg plugin by typing:
+      - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
+      - If the plugin does not appear in the search results, ensure you have an active internet connection and try refreshing the Plugin Manager.
+      - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
 
-   .. code-block:: text
+   .. tab:: Install via ``git``
 
-      axondeepseg
+      To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+      
+          git clone https://github.com/neuropoly/axondeepseg.git
+          cd axondeepseg
 
-4. **Install the Plugin**:
-   Once the AxonDeepSeg plugin appears in the search results, click the **Install** button next to it. Napari will automatically download and install the plugin along with its dependencies.
+      .. tabs::
+         .. group-tab:: Linux/MacOS
+            For Linux or macOS systems, run::
+      
+                ./install_ads
 
-5. **Restart Napari**:
-   After installation, close and reopen Napari for the changes to take effect.
+            and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
+      
+                ./install_ads -y
 
-6. **Open the AxonDeepSeg Plugin**:
-   Once Napari has restarted, you can open the AxonDeepSeg plugin by navigating to:
+            .. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
+               ::
+         
+                  # ~/.config/pip/pip.conf
+                  [install]
+                  extra-index-url =
+                  https://download.pytorch.org/whl/cpu
 
-   .. code-block:: text
+            .. comment: There's similar configs used for the opposite cases:
+                        owning a GPU that's so new it needs CUDA 11, or owning a GPU but running Windows.
+                        See https://github.com/axondeepseg/axondeepseg/pull/642#issuecomment-1142311380.
+                        We don't document them publically because they are rare and the distraction will sew confusion.
+                        in these situations can ask us for help.
 
-      Plugins -> ADS (AxonDeepSeg)
+         .. group-tab:: Windows
+            For Windows systems, run::
+      
+                install_ads.bat
 
-Troubleshooting
-~~~~~~~~~~~~~~~
+            Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
+      
+            1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
+            2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
+            3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
+            4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
+            5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
 
-- If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
-- If the plugin does not appear in the search results, ensure you have an active internet connection and try refreshing the Plugin Manager.
-- For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
+      **Updating AxonDeepSeg**
 
-Install AxonDeepSeg via GitHub
-------------------------------
+      To update the AxonDeepSeg to the latest version, run::
 
-To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+         git checkout master && git pull
 
-    git clone https://github.com/neuropoly/axondeepseg.git
-    cd axondeepseg
-
-Then, for Linux or macOS systems, run::
-
-    ./install_ads
-
-and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
-
-    ./install_ads -y
-
-.. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
-   ::
-
-        # ~/.config/pip/pip.conf
-        [install]
-        extra-index-url =
-          https://download.pytorch.org/whl/cpu
-    
-.. comment: There's similar configs used for the opposite cases:
-            owning a GPU that's so new it needs CUDA 11, or owning a GPU but running Windows.
-            See https://github.com/axondeepseg/axondeepseg/pull/642#issuecomment-1142311380.
-            We don't document them publically because they are rare and the distraction will sew confusion.
-            People in these situations can ask us for help.
-
-For Windows systems, run::
-
-    install_ads.bat
-
-Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
-
-1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
-2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
-3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
-4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
-5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
-
-Updating AxonDeepSeg
-~~~~~~~~~~~~~~~~~~~~
-
-To update the AxonDeepSeg to the latest version, run::
-
-    git checkout master && git pull
-
-and then follow the installation instructions above specified for your operating system.
+      and then follow the installation instructions above specified for your operating system.
 
 Testing the installation
 ------------------------

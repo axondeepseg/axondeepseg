@@ -53,6 +53,7 @@ dependencies =[
     "pytest-qt",
     "magicgui",
     "qtpy",
+    "sphinx-tabs",
 ]
 
 keywords = ["axon", "myelin", "segmentation", "microscopy"]
