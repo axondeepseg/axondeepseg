@@ -13,6 +13,7 @@ from loguru import logger
 # Scientific modules imports
 import numpy as np
 import pandas as pd
+from sklearn.cluster import KMeans
 
 # AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
@@ -148,12 +149,44 @@ def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
 
     return pred_axon, pred_myelin
 
+def compute_fascicle_axon_density(axon_df, nerve_data):
+    """
+    Uses KMeans clustering to assign axons to fascicles and compute axon density.
+    """
+    fascicle_densities = {}
+    total_axons = len(axon_df)  
+
+    # get fascicle centroids 
+    fascicle_areas = {idx: fascicle["value"] for idx, fascicle in nerve_data["fascicle_areas"].items()}
+    
+    # extract (x, y) coordinates of axons
+    axon_positions = axon_df[["x0 (px)", "y0 (px)"]].values
+
+    # use KMeans clustering to assign axons to fascicles
+    kmeans = KMeans(n_clusters=len(fascicle_areas), random_state=42, n_init=10)
+    axon_df["fascicle_id"] = kmeans.fit_predict(axon_positions)
+
+    # compute number of axons per fascicle
+    estimated_axons = axon_df["fascicle_id"].value_counts().to_dict()
+
+    # compute axon density for each fascicle
+    for idx, fascicle in nerve_data["fascicle_areas"].items():
+        fascicle_area = fascicle["value"]
+        num_axons = estimated_axons.get(int(idx), 0)  
+        density = round(num_axons / fascicle_area, 5) if fascicle_area > 0 else 0
+        fascicle_densities[idx] = {
+            "value": density,
+            "unit": "axon/um^2"
+        }
+
+    return fascicle_densities, total_axons
+
+
 def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path):
     """
-    Computes axon density and updates the existing JSON file with the axon density value.
+    Computes axon density per fascicle and total axon density.
     """
     axon_df = pd.read_excel(axon_morphometrics_path)
-    num_axons = len(axon_df)
 
     with open(nerve_morphometrics_path, "r", encoding="utf-8") as json_file:
         nerve_data = json.load(json_file)
@@ -163,15 +196,18 @@ def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path):
 
     total_nerve_area = nerve_data["total_area"]["value"]
 
-    density = num_axons / total_nerve_area if total_nerve_area > 0 else 0
-    logger.info(f"Number of axons: {num_axons}, Total area: {total_nerve_area}, Axon Density: {density:.5f}")
+    fascicle_densities, total_axons = compute_fascicle_axon_density(axon_df, nerve_data)
 
-    nerve_data["axon_density"] = {"value": density, "unit": "axon/um^2"}
+    total_density = round(total_axons / total_nerve_area, 5) if total_nerve_area > 0 else 0
+
+    nerve_data["total_axon_density"] = {"value": total_density, "unit": "axon/um^2"}
+
+    for idx, density in fascicle_densities.items():
+        nerve_data["fascicle_areas"][idx]["axon_density"] = density
 
     with open(nerve_morphometrics_path, "w", encoding="utf-8") as json_file:
         json.dump(nerve_data, json_file, indent=4)
-        
-    return density
+
     
 def main(argv=None):
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
