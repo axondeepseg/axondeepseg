@@ -214,7 +214,6 @@ def aggregate(subjects: list[Path]):
     for subject_folder in tqdm(subjects):
             
         subject_data = []
-
         for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
             df, _ = load_morphometrics(
                 morph_file=file_path, 
@@ -222,9 +221,8 @@ def aggregate(subjects: list[Path]):
             )                
             subject_data.append(df)
             
-            subject_df = pd.concat(subject_data, ignore_index=True)
-                
-            aggregate_subject(subject_df, subject_folder.name, subject_folder)
+        subject_df = pd.concat(subject_data, ignore_index=True)
+        aggregate_subject(subject_df, subject_folder.name, subject_folder)
 
 
 def main():
