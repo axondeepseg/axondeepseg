@@ -40,6 +40,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import math
+from tqdm import tqdm
 
 import AxonDeepSeg
 from AxonDeepSeg.params import (
@@ -210,16 +211,16 @@ def aggregate(subjects: list[Path]):
     - subjects (list[Path]): List of subject directories.
     """
 
-    for subject_folder in subjects:
-        if subject_folder.is_dir():
+    for subject_folder in tqdm(subjects):
             
-            subject_data = []
+        subject_data = []
 
-            for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
-                df, _ = load_morphometrics(
-                    file_path, {"gratio_null": True, "gratio_sup": True}
-                )                
-                subject_data.append(df)
+        for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
+            df, _ = load_morphometrics(
+                morph_file=file_path, 
+                filters={"gratio_null": True, "gratio_sup": True}
+            )                
+            subject_data.append(df)
             
             subject_df = pd.concat(subject_data, ignore_index=True)
                 
@@ -243,7 +244,8 @@ def main():
 
     # get subjects
     subjects = [x for x in Path(args.input_dir).iterdir() if x.is_dir()]
-    logger.info(f"Found these subjects: {subjects}.")
+    subjects = [s for s in subjects if s.name != agg_dir.name]
+    logger.info(f"Found {len(subjects)} subjects.")
 
     Path.mkdir(agg_dir, exist_ok=True)
     aggregate(subjects)
