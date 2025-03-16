@@ -52,22 +52,6 @@ from AxonDeepSeg.params import (
 )
 
 
-def create_output_folders(subject_name: str, output_folder: Path = agg_dir
-):
-    """
-    Creates an output directory for a subject and its subdirectory for storing aggregated results
-
-    - subject_folder_name (str): Name of the folder containing subject data
-    - subject_name (str): Name of the subject
-    - output_folder (Path): Base output directory
-    """
-
-    morph_subject_path = Path.joinpath(output_folder, subject_name)
-    Path.mkdir(morph_subject_path, exist_ok=True)
-
-    return morph_subject_path
-
-
 def save_axon_count_plot(
     subject_df: pd.DataFrame,
     morph_subject_name_path: Path,
@@ -97,7 +81,6 @@ def save_axon_count_plot(
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
 
-
 def load_morphometrics(morph_file: Path, filters: dict):
     """
     Loads morphometric data from an Excel file and filters it
@@ -123,7 +106,6 @@ def load_morphometrics(morph_file: Path, filters: dict):
 
     return df, n_filtered
 
-
 def get_statistics(metric: pd.Series):
     """
     Computes statistics for a given metric
@@ -137,8 +119,6 @@ def get_statistics(metric: pd.Series):
         "Max": round(metric.max(), 2),
         "Median": round(metric.median(), 2),
     }
-
-
 
 def save_subject_statistics(
     metrics_df: pd.DataFrame,
@@ -155,13 +135,17 @@ def save_subject_statistics(
     full_path = Path.joinpath(morph_subject_name_path, statistics_file_name)
     metrics_df.to_excel(f"{full_path}", index=True)
 
-
-def aggregate_subject(subject_df: pd.DataFrame, subject_name: str, subject_folder: Path):
+def aggregate_subject(
+    subject_df: pd.DataFrame, 
+    subject_name: str, 
+    subject_folder: Path,
+    output_dir: Path
+):
     """
     Aggregates morphometric statistics for a subject and generates output files
 
     - subject_df (DataFrame): Morphometric data of the subject
-    - file_name (str): Name of the file being processed
+    - subjects_name (str): Name of the file being processed
     - subject_folder (Path): Path to the subject's folder
     """
 
@@ -196,19 +180,20 @@ def aggregate_subject(subject_df: pd.DataFrame, subject_name: str, subject_folde
 
     metrics_df = pd.concat(metrics_dict, axis=0, names=["Metric", "Statistic"])
 
-    morph_subject_name_path = create_output_folders(subject_name=subject_name)
+    morph_subject_path = output_dir / subject_name
+    Path.mkdir(morph_subject_path, exist_ok=True)
 
-    save_subject_statistics(metrics_df, morph_subject_name_path)
-    save_axon_count_plot(subject_df, morph_subject_name_path, labels, subject_name=subject_name)
+    save_subject_statistics(metrics_df, morph_subject_path)
+    save_axon_count_plot(subject_df, morph_subject_path, labels, subject_name)
 
     return metrics_df
 
-
-def aggregate(subjects: list[Path]):
+def aggregate(subjects: list[Path], output_dir: Path):
     """
     Aggregates morphometric data for all subjects
 
     - subjects (list[Path]): List of subject directories.
+    - output_folder (Path): Path to the output directory
     """
 
     for subject_folder in tqdm(subjects):
@@ -222,8 +207,7 @@ def aggregate(subjects: list[Path]):
             subject_data.append(df)
             
         subject_df = pd.concat(subject_data, ignore_index=True)
-        aggregate_subject(subject_df, subject_folder.name, subject_folder)
-
+        aggregate_subject(subject_df, subject_folder.name, subject_folder, output_dir)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -245,8 +229,9 @@ def main():
     subjects = [s for s in subjects if s.name != agg_dir.name]
     logger.info(f"Found {len(subjects)} subjects.")
 
-    Path.mkdir(agg_dir, exist_ok=True)
-    aggregate(subjects)
+    output_folder = Path(args.input_dir) / agg_dir
+    Path.mkdir(output_folder, exist_ok=True)
+    aggregate(subjects, output_folder)
 
 
 if __name__ == "__main__":
