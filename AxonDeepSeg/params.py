@@ -23,6 +23,7 @@ side_effect_suffixes = tuple(
 
 # morphometrics file suffix name
 morph_suffix = Path('axon_morphometrics.xlsx')
+morph_agg_suffix = Path('subject_morphometrics.xlsx')
 unmyelinated_morph_suffix = Path('uaxon_morphometrics.xlsx')
 instance_suffix = Path('_instance-map.png')             # Colored instance map of the segmentation
 
@@ -30,8 +31,8 @@ instance_suffix = Path('_instance-map.png')             # Colored instance map o
 agg_dir = Path('morphometrics_agg')
 
 # morphometrics statistics analysis
-statistics_file_name = 'axon_statistics.xlsx'
-axon_count_file_name = 'axon_count.png'
+binned_statistics_filename = 'statistics_per_axon_caliber.xlsx'
+axon_count_filename = 'axon_count.png'
 metrics_names = {
     ('Axon Diameter', 'axon_diam (um)'),
     ('G-Ratio', 'gratio'),

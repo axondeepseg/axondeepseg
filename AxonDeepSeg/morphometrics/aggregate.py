@@ -46,10 +46,12 @@ import AxonDeepSeg
 from AxonDeepSeg.params import (
     morph_suffix,
     agg_dir,
-    statistics_file_name,
-    axon_count_file_name,
+    morph_agg_suffix,
+    binned_statistics_filename,
+    axon_count_filename,
     metrics_names,
 )
+from AxonDeepSeg.morphometrics.compute_morphometrics import save_axon_morphometrics
 
 
 def save_axon_count_plot(
@@ -57,7 +59,7 @@ def save_axon_count_plot(
     morph_subject_name_path: Path,
     labels: list,
     subject_name: str,
-    axon_count_file_name: str = axon_count_file_name,
+    axon_count_filename: str = axon_count_filename,
 ):
     """
     Generates and saves a bar plot of axon diameters per subject
@@ -66,7 +68,7 @@ def save_axon_count_plot(
     - morph_subject_name_path (Path): Path to save the plot
     - labels (list): Axon diameter range labels
     - subject_name (str): Name of the subject
-    - axon_count_file_name (str): Name of the output plot file
+    - axon_count_filename (str): Name of the output plot file
     """
 
     plt.figure(figsize=(8, 5))
@@ -77,7 +79,7 @@ def save_axon_count_plot(
     plt.xlabel("Axon Diameter (um)")
     plt.ylabel("Count")
 
-    save_path = Path.joinpath(morph_subject_name_path, axon_count_file_name)
+    save_path = Path.joinpath(morph_subject_name_path, axon_count_filename)
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
 
@@ -123,16 +125,16 @@ def get_statistics(metric: pd.Series):
 def save_subject_statistics(
     metrics_df: pd.DataFrame,
     morph_subject_name_path: str,
-    statistics_file_name: str = statistics_file_name,
+    binned_statistics_filename: str = binned_statistics_filename,
 ):
     """
     Saves computed statistics as an Excel file
 
     - metrics_df (DataFrame): Computed statistics data
     - morph_subject_name_path (str): Path to save the file
-    - statistics_file_name (str): Name of the statistics file
+    - binned_statistics_filename (str): Name of the statistics file
     """
-    full_path = Path.joinpath(morph_subject_name_path, statistics_file_name)
+    full_path = Path.joinpath(morph_subject_name_path, binned_statistics_filename)
     metrics_df.to_excel(f"{full_path}", index=True)
 
 def aggregate_subject(
@@ -208,6 +210,11 @@ def aggregate(subjects: list[Path], output_dir: Path):
             
         subject_df = pd.concat(subject_data, ignore_index=True)
         aggregate_subject(subject_df, subject_folder.name, subject_folder, output_dir)
+
+        # Save the subject-aggregated morphometrics
+        fname = output_dir / subject_folder.name / f"{subject_folder.name}_{str(morph_agg_suffix)}"
+        save_axon_morphometrics(fname, subject_df)
+
 
 def main():
     ap = argparse.ArgumentParser()
