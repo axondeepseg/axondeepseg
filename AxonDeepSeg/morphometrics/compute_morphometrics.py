@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from loguru import logger
+import json
 
 # Scientific modules imports
 import math
@@ -10,6 +11,7 @@ from scipy import ndimage as ndi
 from skimage import measure
 from skimage.segmentation import watershed
 import pandas as pd
+from sklearn.cluster import KMeans
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -546,3 +548,104 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         msg = f"Error: Could not save file \"aggregate_morphometrics.txt\" in directory \"{path_folder}\"."
         logger.error(msg)
         raise
+
+def save_nerve_morphometrics_to_json(stats_dataframe, output_path):
+    """
+    Saves nerve morphometrics (fascicle areas and total area) to a JSON file.
+    """
+    to_drop = ['axon_perimeter', 'axon_diam', 'solidity', 'eccentricity', 'orientation']
+    stats_dataframe = stats_dataframe.drop(columns=[col for col in to_drop if col in stats_dataframe.columns])
+
+    # Rename 'axon_area' to 'nerve_area' if needed
+    stats_dataframe = stats_dataframe.rename(columns={'axon_area': 'nerve_area'})
+
+    total_nerve_area = stats_dataframe['nerve_area'].sum()
+
+    fascicle_areas = {
+        str(idx): {"value": row["nerve_area"], "unit": "um^2"}
+        for idx, row in stats_dataframe.iterrows()
+    }
+
+    nerve_morphometrics_data = {
+        "fascicle_areas": fascicle_areas,
+        "total_area": {"value": total_nerve_area, "unit": "um^2"}
+    }
+    
+    with open(output_path, "w", encoding="utf-8") as json_file:
+        json.dump(nerve_morphometrics_data, json_file, indent=4)
+
+
+def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
+    """
+    Removes axons and myelin that are outside the nerve section.
+    """
+    # ensure all masks are binary
+    pred_nerve = pred_nerve > 0  
+    pred_axon = pred_axon > 0    
+    pred_myelin = pred_myelin > 0 
+
+    # apply removal
+    pred_axon = np.logical_and(pred_axon, pred_nerve)
+    pred_myelin = np.logical_and(pred_myelin, pred_nerve)
+
+    return pred_axon, pred_myelin
+
+def compute_fascicle_axon_density(axon_df, nerve_data):
+    """
+    Uses KMeans clustering to assign axons to fascicles and compute axon density.
+    """
+    fascicle_densities = {}
+    total_axons = len(axon_df)  
+
+    # get fascicle centroids 
+    fascicle_areas = {idx: fascicle["value"] for idx, fascicle in nerve_data["fascicle_areas"].items()}
+    
+    # extract (x, y) coordinates of axons
+    axon_positions = axon_df[["x0 (px)", "y0 (px)"]].values
+
+    # use KMeans clustering to assign axons to fascicles
+    kmeans = KMeans(n_clusters=len(fascicle_areas), random_state=42, n_init=10)
+    axon_df["fascicle_id"] = kmeans.fit_predict(axon_positions)
+
+    # compute number of axons per fascicle
+    estimated_axons = axon_df["fascicle_id"].value_counts().to_dict()
+
+    # compute axon density for each fascicle
+    for idx, fascicle in nerve_data["fascicle_areas"].items():
+        fascicle_area = fascicle["value"]
+        num_axons = estimated_axons.get(int(idx), 0)  
+        density = round(num_axons / fascicle_area, 5) if fascicle_area > 0 else 0
+        fascicle_densities[idx] = {
+            "value": density,
+            "unit": "axon/um^2"
+        }
+
+    return fascicle_densities, total_axons
+
+
+def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path):
+    """
+    Computes axon density per fascicle and total axon density.
+    """
+    axon_df = pd.read_excel(axon_morphometrics_path)
+
+    with open(nerve_morphometrics_path, "r", encoding="utf-8") as json_file:
+        nerve_data = json.load(json_file)
+
+    if "total_area" not in nerve_data:
+        raise KeyError("total_area not found in nerve_morphometrics JSON")
+
+    total_nerve_area = nerve_data["total_area"]["value"]
+
+    fascicle_densities, total_axons = compute_fascicle_axon_density(axon_df, nerve_data)
+
+    total_density = round(total_axons / total_nerve_area, 5) if total_nerve_area > 0 else 0
+
+    nerve_data["total_axon_density"] = {"value": total_density, "unit": "axon/um^2"}
+
+    for idx, density in fascicle_densities.items():
+        nerve_data["fascicle_areas"][idx]["axon_density"] = density
+
+    with open(nerve_morphometrics_path, "w", encoding="utf-8") as json_file:
+        json.dump(nerve_data, json_file, indent=4)
+
