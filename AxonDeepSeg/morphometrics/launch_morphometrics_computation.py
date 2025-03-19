@@ -346,7 +346,7 @@ def main(argv=None):
                 new_pred_axon, new_pred_myelin = remove_outside_nerve(pred_axon, pred_myelin, pred_nerve)
 
                 # re-trigger axon morph computation on updated masks
-                logger.warning(f"File path: {current_path_target / morph_filename}")
+                logger.warning(f"Recomputing axon morphometrics to exclude axons outside the nerve fascicles in {current_path_target / morph_filename}")
                 morph_output = get_axon_morphometrics(
                     im_axon=new_pred_axon, 
                     im_myelin=new_pred_myelin, 

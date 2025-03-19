@@ -11,13 +11,12 @@ from scipy import ndimage as ndi
 from skimage import measure
 from skimage.segmentation import watershed
 import pandas as pd
-from sklearn.cluster import KMeans
 
 # Graphs and plots imports
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from AxonDeepSeg.ads_utils import convert_path
+from AxonDeepSeg.ads_utils import convert_path, imread
 from AxonDeepSeg import postprocessing, params
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
 
@@ -556,7 +555,7 @@ def save_nerve_morphometrics_to_json(stats_dataframe, output_path):
     to_drop = ['axon_perimeter', 'axon_diam', 'solidity', 'eccentricity', 'orientation']
     stats_dataframe = stats_dataframe.drop(columns=[col for col in to_drop if col in stats_dataframe.columns])
 
-    # Rename 'axon_area' to 'nerve_area' if needed
+    # Rename 'axon_area' to 'nerve_area'
     stats_dataframe = stats_dataframe.rename(columns={'axon_area': 'nerve_area'})
 
     total_nerve_area = stats_dataframe['nerve_area'].sum()
@@ -590,22 +589,27 @@ def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
 
     return pred_axon, pred_myelin
 
-def compute_fascicle_axon_density(axon_df, nerve_data):
+def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
     """
-    Uses KMeans clustering to assign axons to fascicles and compute axon density.
+    Computes axon density per fascicle based on axon positions and fascicle areas.
     """
     fascicle_densities = {}
     total_axons = len(axon_df)  
 
-    # get fascicle centroids 
     fascicle_areas = {idx: fascicle["value"] for idx, fascicle in nerve_data["fascicle_areas"].items()}
     
     # extract (x, y) coordinates of axons
     axon_positions = axon_df[["x0 (px)", "y0 (px)"]].values
 
     # use KMeans clustering to assign axons to fascicles
-    kmeans = KMeans(n_clusters=len(fascicle_areas), random_state=42, n_init=10)
-    axon_df["fascicle_id"] = kmeans.fit_predict(axon_positions)
+    # kmeans = KMeans(n_clusters=len(fascicle_areas), random_state=42, n_init=10)
+    # axon_df["fascicle_id"] = kmeans.fit_predict(axon_positions)
+
+    #TODO: instead of using KMeans to assign fascile_id, use this nerve_fascicles array which is an image with values 0, 1, 2, 3, ... for each fascicle
+    axon_df["fascicle_id"] = -1
+    nerve_fascicles = measure.label(nerve_mask)
+    #TODO: check axon centroid is inside which fascicle area
+    pass
 
     # compute number of axons per fascicle
     estimated_axons = axon_df["fascicle_id"].value_counts().to_dict()
@@ -623,7 +627,7 @@ def compute_fascicle_axon_density(axon_df, nerve_data):
     return fascicle_densities, total_axons
 
 
-def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path):
+def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path, nerve_mask_path):
     """
     Computes axon density per fascicle and total axon density.
     """
@@ -634,18 +638,18 @@ def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path):
 
     if "total_area" not in nerve_data:
         raise KeyError("total_area not found in nerve_morphometrics JSON")
-
     total_nerve_area = nerve_data["total_area"]["value"]
 
-    fascicle_densities, total_axons = compute_fascicle_axon_density(axon_df, nerve_data)
+    nerve_mask = imread(nerve_mask_path)
+    fascicle_densities, total_axons = compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask)
 
     total_density = round(total_axons / total_nerve_area, 5) if total_nerve_area > 0 else 0
-
     nerve_data["total_axon_density"] = {"value": total_density, "unit": "axon/um^2"}
 
     for idx, density in fascicle_densities.items():
         nerve_data["fascicle_areas"][idx]["axon_density"] = density
 
+    # add axon densities to the nerve morphometrics JSON
     with open(nerve_morphometrics_path, "w", encoding="utf-8") as json_file:
         json.dump(nerve_data, json_file, indent=4)
 
