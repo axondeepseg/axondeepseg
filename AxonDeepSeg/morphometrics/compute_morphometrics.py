@@ -561,7 +561,7 @@ def save_nerve_morphometrics_to_json(stats_dataframe, output_path):
     total_nerve_area = stats_dataframe['nerve_area'].sum()
 
     fascicle_areas = {
-        str(idx + 1): {"value": row["nerve_area"], "unit": "um^2"}
+        str(idx): {"value": row["nerve_area"], "unit": "um^2"}
         for idx, row in stats_dataframe.iterrows()
     }
 
@@ -602,8 +602,8 @@ def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
 
     axon_df["fascicle_id"] = -1
 
-    # clean_mask = cleanup_nerve_mask(nerve_mask>0, min_object_size=5000, max_hole_size=5000)
     nerve_fascicles = measure.label(nerve_mask)
+    print(f"Regions identified: {nerve_fascicles.max()}")
 
     height, width = nerve_fascicles.shape
 
