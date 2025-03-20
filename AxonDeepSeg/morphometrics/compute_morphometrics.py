@@ -8,7 +8,7 @@ import json
 import math
 import numpy as np
 from scipy import ndimage as ndi
-from skimage import measure
+from skimage import morphology, measure
 from skimage.segmentation import watershed
 import pandas as pd
 
@@ -555,13 +555,13 @@ def save_nerve_morphometrics_to_json(stats_dataframe, output_path):
     to_drop = ['axon_perimeter', 'axon_diam', 'solidity', 'eccentricity', 'orientation']
     stats_dataframe = stats_dataframe.drop(columns=[col for col in to_drop if col in stats_dataframe.columns])
 
-    # Rename 'axon_area' to 'nerve_area'
+    # rename 'axon_area' to 'nerve_area'
     stats_dataframe = stats_dataframe.rename(columns={'axon_area': 'nerve_area'})
 
     total_nerve_area = stats_dataframe['nerve_area'].sum()
 
     fascicle_areas = {
-        str(idx): {"value": row["nerve_area"], "unit": "um^2"}
+        str(idx + 1): {"value": row["nerve_area"], "unit": "um^2"}
         for idx, row in stats_dataframe.iterrows()
     }
 
@@ -589,37 +589,51 @@ def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
 
     return pred_axon, pred_myelin
 
+def cleanup_nerve_mask(nerve_mask, min_object_size=5000, max_hole_size=5000):
+    """
+    Removes small objects, fills holes up to max_hole_size, etc.
+    nerve_mask: a binary numpy array where True=inside nerve, False=background
+    """
+    filled = morphology.remove_small_holes(nerve_mask, area_threshold=max_hole_size)
+    cleaned = morphology.remove_small_objects(filled, min_size=min_object_size)
+    
+    return cleaned
+
 def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
     """
-    Computes axon density per fascicle based on axon positions and fascicle areas.
+    Assigns axons to the labeled fascicles in 'nerve_mask', 
+    then uses the area for each label from 'nerve_data' to compute density.
     """
     fascicle_densities = {}
-    total_axons = len(axon_df)  
+    total_axons = len(axon_df)
 
-    fascicle_areas = {idx: fascicle["value"] for idx, fascicle in nerve_data["fascicle_areas"].items()}
-    
-    # extract (x, y) coordinates of axons
+    # read columns in (y, x) order so the loop matches (y, x)
     axon_positions = axon_df[["x0 (px)", "y0 (px)"]].values
 
-    # use KMeans clustering to assign axons to fascicles
-    # kmeans = KMeans(n_clusters=len(fascicle_areas), random_state=42, n_init=10)
-    # axon_df["fascicle_id"] = kmeans.fit_predict(axon_positions)
-
-    #TODO: instead of using KMeans to assign fascile_id, use this nerve_fascicles array which is an image with values 0, 1, 2, 3, ... for each fascicle
     axon_df["fascicle_id"] = -1
-    nerve_fascicles = measure.label(nerve_mask)
-    #TODO: check axon centroid is inside which fascicle area
-    pass
 
-    # compute number of axons per fascicle
+    clean_mask = cleanup_nerve_mask(nerve_mask>0, min_object_size=5000, max_hole_size=5000)
+    nerve_fascicles = measure.label(clean_mask)
+
+    height, width = nerve_fascicles.shape
+
+    # assign each axon to the label in nerve_fascicles
+    for i, (x, y) in enumerate(axon_positions):
+        y_int, x_int = int(y), int(x)
+        if 0 <= y_int < height and 0 <= x_int < width:
+            label_id = nerve_fascicles[y_int, x_int]
+            if label_id > 0:
+                axon_df.loc[i, "fascicle_id"] = label_id
+
+    # count how many axons in each label
     estimated_axons = axon_df["fascicle_id"].value_counts().to_dict()
 
-    # compute axon density for each fascicle
-    for idx, fascicle in nerve_data["fascicle_areas"].items():
-        fascicle_area = fascicle["value"]
-        num_axons = estimated_axons.get(int(idx), 0)  
+    for label_str, fascicle_info in nerve_data["fascicle_areas"].items():
+        fascicle_area = fascicle_info["value"]
+        label_id = int(label_str)  
+        num_axons = estimated_axons.get(label_id, 0)
         density = round(num_axons / fascicle_area, 5) if fascicle_area > 0 else 0
-        fascicle_densities[idx] = {
+        fascicle_densities[label_str] = {
             "value": density,
             "unit": "axon/um^2"
         }
