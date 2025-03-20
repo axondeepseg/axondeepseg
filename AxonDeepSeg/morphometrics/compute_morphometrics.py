@@ -589,16 +589,6 @@ def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
 
     return pred_axon, pred_myelin
 
-def cleanup_nerve_mask(nerve_mask, min_object_size=5000, max_hole_size=5000):
-    """
-    Removes small objects, fills holes up to max_hole_size, etc.
-    nerve_mask: a binary numpy array where True=inside nerve, False=background
-    """
-    filled = morphology.remove_small_holes(nerve_mask, area_threshold=max_hole_size)
-    cleaned = morphology.remove_small_objects(filled, min_size=min_object_size)
-    
-    return cleaned
-
 def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
     """
     Assigns axons to the labeled fascicles in 'nerve_mask', 
@@ -612,8 +602,8 @@ def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
 
     axon_df["fascicle_id"] = -1
 
-    clean_mask = cleanup_nerve_mask(nerve_mask>0, min_object_size=5000, max_hole_size=5000)
-    nerve_fascicles = measure.label(clean_mask)
+    # clean_mask = cleanup_nerve_mask(nerve_mask>0, min_object_size=5000, max_hole_size=5000)
+    nerve_fascicles = measure.label(nerve_mask)
 
     height, width = nerve_fascicles.shape
 
@@ -623,7 +613,7 @@ def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
         if 0 <= y_int < height and 0 <= x_int < width:
             label_id = nerve_fascicles[y_int, x_int]
             if label_id > 0:
-                axon_df.loc[i, "fascicle_id"] = label_id
+                axon_df.loc[i, "fascicle_id"] = label_id - 1
 
     # count how many axons in each label
     estimated_axons = axon_df["fascicle_id"].value_counts().to_dict()
