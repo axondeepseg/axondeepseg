@@ -460,6 +460,30 @@ because they are easier to compute.
 .. comment: We need to add explanation for perimeter estimation, but this 
             part would need to be refactored beforehand.
 
+Postprocessing
+--------------
+The morphometrics computation can be followed by optional postprocessing steps. The following sections describe the postprocessing options available in AxonDeepSeg.
+
+Morphometrics aggregation
+~~~~~~~~~~~~~~~~~~~~~~~~~
+This feature aggregates morphometrics per subject. It is useful when you have multiple images per subject and you want to compute statistics per subject. We assume the following structure in the input folder::
+
+    folder_with_all_subjects/
+    ├── subject1/
+    │   ├── image1.png
+    │   ├── image1_axon_morphometrics.xlsx
+    │   ├── image2.png
+    │   ├── image2_axon_morphometrics.xlsx
+    │   ├── ...
+    ├── subject2/
+    |   ├── ...
+    └── ...
+
+To aggregate the morphometrics per subject, use the following command::
+
+    axondeepseg_aggregate -i folder_with_all_subjects
+
+This will generate a folder called **morphometrics_agg** in the input folder, containing the aggregated morphometrics per subject. It will also contain a short summary file named **statistics_per_axon_caliber.xlsx** which contains basic statistics for axon diameter, myelin thickness and g-ratio. These statistics are computed per axon diameter range.
 
 .. _manual-correction-label:
 
