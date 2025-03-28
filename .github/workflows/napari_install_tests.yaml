@@ -1,0 +1,101 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+# Official DOc on GitHub Workflow Syntax: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+
+# Conda based env testing: https://github.com/conda-incubator/setup-miniconda
+name: Run tests on pypi install
+
+on:
+
+  # Trigger the workflow on push but only for the master branch
+  push:
+    branches:
+      - master
+      - mb/debug
+
+  # Trigger current workflow on PR from ANY branch
+  pull_request:
+    branches:
+      - '**'
+
+  # Cron based trigger
+  schedule:
+    # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#onschedule
+    # i.e. this runs every day at 4:33AM for the master branch.
+    - cron: '33 4 * * *'
+
+env:
+  # Even when given -y, apt will still sometimes hang at a prompt if a package
+  # has clarifications to ask; DEBIAN_FRONTEND=noninteractive prevents that,
+  # This will be defined for non-debian platforms below too, but there's no harm in that.
+  # (TravisCI quietly defined this on all their platforms, but we have to give it manually on GithubCI.)
+  DEBIAN_FRONTEND: 'noninteractive'
+
+jobs:
+  pypi_package_tests:
+    name: PyPi Package test for Python ${{ matrix.python-version }} on ${{ matrix.os }}
+
+    # Matrix driven OS
+    runs-on: ${{ matrix.os }}
+
+    # Defining matrix for OS and Python
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest", "macos-latest", "windows-latest"]
+        python-version:  [ "3.11", "3.12"]
+
+    # Main steps for the test to be reproduced across OS x Python
+    steps:
+      # Step 1: Checkout code.
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v5 
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Step 2: Install environment.
+      - name: Install Latest pypi version of AxonDeepSeg
+        run: |
+          pip install --upgrade pip
+          pip install napari[all]
+          pip install axondeepseg --no-cache-dir
+
+      # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
+      # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
+      - name: Set MKL_THREADING_LAYER
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "MKL_THREADING_LAYER=GNU" >> $GITHUB_ENV
+
+      # Step 3: Full PyTest
+      - name: Test with pytest (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          pwd
+          ls
+
+          rm -rf ./AxonDeepSeg/
+
+          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
+          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
+          python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
+          python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
+
+          pytest ./ -v
+
+      - name: Test with pytest (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          pwd
+          ls
+
+          rmdir ./AxonDeepSeg/
+
+          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
+          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
+          python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
+          python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
+
+          pytest.exe ./ -v
