@@ -54,6 +54,10 @@ class TestCore(object):
         bad_pred_myelin_path = self.test_folder_path / ('invalid_gratio' + str(myelin_suffix))
         self.bad_pred_myelin = ads.imread(bad_pred_myelin_path)
 
+        # To ensure 1-connectivity during object separation
+        connected_components_path = self.testPath / '__test_files__' / '__test_postprocessing_files__' / 'test_connectivity.png'
+        self.connected_components = ads.imread(connected_components_path)
+
         # simulated image of axon myelin where axon shape is circle; `plane angle = 0`
         self.path_sim_image_circle = (
             self.testPath /
@@ -913,3 +917,9 @@ class TestCore(object):
         obtained_watershed = (get_watershed_segmentation(im_axon, im_myelin)).astype(np.uint8)
 
         assert np.array_equal(obtained_watershed, reference_watershed_seg_data)
+
+    @pytest.mark.unit
+    def test_get_axon_morphometrics_uses_expected_connectivity_param(self):
+        img = self.connected_components
+        stats_dataframe = get_axon_morphometrics(im_axon=img)        
+        assert len(stats_dataframe) == 3
