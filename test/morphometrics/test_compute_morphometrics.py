@@ -921,5 +921,8 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_axon_morphometrics_uses_expected_connectivity_param(self):
         img = self.connected_components
-        stats_dataframe = get_axon_morphometrics(im_axon=img)        
+        stats_dataframe = get_axon_morphometrics(im_axon=img)     
+
+        # using 1-connectivity, this image has 3 connected components;
+        # using 2-connectivity, this image has 2 connected components instead   
         assert len(stats_dataframe) == 3
