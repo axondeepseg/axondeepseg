@@ -264,6 +264,8 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 
 -u                  Toggles *unmyelinated mode*. This will compute morphometrics for unmyelinated axons. Note that this requires a separate unmyelinated axon segmentation mask with suffix ``_seg-uaxon``.
 
+-n                  Computes morphometrics specific to **nerve sections** using the ``-n`` option. This enables analysis of axons **within nerve fascicle boundaries**, based on a segmentation mask with the suffix ``_seg-nerve.png``.
+
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
@@ -339,6 +341,79 @@ This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morph
 
 
 Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
+
+Morphometrics for Nerve Sections
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can compute morphometrics specific to **nerve sections** using the ``-n`` option
+in the ``axondeepseg_morphometrics`` command-line interface. This enables analysis of axons
+**within nerve fascicle boundaries**, based on a segmentation mask with the suffix ``_seg-nerve.png``.
+
+When used, the script performs:
+
+- Morphometric extraction of axons and myelin *within* the nerve boundary.
+- Density estimation of axons inside the fascicle.
+- Removal of axons *outside* the nerve mask before final metrics are saved.
+
+Usage
+^^^^^
+
+.. code-block:: bash
+
+   axondeepseg_morphometrics -i <IMAGE_PATH> -n
+
+This can be combined with other flags like ``-s`` (pixel size), ``-a`` (axon shape), and ``-f`` (output filename).
+
+Required Files
+^^^^^^^^^^^^^^
+
+The image folder must contain:
+
+- Axon mask: ``*_seg-axon.png``
+- Myelin mask: ``*_seg-myelin.png``
+- Nerve segmentation mask: ``*_seg-nerve.png``
+
+Output
+^^^^^^
+
+One output file will be generated:
+
+- ``<filename>_nerve_morphometrics.json``: Morphometrics including axon count and density inside the nerve region.
+
+Below is a sample of the JSON file generated when using the ``-n`` option:
+
+.. code-block:: json
+
+    {
+        "fascicle_areas": {
+            "0": {
+                "value": 103021.45,
+                "unit": "um^2",
+                "axon_density": {
+                    "value": 0.00672,
+                    "unit": "axon/um^2"
+                }
+            },
+            "1": {
+                "value": 85792.12,
+                "unit": "um^2",
+                "axon_density": {
+                    "value": 0.00815,
+                    "unit": "axon/um^2"
+                }
+            }
+        },
+        "total_area": {
+            "value": 188813.57,
+            "unit": "um^2"
+        },
+        "total_axon_density": {
+            "value": 0.00741,
+            "unit": "axon/um^2"
+        }
+    }
+
+This file reports the nerve fascicle areas and their respective axon densities, as well as global area and total axon density.
     
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
