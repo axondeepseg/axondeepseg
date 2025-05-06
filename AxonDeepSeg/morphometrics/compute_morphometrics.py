@@ -115,7 +115,8 @@ def get_axon_morphometrics(
         pixelsize = pixel_size
 
     # Label each axon object
-    im_axon_label = measure.label(im_axon)
+    connectivity = 1 if im_myelin is None else 2
+    im_axon_label = measure.label(im_axon, connectivity=connectivity)
     # Measure properties for each axon object
     axon_objects = measure.regionprops(im_axon_label)
 
