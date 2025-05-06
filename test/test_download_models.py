@@ -31,7 +31,7 @@ class TestCore(object):
     def teardown_method(self):
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
-        print(fullPath)
+
         # Move up to the test directory, "test/"
         testPath = fullPath.parent 
         tmpPath = testPath / '__tmp__'
@@ -49,7 +49,7 @@ class TestCore(object):
         download_model(self.valid_model, 'light', self.tmpPath)
         assert self.valid_model_path.exists()
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_main_cli_runs_succesfully_no_destination(self):
         cli_test_model_path =  Path(AxonDeepSeg.__file__).parent / 'models' / 'model_seg_generalist_light'
         output_dir = download_model(destination=None, overwrite=False)

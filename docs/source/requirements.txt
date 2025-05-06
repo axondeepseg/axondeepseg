@@ -2,3 +2,4 @@
  sphinx_rtd_theme>=0.2.4
  recommonmark
  pygit2
+sphinx-tabs
