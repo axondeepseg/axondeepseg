@@ -34,6 +34,7 @@ morphometrics_agg
 from pathlib import Path
 from loguru import logger
 import argparse
+import sys
 
 import pandas as pd
 import numpy as np
@@ -197,11 +198,22 @@ def aggregate(subjects: list[Path], output_dir: Path):
     - subjects (list[Path]): List of subject directories.
     - output_folder (Path): Path to the output directory
     """
+    logger.info('Subjects arg')
 
+    logger.info(type(subjects))
+    logger.info(print(subjects))
+
+    logger.info('Output dir arg')
+    logger.info(type(output_dir))
+    logger.info(print(type(subjects)))
     for subject_folder in tqdm(subjects):
-            
+        logger.info('Inside the loop')
+        logger.info(type(subject_folder))
+        logger.info(print(subject_folder)  ) 
         subject_data = []
+        logger.info(str(morph_suffix))
         for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
+            print(file_path)
             df, _ = load_morphometrics(
                 morph_file=file_path, 
                 filters={"gratio_null": True, "gratio_sup": True}
@@ -216,7 +228,7 @@ def aggregate(subjects: list[Path], output_dir: Path):
         save_axon_morphometrics(fname, subject_df)
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "-i", "--input_dir",
@@ -224,7 +236,7 @@ def main():
         required=True,
         help="Directory containing one subdirectory per subject, each containing one or more morphometrics files.",
     )
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     logger.add("axondeepseg.log", level="DEBUG", enqueue=True)
     logger.info(f'Logging initialized for morphometric aggregation in "{Path.cwd()}".')
@@ -237,6 +249,7 @@ def main():
     logger.info(f"Found {len(subjects)} subjects.")
 
     # Check that for each image in the subject folder, there a segmentation file with the suffixe {morph_suffix} and {axonmyelin_suffix}
+
     for subject in subjects:
         morph_files = list(subject.glob(f"*{str(morph_suffix)}"))
         axonmyelin_files = list(subject.glob(f"*{str(axonmyelin_suffix)}"))
@@ -266,6 +279,8 @@ def main():
     output_folder = Path(args.input_dir) / agg_dir
     Path.mkdir(output_folder, exist_ok=True)
     aggregate(subjects, output_folder)
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":
