@@ -44,7 +44,7 @@ from tqdm import tqdm
 
 import AxonDeepSeg
 from AxonDeepSeg.params import (
-    morph_suffix,
+    morph_suffix, axonmyelin_suffix,
     agg_dir,
     morph_agg_suffix,
     binned_statistics_filename,
@@ -235,6 +235,33 @@ def main():
     subjects = [x for x in Path(args.input_dir).iterdir() if x.is_dir()]
     subjects = [s for s in subjects if s.name != agg_dir.name]
     logger.info(f"Found {len(subjects)} subjects.")
+
+    # Check that for each image in the subject folder, there a segmentation file with the suffixe {morph_suffix} and {axonmyelin_suffix}
+    for subject in subjects:
+        morph_files = list(subject.glob(f"*{str(morph_suffix)}"))
+        axonmyelin_files = list(subject.glob(f"*{str(axonmyelin_suffix)}"))
+        
+        # Assert same number of morphometrics and axonmyelin files, else exit and return
+        if len(morph_files) != len(axonmyelin_files):
+            logger.warning(
+                f"Number of morphometrics files ({len(morph_files)}) does not match the number of axonmyelin files ({len(axonmyelin_files)}) in {subject}. Please generate the morphometrics files for all segmentated images."
+            )
+            return
+
+        if len(morph_files) == 0:
+            logger.warning(f"No morphometrics files found in {subject}. Please generate the morphometrics files first.")
+            return
+
+        # If there is an axonmyelin file, check that the morphometrics file exists
+        for axonmyelin_file in axonmyelin_files:
+            morph_file = subject / axonmyelin_file.name.replace(
+                str(axonmyelin_suffix), '_' + str(morph_suffix)
+            )
+            if not morph_file.exists():
+                logger.warning(
+                    f"File {morph_file} does not exist. Please generate the morphometrics file first."
+                )
+                return
 
     output_folder = Path(args.input_dir) / agg_dir
     Path.mkdir(output_folder, exist_ok=True)
