@@ -466,7 +466,13 @@ The morphometrics computation can be followed by optional postprocessing steps. 
 
 Morphometrics aggregation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-This feature aggregates morphometrics per subject. It is useful when you have multiple images per subject and you want to compute statistics per subject. We assume the following structure in the input folder::
+This feature aggregates morphometrics per subject. It is useful when you have multiple images per subject and you want to compute statistics per subject. 
+
+To use this feature, need to have done the following:
+
+1. Segment all the images of interest using AxonDeepSeg using the **axondeepseg** command.
+2. Compute the morphometrics of all the images using the **axondeepseg_morphometrics** command. Make sure that the morphometrics files are named with the same prefix as the image name (e.g. **image_axon_morphometrics.xlsx** for **image.png**).
+3. Have the following folder structure::
 
     folder_with_all_subjects/
     ├── subject1/
