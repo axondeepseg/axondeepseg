@@ -198,18 +198,8 @@ def aggregate(subjects: list[Path], output_dir: Path):
     - subjects (list[Path]): List of subject directories.
     - output_folder (Path): Path to the output directory
     """
-    logger.info('Subjects arg')
 
-    logger.info(type(subjects))
-    logger.info(print(subjects))
-
-    logger.info('Output dir arg')
-    logger.info(type(output_dir))
-    logger.info(print(type(subjects)))
     for subject_folder in tqdm(subjects):
-        logger.info('Inside the loop')
-        logger.info(type(subject_folder))
-        logger.info(print(subject_folder)  ) 
         subject_data = []
         logger.info(str(morph_suffix))
         for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
