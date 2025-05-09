@@ -84,15 +84,13 @@ def save_axon_count_plot(
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
 
-def load_morphometrics(morph_file: Path, filters: dict):
+def load_morphometrics(df: pd.DataFrame, filters: dict):
     """
     Loads morphometric data from an Excel file and filters it
 
     - morph_file (Path): Path to the morphometrics file
     - filters (dict): Dictionary containing filtering conditions
     """
-
-    df = pd.read_excel(morph_file)
     n_filtered = 0
 
     # get rid of null values outliers
@@ -203,12 +201,14 @@ def aggregate(subjects: list[Path], output_dir: Path):
         subject_data = []
         logger.info(str(morph_suffix))
         for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
-            print(file_path)
-            df, _ = load_morphometrics(
-                morph_file=file_path, 
-                filters={"gratio_null": True, "gratio_sup": True}
-            )                
-            subject_data.append(df)
+            df = pd.read_excel(file_path)
+            
+            if df.empty is False:
+                df, _ = load_morphometrics(
+                    df,
+                    filters={"gratio_null": True, "gratio_sup": True}
+                )                
+                subject_data.append(df)
             
         subject_df = pd.concat(subject_data, ignore_index=True)
         aggregate_subject(subject_df, subject_folder.name, subject_folder, output_dir)
