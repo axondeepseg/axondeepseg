@@ -298,7 +298,7 @@ function edit_shellrc() {
     # add line
     echo ""
     # Add ads_activate alias
-    echo "alias ads_activate=\"source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/""
+    echo "alias ads_activate=\"source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/\""
     # add line
     echo ""
   ) >> "$RC_FILE_PATH"
