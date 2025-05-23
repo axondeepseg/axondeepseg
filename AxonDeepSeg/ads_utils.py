@@ -29,13 +29,11 @@ def download_data(url_data):
         session = requests.Session()
         session.mount('https://', HTTPAdapter(max_retries=retry))
         response = session.get(url_data, stream=True)
-
         if "Content-Disposition" in response.headers:
             _, content = cgi.parse_header(response.headers['Content-Disposition'])
             zip_filename = content["filename"]
         else:
             print("Unexpected: link doesn't provide a filename")
-
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir) / zip_filename
             with open(tmp_path, 'wb') as tmp_file:

@@ -43,3 +43,12 @@ class TestCore(object):
         assert (Path(self.test_folder_path) / "morphometrics_agg").exists()
         assert (Path(self.test_folder_path) / "morphometrics_agg" / "subject 1").exists()
         assert (Path(self.test_folder_path) / "morphometrics_agg" / "subject 2").exists()
+    
+    @pytest.mark.integration
+    def test_aggregate_load_morphometrics_empty_file(self):
+        # Load excel file
+        df = pd.read_excel(self.testPath / '__test_files__' / '__test_noaxons_files__' / 'image_axon_morphometrics.xlsx')
+        metrics_df = load_morphometrics(df, filters={"gratio_null": True, "gratio_sup": True})
+
+        assert metrics_df
+            

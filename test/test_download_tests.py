@@ -61,7 +61,7 @@ class TestCore(object):
 
         assert self.test_files_path.exists()
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_main_cli_runs_succesfully_no_destination(self):
         cli_test_model_path =  Path(AxonDeepSeg.__file__).parent.parent / 'test' / '__test_files__'
 
