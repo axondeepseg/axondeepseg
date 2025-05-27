@@ -29,7 +29,6 @@ def download_data(url_data):
         session = requests.Session()
         session.mount('https://', HTTPAdapter(max_retries=retry))
         response = session.get(url_data, stream=True)
-
         if "Content-Disposition" in response.headers:
             header = response.headers["Content-Disposition"]
             

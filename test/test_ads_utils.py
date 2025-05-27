@@ -43,7 +43,7 @@ class TestCore(object):
         if (self.tmp_folder / "models").exists():
             for file in (self.tmp_folder / "models").iterdir():
                 shutil.move(file, self.model_dir)
-                shutil.rmtree(self.tmp_folder / "models")
+            shutil.rmtree(self.tmp_folder / "models")
 
         if self.tmp_folder.exists():
             shutil.rmtree(self.tmp_folder)
@@ -52,6 +52,8 @@ class TestCore(object):
     @pytest.mark.unit
     def test_download_data_returns_0_for_valid_link(self):
         exit_code = download_data(str(self.osf_link))
+        print(exit_code)
+        print(self.osf_link)
         assert exit_code == 0
 
     @pytest.mark.unit
@@ -120,13 +122,14 @@ class TestCore(object):
     @pytest.mark.unit
     def test_get_existing_models_list_returns_none_for_no_existing_models(self):
         # Move content inside model folder to test/__test_files__/tmp_folder, without moving the folder itself
+        
         if not (self.tmp_folder / "models").exists():
             (self.tmp_folder / "models").mkdir()
 
         for file in self.model_dir.iterdir():
             # Make temp dir
             shutil.move(file, self.tmp_folder / "models")
-        
+
         # Main test
         assert get_existing_models_list() == None
 
@@ -134,7 +137,7 @@ class TestCore(object):
         if (self.tmp_folder / "models").exists:
             for file in (self.tmp_folder / "models").iterdir():
                 shutil.move(file, self.model_dir)
-                shutil.rmtree(self.tmp_folder / "models")
+            shutil.rmtree(self.tmp_folder / "models")
 
     # --------------imread tests-------------- #
     @pytest.mark.unit

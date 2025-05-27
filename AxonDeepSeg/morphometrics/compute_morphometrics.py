@@ -115,7 +115,8 @@ def get_axon_morphometrics(
         pixelsize = pixel_size
 
     # Label each axon object
-    im_axon_label = measure.label(im_axon)
+    connectivity = 1 if im_myelin is None else 2
+    im_axon_label = measure.label(im_axon, connectivity=connectivity)
     # Measure properties for each axon object
     axon_objects = measure.regionprops(im_axon_label)
 
@@ -140,7 +141,7 @@ def get_axon_morphometrics(
 
     # Declare a DataFrame that will be used to store the result of the morphometrics
     stats_dataframe = pd.DataFrame()
-
+    
     # Loop across axon property and fill up dictionary with morphometrics of interest
     for prop_axon in axon_objects:
         # Centroid
@@ -232,27 +233,35 @@ def get_axon_morphometrics(
                 logger.warning(f"WARNING: Myelin object not found for axon centroid [y:{y0}, x:{x0}]")
 
         # Add the stats to the dataframe
-        if stats_dataframe.empty:
-            stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
-        else:
-            stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
+        stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
+
+    if stats_dataframe.empty:
+        stats_dataframe = pd.DataFrame(columns=['x0','y0','axon_diam','axon_area','axon_perimeter', 'gratio', 'myelin_thickness', 'myelin_area', 'solidity','eccentricity', 'orientation']) 
+        empty_df = True
+    else: 
+        empty_df = False
 
     if (not return_index_image) and (not return_instance_seg):
         return stats_dataframe
     else:
         output = (stats_dataframe,)
-    if return_index_image is True:
-        # Extract the information required to generate the index image
-        x0_array = stats_dataframe["x0"].to_numpy()
-        y0_array = stats_dataframe["y0"].to_numpy()
-        diam_array = stats_dataframe["axon_diam"].to_numpy()
-        # Create the axon coordinate array, then generate the image
-        mean_diameter_in_pixel = np.average(diam_array) / pixelsize
-        axon_indexes = np.arange(stats_dataframe.shape[0])
-        index_image_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
-                                                                  tuple(reversed(im_axon.shape)),
-                                                                  mean_diameter_in_pixel)
-        output = (*output, index_image_array)
+        
+    if return_index_image is True: 
+        if empty_df:
+            index_image_array = np.zeros_like(im_axon, dtype='uint8')
+            output = (*output, index_image_array)
+        else:
+            # Extract the information required to generate the index image
+            x0_array = stats_dataframe["x0"].to_numpy()
+            y0_array = stats_dataframe["y0"].to_numpy()
+            diam_array = stats_dataframe["axon_diam"].to_numpy()
+            # Create the axon coordinate array, then generate the image
+            mean_diameter_in_pixel = np.average(diam_array) / pixelsize
+            axon_indexes = np.arange(stats_dataframe.shape[0])
+            index_image_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
+                                                                    tuple(reversed(im_axon.shape)),
+                                                                    mean_diameter_in_pixel)
+            output = (*output, index_image_array)
     
     if return_instance_seg:
         output = (*output, im_instance_seg)
