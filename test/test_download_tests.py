@@ -13,7 +13,7 @@ class TestCore(object):
     def setup_method(self):
         # Get the directory where this current file is saved
         self.fullPath = Path(__file__).resolve().parent
-        print(self.fullPath)
+
         # Move up to the test directory, "test/"
         self.testPath = self.fullPath.parent 
         
@@ -22,7 +22,6 @@ class TestCore(object):
         self.tmpPath = self.testPath / '__tmp__'
         if not self.tmpPath.exists():
             self.tmpPath.mkdir()
-        print(self.tmpPath)
 
         self.test_files_path = (
             self.tmpPath /
@@ -34,7 +33,7 @@ class TestCore(object):
     def teardown_method(self):
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
-        print(fullPath)
+
         # Move up to the test directory, "test/"
         testPath = fullPath.parent 
         tmpPath = testPath / '__tmp__'
@@ -58,10 +57,10 @@ class TestCore(object):
         assert not self.test_files_path.exists()
 
         download_tests(self.tmpPath)
-
+        
         assert self.test_files_path.exists()
 
-    @pytest.mark.unit
+    @pytest.mark.integration
     def test_main_cli_runs_succesfully_no_destination(self):
         cli_test_model_path =  Path(AxonDeepSeg.__file__).parent.parent / 'test' / '__test_files__'
 
@@ -72,7 +71,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_redownload_test_files_multiple_times_works(self):
-
+    
         download_tests(self.tmpPath)
 
     @pytest.mark.unit
