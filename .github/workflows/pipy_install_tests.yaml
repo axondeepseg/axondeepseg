@@ -70,6 +70,7 @@ jobs:
       - name: Test with pytest (Unix)
         if: runner.os != 'Windows'
         run: |
+          set -x
           pwd
           ls
 
@@ -80,7 +81,11 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest ./ -v
+          pytest ./ -v --cov AxonDeepSeg/ --cov-report=lcov
+          echo "All done!"
+          exit 0 
+          
+    
 
       - name: Test with pytest (Windows)
         if: runner.os == 'Windows'
