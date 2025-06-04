@@ -97,3 +97,16 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
           pytest.exe ./ -v
+
+
+  # This step is MANDATORY and used to indicate matrix completion to coveralls.io
+  # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
+  finish:
+    needs: [pypi_package_tests]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+      - name: Pypi install test finished
+        run: echo "Tests comlete!"
+
