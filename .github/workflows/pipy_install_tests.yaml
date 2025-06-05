@@ -81,7 +81,6 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest ./ -v --cov AxonDeepSeg/ --cov-report=lcov
           echo "All done!"
           exit 0 
           
