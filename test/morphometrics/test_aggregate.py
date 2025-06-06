@@ -11,7 +11,6 @@ import AxonDeepSeg
 import pytest
 
 # AxonDeepSeg imports
-
 from AxonDeepSeg.morphometrics.aggregate import *
 
 class TestCore(object):

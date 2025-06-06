@@ -5,7 +5,6 @@ AxonDeepSeg utilities module.
 import os
 import sys
 from pathlib import Path
-import cgi
 import tempfile
 import zipfile
 import requests
@@ -17,6 +16,7 @@ import numpy as np
 from loguru import logger
 
 from AxonDeepSeg.params import valid_extensions
+import re
 
 def download_data(url_data):
     """ Downloads and extracts zip files from the web.
@@ -30,10 +30,18 @@ def download_data(url_data):
         session.mount('https://', HTTPAdapter(max_retries=retry))
         response = session.get(url_data, stream=True)
         if "Content-Disposition" in response.headers:
-            _, content = cgi.parse_header(response.headers['Content-Disposition'])
-            zip_filename = content["filename"]
+            header = response.headers["Content-Disposition"]
+            
+            # Extract filename manually using regex
+            match = re.search(r'filename="?(?P<filename>[^";]+)"?', header)
+            if match:
+                zip_filename = match.group("filename")
+            else:
+                print("Unexpected: Unable to extract filename from Content-Disposition")
         else:
             print("Unexpected: link doesn't provide a filename")
+
+        # Save to temporary directory
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir) / zip_filename
             with open(tmp_path, 'wb') as tmp_file:

@@ -146,47 +146,53 @@ def axon_segmentation(
     )
     logger.info('Running inference on device: {}'.format(predictor.device))
 
-    # find checkpoint name (identical for all folds)
-    chkpt_name = get_checkpoint_name(path_model / f'fold_{folds_avail[0]}')
-    # init network architecture and load checkpoint
-    predictor.initialize_from_trained_model_folder(
-        str(path_model),
-        use_folds=folds_avail,
-        checkpoint_name=chkpt_name,
-    )
-    logger.info('Model successfully loaded.')
+    try:
+        # find checkpoint name (identical for all folds)
+        chkpt_name = get_checkpoint_name(path_model / f'fold_{folds_avail[0]}')
+        # init network architecture and load checkpoint
+        predictor.initialize_from_trained_model_folder(
+            str(path_model),
+            use_folds=folds_avail,
+            checkpoint_name=chkpt_name,
+        )
+        logger.info('Model successfully loaded.')
 
-    # create input list
-    input_list = [ [str(p)] for p in path_inputs]
-    target_suffix = str(nnunet_suffix.with_suffix(''))
-    data_format = predictor.dataset_json['file_ending'] # e.g. '.png'
-    output_list = [ str(p).replace(data_format, target_suffix) for p in path_inputs ]
+        # create input list
+        input_list = [ [str(p)] for p in path_inputs]
+        target_suffix = str(nnunet_suffix.with_suffix(''))
+        data_format = predictor.dataset_json['file_ending'] # e.g. '.png'
+        output_list = [ str(p).replace(data_format, target_suffix) for p in path_inputs ]
 
-    predictor.predict_from_files(
-        list_of_lists_or_source_folder=input_list,
-        output_folder_or_list_of_truncated_output_files=output_list,
-        save_probabilities=False,
-        overwrite=True,
-    )
+        predictor.predict_from_files(
+            list_of_lists_or_source_folder=input_list,
+            output_folder_or_list_of_truncated_output_files=output_list,
+            save_probabilities=False,
+            overwrite=True,
+        )
 
-    output_structure = predictor.dataset_json['labels']
-    output_classes = sorted(list(output_structure.keys()))
-    output_classes.remove('background')
-    is_axonmyelin_seg = ['axon', 'myelin'] == output_classes
+        output_structure = predictor.dataset_json['labels']
+        output_classes = sorted(list(output_structure.keys()))
+        output_classes.remove('background')
+        is_axonmyelin_seg = ['axon', 'myelin'] == output_classes
 
-    # nnUNet outputs a single file will all classes mapped to consecutive ints
-    for pred_path in output_list:
-        fname = pred_path + data_format
-        raw_pred = ads_utils.imread(fname)
-        new_masks = []
+        # nnUNet outputs a single file will all classes mapped to consecutive ints
+        for pred_path in output_list:
+            fname = pred_path + data_format
+            raw_pred = ads_utils.imread(fname)
+            new_masks = []
 
-        for c in output_classes:
-            class_value = output_structure[c]
-            new_fname = extract_from_nnunet_prediction(raw_pred, fname, c, class_value)
-            new_masks.append(new_fname)
-        logger.info(f'Successfully saved masks for classes: {output_classes}.')
+            for c in output_classes:
+                class_value = output_structure[c]
+                new_fname = extract_from_nnunet_prediction(raw_pred, fname, c, class_value)
+                new_masks.append(new_fname)
+            logger.info(f'Successfully saved masks for classes: {output_classes}.')
 
-        if is_axonmyelin_seg:
-            merge_masks(new_masks[0], new_masks[1])
+            if is_axonmyelin_seg:
+                merge_masks(new_masks[0], new_masks[1])
 
-        Path(fname).unlink()
+            Path(fname).unlink()
+    finally:
+            if hasattr(predictor, 'network'):
+                del predictor.network
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
