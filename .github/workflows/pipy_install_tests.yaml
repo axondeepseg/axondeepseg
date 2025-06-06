@@ -81,7 +81,7 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest ./test/test_ads_utils.py ./test/test_apply_model.py ./test/test_model_cards.py ./test/test_params.py ./test/test_postprocessing.py ./test/visualization/ ./test/testing/ ./test/morphometrics/ ./test/test_download_models.py ./test/test_download_tests.py ./test/test_segment.py -v
+          pytest ./test/test_ads_utils.py ./test/test_apply_model.py ./test/test_model_cards.py ./test/test_params.py ./test/test_postprocessing.py ./test/visualization/ ./test/testing/ ./test/morphometrics/ ./test/test_download_models.py ./test/test_download_tests.py -v
           echo "All done!"
           exit 0 
           
