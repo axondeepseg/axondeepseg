@@ -27,7 +27,8 @@ def download_tests(destination=None, overwrite=True):
         logger.info("Overwrite set to False - not deleting old test files.")
         return test_files_destination
 
-    url_tests = "https://github.com/axondeepseg/data-testing/archive/refs/tags/r20250110.zip"
+    url_tests = "https://github.com/axondeepseg/data-testing/archive/refs/tags/r20250523.zip"
+    
     files_before = list(Path.cwd().iterdir())
 
     if (
