@@ -292,8 +292,8 @@ This generates a **'image_axon_morphometrics.xlsx'** file in the image directory
             
             axondeepseg -i test/__test_files__/__test_demo_files__/image.png -a ellipse
 
-Morphometrics of a specific image from multiple folders
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Morphometrics of specific images from multiple folders
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argument of the CLI separated by space. For instance, to compute morphometrics of the image **'image.png'** and **'image_2.png'** present in the folders **'test/__test_files__/__test_demo_files__/'** and **'test/__test_files__/__test_segment_files__/'** respectively of the test dataset, use the following command::
 
     axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png test/__test_files__/__test_segment_files__/image_2.png
@@ -347,16 +347,17 @@ Morphometrics for Nerve Sections
 
 You can compute morphometrics specific to **nerve sections** using the ``-n`` option
 in the ``axondeepseg_morphometrics`` command-line interface. This enables analysis of axons
-**within nerve fascicle boundaries**, based on a segmentation mask with the suffix ``_seg-nerve.png``.
+within nerve fascicle boundaries, based on a segmentation mask with the suffix ``_seg-nerve.png``.
+Currently, ``axondeepseg`` does not produce this mask, so you will need to supply it manually.
+In particular, the total nerve area per image allows for the calculation of axon spatial density.
 
-When used, the script performs:
+When used, the ``-n`` option performs:
 
 - Morphometric extraction of axons and myelin *within* the nerve boundary.
 - Density estimation of axons inside the fascicle.
-- Removal of axons *outside* the nerve mask before final metrics are saved.
+- Removal of axons located *outside* of the nerve mask before final metrics are saved.
 
-Usage
-^^^^^
+**Usage**
 
 .. code-block:: bash
 
@@ -364,8 +365,7 @@ Usage
 
 This can be combined with other flags like ``-s`` (pixel size), ``-a`` (axon shape), and ``-f`` (output filename).
 
-Required Files
-^^^^^^^^^^^^^^
+**Required Files**
 
 The image folder must contain:
 
@@ -373,14 +373,14 @@ The image folder must contain:
 - Myelin mask: ``*_seg-myelin.png``
 - Nerve segmentation mask: ``*_seg-nerve.png``
 
-Output
-^^^^^^
+**Output**
 
 One output file will be generated:
 
 - ``<filename>_nerve_morphometrics.json``: Morphometrics including axon count and density inside the nerve region.
 
-Below is a sample of the JSON file generated when using the ``-n`` option:
+Below is an example of the JSON file generated when using the ``-n`` option on an image with two nerve fascicles 
+(in other words, two disjoint regions in the ``_seg-nerve.png`` mask).
 
 .. code-block:: json
 
