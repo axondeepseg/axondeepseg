@@ -357,30 +357,24 @@ When used, the ``-n`` option performs:
 - Density estimation of axons inside the fascicle.
 - Removal of axons located *outside* of the nerve mask before final metrics are saved.
 
-**Usage**
-
 .. code-block:: bash
 
    axondeepseg_morphometrics -i <IMAGE_PATH> -n
 
-This can be combined with other flags like ``-s`` (pixel size), ``-a`` (axon shape), and ``-f`` (output filename).
-
-**Required Files**
-
+This can be combined with other flags like ``-s`` (pixel size), ``-a`` (axon shape), and ``-f`` (output filename). 
 The image folder must contain:
 
 - Axon mask: ``*_seg-axon.png``
 - Myelin mask: ``*_seg-myelin.png``
 - Nerve segmentation mask: ``*_seg-nerve.png``
 
-**Output**
-
 One output file will be generated:
 
 - ``<filename>_nerve_morphometrics.json``: Morphometrics including axon count and density inside the nerve region.
 
 Below is an example of the JSON file generated when using the ``-n`` option on an image with two nerve fascicles 
-(in other words, two disjoint regions in the ``_seg-nerve.png`` mask).
+(in other words, two disjoint regions in the ``_seg-nerve.png`` mask). This file reports the nerve fascicle areas 
+and their respective axon densities, as well as global area and total axon density.
 
 .. code-block:: json
 
@@ -412,8 +406,6 @@ Below is an example of the JSON file generated when using the ``-n`` option on a
             "unit": "axon/um^2"
         }
     }
-
-This file reports the nerve fascicle areas and their respective axon densities, as well as global area and total axon density.
     
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
