@@ -349,7 +349,7 @@ You can compute morphometrics specific to **nerve sections** using the ``-n`` op
 in the ``axondeepseg_morphometrics`` command-line interface. This enables analysis of axons
 within nerve fascicle boundaries, based on a segmentation mask with the suffix ``_seg-nerve.png``.
 Currently, ``axondeepseg`` does not produce this mask, so you will need to supply it manually.
-In particular, the total nerve area per image allows for the calculation of axon spatial density.
+This is useful because the total nerve area allows for the calculation of axon density.
 
 When used, the ``-n`` option performs:
 
@@ -361,7 +361,6 @@ When used, the ``-n`` option performs:
 
    axondeepseg_morphometrics -i <IMAGE_PATH> -n
 
-This can be combined with other flags like ``-s`` (pixel size), ``-a`` (axon shape), and ``-f`` (output filename). 
 The image folder must contain:
 
 - Axon mask: ``*_seg-axon.png``
