@@ -109,6 +109,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Pypi install test finished
         run: echo "Tests comlete!"
 
