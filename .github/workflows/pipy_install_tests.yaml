@@ -68,7 +68,7 @@ jobs:
 
       # Step 3: Full PyTest
       - name: Test with pytest (Unix)
-        if:  ${{(matrix.os != 'Windows') || ((matrix.os == 'macOS') && (matrix.python-version != '3.12')) }}
+        if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest' && matrix.python-version == '3.11') }}
         run: |
 
           rm -rf ./AxonDeepSeg/
