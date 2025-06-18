@@ -68,7 +68,7 @@ jobs:
 
       # Step 3: Full PyTest
       - name: Test with pytest (Unix)
-        if:  ${{(runner.os != 'Windows') && (runner.python-version != '3.12') }}
+        if:  ${{(matrix.python.os != 'Windows') && (matrix.python.python-version != '3.12') }}
         run: |
           set -x
           pwd
