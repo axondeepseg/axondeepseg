@@ -70,9 +70,6 @@ jobs:
       - name: Test with pytest (Unix)
         if:  ${{(matrix.python.os != 'Windows') && (matrix.python.python-version != '3.12') }}
         run: |
-          set -x
-          pwd
-          ls
 
           rm -rf ./AxonDeepSeg/
 
