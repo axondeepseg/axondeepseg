@@ -110,7 +110,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.x'
       - name: Pypi install test finished
         run: echo "Tests comlete!"
 

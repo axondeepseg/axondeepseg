@@ -124,4 +124,5 @@ jobs:
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.github_token }}
+        python-version: '3.x'
         parallel-finished: true
