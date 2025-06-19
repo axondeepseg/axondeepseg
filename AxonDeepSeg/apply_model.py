@@ -146,7 +146,6 @@ def axon_segmentation(
     )
     logger.info('Running inference on device: {}'.format(predictor.device))
 
-
     # find checkpoint name (identical for all folds)
     chkpt_name = get_checkpoint_name(path_model / f'fold_{folds_avail[0]}')
     # init network architecture and load checkpoint
