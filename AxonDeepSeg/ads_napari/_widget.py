@@ -174,16 +174,6 @@ class ADSplugin(QWidget):
 
         self.available_models = ads_utils.get_existing_models_list()
 
-#        if self.available_models == None:
-#            if self.show_ok_cancel_message("Model folder is missing. (Hint: Is this the first time opening the plugin?)\n\nPress 'OK' to download the required models."):
-#
-#                # Call download models from the AxonDeepSeg/download_model.py module
-#                import AxonDeepSeg.download_model as download_model
-#                download_model.main()
-#                self.available_models = ads_utils.get_existing_models_list()
-#            else:
-#                return
-
         self.model_selection_combobox = QComboBox()
         if self.available_models == None:
             self.available_models = ["model_seg_generalist_light"]
