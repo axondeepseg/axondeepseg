@@ -69,7 +69,7 @@ def main(argv=None):
         default = None,
     )
     args = vars(ap.parse_args(argv))
-    print(args["dir"])
+
     download_tests(destination=args["dir"], overwrite=True)
 
 if __name__ == "__main__":
