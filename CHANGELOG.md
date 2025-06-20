@@ -1,8 +1,44 @@
 Changelog
 ===============================================================================
 
+
 ## v5.0.1 (2025-02-07)
-[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.0.0...v5.0.7)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.0.1...v5.1.0)
+
+**GUI**
+
+ - Add click to delete "axon" objects and click to view morphometrics [View pull request](https://github.com/axondeepseg/axondeepseg/pull/868)
+
+**Installation**
+ 
+ - Pre-release changes for 5.1.0 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/903)
+ - Add checks to run download models if API called without having been downloaded during installation [View pull request](https://github.com/axondeepseg/axondeepseg/pull/887)
+ - Transition installation from deprecated setup.py+requirements.txt to pyproject.toml [View pull request](https://github.com/axondeepseg/axondeepseg/pull/886)
+ - Move napari plugin into main package [View pull request](https://github.com/axondeepseg/axondeepseg/pull/891)
+
+**CLI** 
+
+ - Log current commit hash in CLI [View pull request](https://github.com/axondeepseg/axondeepseg/pull/884)
+
+**Morphometrics**
+
+ - Morphometric aggregation + visualization [View pull request](https://github.com/axondeepseg/axondeepseg/pull/898)
+ - Use skimage.measure.label with 1-connectivity [View pull request](https://github.com/axondeepseg/axondeepseg/pull/910)
+
+**Testing**
+
+ - Update skimage and data-testing versions, update morphometrics pkl for consistency check [View pull request](https://github.com/axondeepseg/axondeepseg/pull/890)
+
+**BUG** 
+
+ - Create true alias for ads_activate [View pull request](https://github.com/axondeepseg/axondeepseg/pull/901)
+ - Fix bug loading predictions of grayscale converted img [View pull request](https://github.com/axondeepseg/axondeepseg/pull/895)
+ - Fix destination feature for download models/tests [View pull request](https://github.com/axondeepseg/axondeepseg/pull/889)
+ - Make get_existing_models_list returns None when no models exist [View pull request](https://github.com/axondeepseg/axondeepseg/issues/883)
+
+
+## v5.0.1 (2025-02-07)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.0.0...v5.0.1)
 
 **BUG** 
 
