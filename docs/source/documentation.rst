@@ -143,43 +143,43 @@ Install Options
 
       and then follow the installation instructions above specified for your operating system.
 
-.. tab:: Install via ``napari``
+   .. tab:: Install via ``napari``
 
-      AxonDeepSeg is also available on the Napari Plugin Manager. Follow these instructions to set up the plugin in your environment, however we recommend using the `pip` installation method for a more straightforward setup if you don't already have Napari installed
+         AxonDeepSeg is also available on the Napari Plugin Manager. Follow these instructions to set up the plugin in your environment, however we recommend using the `pip` installation method for a more straightforward setup if you don't already have Napari installed
 
-      **Prerequisites**
+         **Prerequisites**
 
-      Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
+         Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
 
-      1. Napari
-      2. Python 3.11.x or 3.12.x
+         1. Napari
+         2. Python 3.11.x or 3.12.x
 
-      **Installation Steps**
+         **Installation Steps**
 
-      1. **Launch Napari**:
+         1. **Launch Napari**:
 
-      2. **Open the Plugins Manager**:
-         Once Napari is open, navigate to the top menu bar and click on:
+         2. **Open the Plugins Manager**:
+            Once Napari is open, navigate to the top menu bar and click on:
 
-         .. code-block:: text
-         
-            Plugins -> Install/Uninstall Plugins
+            .. code-block:: text
+            
+               Plugins -> Install/Uninstall Plugins
 
-      3. **Search for AxonDeepSeg**:
-         In the Plugin Manager, use the search bar to look for the AxonDeepSeg plugin by typing:
+         3. **Search for AxonDeepSeg**:
+            In the Plugin Manager, use the search bar to look for the AxonDeepSeg plugin by typing:
 
-         .. code-block:: text
-         
-            axondeepseg
+            .. code-block:: text
+            
+               axondeepseg
 
-      4. **Install the Plugin**:
-         Once the AxonDeepSeg plugin appears in the search results, click the **Install** button next to it. Napari will automatically download and install the plugin along with its dependencies.
+         4. **Install the Plugin**:
+            Once the AxonDeepSeg plugin appears in the search results, click the **Install** button next to it. Napari will automatically download and install the plugin along with its dependencies.
 
-      **Troubleshooting**
+         **Troubleshooting**
 
-      - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
-      - If the plugin does not appear in the search results, ensure you have an active internet connection and try refreshing the Plugin Manager.
-      - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
+         - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
+         - If the plugin does not appear in the search results, ensure you have an active internet connection and try refreshing the Plugin Manager.
+         - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
 
 
 Testing the installation
