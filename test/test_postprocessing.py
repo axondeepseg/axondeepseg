@@ -14,7 +14,6 @@ class TestCore(object):
         self.fullPath = Path(__file__).resolve().parent
 
         self.test_files_path = (self.fullPath / '__test_files__' / '__test_postprocessing_files__')
-        print(self.test_files_path)
 
         self.before_floodfill_image = ads_utils.imread((self.test_files_path / 'before_flood_fill.png'))
         self.after_floodfill_image = ads_utils.imread((self.test_files_path / 'after_flood_fill.png'))

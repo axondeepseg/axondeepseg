@@ -160,25 +160,23 @@ class ADSplugin(QWidget):
         citation_textbox.setReadOnly(True)
         citation_textbox.setMaximumHeight(100)
 
+        demo_label = QLabel()
+        demo_label.setOpenExternalLinks(True)
+        demo_label.setText(
+            '<a href="https://axondeepseg.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
+        )
+
         hyperlink_label = QLabel()
         hyperlink_label.setOpenExternalLinks(True)
         hyperlink_label.setText(
-            '<a href="https://axondeepseg.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
+            '<a href="https://raw.githubusercontent.com/axondeepseg/data-testing/refs/heads/main/__test_files__/__test_demo_files__/image.png">New user? Download test image to segment</a>'
         )
 
         self.available_models = ads_utils.get_existing_models_list()
 
-        if self.available_models == None:
-            if self.show_ok_cancel_message("Model folder is missing. (Hint: Is this the first time opening the plugin?)\n\nPress 'OK' to download the required models."):
-
-                # Call download models from the AxonDeepSeg/download_model.py module
-                import AxonDeepSeg.download_model as download_model
-                download_model.main()
-                self.available_models = ads_utils.get_existing_models_list()
-            else:
-                return
-
         self.model_selection_combobox = QComboBox()
+        if self.available_models == None:
+            self.available_models = ["model_seg_generalist_light"]
         self.model_selection_combobox.addItems(
             ["Select the model"] + self.available_models
         )
@@ -240,6 +238,7 @@ class ADSplugin(QWidget):
         self.layout().setContentsMargins(10, 20, 20, 10)
         self.layout().addWidget(self.get_logo())
         self.layout().addWidget(citation_textbox)
+        self.layout().addWidget(demo_label)
         self.layout().addWidget(hyperlink_label)
         self.layout().addWidget(self.model_selection_combobox)
         self.layout().addWidget(self.apply_model_button)
@@ -496,8 +495,8 @@ class ADSplugin(QWidget):
         )
         self.apply_model_thread.path_model = model_path
         self.apply_model_thread.gpu_id = self.settings.gpu_id
-        show_info(
-            "Applying ADS model... This can take a few seconds. Check the console for more information."
+        self.show_info_message(
+            "Running AI model... This can take a few seconds or minutes. Check the console/terminal for more information."
         )
         self.apply_model_thread.start()
 
@@ -1016,7 +1015,11 @@ class ADSplugin(QWidget):
         message_box.setIcon(QMessageBox.Information)
         message_box.setText(message)
         message_box.setStandardButtons(QMessageBox.Ok)
-        message_box.exec()
+
+        if message_box.exec() == QMessageBox.Ok:
+            return True
+        else:
+            return False
 
     def show_ok_cancel_message(self, message):
         """Displays a message box with an Ok and Cancel button and prompts the user to confirm an action.
@@ -1058,11 +1061,8 @@ class ADSplugin(QWidget):
             The AxonDeepSeg citation
         """
         return (
-            "If you use this work in your research, please cite it as follows: \n"
-            "Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). "
-            "AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional "
-            "neural networks. Scientific Reports, 8(1), 3816. "
-            "Link to paper: https://doi.org/10.1038/s41598-018-22181-4. \n"
+            "If you use this work, please cite us: \n"
+            "Zaimi et al (2018): https://doi.org/10.1038/s41598-018-22181-4. \n"
             "Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)"
         )
 

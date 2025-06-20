@@ -7,23 +7,22 @@ name = "AxonDeepSeg"
 dynamic = ["version"]
 description = "Axon/Myelin segmentation using AI"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11, <3.13"
 license = {text = "MIT"}
 authors = [{"name" = "NeuroPoly Lab, Polytechnique Montreal", "email" = "axondeepseg@googlegroups.com"}
 ]
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "Framework :: napari",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Framework :: napari",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Image Processing",
 ]
 
@@ -53,7 +52,7 @@ dependencies =[
     "pydicom<3",
     "pytest-qt",
     "magicgui",
-    "qtpy"
+    "qtpy",
 ]
 
 keywords = ["axon", "myelin", "segmentation", "microscopy"]
