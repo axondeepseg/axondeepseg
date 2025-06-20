@@ -26,7 +26,10 @@ class TestCore(object):
         self.package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
         self.model_dir = self.package_dir / "models"
 
-        self.tmp_folder =  self.package_dir.parent /'test/__test_files__/tmp_folder'
+        # Get current file path
+        self.test_file_dir = Path(__file__).resolve().parent
+
+        self.tmp_folder =  self.test_file_dir /'__test_files__/tmp_folder'
 
         if not self.tmp_folder.exists():
             self.tmp_folder.mkdir()
@@ -124,7 +127,6 @@ class TestCore(object):
             (self.tmp_folder / "models").mkdir()
 
         for file in self.model_dir.iterdir():
-            print(file)
             # Make temp dir
             shutil.move(file, self.tmp_folder / "models")
 
@@ -154,9 +156,7 @@ class TestCore(object):
         }
 
         for folder in folders:
-            print(folder)
             for file in filenames:
-                print(file)
                 if (Path(folder) / file).exists():
                     image = (imread(Path(folder) / file))
                     assert image.dtype == np.uint8
@@ -180,12 +180,10 @@ class TestCore(object):
         image_1 = None
         image_2 = None
         for file in filenames:
-            print(file)
             image = (imread(self.precision_path / file))\
             
             if image_1 is None:
                 image_1 = image
-                print(image_1)
             else:
                 image_2 = image
                 assert np.allclose(image_1, image_2, atol=2) # In some pixels, rounding differences between float and int conversions lead to an int difference value of 1, which is why this atol was chosen.
@@ -205,9 +203,7 @@ class TestCore(object):
         }
 
         for folder in folders:
-            print(folder)
             for file in filenames:
-                print(file)
                 image = imageio.imread(Path(folder) / file)
                 
                 # Save
@@ -234,7 +230,6 @@ class TestCore(object):
         }
 
         for folder in folders:
-            print(folder)
             for file in filenames:
 
                 if (Path(folder) / file).exists():
