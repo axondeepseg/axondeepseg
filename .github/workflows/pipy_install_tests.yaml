@@ -16,7 +16,7 @@ on:
   # Trigger current workflow on PR from ANY branch
   pull_request:
     branches:
-      - '*release*'
+      - 'release/**'
 
   # Cron based trigger
   schedule:
