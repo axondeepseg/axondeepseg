@@ -2,7 +2,7 @@ Changelog
 ===============================================================================
 
 
-## v5.1.0 (2025-07-02)
+## v5.1.1 (2025-07-02)
 [View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.1.0...v5.1.1)
 
 **INSTALLATION**
