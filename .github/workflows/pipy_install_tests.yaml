@@ -17,7 +17,7 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
-      - release/test
+      - 'release/**'
 
   # Cron based trigger
   schedule:
