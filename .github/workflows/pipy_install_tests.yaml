@@ -12,12 +12,13 @@ on:
   push:
     branches:
       - master
+      - 'release/**'
 
   # Trigger current workflow on PR from ANY branch
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
-      - 'release/*'
+      - 'release/**'
 
   # Cron based trigger
   schedule:
