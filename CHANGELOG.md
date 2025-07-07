@@ -2,7 +2,14 @@ Changelog
 ===============================================================================
 
 
-## v5.0.1 (2025-02-07)
+## v5.1.1 (2025-07-02)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.1.0...v5.1.1)
+
+**INSTALLATION**
+
+ - Pin napari<0.6.2 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/918)
+
+## v5.1.0 (2025-06-27)
 [View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.0.1...v5.1.0)
 
 **GUI**
