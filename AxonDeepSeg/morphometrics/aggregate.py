@@ -200,7 +200,7 @@ def aggregate(subjects: list[Path], output_dir: Path):
     for subject_folder in tqdm(subjects):
         subject_data = []
         logger.info(str(morph_suffix))
-        for file_path in subject_folder.glob(f"*{str(morph_suffix)}"):
+        for file_path in subject_folder.glob(f"*_{str(morph_suffix)}"):
             df = pd.read_excel(file_path)
             
             if df.empty is False:
@@ -241,7 +241,7 @@ def main(argv=None):
     # Check that for each image in the subject folder, there a segmentation file with the suffixe {morph_suffix} and {axonmyelin_suffix}
 
     for subject in subjects:
-        morph_files = list(subject.glob(f"*{str(morph_suffix)}"))
+        morph_files = list(subject.glob(f"*_{str(morph_suffix)}"))
         axonmyelin_files = list(subject.glob(f"*{str(axonmyelin_suffix)}"))
         
         # Assert same number of morphometrics and axonmyelin files, else exit and return
