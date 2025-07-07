@@ -90,7 +90,7 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
 
 def load_mask(current_path_target: Path, semantic_class: str, suffix: str):
     """
-    This function loads a maskbased on the provided suffix. Will stop execution 
+    This function loads a mask based on the provided suffix. Will stop execution 
     with exit code 3 if the mask is not found.
 
     :param current_path_target: Path of the target image
@@ -100,7 +100,7 @@ def load_mask(current_path_target: Path, semantic_class: str, suffix: str):
     """
     mask_path = Path(str(current_path_target.with_suffix("")) + str(suffix))
     if mask_path.exists():
-        return image.imread(str(mask_path))
+        return ads.imread(str(mask_path))
     else:
         msg = f"ERROR: Segmented {semantic_class} mask for image: `{str(current_path_target)}` " \
             f"is not present in the image folder. Please check that the {semantic_class} mask is " \
