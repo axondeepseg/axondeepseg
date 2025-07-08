@@ -10,6 +10,7 @@ import pandas as pd
 from AxonDeepSeg import ads_utils as ads
 from AxonDeepSeg import params
 import pytest
+import json
 
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
@@ -23,9 +24,16 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 draw_axon_diameter,
                                                                 get_aggregate_morphometrics,
                                                                 write_aggregate_morphometrics,
-                                                                get_watershed_segmentation
+                                                                get_watershed_segmentation,
+                                                                save_nerve_morphometrics_to_json,
+                                                                remove_outside_nerve,
+                                                                compute_fascicle_axon_density,
+                                                                compute_axon_density,
                                                             )
-from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.params import (
+    axonmyelin_suffix, axon_suffix, myelin_suffix, 
+    nerve_suffix, nerve_morph_suffix
+)
 
 
 class TestCore(object):
@@ -130,6 +138,15 @@ class TestCore(object):
         simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
 
         simulated.save(self.image_sim_border_info_path)
+
+        self.nerve_test_file = (
+            self.testPath /
+            '__test_files__' /
+            '__test_aggregate__' / 
+            'all_subjects' /
+            'subject 1' /
+            'image.png'
+            )
 
 
     def teardown_method(self):
@@ -926,3 +943,39 @@ class TestCore(object):
         # using 1-connectivity, this image has 3 connected components;
         # using 2-connectivity, this image has 2 connected components instead   
         assert len(stats_dataframe) == 3
+
+    @pytest.mark.unit
+    def test_save_nerve_morphometrics_creates_valid_json(self):
+        img_path = self.nerve_test_file
+        nerve_mask_path = img_path.parent / img_path.name.replace('.png', str(nerve_suffix))
+        nerve_mask = ads.imread(nerve_mask_path)
+
+        nerve_morph = get_axon_morphometrics(im_axon=nerve_mask, pixel_size=0.0236)
+        output_fname = self.tmpDir / 'test_nerve_morpho.json'
+        save_nerve_morphometrics_to_json(nerve_morph, str(output_fname))
+
+        with open(output_fname, 'r') as f:
+            data = json.load(f)
+        assert isinstance(data, dict)
+        
+        expected_keys = ['fascicle_areas', 'total_area', 'total_axon_density']
+        for key in expected_keys:
+            assert key in data
+        assert data['total_area']['unit'] == 'um^2'
+        assert data['total_axon_density']['unit'] == 'axon/mm^2'
+
+    @pytest.mark.unit
+    def test_save_nerve_morphometrics_runs_successfully_with_empty_dataframe(self):
+        pass
+
+    @pytest.mark.unit
+    def test_remove_outside_nerve_returns_expected_masks(self):
+        pass
+
+    @pytest.mark.unit
+    def test_compute_fascicle_axon_density_returns_expected_values(self):
+        pass
+
+    @pytest.mark.unit
+    def test_compute_axon_density_throws_error_if_total_area_is_missing(self):
+        pass
