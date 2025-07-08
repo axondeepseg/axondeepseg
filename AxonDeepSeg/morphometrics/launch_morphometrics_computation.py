@@ -361,8 +361,10 @@ def main(argv=None):
                 save_axon_morphometrics(current_path_target.parent / axon_morph_filename, stats_dataframe)
         
                 # count the number of axons in the axon_morphometrics.xlsx file, print density
-                nerve_seg_filename = current_path_target.stem + str(nerve_suffix)
-                compute_axon_density(current_path_target.parent / axon_morph_filename, current_path_target.parent / morph_filename, current_path_target.parent / nerve_seg_filename)
+                cleaned_axon_morph_fname = current_path_target.parent / axon_morph_filename
+                nerve_morph_fname = current_path_target.parent / morph_filename
+                nerve_seg_fname = current_path_target.parent / current_path_target.stem + str(nerve_suffix)
+                compute_axon_density(cleaned_axon_morph_fname, nerve_morph_fname, nerve_seg_fname)
 
         else:
             logger.warning("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
