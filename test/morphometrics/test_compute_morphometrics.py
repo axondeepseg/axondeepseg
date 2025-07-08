@@ -945,7 +945,7 @@ class TestCore(object):
         # using 2-connectivity, this image has 2 connected components instead   
         assert len(stats_dataframe) == 3
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_save_nerve_morphometrics_creates_valid_json(self):
         img_path = self.nerve_test_file
         nerve_mask_path = self.nerve_mask_test_file
@@ -964,7 +964,7 @@ class TestCore(object):
             assert key in data
         assert data['total_area']['unit'] == 'um^2'
 
-    @pytest.mark.single
+    @pytest.mark.unit
     def test_save_nerve_morphometrics_runs_successfully_with_empty_dataframe(self):
         img_path = self.nerve_test_file
         nerve_mask = np.zeros_like(ads.imread(img_path))
@@ -984,7 +984,24 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_remove_outside_nerve_returns_expected_masks(self):
-        pass
+        img_path = self.nerve_test_file
+        axon_mask_path = self.nerve_test_file.parent / (self.nerve_test_file.stem + str(axon_suffix))
+        axon_mask = ads.imread(axon_mask_path)
+        myelin_mask_path = self.nerve_test_file.parent / (self.nerve_test_file.stem + str(myelin_suffix))
+        myelin_mask = ads.imread(myelin_mask_path)
+        nerve_mask_path = self.nerve_mask_test_file
+        nerve_mask = ads.imread(nerve_mask_path)
+
+        expected_axon_output = (axon_mask > 0) * (nerve_mask > 0)
+        expected_myelin_output = (myelin_mask > 0) * (nerve_mask > 0)
+
+        axon_mask_output, myelin_mask_output = remove_outside_nerve(
+            axon_mask,
+            myelin_mask,
+            nerve_mask
+        )
+        assert np.array_equal(expected_axon_output, axon_mask_output)
+        assert np.array_equal(expected_myelin_output, myelin_mask_output)
 
     @pytest.mark.unit
     def test_compute_fascicle_axon_density_returns_expected_values(self):
