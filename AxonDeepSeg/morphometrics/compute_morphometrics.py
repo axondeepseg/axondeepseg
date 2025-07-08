@@ -603,8 +603,6 @@ def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
     Assigns axons to the labeled fascicles in 'nerve_mask', 
     then uses the area for each label from 'nerve_data' to compute density.
     """
-    fascicle_densities = {}
-    total_axons = len(axon_df)
 
     # read columns in (y, x) order so the loop matches (y, x)
     axon_positions = axon_df[["x0 (px)", "y0 (px)"]].values
@@ -627,6 +625,7 @@ def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
     # count how many axons in each label
     estimated_axons = axon_df["fascicle_id"].value_counts().to_dict()
 
+    fascicle_densities = {}
     for label_str, fascicle_info in nerve_data["fascicle_areas"].items():
         fascicle_area = fascicle_info["value"]
         label_id = int(label_str)  
@@ -636,6 +635,7 @@ def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
             "value": density,
             "unit": "axon/um^2"
         }
+    total_axons = len(axon_df[axon_df["fascicle_id"] >= 0])
 
     return fascicle_densities, total_axons
 

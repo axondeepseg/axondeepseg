@@ -1027,7 +1027,7 @@ class TestCore(object):
             nerve_mask=nerve_mask,
         )
 
-        expected_total_axons = int(nerve_morph_expected['total_area']['value'] * nerve_morph_expected['total_axon_density']['value'])
+        expected_total_axons = round(nerve_morph_expected['fascicle_areas']['0']['value'] * nerve_morph_expected['fascicle_areas']['0']['axon_density']['value'])
         expected_density = nerve_morph_expected['fascicle_areas']['0']['axon_density']['value']
         assert total_axons == expected_total_axons
         assert densities['0']['value'] == expected_density
