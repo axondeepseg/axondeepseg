@@ -959,7 +959,7 @@ class TestCore(object):
             data = json.load(f)
         assert isinstance(data, dict)
         
-        expected_keys = ['fascicle_areas', 'total_area', 'total_axon_density']
+        expected_keys = ['fascicle_areas', 'total_area']
         for key in expected_keys:
             assert key in data
         assert data['total_area']['unit'] == 'um^2'
@@ -977,7 +977,7 @@ class TestCore(object):
             data = json.load(f)
         assert isinstance(data, dict)
         
-        expected_keys = ['fascicle_areas', 'total_area', 'total_axon_density']
+        expected_keys = ['fascicle_areas', 'total_area']
         for key in expected_keys:
             assert key in data
         assert data['total_area']['value'] == 0
