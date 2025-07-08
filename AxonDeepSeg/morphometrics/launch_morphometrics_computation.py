@@ -363,7 +363,7 @@ def main(argv=None):
                 # count the number of axons in the axon_morphometrics.xlsx file, print density
                 cleaned_axon_morph_fname = current_path_target.parent / axon_morph_filename
                 nerve_morph_fname = current_path_target.parent / morph_filename
-                nerve_seg_fname = current_path_target.parent / current_path_target.stem + str(nerve_suffix)
+                nerve_seg_fname = current_path_target.parent / (current_path_target.stem + str(nerve_suffix))
                 compute_axon_density(cleaned_axon_morph_fname, nerve_morph_fname, nerve_seg_fname)
 
         else:

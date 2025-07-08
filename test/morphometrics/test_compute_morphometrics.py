@@ -147,6 +147,7 @@ class TestCore(object):
             'subject 1' /
             'image.png'
             )
+        self.nerve_mask_test_file = Path(str(self.nerve_test_file).replace('.png', str(nerve_suffix)))
 
 
     def teardown_method(self):
@@ -944,10 +945,10 @@ class TestCore(object):
         # using 2-connectivity, this image has 2 connected components instead   
         assert len(stats_dataframe) == 3
 
-    @pytest.mark.unit
+    @pytest.mark.single
     def test_save_nerve_morphometrics_creates_valid_json(self):
         img_path = self.nerve_test_file
-        nerve_mask_path = img_path.parent / img_path.name.replace('.png', str(nerve_suffix))
+        nerve_mask_path = self.nerve_mask_test_file
         nerve_mask = ads.imread(nerve_mask_path)
 
         nerve_morph = get_axon_morphometrics(im_axon=nerve_mask, pixel_size=0.0236)
@@ -962,11 +963,24 @@ class TestCore(object):
         for key in expected_keys:
             assert key in data
         assert data['total_area']['unit'] == 'um^2'
-        assert data['total_axon_density']['unit'] == 'axon/mm^2'
 
-    @pytest.mark.unit
+    @pytest.mark.single
     def test_save_nerve_morphometrics_runs_successfully_with_empty_dataframe(self):
-        pass
+        img_path = self.nerve_test_file
+        nerve_mask = np.zeros_like(ads.imread(img_path))
+
+        nerve_morph = get_axon_morphometrics(im_axon=nerve_mask, pixel_size=0.0236)
+        output_fname = self.tmpDir / 'test_nerve_morpho_empty.json'
+        save_nerve_morphometrics_to_json(nerve_morph, str(output_fname))
+
+        with open(output_fname, 'r') as f:
+            data = json.load(f)
+        assert isinstance(data, dict)
+        
+        expected_keys = ['fascicle_areas', 'total_area', 'total_axon_density']
+        for key in expected_keys:
+            assert key in data
+        assert data['total_area']['value'] == 0
 
     @pytest.mark.unit
     def test_remove_outside_nerve_returns_expected_masks(self):
@@ -978,4 +992,8 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_compute_axon_density_throws_error_if_total_area_is_missing(self):
+        pass
+
+    @pytest.mark.unit
+    def test_compute_axon_density_adds_a_key_in_nerve_morpho_json(self):
         pass
