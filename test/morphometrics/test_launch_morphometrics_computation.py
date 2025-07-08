@@ -351,3 +351,20 @@ class TestCore(object):
         assert output_nerve_morphometrics.exists()
         assert output_nerve_index.exists()
         assert output_nerve_morphometrics.read_text() == expected.read_text()
+
+    @pytest.mark.integration
+    def test_main_cli_throws_error_if_nerve_mode_without_axon_mask(self):
+        path_img = self.nerve_test_file
+        axon_mask = path_img.parent / (path_img.stem + str(axon_suffix))
+
+        # rename axon mask to simulate missing file
+        tmp_axon = axon_mask.with_suffix('.old')
+        axon_mask.rename(tmp_axon)
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(path_img), "-n", "-s", "0.00236"])
+
+        # rename masks back to their original names
+        tmp_axon.rename(axon_mask)
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 3)
