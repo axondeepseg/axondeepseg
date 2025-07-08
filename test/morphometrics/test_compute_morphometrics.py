@@ -6,6 +6,7 @@ import random
 import math
 import shutil
 import numpy as np
+from skimage.measure import label
 import pandas as pd
 from AxonDeepSeg import ads_utils as ads
 from AxonDeepSeg import params
@@ -1005,7 +1006,32 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_compute_fascicle_axon_density_returns_expected_values(self):
-        pass
+        img_path = str(self.nerve_test_file)
+        axon_morph_path = img_path.replace('.png', '_axon_morphometrics.xlsx')
+        axon_morph = pd.read_excel(axon_morph_path)
+        nerve_mask_path = self.nerve_mask_test_file
+        nerve_mask = ads.imread(nerve_mask_path)
+        # keep only the first fascicle
+        nerve_mask = label(nerve_mask)
+        nerve_mask = (nerve_mask == 1).astype(np.uint8)
+
+        nerve_morph_expected_path = img_path.replace('.png', '_nerve_morphometrics_expected.json')
+        nerve_morph_expected = json.load(open(nerve_morph_expected_path, 'r'))
+        nerve_morph_exposed = {
+            'fascicle_areas': {"0": nerve_morph_expected['fascicle_areas']['0']},
+        }
+
+        densities, total_axons = compute_fascicle_axon_density(
+            axon_df=axon_morph,
+            nerve_data= nerve_morph_exposed,
+            nerve_mask=nerve_mask,
+        )
+
+        expected_total_axons = int(nerve_morph_expected['total_area']['value'] * nerve_morph_expected['total_axon_density']['value'])
+        expected_density = nerve_morph_expected['fascicle_areas']['0']['axon_density']['value']
+        assert total_axons == expected_total_axons
+        assert densities['0']['value'] == expected_density
+
 
     @pytest.mark.unit
     def test_compute_axon_density_throws_error_if_total_area_is_missing(self):

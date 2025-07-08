@@ -602,9 +602,6 @@ def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
     """
     Assigns axons to the labeled fascicles in 'nerve_mask', 
     then uses the area for each label from 'nerve_data' to compute density.
-
-    This function assumes that all axons in axon_df are within the nerve_mask, 
-    e.g. the remove_outside_nerve fn was used before morphometrics computation. 
     """
     fascicle_densities = {}
     total_axons = len(axon_df)
