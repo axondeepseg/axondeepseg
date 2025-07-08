@@ -1009,8 +1009,48 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_compute_axon_density_throws_error_if_total_area_is_missing(self):
-        pass
+        img_path = str(self.nerve_test_file)
+        nerve_mask_path = str(self.nerve_mask_test_file)
+        nerve_morpho_path = img_path.replace('.png', '_nerve_morphometrics_expected.json')
+        nerve_morpho = json.load(open(nerve_morpho_path, 'r'))
+        nerve_morpho_corrupt = nerve_morpho.copy()
+        nerve_morpho_corrupt.pop('total_area')
+        nerve_morpho_corrupt.pop('total_axon_density')
+        nerve_morpho_corrupt_path = self.tmpDir / 'nerve_morpho_corrupted.json'
+        with open(nerve_morpho_corrupt_path, 'w') as f:
+            json.dump(nerve_morpho_corrupt, f)
+
+        with pytest.raises(KeyError):
+            compute_axon_density(
+                img_path.replace('.png', '_axon_morphometrics.xlsx'),
+                nerve_morpho_corrupt_path,
+                nerve_mask_path
+            )
 
     @pytest.mark.unit
-    def test_compute_axon_density_adds_a_key_in_nerve_morpho_json(self):
-        pass
+    def test_compute_axon_density_adds_densities_in_nerve_morpho_json(self):
+        img_path = self.nerve_test_file
+        nerve_mask_path = self.nerve_mask_test_file
+        nerve_mask = ads.imread(nerve_mask_path)
+
+        nerve_morph = get_axon_morphometrics(im_axon=nerve_mask, pixel_size=0.0236)
+        nerve_morph_fname = self.tmpDir / 'test_nerve_morpho.json'
+        save_nerve_morphometrics_to_json(nerve_morph, nerve_morph_fname)
+
+        with open(nerve_morph_fname, 'r') as f:
+            nerve_morph = json.load(f)
+
+        assert 'total_axon_density' not in nerve_morph.keys()
+        assert 'axon_density' not in nerve_morph['fascicle_areas']['0'].keys()
+
+        compute_axon_density(
+            str(img_path).replace('.png', '_axon_morphometrics.xlsx'),
+            nerve_morph_fname,
+            nerve_mask_path
+        )
+
+        with open(nerve_morph_fname, 'r') as f:
+            nerve_morph = json.load(f)
+        assert 'total_axon_density' in nerve_morph.keys()
+        assert 'axon_density' in nerve_morph['fascicle_areas']['0'].keys()
+
