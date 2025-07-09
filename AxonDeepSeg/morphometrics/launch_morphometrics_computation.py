@@ -20,14 +20,18 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
     draw_axon_diameter,
     save_map_of_axon_diameters,
     get_aggregate_morphometrics,
-    write_aggregate_morphometrics
+    write_aggregate_morphometrics,
+    save_nerve_morphometrics_to_json,
+    remove_outside_nerve,
+    compute_axon_density
 )
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.params import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
     morph_suffix, unmyelinated_morph_suffix, instance_suffix, 
-    unmyelinated_suffix, unmyelinated_index_suffix
+    unmyelinated_suffix, unmyelinated_index_suffix,
+    nerve_suffix, nerve_morph_suffix, nerve_index_suffix
 )
 from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg import postprocessing, params
@@ -86,7 +90,7 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
 
 def load_mask(current_path_target: Path, semantic_class: str, suffix: str):
     """
-    This function loads a maskbased on the provided suffix. Will stop execution 
+    This function loads a mask based on the provided suffix. Will stop execution 
     with exit code 3 if the mask is not found.
 
     :param current_path_target: Path of the target image
@@ -96,7 +100,7 @@ def load_mask(current_path_target: Path, semantic_class: str, suffix: str):
     """
     mask_path = Path(str(current_path_target.with_suffix("")) + str(suffix))
     if mask_path.exists():
-        return image.imread(str(mask_path))
+        return ads.imread(str(mask_path))
     else:
         msg = f"ERROR: Segmented {semantic_class} mask for image: `{str(current_path_target)}` " \
             f"is not present in the image folder. Please check that the {semantic_class} mask is " \
@@ -104,8 +108,7 @@ def load_mask(current_path_target: Path, semantic_class: str, suffix: str):
             "image first using ADS.\n"
         logger.error(msg)
         sys.exit(3)
-
-
+    
 def main(argv=None):
     ap = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -151,6 +154,13 @@ def main(argv=None):
         help='Toggles morphometrics for unmyelinated axons. This will only process masks with \n'
             +f'the "{unmyelinated_suffix}" suffix.'
     )
+    ap.add_argument(
+        '-n', '--nerve',
+        required=False,
+        action='store_true',
+        help='Toggles morphometrics for nerve sections. This will only process masks with \n'
+            +f'the "{nerve_suffix}" suffix, and compute axon density inside the nerve area.'
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -159,13 +169,28 @@ def main(argv=None):
     axon_shape = str(args["axonshape"])
     colorization_flag = args["colorize"]
     unmyelinated_mode = args["unmyelinated"]
-    if unmyelinated_mode:
+    nerve_mode = args["nerve"]
+    if nerve_mode:
+        morphometrics_mode = 'nerve'
+        target_suffix = nerve_suffix
+        target_index_suffix = nerve_index_suffix
+        colorization_flag = False
+        if filename is str(morph_suffix):
+            # change to appropriate morphometrics output filename
+            filename = str(nerve_morph_suffix)
+    elif unmyelinated_mode:
+        morphometrics_mode = 'unmyelinated'
+        target_suffix = unmyelinated_suffix
+        target_index_suffix = unmyelinated_index_suffix
+        if filename is str(morph_suffix):
+            filename = str(unmyelinated_morph_suffix)
         if colorization_flag:
             logger.warning("Colorization not supported for unmyelinated axons. Ignoring the -c flag.")
             colorization_flag = False
-    if unmyelinated_mode and filename is str(morph_suffix):
-        # change to appropriate unmyelinated axon morphometrics filename
-        filename = str(unmyelinated_morph_suffix)
+    else:
+        morphometrics_mode = 'myelinated'
+        target_suffix = axonmyelin_suffix
+        target_index_suffix = axonmyelin_index_suffix
 
     # Tuple of valid file extensions
     validExtensions = (
@@ -184,6 +209,9 @@ def main(argv=None):
     logger.info(AxonDeepSeg.__version_string__)
     logger.info(f'Arguments: {args}')
 
+    def check_mask_exists(path_target, mask_suffix, search_dir):
+        return (Path(path_target).stem + str(mask_suffix)) in os.listdir(search_dir)
+
     for dir_iter in path_target_list:
         if dir_iter.is_dir(): # batch morphometrics
             flag_morp_batch = True
@@ -196,9 +224,9 @@ def main(argv=None):
                     and not path_target.endswith(str(myelin_suffix))
                     and not path_target.endswith(str(axonmyelin_suffix))
                     and not path_target.endswith(str(unmyelinated_suffix))
+                    and not path_target.endswith(str(nerve_suffix))
                     and (
-                        (Path(path_target).stem + str(axonmyelin_suffix)) in os.listdir(dir_iter)
-                        or (Path(path_target).stem + str(unmyelinated_suffix)) in os.listdir(dir_iter)
+                        check_mask_exists(path_target, target_suffix, dir_iter)
                     )
                 )
             ]
@@ -209,13 +237,21 @@ def main(argv=None):
     for current_path_target in tqdm(path_target_list):
         if current_path_target.suffix.lower() in validExtensions:
 
-            if unmyelinated_mode:
-                # load the unmyelinated axon mask
-                pred_uaxon = load_mask(current_path_target, 'unmyelinated axon', unmyelinated_suffix)
-            else:
-                # load the axon and myelin masks
-                pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
-                pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+            match morphometrics_mode:
+                case 'myelinated':
+                    # load the axon and myelin masks
+                    pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
+                    pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+                case 'unmyelinated':
+                    # load the unmyelinated axon mask
+                    pred_uaxon = load_mask(current_path_target, 'unmyelinated axon', unmyelinated_suffix)
+                case 'nerve':
+                    # load the nerve mask
+                    pred_nerve = load_mask(current_path_target, 'nerve', nerve_suffix)
+                    # also load axon and myelin masks for removal process
+                    pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
+                    pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+
 
             if args["sizepixel"] is not None:
                 psm = float(args["sizepixel"])
@@ -236,9 +272,21 @@ def main(argv=None):
                     sys.exit(3)
 
             # Compute statistics
+            
+            match morphometrics_mode:
+                case 'myelinated':
+                    arg1 = pred_axon
+                    arg2 = pred_myelin
+                case 'unmyelinated':
+                    arg1 = pred_uaxon
+                    arg2 = None
+                case 'nerve':
+                    arg1 = pred_nerve
+                    arg2 = None
+
             morph_output = get_axon_morphometrics(
-                im_axon=pred_uaxon if unmyelinated_mode else pred_axon, 
-                im_myelin=None if unmyelinated_mode else pred_myelin, 
+                im_axon=arg1, 
+                im_myelin=arg2, 
                 pixel_size=psm, 
                 axon_shape=axon_shape, 
                 return_index_image=True,
@@ -252,11 +300,16 @@ def main(argv=None):
 
             morph_filename = current_path_target.stem + "_" + filename
 
+            if morphometrics_mode == 'nerve':
+                save_nerve_morphometrics_to_json(stats_dataframe, current_path_target.parent / morph_filename)
+
             # save the current contents in the file
-            if not (morph_filename.lower().endswith((".xlsx", ".csv"))):  # If the user didn't add the extension, add it here
+            if not (morph_filename.lower().endswith((".xlsx", ".csv", ".json"))):  # If the user didn't add the extension, add it here
                 morph_filename = morph_filename + '.xlsx'
+
             try:
-                save_axon_morphometrics(current_path_target.parent / morph_filename, stats_dataframe)
+                if not morphometrics_mode == 'nerve':
+                    save_axon_morphometrics(current_path_target.parent / morph_filename, stats_dataframe)
 
                 # Generate the index image
                 if str(current_path_target) == str(current_path_target.parts[-1]):
@@ -264,15 +317,13 @@ def main(argv=None):
                 else:
                     # in case current_path_target already contains the parent directory
                     outfile_basename = str(current_path_target.with_suffix(""))
-                ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
+                
+                if morphometrics_mode == 'myelinated':
+                    ads.imwrite(outfile_basename + str(index_suffix), index_image_array)
 
-                # Generate the colored image; note that its background image is different in unmyelinated mode
-                if not unmyelinated_mode:
-                    bg_image_path = str(current_path_target.with_suffix("")) + str(axonmyelin_suffix)
-                    index_overlay_fname = outfile_basename + str(axonmyelin_index_suffix)
-                else:
-                    bg_image_path = str(current_path_target.with_suffix("")) + str(unmyelinated_suffix)
-                    index_overlay_fname = outfile_basename + str(unmyelinated_index_suffix)
+                # Generate the colored image
+                bg_image_path = str(current_path_target.with_suffix("")) + str(target_suffix)
+                index_overlay_fname = outfile_basename + str(target_index_suffix)
                 postprocessing.generate_and_save_colored_image_with_index_numbers(
                     filename=index_overlay_fname,
                     axonmyelin_image_path=bg_image_path,
@@ -289,6 +340,31 @@ def main(argv=None):
                 )
             except IOError:
                 logger.warning(f"Cannot save morphometrics data or associated index images for file {morph_filename}.")
+
+            # in nerve mode, edit the segmentation masks to remove outside of nerve section
+            if morphometrics_mode == 'nerve':
+                new_pred_axon, new_pred_myelin = remove_outside_nerve(pred_axon, pred_myelin, pred_nerve)
+
+                # re-trigger axon morph computation on updated masks
+                logger.warning(f"Recomputing axon morphometrics to exclude axons outside the nerve fascicles in {current_path_target / morph_filename}")
+                morph_output = get_axon_morphometrics(
+                    im_axon=new_pred_axon, 
+                    im_myelin=new_pred_myelin, 
+                    pixel_size=psm, 
+                    axon_shape=axon_shape, 
+                    return_index_image=True,
+                    return_border_info=True,
+                    return_instance_seg=colorization_flag
+                )
+                stats_dataframe, index_image_array = morph_output[0:2]
+                axon_morph_filename = current_path_target.stem + "_" + str(morph_suffix)
+                cleaned_axon_morph_fname = current_path_target.parent / axon_morph_filename
+                save_axon_morphometrics(cleaned_axon_morph_fname, stats_dataframe)
+        
+                # count the number of axons in the axon_morphometrics.xlsx file, print density
+                nerve_morph_fname = current_path_target.parent / morph_filename
+                nerve_seg_fname = current_path_target.parent / (current_path_target.stem + str(nerve_suffix))
+                compute_axon_density(cleaned_axon_morph_fname, nerve_morph_fname, nerve_seg_fname)
 
         else:
             logger.warning("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")

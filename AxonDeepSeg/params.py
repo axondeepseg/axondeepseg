@@ -10,6 +10,8 @@ axonmyelin_index_suffix = Path('_axonmyelin_index.png') # Colored axonmyelin seg
 unmyelinated_suffix = Path('_seg-uaxon.png')            # unmyelinated axon segmentation suffix file name
 unmyelinated_index_suffix = Path('_uaxon_index.png')    # Colored unmyelinated axon segmentation + the index image
 nnunet_suffix=Path('_seg-nnunet.png')                   # nnunet raw segmentation suffix
+nerve_suffix=Path('_seg-nerve.png')                     # nerve segmentation suffix
+nerve_index_suffix=Path('_nerve_index.png')             # Colored nerve segmentation + the index image
 
 side_effect_suffixes = tuple(
     [
@@ -25,6 +27,7 @@ side_effect_suffixes = tuple(
 morph_suffix = Path('axon_morphometrics.xlsx')
 morph_agg_suffix = Path('subject_morphometrics.xlsx')
 unmyelinated_morph_suffix = Path('uaxon_morphometrics.xlsx')
+nerve_morph_suffix = Path('nerve_morphometrics.json')
 instance_suffix = Path('_instance-map.png')             # Colored instance map of the segmentation
 
 # aggregate morphometrics file suffix name

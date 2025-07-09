@@ -6,10 +6,12 @@ import random
 import math
 import shutil
 import numpy as np
+from skimage.measure import label
 import pandas as pd
 from AxonDeepSeg import ads_utils as ads
 from AxonDeepSeg import params
 import pytest
+import json
 
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
@@ -23,9 +25,16 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 draw_axon_diameter,
                                                                 get_aggregate_morphometrics,
                                                                 write_aggregate_morphometrics,
-                                                                get_watershed_segmentation
+                                                                get_watershed_segmentation,
+                                                                save_nerve_morphometrics_to_json,
+                                                                remove_outside_nerve,
+                                                                compute_fascicle_axon_density,
+                                                                compute_axon_density,
                                                             )
-from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.params import (
+    axonmyelin_suffix, axon_suffix, myelin_suffix, 
+    nerve_suffix, nerve_morph_suffix
+)
 
 
 class TestCore(object):
@@ -130,6 +139,16 @@ class TestCore(object):
         simulated.generate_axon(axon_radius=axon_radius, center=[x_pos, y_pos], gratio=gratio, plane_angle=0)
 
         simulated.save(self.image_sim_border_info_path)
+
+        self.nerve_test_file = (
+            self.testPath /
+            '__test_files__' /
+            '__test_aggregate__' / 
+            'all_subjects' /
+            'subject 1' /
+            'image.png'
+            )
+        self.nerve_mask_test_file = Path(str(self.nerve_test_file).replace('.png', str(nerve_suffix)))
 
 
     def teardown_method(self):
@@ -926,3 +945,155 @@ class TestCore(object):
         # using 1-connectivity, this image has 3 connected components;
         # using 2-connectivity, this image has 2 connected components instead   
         assert len(stats_dataframe) == 3
+
+    @pytest.mark.unit
+    def test_save_nerve_morphometrics_creates_valid_json(self):
+        img_path = self.nerve_test_file
+        nerve_mask_path = self.nerve_mask_test_file
+        nerve_mask = ads.imread(nerve_mask_path)
+
+        nerve_morph = get_axon_morphometrics(im_axon=nerve_mask, pixel_size=0.0236)
+        output_fname = self.tmpDir / 'test_nerve_morpho.json'
+        save_nerve_morphometrics_to_json(nerve_morph, str(output_fname))
+
+        with open(output_fname, 'r') as f:
+            data = json.load(f)
+        assert isinstance(data, dict)
+        
+        expected_keys = ['fascicle_areas', 'total_area']
+        for key in expected_keys:
+            assert key in data
+        assert data['total_area']['unit'] == 'um^2'
+
+    @pytest.mark.unit
+    def test_save_nerve_morphometrics_runs_successfully_with_empty_dataframe(self):
+        img_path = self.nerve_test_file
+        nerve_mask = np.zeros_like(ads.imread(img_path))
+
+        nerve_morph = get_axon_morphometrics(im_axon=nerve_mask, pixel_size=0.0236)
+        output_fname = self.tmpDir / 'test_nerve_morpho_empty.json'
+        save_nerve_morphometrics_to_json(nerve_morph, str(output_fname))
+
+        with open(output_fname, 'r') as f:
+            data = json.load(f)
+        assert isinstance(data, dict)
+        
+        expected_keys = ['fascicle_areas', 'total_area']
+        for key in expected_keys:
+            assert key in data
+        assert data['total_area']['value'] == 0
+
+    @pytest.mark.unit
+    def test_remove_outside_nerve_1d_case(self):
+        pred_axon              = np.array([0, 0, 1, 0, 0, 0, 1, 0, 0])
+        pred_myelin            = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0])
+        pred_nerve             = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1])
+
+        expected_axon_output   = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0])
+        expected_myelin_output = np.array([0, 0, 0, 0, 0, 1, 0, 1, 0])
+
+        axon_mask_output, myelin_mask_output = remove_outside_nerve(
+            pred_axon,
+            pred_myelin,
+            pred_nerve
+        )
+
+        assert np.array_equal(expected_axon_output, axon_mask_output)
+        assert np.array_equal(expected_myelin_output, myelin_mask_output)
+
+    @pytest.mark.unit
+    def test_remove_outside_nerve_returns_expected_masks(self):
+        img_path = self.nerve_test_file
+        axon_mask_path = self.nerve_test_file.parent / (self.nerve_test_file.stem + str(axon_suffix))
+        axon_mask = ads.imread(axon_mask_path)
+        myelin_mask_path = self.nerve_test_file.parent / (self.nerve_test_file.stem + str(myelin_suffix))
+        myelin_mask = ads.imread(myelin_mask_path)
+        nerve_mask_path = self.nerve_mask_test_file
+        nerve_mask = ads.imread(nerve_mask_path)
+
+        expected_axon_output = (axon_mask > 0) * (nerve_mask > 0)
+        expected_myelin_output = (myelin_mask > 0) * (nerve_mask > 0)
+
+        axon_mask_output, myelin_mask_output = remove_outside_nerve(
+            axon_mask,
+            myelin_mask,
+            nerve_mask
+        )
+        assert np.array_equal(expected_axon_output, axon_mask_output)
+        assert np.array_equal(expected_myelin_output, myelin_mask_output)
+
+    @pytest.mark.unit
+    def test_compute_fascicle_axon_density_returns_expected_values(self):
+        img_path = str(self.nerve_test_file)
+        axon_morph_path = img_path.replace('.png', '_axon_morphometrics.xlsx')
+        axon_morph = pd.read_excel(axon_morph_path)
+        nerve_mask_path = self.nerve_mask_test_file
+        nerve_mask = ads.imread(nerve_mask_path)
+        # keep only the first fascicle
+        nerve_mask = label(nerve_mask)
+        nerve_mask = (nerve_mask == 1).astype(np.uint8)
+
+        nerve_morph_expected_path = img_path.replace('.png', '_nerve_morphometrics_expected.json')
+        nerve_morph_expected = json.load(open(nerve_morph_expected_path, 'r'))
+        nerve_morph_exposed = {
+            'fascicle_areas': {"0": nerve_morph_expected['fascicle_areas']['0']},
+        }
+
+        densities, total_axons = compute_fascicle_axon_density(
+            axon_df=axon_morph,
+            nerve_data= nerve_morph_exposed,
+            nerve_mask=nerve_mask,
+        )
+
+        expected_total_axons = round(nerve_morph_expected['fascicle_areas']['0']['value'] * nerve_morph_expected['fascicle_areas']['0']['axon_density']['value'])
+        expected_density = nerve_morph_expected['fascicle_areas']['0']['axon_density']['value']
+        assert total_axons == expected_total_axons
+        assert densities['0']['value'] == expected_density
+
+
+    @pytest.mark.unit
+    def test_compute_axon_density_throws_error_if_total_area_is_missing(self):
+        img_path = str(self.nerve_test_file)
+        nerve_mask_path = str(self.nerve_mask_test_file)
+        nerve_morpho_path = img_path.replace('.png', '_nerve_morphometrics_expected.json')
+        nerve_morpho = json.load(open(nerve_morpho_path, 'r'))
+        nerve_morpho_corrupt = nerve_morpho.copy()
+        nerve_morpho_corrupt.pop('total_area')
+        nerve_morpho_corrupt.pop('total_axon_density')
+        nerve_morpho_corrupt_path = self.tmpDir / 'nerve_morpho_corrupted.json'
+        with open(nerve_morpho_corrupt_path, 'w') as f:
+            json.dump(nerve_morpho_corrupt, f)
+
+        with pytest.raises(KeyError):
+            compute_axon_density(
+                img_path.replace('.png', '_axon_morphometrics.xlsx'),
+                nerve_morpho_corrupt_path,
+                nerve_mask_path
+            )
+
+    @pytest.mark.unit
+    def test_compute_axon_density_adds_densities_in_nerve_morpho_json(self):
+        img_path = self.nerve_test_file
+        nerve_mask_path = self.nerve_mask_test_file
+        nerve_mask = ads.imread(nerve_mask_path)
+
+        nerve_morph = get_axon_morphometrics(im_axon=nerve_mask, pixel_size=0.0236)
+        nerve_morph_fname = self.tmpDir / 'test_nerve_morpho.json'
+        save_nerve_morphometrics_to_json(nerve_morph, nerve_morph_fname)
+
+        with open(nerve_morph_fname, 'r') as f:
+            nerve_morph = json.load(f)
+
+        assert 'total_axon_density' not in nerve_morph.keys()
+        assert 'axon_density' not in nerve_morph['fascicle_areas']['0'].keys()
+
+        compute_axon_density(
+            str(img_path).replace('.png', '_axon_morphometrics.xlsx'),
+            nerve_morph_fname,
+            nerve_mask_path
+        )
+
+        with open(nerve_morph_fname, 'r') as f:
+            nerve_morph = json.load(f)
+        assert 'total_axon_density' in nerve_morph.keys()
+        assert 'axon_density' in nerve_morph['fascicle_areas']['0'].keys()

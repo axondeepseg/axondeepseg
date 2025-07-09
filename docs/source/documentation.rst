@@ -363,6 +363,8 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 
 -u                  Toggles *unmyelinated mode*. This will compute morphometrics for unmyelinated axons. Note that this requires a separate unmyelinated axon segmentation mask with suffix ``_seg-uaxon``.
 
+-n                  Computes morphometrics specific to **nerve sections** using the ``-n`` option. This enables analysis of axons **within nerve fascicle boundaries**, based on a segmentation mask with the suffix ``_seg-nerve.png``.
+
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
@@ -389,8 +391,8 @@ This generates a **'image_axon_morphometrics.xlsx'** file in the image directory
             
             axondeepseg -i test/__test_files__/__test_demo_files__/image.png -a ellipse
 
-Morphometrics of a specific image from multiple folders
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Morphometrics of specific images from multiple folders
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argument of the CLI separated by space. For instance, to compute morphometrics of the image **'image.png'** and **'image_2.png'** present in the folders **'test/__test_files__/__test_demo_files__/'** and **'test/__test_files__/__test_segment_files__/'** respectively of the test dataset, use the following command::
 
     axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png test/__test_files__/__test_segment_files__/image_2.png
@@ -438,6 +440,70 @@ This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morph
 
 
 Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
+
+Morphometrics for Nerve Sections
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can compute morphometrics specific to **nerve sections** using the ``-n`` option
+in the ``axondeepseg_morphometrics`` command-line interface. This enables analysis of axons
+within nerve fascicle boundaries, based on a segmentation mask with the suffix ``_seg-nerve.png``.
+Currently, ``axondeepseg`` does not produce this mask, so you will need to supply it manually.
+This is useful because the total nerve area allows for the calculation of axon density.
+
+When used, the ``-n`` option performs:
+
+- Morphometric extraction of axons and myelin *within* the nerve boundary.
+- Density estimation of axons inside the fascicle.
+- Removal of axons located *outside* of the nerve mask before final metrics are saved.
+
+.. code-block:: bash
+
+   axondeepseg_morphometrics -i <IMAGE_PATH> -n
+
+The image folder must contain:
+
+- Axon mask: ``*_seg-axon.png``
+- Myelin mask: ``*_seg-myelin.png``
+- Nerve segmentation mask: ``*_seg-nerve.png``
+
+One output file will be generated:
+
+- ``<filename>_nerve_morphometrics.json``: Morphometrics including axon count and density inside the nerve region.
+
+Below is an example of the JSON file generated when using the ``-n`` option on an image with two nerve fascicles 
+(in other words, two disjoint regions in the ``_seg-nerve.png`` mask). This file reports the nerve fascicle areas 
+and their respective axon densities, as well as global area and total axon density.
+
+.. code-block:: json
+
+    {
+        "fascicle_areas": {
+            "0": {
+                "value": 103021.45,
+                "unit": "um^2",
+                "axon_density": {
+                    "value": 0.00672,
+                    "unit": "axon/um^2"
+                }
+            },
+            "1": {
+                "value": 85792.12,
+                "unit": "um^2",
+                "axon_density": {
+                    "value": 0.00815,
+                    "unit": "axon/um^2"
+                }
+            }
+        },
+        "total_area": {
+            "value": 188813.57,
+            "unit": "um^2"
+        },
+        "total_axon_density": {
+            "value": 0.00741,
+            "unit": "axon/um^2"
+        }
+    }
     
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
