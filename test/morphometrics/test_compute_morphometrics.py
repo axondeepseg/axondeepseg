@@ -984,6 +984,24 @@ class TestCore(object):
         assert data['total_area']['value'] == 0
 
     @pytest.mark.unit
+    def test_remove_outside_nerve_1d_case(self):
+        pred_axon              = np.array([0, 0, 1, 0, 0, 0, 1, 0, 0])
+        pred_myelin            = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0])
+        pred_nerve             = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1])
+
+        expected_axon_output   = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0])
+        expected_myelin_output = np.array([0, 0, 0, 0, 0, 1, 0, 1, 0])
+
+        axon_mask_output, myelin_mask_output = remove_outside_nerve(
+            pred_axon,
+            pred_myelin,
+            pred_nerve
+        )
+
+        assert np.array_equal(expected_axon_output, axon_mask_output)
+        assert np.array_equal(expected_myelin_output, myelin_mask_output)
+
+    @pytest.mark.unit
     def test_remove_outside_nerve_returns_expected_masks(self):
         img_path = self.nerve_test_file
         axon_mask_path = self.nerve_test_file.parent / (self.nerve_test_file.stem + str(axon_suffix))
@@ -1079,4 +1097,3 @@ class TestCore(object):
             nerve_morph = json.load(f)
         assert 'total_axon_density' in nerve_morph.keys()
         assert 'axon_density' in nerve_morph['fascicle_areas']['0'].keys()
-
