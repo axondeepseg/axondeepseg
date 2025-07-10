@@ -74,6 +74,8 @@ jobs:
         if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest' && matrix.python-version == '3.11') }}
         run: |
 
+          git checkout $( git tag | tail -1)
+
           rm -rf ./AxonDeepSeg/
 
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
@@ -94,6 +96,8 @@ jobs:
           pwd
           ls
 
+          git checkout $( git tag | tail -1)
+          
           rmdir ./AxonDeepSeg/
 
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
