@@ -162,11 +162,13 @@ def imread(filename):
 
     return img
 
-def imwrite(filename, img, format='png'):
+def imwrite(filename, img, format='png', use_16bit=False):
     """ Write image.
     """
     # check datatype:
-    conversion_list = ['float64', 'float32', 'float16', 'uint16']
+    conversion_list = ['float64', 'float32', 'float16']
+    if not use_16bit:
+        conversion_list.append('uint16')
 
     if img.dtype in conversion_list:
         img = img.astype(np.uint8)
