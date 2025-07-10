@@ -29,7 +29,8 @@ import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.params import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
-    morph_suffix, unmyelinated_morph_suffix, instance_suffix, 
+    morph_suffix, unmyelinated_morph_suffix, 
+    instance_im_suffix, instance_suffix, 
     unmyelinated_suffix, unmyelinated_index_suffix,
     nerve_suffix, nerve_morph_suffix, nerve_index_suffix
 )
@@ -291,12 +292,13 @@ def main(argv=None):
                 axon_shape=axon_shape, 
                 return_index_image=True,
                 return_border_info=True,
-                return_instance_seg=colorization_flag
+                return_instance_seg=colorization_flag,
+                return_im_axonmyelin_label=colorization_flag,
             )
             # unpack the morphometrics output
             stats_dataframe, index_image_array = morph_output[0:2]
             if colorization_flag:
-                instance_seg_image = morph_output[2]
+                instance_seg_image, instance_map = morph_output[2:]
 
             morph_filename = current_path_target.stem + "_" + filename
 
@@ -332,7 +334,9 @@ def main(argv=None):
                 
                 if colorization_flag:
                     # Save instance segmentation
-                    ads.imwrite(outfile_basename + str(instance_suffix), instance_seg_image)
+                    ads.imwrite(outfile_basename + str(instance_im_suffix), instance_seg_image)
+                    instance_map = instance_map.astype(np.uint16)
+                    ads.imwrite(outfile_basename + str(instance_suffix), instance_map, use_16bit=True)
 
                 logger.info("Morphometrics file: {} has been saved in the {} directory",
                     morph_filename,
