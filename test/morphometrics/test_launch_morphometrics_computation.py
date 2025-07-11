@@ -359,8 +359,8 @@ class TestCore(object):
         instance_map = ads.imread(str(instance_seg_filename), use_16bit=True)
 
         n_axons = len(morphometrics_df)
-        # count all lines that contain a NaN as invalid axons; should be 0 for this test image
-        n_invalid_axons = morphometrics_df.isna().any(axis=1).sum()
+        # all lines that contain a NaN = invalid axons for which no myelin was found
+        n_invalid_axons = morphometrics_df.isna().any(axis=1).sum() # should be 0 for this test image
 
         unique_instance_ids = set(instance_map.flatten())
         n_axons_in_instance_map = len(unique_instance_ids) - 1  # -1 to exclude background (0)
