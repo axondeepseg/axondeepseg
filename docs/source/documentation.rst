@@ -588,10 +588,10 @@ By default for axon shape, that is, `circle`, the equivalent diameter is used. F
      - Maximum x value of the bounding box (in pixels). This bound is exclusive.
 
 
-Colorization
-~~~~~~~~~~~~
+Colorization & Instance Segmentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-During the morphometrics computation, ``axondeepseg`` internally converts the semantic segmentation (output of the deep learning model) into an instance segmentation. This step is essential to take measurements on individual axons when the axon density is high, because if two or more elements have their myelin touching, the software needs to know which axon it is attached to. Using the ``-c`` flag, you can obtain the colorized instance segmentation to take a look at this internal representation. The image below illustrates what a typical instance segmentation looks like.
+During the morphometrics computation, ``axondeepseg`` internally converts the semantic segmentation (output of the deep learning model) into an instance segmentation. This step is essential to take measurements on individual axons when the axon density is high, because if two or more elements have their myelin touching, the software needs to know which axon it is attached to. Using the ``-c`` flag, you can obtain the colorized instance segmentation to take a look at this internal representation. The image below illustrates what a typical instance segmentation looks like. This option will also save the raw instance segmentation in 16-bit format (with value 0 for background, 1 for the first axon, 2 for the second axon, etc.) in the same folder as the input image, with the suffix ``_seg-instance-map.png``.
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/instance_seg_example.png
 

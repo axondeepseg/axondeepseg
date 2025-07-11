@@ -28,7 +28,8 @@ morph_suffix = Path('axon_morphometrics.xlsx')
 morph_agg_suffix = Path('subject_morphometrics.xlsx')
 unmyelinated_morph_suffix = Path('uaxon_morphometrics.xlsx')
 nerve_morph_suffix = Path('nerve_morphometrics.json')
-instance_suffix = Path('_instance-map.png')             # Colored instance map of the segmentation
+instance_im_suffix = Path('_colorized.png')             # Colored instance map of the segmentation
+instance_suffix = Path('_instance-map.png')             # Raw instance map of the segmentation
 
 # aggregate morphometrics file suffix name
 agg_dir = Path('morphometrics_agg')
