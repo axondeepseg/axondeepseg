@@ -97,7 +97,7 @@ def convert_path(object_path):
         else:
             raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
 
-def imread(filename):
+def imread(filename, use_16bit=False):
     """ Read image and convert it to desired bitdepth without truncation.
     """
 
@@ -154,7 +154,8 @@ def imread(filename):
     if len(_img.shape) < 3:
         _img = np.expand_dims(_img, axis=-1)
 
-    img = imageio.core.image_as_uint(_img, bitdepth=8)
+    bitdepth = 16 if use_16bit else 8
+    img = imageio.core.image_as_uint(_img, bitdepth=bitdepth)
 
     # Remove singleton dimension
     if img.ndim == 3 and img.shape[-1] == 1:
