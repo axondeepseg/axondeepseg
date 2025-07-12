@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=def-shahabkb
+#SBATCH --account=def-jcohen
 #SBATCH --mem=60000
 #SBATCH -c 8
 #SBATCH --gpus=1
