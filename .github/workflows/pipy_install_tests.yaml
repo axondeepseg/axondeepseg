@@ -74,7 +74,14 @@ jobs:
         if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest' && matrix.python-version == '3.11') }}
         run: |
 
+          pwd
+          ls
+
+          git branch
+          
           git checkout $( git tag | tail -1)
+
+          git branch
 
           rm -rf ./AxonDeepSeg/
 
