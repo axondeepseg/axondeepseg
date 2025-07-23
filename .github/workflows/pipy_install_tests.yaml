@@ -77,11 +77,9 @@ jobs:
           pwd
           ls
 
-          git branch
+          git pull --all
           
-          git checkout v5.1.1
-
-          git branch
+          git checkout $( git tag | tail -1)
 
           rm -rf ./AxonDeepSeg/
 
