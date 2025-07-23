@@ -79,7 +79,7 @@ jobs:
 
           git branch
           
-          git checkout $( git tag | tail -1)
+          git checkout v5.1.1
 
           git branch
 
