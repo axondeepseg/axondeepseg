@@ -100,9 +100,11 @@ def get_axon_morphometrics(
                             if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
                             if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :param return_index_image (optional): If set to true, an image with the index numbers at the axon centroids will be
-    returned as a second return array
+                                          returned as a second return array
     :param return_border_info (optional): Flag to output if axons touch the image border along with their bounding box 
-
+    :param return_instance_seg (optional): To return a colorized instance map of the axonmyelin 
+    :param return_im_axonmyelin_label (optional): To return the raw instance map of the axonmyelin mask
+    
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
 
