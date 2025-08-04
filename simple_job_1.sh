@@ -25,7 +25,7 @@ source $VENV_DIR/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-pip install axondeepseg --no-build-isolation --no-cache-dir
+pip install axondeepseg==4.2.3
 
 # Run segmentation
 axondeepseg -i data_axondeepseg_sem/sub-rat1/micr/sub-rat1_sample-data1_SEM.png
