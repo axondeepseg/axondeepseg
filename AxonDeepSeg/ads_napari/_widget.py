@@ -857,13 +857,20 @@ class ADSplugin(QWidget):
             return False
 
         self.viewer.add_image(
+            data=im_axonmyelin_label,
+            rgb=False,
+            colormap="gist_earth",
+            blending="translucent",
+            name="instance seg",
+        )
+
+        self.viewer.add_image(
             data=index_image_array,
             rgb=False,
             colormap="yellow",
             blending="additive",
             name="numbers",
         )
-
 
         self.stats_dataframe = stats_dataframe
         self.index_image_array = index_image_array
