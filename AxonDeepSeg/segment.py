@@ -14,7 +14,6 @@ from pathlib import Path
 import json
 import argparse
 from argparse import RawTextHelpFormatter
-import pkg_resources
 from typing import Literal, List, NoReturn
 from loguru import logger
 
@@ -29,8 +28,9 @@ from AxonDeepSeg.params import valid_extensions, side_effect_suffixes
 
 # Global variables
 DEFAULT_MODEL_NAME = "model_seg_generalist_light"
-MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
-MODELS_PATH = Path(MODELS_PATH)
+
+package_dir = Path(AxonDeepSeg.__file__).parent
+MODELS_PATH = package_dir / 'models'
 
 DEFAULT_MODEL_PATH = MODELS_PATH / DEFAULT_MODEL_NAME
 

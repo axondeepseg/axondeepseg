@@ -11,9 +11,10 @@ import sys
 import AxonDeepSeg
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
+from AxonDeepSeg.morphometrics.compute_morphometrics import load_axon_morphometrics
 from AxonDeepSeg.params import (
     axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, 
-    index_suffix, axonmyelin_index_suffix, instance_suffix,
+    index_suffix, axonmyelin_index_suffix, instance_suffix, instance_im_suffix,
     unmyelinated_suffix, unmyelinated_morph_suffix,
 )
 
@@ -49,6 +50,9 @@ class TestCore(object):
         
         if (self.dataPath / f'image{instance_suffix}').exists():
             (self.dataPath / f'image{instance_suffix}').unlink()
+
+        if (self.dataPath / f'image{instance_im_suffix}').exists():
+            (self.dataPath / f'image{instance_im_suffix}').unlink()
 
         if (self.nerve_test_file.parent / 'image_nerve_index.png').exists():
             (self.nerve_test_file.parent / 'image_nerve_index.png').unlink()
@@ -328,14 +332,40 @@ class TestCore(object):
         assert Path('axondeepseg.log').exists()
 
     @pytest.mark.integration
-    def test_main_cli_successfully_outputs_colorized_image(self):
+    def test_main_cli_successfully_outputs_colorized_image_and_16b_instance_map(self):
         pathImg = self.dataPath / 'image.png'
-        filename = self.dataPath / f'image{instance_suffix}'
+        colorized_im_filename = self.dataPath / f'image{instance_im_suffix}'
+        instance_seg_filename = self.dataPath / f'image{instance_suffix}'
 
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-c"])
         
-        assert filename.exists()
+        assert colorized_im_filename.exists()
+        assert instance_seg_filename.exists()
+        # Check if the instance map is saved as a 16-bit image
+        instance_map = ads.imread(str(instance_seg_filename), use_16bit=True)
+        assert instance_map.dtype == 'uint16'
+
+    @pytest.mark.single
+    def test_main_cli_gives_consistent_morphometrics_and_instance_map(self):
+        pathImg = self.dataPath / 'image.png'
+        instance_seg_filename = self.dataPath / f'image{instance_suffix}'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(["-i", str(pathImg), "-c"])
+
+        # Check if the instance map is consistent with the morphometrics file
+        morphometrics_df = load_axon_morphometrics(self.dataPath / f'image_{morph_suffix}')
+        instance_map = ads.imread(str(instance_seg_filename), use_16bit=True)
+
+        n_axons = len(morphometrics_df)
+        # all lines that contain a NaN = invalid axons for which no myelin was found
+        n_invalid_axons = morphometrics_df.isna().any(axis=1).sum() # should be 0 for this test image
+
+        unique_instance_ids = set(instance_map.flatten())
+        n_axons_in_instance_map = len(unique_instance_ids) - 1  # -1 to exclude background (0)
+    
+        assert (n_axons - n_invalid_axons) == n_axons_in_instance_map
 
     @pytest.mark.integration
     def test_main_cli_runs_successfully_with_valid_inputs_in_nerve_mode(self):
