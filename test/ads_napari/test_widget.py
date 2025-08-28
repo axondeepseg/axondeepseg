@@ -38,17 +38,14 @@ class TestCore(object):
         self.rgb_image_tmp_path = self.rgb_tmp_dir / 'image_8bit.png'
         
 
-        self.known_axon_world_coords = (512.5,249.5) # x,y here are flipped l-r from data coords, as image is flipped l-r when placed in viewer
-        self.known_axon_data_coords = (5,-6) # Top right of image
+        self.known_axon_mousepress_coords = (583.4, 199.5) # mousepress coordinates - the true world/data coordinates are (5, 1536)
+        self.known_axon_data_coords = (5, 1536) # Top right of image
 
-        self.known_myelin_world_coords = (484.8,249.5)
-        self.known_myelin_data_coords = (5,-106)
+        self.known_myelin_mousepress_coords = (546.5, 199.5) # mousepress coordinates - the true world/data coordinates are (5, 1436)
+        self.known_myelin_data_coords = (5, 1436)
 
-        self.known_background_world_coords = (484.8,249.5)
-        self.known_background_data_coords = (5,-106)
-
-        self.known_background_world_coords = (365.3,249.5)
-        self.known_background_data_coords = (5,-506)
+        self.known_background_mousepress_coords = (387, 199.5)
+        self.known_background_data_coords = (5,1005)
 
         self.expected_myelin_metrics_message = "Axon index: 9\nAxon diameter: 6.66 μm\nMyelin thickness: 0.85 μm\ng-ratio: 0.80\nTouches border: True"
     def teardown_method(self):
@@ -237,7 +234,7 @@ class TestCore(object):
         axon_layer = wdg.get_axon_layer()
         myelin_layer = wdg.get_myelin_layer()
 
-        world_coords = self.known_axon_world_coords
+        mousepress_coords = self.known_axon_mousepress_coords
         data_coords = self.known_axon_data_coords
 
         assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
@@ -246,8 +243,7 @@ class TestCore(object):
         assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 1
 
         ## Click that pixel
-        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
-
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.CONTROL]), button=0)
         # Assert that axon label is now 0
         axon_layer.refresh()
         assert axon_layer.data[data_coords[0], data_coords[1]] == 0
@@ -288,7 +284,7 @@ class TestCore(object):
         axon_layer = wdg.get_axon_layer()
         myelin_layer = wdg.get_myelin_layer()
 
-        world_coords = self.known_myelin_world_coords
+        mousepress_coords = self.known_myelin_mousepress_coords
         data_coords = self.known_myelin_data_coords
 
         assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
@@ -299,7 +295,7 @@ class TestCore(object):
 
 
         ## Click that pixel
-        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.CONTROL]), button=0)
 
         # Assert that axon label is now 0
         axon_layer.refresh()
@@ -343,7 +339,7 @@ class TestCore(object):
         axon_layer = wdg.get_axon_layer()
         myelin_layer = wdg.get_myelin_layer()
 
-        world_coords = self.known_axon_world_coords
+        mousepress_coords = self.known_axon_mousepress_coords
         data_coords = self.known_axon_data_coords
 
         assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
@@ -352,7 +348,7 @@ class TestCore(object):
         assert myelin_layer.data[int(self.known_myelin_data_coords[0]), int(self.known_myelin_data_coords[1])] == 1
 
         ## Click that pixel
-        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.CONTROL]), button=0)
 
         # Assert that axon label is now 0
         axon_layer.refresh()
@@ -404,7 +400,7 @@ class TestCore(object):
         axon_layer = wdg.get_axon_layer()
         myelin_layer = wdg.get_myelin_layer()
 
-        world_coords = self.known_background_world_coords
+        mousepress_coords = self.known_background_mousepress_coords
         data_coords = self.known_background_data_coords
 
         assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
@@ -414,7 +410,7 @@ class TestCore(object):
         original_myelin = copy.deepcopy(myelin_layer.data)
 
         ## Click that pixel
-        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.CONTROL]), button=0)
 
         # Assert label layers unchanged
         axon_layer.refresh()
@@ -448,14 +444,14 @@ class TestCore(object):
             # Simulate a button click
             QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
 
-        world_coords = self.known_background_world_coords
+        mousepress_coords = self.known_background_mousepress_coords
 
         ## Change active layer
         viewer.layers.selection = [wdg.get_axon_layer()]
 
         ## Click that pixel
         with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
-            viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+            viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.CONTROL]), button=0)
 
         # Assert expected message was shown for this pixel
         assert wdg.last_message == "Image layer must be selected."
@@ -585,14 +581,14 @@ class TestCore(object):
         axon_layer = wdg.get_axon_layer()
         myelin_layer = wdg.get_myelin_layer()
 
-        world_coords = self.known_axon_world_coords
+        mousepress_coords = self.known_axon_mousepress_coords
         data_coords = self.known_axon_data_coords
 
         assert axon_layer.data[int(data_coords[0]), int(data_coords[1])] == 1
         assert myelin_layer.data[int(data_coords[0]), int(data_coords[1])] == 0
 
         ## Click that pixel
-        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.ALT]), button=0)
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.ALT]), button=0)
 
         # Assert expected message was shown for this pixel
         assert wdg.last_message == self.expected_myelin_metrics_message
@@ -624,10 +620,10 @@ class TestCore(object):
                         # Simulate a button click
                         QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
 
-        world_coords = self.known_background_world_coords
+        mousepress_coords = self.known_background_mousepress_coords
 
         ## Click that pixel
-        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.ALT]), button=0)
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.ALT]), button=0)
 
         # Assert expected message was shown for this pixel
         assert wdg.last_message == "Backround pixel - no morphometrics to report"
@@ -668,10 +664,10 @@ class TestCore(object):
         with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
             QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
 
-        world_coords = self.known_axon_world_coords
+        mousepress_coords = self.known_axon_mousepress_coords
 
         ## Click that pixel
-        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.CONTROL]), button=0)
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.CONTROL]), button=0)
 
 
         elapsed_time = time.time() - start_time
@@ -718,10 +714,10 @@ class TestCore(object):
                         # Simulate a button click
                         QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
 
-        world_coords = self.known_axon_world_coords
+        mousepress_coords = self.known_axon_mousepress_coords
 
         ## Click that pixel
-        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(world_coords[0], world_coords[1]), modifiers=([keys.ALT]), button=0)
+        viewer.window.qt_viewer.canvas.events.mouse_press(pos=(mousepress_coords[0], mousepress_coords[1]), modifiers=([keys.ALT]), button=0)
 
         elapsed_time = time.time() - start_time
         
@@ -733,7 +729,7 @@ class TestCore(object):
         # Create a large synthetic int image (e.g., 5001,5000)
         large_image = np.random.randint(0, 256, size=(5001, 5000), dtype=np.uint8)
         large_mask = np.zeros((5001, 500))
-        large_mask[self.known_axon_data_coords]=255
+        large_mask[0,0]=255
 
         ## User opens plugin
         viewer = make_napari_viewer(show=False)
