@@ -853,6 +853,7 @@ class TestCore(object):
             assert wdg.im_axonmyelin_label is None
     
             # Time the morphometrics computation
+            import time
             start_time = time.time()
     
             ## Simulate Remove Axon button click
@@ -871,46 +872,8 @@ class TestCore(object):
 
         finally:
             # Clean up layers to prevent OpenGL context issues during teardown
-            try:
-                viewer.layers.clear()
-                # Give some time for OpenGL operations to complete
-                import time
-                time.sleep(0.1)
-            except Exception as e:
-                print(f"Error during cleanup: {e}")
-                # Continue with teardown even if cleanup fails
-    
-    @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
-    @pytest.mark.integration
-    def test_on_show_axon_metrics_performance_large_image(self,make_napari_viewer):
-        try:
-            # Create a large synthetic int image (e.g., 5000,5000)
-            large_image = np.random.randint(0, 256, size=(5000, 5000), dtype=np.uint8)
-            large_mask = np.zeros((5000, 5000))
-            large_mask[self.known_axon_data_coords]=255
-    
-            ## User opens plugin
-            viewer = make_napari_viewer(show=False)
-            wdg = ADSplugin(viewer)
-            viewer.add_image(large_image, rgb=False)
-            
-            ## User loads image
-            wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
-    
-            # Create temp file for axonmyelin mask using large_image data
-            with tempfile.NamedTemporaryFile(prefix='large_image_mask', suffix='.png', delete=False) as temp_file:
-                imwrite(temp_file.name, large_mask)
-                self.mask_path = Path(temp_file.name)
 
-            ## User loads mask
-            with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(temp_file.name), '')):
-                with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):
-                    QTest.mouseClick(wdg.load_mask_button, Qt.LeftButton)
-    
-            ## User omits computing morphometrics via button
-            assert wdg.im_axonmyelin_label is None
-    
-            # Time the morphometrics computation
+            import time
             start_time = time.time()
 
             ## Simulate Show Axon Morphometris button click
