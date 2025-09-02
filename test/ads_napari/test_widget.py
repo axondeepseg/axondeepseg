@@ -59,40 +59,41 @@ class TestCore(object):
     @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
     def test_rgb_to_greyscale_user_workflow(self, make_napari_viewer, qtbot):
-        ## User opens plugin
-        viewer = make_napari_viewer(show=False)
-        wdg = ADSplugin(viewer)
-        viewer.open(self.rgb_image_tmp_path)
+        try:
+            ## User opens plugin
+            viewer = make_napari_viewer(show=False)
+            wdg = ADSplugin(viewer)
+            viewer.open(self.rgb_image_tmp_path)
 
-        # Print loaded images
-        print(viewer.layers)
+            # Print loaded images
+            print(viewer.layers)
 
-        # Select the first layer (index 0)
-        selected_layer = viewer.layers[0]
-        print(selected_layer.name)  # Print the name of the selected layer
+            # Select the first layer (index 0)
+            selected_layer = viewer.layers[0]
+            print(selected_layer.name)  # Print the name of the selected layer
 
-        # Select the first model (index 0 is the text to tell the user to select a model)
-        wdg.model_selection_combobox.setCurrentIndex(1)
+            # Select the first model (index 0 is the text to tell the user to select a model)
+            wdg.model_selection_combobox.setCurrentIndex(1)
         
-        # User clicks apply model
-        with qtbot.waitSignal(wdg.apply_model_thread.model_applied_signal, timeout=300000):
-            with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message', return_value=(False, '')):
-                wdg.apply_model_button.click()
+            # User clicks apply model
+            with qtbot.waitSignal(wdg.apply_model_thread.model_applied_signal, timeout=300000):
+                with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message', return_value=(False, '')):
+                    wdg.apply_model_button.click()
 
-        # Check that the output images exist
-        assert self.rgb_tmp_dir.exists()
-        assert any(f.name.endswith('-axon.png') for f in self.rgb_tmp_dir.iterdir())
-        assert any(f.name.endswith('-myelin.png') for f in self.rgb_tmp_dir.iterdir())
-        assert any(f.name.endswith('-axonmyelin.png') for f in self.rgb_tmp_dir.iterdir())
+            # Check that the output images exist
+            assert self.rgb_tmp_dir.exists()
+            assert any(f.name.endswith('-axon.png') for f in self.rgb_tmp_dir.iterdir())
+            assert any(f.name.endswith('-myelin.png') for f in self.rgb_tmp_dir.iterdir())
+            assert any(f.name.endswith('-axonmyelin.png') for f in self.rgb_tmp_dir.iterdir())
 
-        # Check that they were made using the greyscale converted images
-        for f in self.rgb_tmp_dir.iterdir():
-            if f.name.endswith('-axon.png'):
-                assert '_grayscale' in f.name
-            if f.name.endswith('-myelin.png'):
-                assert '_grayscale' in f.name
-            if f.name.endswith('-axonmyelin.png'):  
-                assert '_grayscale' in f.name
+            # Check that they were made using the greyscale converted images
+            for f in self.rgb_tmp_dir.iterdir():
+                if f.name.endswith('-axon.png'):
+                    assert '_grayscale' in f.name
+                if f.name.endswith('-myelin.png'):
+                    assert '_grayscale' in f.name
+                if f.name.endswith('-axonmyelin.png'):  
+                    assert '_grayscale' in f.name
 
         finally:
             # Clean up layers to prevent OpenGL context issues during teardown
