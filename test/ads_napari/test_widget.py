@@ -869,8 +869,6 @@ class TestCore(object):
             elapsed_time = time.time() - start_time
             
             assert elapsed_time < 10.0  # Adjust threshold as needed
-
-        finally:
             # Clean up layers to prevent OpenGL context issues during teardown
 
             import time
