@@ -30,6 +30,7 @@ env:
   # This will be defined for non-debian platforms below too, but there's no harm in that.
   # (TravisCI quietly defined this on all their platforms, but we have to give it manually on GithubCI.)
   DEBIAN_FRONTEND: 'noninteractive'
+  VISPY_GL_BACKEND: 'osmesa'
 
 jobs:
   ultra_matrix_test:
