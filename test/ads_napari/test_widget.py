@@ -94,6 +94,17 @@ class TestCore(object):
             if f.name.endswith('-axonmyelin.png'):  
                 assert '_grayscale' in f.name
 
+        finally:
+            # Clean up layers to prevent OpenGL context issues during teardown
+            try:
+                viewer.layers.clear()
+                # Give some time for OpenGL operations to complete
+                import time
+                time.sleep(0.1)
+            except Exception as e:
+                print(f"Error during cleanup: {e}")
+                # Continue with teardown even if cleanup fails
+
     # --------------initial tests-------------- #
     @pytest.mark.skipif(sys.platform == 'linux', reason="Can't test GUI on Linux")
     @pytest.mark.integration
