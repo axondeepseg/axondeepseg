@@ -2,6 +2,21 @@ Changelog
 ===============================================================================
 
 
+## v5.2.0 (2025-09-04)
+
+**FEATURE**
+
+ - Save raw instance segmentation v2 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/926)
+
+**BUG**
+
+ - Quick fix for aggregation file search [View pull request](https://github.com/axondeepseg/axondeepseg/pull/924)
+
+**TESTING**
+
+ - Change mousepress location for tests compatibility with napari>0.6.1 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/928)
+ - Ensure pip tests only run tests in the latest release branch [View pull request](https://github.com/axondeepseg/axondeepseg/pull/927)
+
 ## v5.1.1 (2025-07-02)
 [View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.1.0...v5.1.1)
 
