@@ -23,6 +23,9 @@ from qtpy.QtCore import QStringListModel, QObject, Signal
 from qtpy.QtGui import QPixmap
 
 from skimage import measure
+import pandas as pd 
+import plotly.express as px
+from jinja2 import Environment, FileSystemLoader
 
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
 from AxonDeepSeg.qa.metrics_qa import MetricsQA
@@ -34,6 +37,8 @@ import napari
 from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
 from vispy.util import keys
+import webbrowser
+
 
 _CONTROL =  keys.CONTROL
 _ALT = 'Alt'
@@ -231,7 +236,15 @@ class ADSplugin(QWidget):
             "QPushButton:checked{background-color:blue;}"
         )
 
-        settings_menu_button = QPushButton("Settings")
+
+        qa_report_button = QPushButton("QA Report")
+        qa_report_button.clicked.connect(
+            self._on_qa_report_button
+        )
+        qa_report_button.setToolTip("Generate quality assurance report for the segmentation.\nRequires morphometrics to be computed.")
+        self.qa_report_button = qa_report_button
+
+        settings_menu_button = QPushButton("Settingss")
         settings_menu_button.clicked.connect(self._on_settings_menu_clicked)
 
         self.setLayout(QVBoxLayout())
@@ -249,6 +262,7 @@ class ADSplugin(QWidget):
         self.layout().addWidget(save_segmentation_button)
         self.layout().addWidget(compute_morphometrics_button)
         self.layout().addWidget(show_axon_metrics_button)
+        self.layout().addWidget(qa_report_button)
         self.layout().addWidget(settings_menu_button)
         self.layout().addStretch()
 
@@ -709,6 +723,73 @@ class ADSplugin(QWidget):
                 show_info(f"How to use the show axon metrics feature.\nRaw histology image must be selected in the layers list.\nHold ALT/OPTION and click on an axon to show its metrics.")
 
 
+    def _on_qa_report_button(self):
+        """Handles the click event of the 'QA Report' button.
+
+        The method generates a quality assurance report for the segmentation by computing various metrics
+        and saving them to a CSV file. It prompts the user to select a location to save the report and
+        checks if the necessary layers are present in the viewer before proceeding.
+
+        Returns:
+            None
+        """
+
+        morphometrics_folder = Path(self.file_name).parents[0]
+        qa_folder = Path(morphometrics_folder / 'QA')
+
+        if os.path.isdir(qa_folder) == False:
+            os.mkdir(Path(morphometrics_folder / 'QA'))
+        
+        qa = MetricsQA(self.file_name)
+
+        qa.plot_all(qa_folder, quiet=True)
+
+        # --- Example Data ---
+        df1 = pd.DataFrame({"axon_diameter": [1, 2, 3, 4], "count": [10, 30, 50, 20]})
+        df2 = pd.DataFrame({"myelin_thickness": [0.2, 0.3, 0.4, 0.5], "count": [15, 40, 35, 10]})
+
+        # Plotly figures
+        fig1_html = px.bar(df1, x="axon_diameter", y="count",
+                        title="Axon Diameter Distribution").to_html(full_html=False, include_plotlyjs=False)
+        fig2_html = px.bar(df2, x="myelin_thickness", y="count",
+                        title="Myelin Thickness Distribution").to_html(full_html=False, include_plotlyjs=False)
+
+        # Example image thumbnails (replace with your real histology images)
+        # For demo, these can be small PNGs in the same folder.
+        example_images = ["example1.png", "example2.png"]
+
+        # --- Build Sections Dynamically ---
+        sections = {
+            "Morphometrics": [
+                {"type": "plot", "html": fig1_html},
+                {"type": "plot", "html": fig2_html},
+            ],
+            "Segmentation QC": [
+                {"type": "image", "src": img} for img in example_images
+            ],
+            "Summary": [
+                {"type": "plot", "html": fig1_html},  # just reusing for demo
+            ],
+        }
+
+        # --- Render Jinja2 template ---
+        package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
+        env = Environment(loader=FileSystemLoader((package_dir / "qa").resolve()))
+        template = env.get_template("report_template.html")
+
+        html_out = template.render(sections=sections)
+
+        with open(morphometrics_folder / 'QA' / "AxonDeepSeg_QA_demo.html", "w") as f:
+            f.write(html_out)
+
+        # Open in the default browser
+        html_file = morphometrics_folder / 'QA' / "AxonDeepSeg_QA_demo.html"
+        file_url = html_file.resolve().as_uri()  # converts to file:// URL
+        webbrowser.open(file_url)
+        print("✅ Generated AxonDeepSeg_QA_demo.html")
+
+
+
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.
 
@@ -834,6 +915,8 @@ class ADSplugin(QWidget):
         if file_name == "":
             return False
 
+        self.file_name = file_name
+
         # Compute statistics
         (
             stats_dataframe,
@@ -873,23 +956,6 @@ class ADSplugin(QWidget):
             blending="additive",
             name="numbers",
         )
-
-        # QA
-
-        morphometrics_folder = Path(file_name).parents[0]
-        qa_folder = Path(morphometrics_folder / 'QA')
-
-        if os.path.isdir(qa_folder) == False:
-            os.mkdir(Path(morphometrics_folder / 'QA'))
-        
-        qa = MetricsQA(file_name)
-
-        qa.plot_all(qa_folder, quiet=True)
-
-        self.stats_dataframe = stats_dataframe
-        self.index_image_array = index_image_array
-        self.im_instance_seg = im_instance_seg
-        self.im_axonmyelin_label = im_axonmyelin_label
 
         return True
 

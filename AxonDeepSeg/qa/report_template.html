@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AxonDeepSeg QA Report Demo</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .tabs { display: flex; cursor: pointer; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { padding: 10px 20px; border: 1px solid #ccc; border-bottom: none; background: #eee; margin-right: 5px; }
+    .tab.active { background: #fff; font-weight: bold; }
+    .tab-content { border: 1px solid #ccc; padding: 20px; display: none; }
+    .tab-content.active { display: block; }
+    .plot { margin-bottom: 30px; }
+    .thumbs img { max-width: 300px; margin: 10px; border: 1px solid #ccc; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>AxonDeepSeg Morphometrics QA Report</h1>
+
+  <div class="tabs">
+    {% for section_name, _ in sections.items() %}
+        <div class="tab {% if loop.first %}active{% endif %}"
+            onclick="openTab(event, '{{ section_name|replace(" ", "_") }}')">
+        {{ section_name }}
+        </div>
+    {% endfor %}
+  </div>
+
+  {% for section_name, items in sections.items() %}
+    <div id="{{ section_name|replace(' ', '_') }}" class="tab-content {% if loop.first %}active{% endif %}">
+      <h2>{{ section_name }}</h2>
+      {% for item in items %}
+        {% if item.type == "plot" %}
+          <div class="plot">{{ item.html|safe }}</div>
+        {% elif item.type == "image" %}
+          <div class="thumbs"><img src="{{ item.src }}" alt="QA Image"></div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+  <script>
+    function openTab(evt, tabId) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tab-content");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove("active");
+      }
+      tablinks = document.getElementsByClassName("tab");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active");
+      }
+      document.getElementById(tabId).classList.add("active");
+      evt.currentTarget.classList.add("active");
+    };
+  </script>
+</body>
+</html>

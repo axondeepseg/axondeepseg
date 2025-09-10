@@ -89,7 +89,8 @@ class MetricsQA:
         metric_list = list(self.df.columns.values[3:])
 
         for metric in metric_list:
-            self.plot(metric, save_folder, quiet)
+            if self.df[metric].to_numpy().dtype is not np.dtype('bool'): 
+                self.plot(metric, save_folder, quiet)
 
     def get_flagged_objects(self, axon_file, myelin_file, pixel_file, folder, save_folder):
 
