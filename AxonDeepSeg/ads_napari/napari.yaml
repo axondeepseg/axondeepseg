@@ -1,0 +1,11 @@
+name: AxonDeepSeg
+visibility: public
+categories: ["Annotation", "Segmentation"]
+contributions:
+  commands:
+    - id: AxonDeepSeg.ads_napari.make_qwidget
+      python_name: AxonDeepSeg.ads_napari._widget:ADSplugin
+      title: Make AxonDeepSeg plugin
+  widgets:
+    - command: AxonDeepSeg.ads_napari.make_qwidget
+      display_name: ADS

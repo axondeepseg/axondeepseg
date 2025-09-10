@@ -10,6 +10,8 @@ axonmyelin_index_suffix = Path('_axonmyelin_index.png') # Colored axonmyelin seg
 unmyelinated_suffix = Path('_seg-uaxon.png')            # unmyelinated axon segmentation suffix file name
 unmyelinated_index_suffix = Path('_uaxon_index.png')    # Colored unmyelinated axon segmentation + the index image
 nnunet_suffix=Path('_seg-nnunet.png')                   # nnunet raw segmentation suffix
+nerve_suffix=Path('_seg-nerve.png')                     # nerve segmentation suffix
+nerve_index_suffix=Path('_nerve_index.png')             # Colored nerve segmentation + the index image
 
 side_effect_suffixes = tuple(
     [
@@ -23,8 +25,23 @@ side_effect_suffixes = tuple(
 
 # morphometrics file suffix name
 morph_suffix = Path('axon_morphometrics.xlsx')
+morph_agg_suffix = Path('subject_morphometrics.xlsx')
 unmyelinated_morph_suffix = Path('uaxon_morphometrics.xlsx')
-instance_suffix = Path('_instance-map.png')             # Colored instance map of the segmentation
+nerve_morph_suffix = Path('nerve_morphometrics.json')
+instance_im_suffix = Path('_colorized.png')             # Colored instance map of the segmentation
+instance_suffix = Path('_instance-map.png')             # Raw instance map of the segmentation
+
+# aggregate morphometrics file suffix name
+agg_dir = Path('morphometrics_agg')
+
+# morphometrics statistics analysis
+binned_statistics_filename = 'statistics_per_axon_caliber.xlsx'
+axon_count_filename = 'axon_count.png'
+metrics_names = {
+    ('Axon Diameter', 'axon_diam (um)'),
+    ('G-Ratio', 'gratio'),
+    ('Myelin Thickness', 'myelin_thickness (um)'),
+}
 
 # List of valid image extensions
 valid_extensions = [

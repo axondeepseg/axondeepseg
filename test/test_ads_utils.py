@@ -4,9 +4,11 @@ from pathlib import Path
 import shutil
 import numpy as np
 import imageio
+import os
 
 import pytest
 
+import AxonDeepSeg
 from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, imwrite, get_file_extension, check_available_gpus
 from AxonDeepSeg.model_cards import get_supported_models
 from AxonDeepSeg import params
@@ -20,7 +22,14 @@ class TestCore(object):
 
         self.precision_path = Path('test/__test_files__/__test_precision_files__')
 
-        self.tmp_folder = Path('test/__test_files__/tmp_folder')
+        # Get models folder
+        self.package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
+        self.model_dir = self.package_dir / "models"
+
+        # Get current file path
+        self.test_file_dir = Path(__file__).resolve().parent
+
+        self.tmp_folder =  self.test_file_dir /'__test_files__/tmp_folder'
 
         if not self.tmp_folder.exists():
             self.tmp_folder.mkdir()
@@ -30,6 +39,12 @@ class TestCore(object):
         if output_path.exists():
             shutil.rmtree(output_path)
         
+        # If tmp/models folder isn't empty, move it back
+        if (self.tmp_folder / "models").exists():
+            for file in (self.tmp_folder / "models").iterdir():
+                shutil.move(file, self.model_dir)
+            shutil.rmtree(self.tmp_folder / "models")
+
         if self.tmp_folder.exists():
             shutil.rmtree(self.tmp_folder)
 
@@ -37,6 +52,8 @@ class TestCore(object):
     @pytest.mark.unit
     def test_download_data_returns_0_for_valid_link(self):
         exit_code = download_data(str(self.osf_link))
+        print(exit_code)
+        print(self.osf_link)
         assert exit_code == 0
 
     @pytest.mark.unit
@@ -102,6 +119,26 @@ class TestCore(object):
         for downloaded_model in get_existing_models_list():
             assert downloaded_model in known_models
 
+    @pytest.mark.unit
+    def test_get_existing_models_list_returns_none_for_no_existing_models(self):
+        # Move content inside model folder to test/__test_files__/tmp_folder, without moving the folder itself
+        
+        if not (self.tmp_folder / "models").exists():
+            (self.tmp_folder / "models").mkdir()
+
+        for file in self.model_dir.iterdir():
+            # Make temp dir
+            shutil.move(file, self.tmp_folder / "models")
+
+        # Main test
+        assert get_existing_models_list() == None
+
+        # Could leave it to teardown, but might as well try now in case other tests in this file use the model
+        if (self.tmp_folder / "models").exists:
+            for file in (self.tmp_folder / "models").iterdir():
+                shutil.move(file, self.model_dir)
+            shutil.rmtree(self.tmp_folder / "models")
+
     # --------------imread tests-------------- #
     @pytest.mark.unit
     def test_imread_outputs_8bit(self):
@@ -119,9 +156,7 @@ class TestCore(object):
         }
 
         for folder in folders:
-            print(folder)
             for file in filenames:
-                print(file)
                 if (Path(folder) / file).exists():
                     image = (imread(Path(folder) / file))
                     assert image.dtype == np.uint8
@@ -145,12 +180,10 @@ class TestCore(object):
         image_1 = None
         image_2 = None
         for file in filenames:
-            print(file)
             image = (imread(self.precision_path / file))\
             
             if image_1 is None:
                 image_1 = image
-                print(image_1)
             else:
                 image_2 = image
                 assert np.allclose(image_1, image_2, atol=2) # In some pixels, rounding differences between float and int conversions lead to an int difference value of 1, which is why this atol was chosen.
@@ -170,9 +203,7 @@ class TestCore(object):
         }
 
         for folder in folders:
-            print(folder)
             for file in filenames:
-                print(file)
                 image = imageio.imread(Path(folder) / file)
                 
                 # Save
@@ -199,7 +230,6 @@ class TestCore(object):
         }
 
         for folder in folders:
-            print(folder)
             for file in filenames:
 
                 if (Path(folder) / file).exists():

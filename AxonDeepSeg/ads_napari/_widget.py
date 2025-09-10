@@ -22,15 +22,21 @@ from qtpy.QtWidgets import (
 from qtpy.QtCore import QStringListModel, QObject, Signal
 from qtpy.QtGui import QPixmap
 
+from skimage import measure
+
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
 from AxonDeepSeg.qa.metrics_qa import MetricsQA
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
 
 import napari
 from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
+from vispy.util import keys
 
+_CONTROL =  keys.CONTROL
+_ALT = 'Alt'
 
 class ADSsettings:
     """Plugin settings class.
@@ -155,14 +161,23 @@ class ADSplugin(QWidget):
         citation_textbox.setReadOnly(True)
         citation_textbox.setMaximumHeight(100)
 
-        hyperlink_label = QLabel()
-        hyperlink_label.setOpenExternalLinks(True)
-        hyperlink_label.setText(
+        demo_label = QLabel()
+        demo_label.setOpenExternalLinks(True)
+        demo_label.setText(
             '<a href="https://axondeepseg.readthedocs.io/en/latest/">Need help? Read the documentation</a>'
         )
 
+        hyperlink_label = QLabel()
+        hyperlink_label.setOpenExternalLinks(True)
+        hyperlink_label.setText(
+            '<a href="https://raw.githubusercontent.com/axondeepseg/data-testing/refs/heads/main/__test_files__/__test_demo_files__/image.png">New user? Download test image to segment</a>'
+        )
+
         self.available_models = ads_utils.get_existing_models_list()
+
         self.model_selection_combobox = QComboBox()
+        if self.available_models == None:
+            self.available_models = ["model_seg_generalist_light"]
         self.model_selection_combobox.addItems(
             ["Select the model"] + self.available_models
         )
@@ -178,9 +193,20 @@ class ADSplugin(QWidget):
 
         load_mask_button = QPushButton("Load mask")
         load_mask_button.clicked.connect(self._on_load_mask_button_click)
+        self.load_mask_button = load_mask_button
 
         fill_axons_button = QPushButton("Fill axons")
         fill_axons_button.clicked.connect(self._on_fill_axons_click)
+
+        remove_axons_button = QPushButton("Axon removal toggle")
+        remove_axons_button.clicked.connect(self._on_remove_axons_click)
+
+        remove_axons_button.setCheckable(True)
+        remove_axons_button.setStyleSheet(
+            "QPushButton:checked{background-color:blue;}"
+        )
+        remove_axons_button.setToolTip("Hold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.\nHistology image must be active layer.")
+        self.remove_axons_button = remove_axons_button
 
         save_segmentation_button = QPushButton("Save segmentation")
         save_segmentation_button.clicked.connect(
@@ -192,6 +218,19 @@ class ADSplugin(QWidget):
             self._on_compute_morphometrics_button
         )
 
+        show_axon_metrics_button = QPushButton("Show axon metrics")
+        show_axon_metrics_button.clicked.connect(
+            self._on_show_axon_metrics
+        )
+        show_axon_metrics_button.setToolTip("Hold ALT/OPTION and click on an axon to show key metrics.\nHistology image must be active layer.")
+
+        self.show_axon_metrics_button = show_axon_metrics_button
+
+        show_axon_metrics_button.setCheckable(True)
+        show_axon_metrics_button.setStyleSheet(
+            "QPushButton:checked{background-color:blue;}"
+        )
+
         settings_menu_button = QPushButton("Settings")
         settings_menu_button.clicked.connect(self._on_settings_menu_clicked)
 
@@ -200,15 +239,183 @@ class ADSplugin(QWidget):
         self.layout().setContentsMargins(10, 20, 20, 10)
         self.layout().addWidget(self.get_logo())
         self.layout().addWidget(citation_textbox)
+        self.layout().addWidget(demo_label)
         self.layout().addWidget(hyperlink_label)
         self.layout().addWidget(self.model_selection_combobox)
         self.layout().addWidget(self.apply_model_button)
         self.layout().addWidget(load_mask_button)
         self.layout().addWidget(fill_axons_button)
+        self.layout().addWidget(remove_axons_button)
         self.layout().addWidget(save_segmentation_button)
         self.layout().addWidget(compute_morphometrics_button)
+        self.layout().addWidget(show_axon_metrics_button)
         self.layout().addWidget(settings_menu_button)
         self.layout().addStretch()
+
+        # Connect the mouse click event to the handler
+        self.image_loaded_after_plugin_start = False
+        self.viewer.layers.events.inserted.connect(self._on_layer_added)
+
+        self.remove_axon_state = False
+        self.show_axon_metrics_state = False
+
+        self.im_instance_seg = None
+        self.stats_dataframe = None
+        self.index_image_array = None
+        self.im_axonmyelin_label = None
+
+        self.last_message = None
+        self.large_image_warning_state = False
+
+    def _on_layer_added(self, event):
+        """Handler for when a layer is added to the viewer.
+
+        Args:
+            event: The event object containing the layer that was added.
+
+        Returns:
+            None
+        """
+        layer = event.value
+        if isinstance(layer, napari.layers.Image):
+            layer.mouse_drag_callbacks.append(self._on_image_click)
+            self.image_loaded_after_plugin_start = True
+
+            if np.size(layer.data) > 5000*5000:
+                if self.large_image_warning_state == False:
+                    self.show_info_message("Large image loaded (greater than 5000 * 5000 pixels) - some plugin features may be slow")
+                    self.last_message = "Large image loaded (greater than 5000 * 5000 pixels) - some plugin features may be slow"
+                    self.large_image_warning_state = True
+
+        if isinstance(layer, napari.layers.Labels):
+            layer.mouse_drag_callbacks.append(self._on_label_click)
+
+    def _on_image_click(self, layer, event):
+        """Handler for when an image layer is clicked.
+
+        Args:
+            layer: The image layer that was clicked.
+            event: The event object containing the click position and keyboard modifiers.
+
+        Returns:
+            None
+        """
+
+        if self.remove_axon_state:
+            if _CONTROL in event.modifiers:  # Command key on macOS
+                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
+                    data_coordinates = layer.world_to_data(event.position)
+                    cords = np.round(data_coordinates).astype(int)
+
+                    # Ensure the coordinates are within the bounds of the image
+                    if 0 <= cords[0] < self.im_axonmyelin_label.shape[0] and 0 <= cords[1] < self.im_axonmyelin_label.shape[1]:
+                        # Get the RGB value at the clicked position
+                        index = self.im_axonmyelin_label[cords[0], cords[1]]
+
+                        # Get the indices for each region with the same RGB value
+                        idx = np.where(self.im_axonmyelin_label == index)
+
+                        axon_layer = self.get_axon_layer()
+                        myelin_layer = self.get_myelin_layer()
+
+                        if (axon_layer is None) or (myelin_layer is None):
+                            self.show_info_message("One or more masks missing")
+                            return
+
+                        # Check if background pixel
+                        if axon_layer.data[cords[0], cords[1]] == 0 and myelin_layer.data[cords[0], cords[1]] == 0:
+                            return
+
+                        axon_layer._save_history(
+                            (
+                                idx,
+                                np.array(axon_layer.data[idx], copy=True),
+                                0,
+                            )
+                        )
+                        axon_layer.data[idx] = 0
+                        axon_layer.refresh()
+                        
+                        myelin_layer._save_history(
+                            (
+                                idx,
+                                np.array(myelin_layer.data[idx], copy=True),
+                                0,
+                            )
+                        )
+                        myelin_layer.data[idx] = 0
+                        myelin_layer.refresh()
+
+                    else:
+                        show_info("Clicked pixel is out of bounds of the image.")
+                else:
+                    self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.")
+
+        if self.show_axon_metrics_state:
+            if _ALT in event.modifiers:
+                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
+                    data_coordinates = layer.world_to_data(event.position)
+                    cords = np.round(data_coordinates).astype(int)
+
+                    axon_layer = self.get_axon_layer()
+                    myelin_layer = self.get_myelin_layer()
+
+                    if (axon_layer is None) or (myelin_layer is None):
+                        self.show_info_message("One or more masks missing")
+                        return
+                    
+                    # Check if background pixel
+                    if axon_layer.data[cords[0], cords[1]] == 0 and myelin_layer.data[cords[0], cords[1]] == 0:
+                        show_info("Backround pixel - no morphometrics to report")
+                        self.last_message = "Backround pixel - no morphometrics to report"
+                        return
+
+                    # Find the value of self.im_axonmyelin_label at the clicked position
+                    index = self.im_axonmyelin_label[cords[0], cords[1]]
+                    
+                    # Get the indices for each region with the same index value
+                    idx = np.where(self.im_axonmyelin_label == index)
+
+                    # Get a list of all x and y coordinates for the axon
+                    x_coords = idx[0]
+                    y_coords = idx[1]
+                    index_value = None
+
+                    # Save the x0 y0 coordinates of the all axons in the self.stats_dataframe in a "xycoords" dictionnary as ints, with their corresponding dataframe index as key
+                    xycoords = {}
+                    for index, row in self.stats_dataframe.iterrows():
+                        x0 = int(row["x0"])
+                        y0 = int(row["y0"])
+                        xycoords[index] = (y0, x0)
+
+                    # Find the xycoords of the clicked axon
+                    for index, xycoord in xycoords.items():
+                        if xycoord in zip(x_coords, y_coords):
+                            index_value = index
+                            break
+
+                    # Get the morphometrics statistics for the axon that was clicked, there is no index key
+                    axon_stats = self.stats_dataframe[self.stats_dataframe.index == index_value]
+
+                    # Open a window and show the following metrics for the axon at index_value: axon index, axon diameter, myelin thickness, g-ratio, and touching border
+                    axon_diameter = axon_stats["axon_diam"].values[0]
+                    myelin_thickness = axon_stats["myelin_thickness"].values[0]
+                    g_ratio = axon_stats["gratio"].values[0]
+                    touching_border = axon_stats["image_border_touching"].values[0]
+
+                    # Show the metrics in a window with two decimal places
+                    if index_value is not None:
+                        show_info(f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)} \u03bcm\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)} \u03bcm\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}")
+                        self.last_message = f"Axon index: {index_value}\nAxon diameter: {'{0:.2f}'.format(axon_diameter)} \u03bcm\nMyelin thickness: {'{0:.2f}'.format(myelin_thickness)} \u03bcm\ng-ratio: {'{0:.2f}'.format(g_ratio)}\nTouches border: {touching_border}"
+
+    def _on_label_click(self, layer, event):
+        if self.remove_axon_state:
+            if _CONTROL in event.modifiers:  # Command key on macOS
+                message = "Image layer must be selected."
+                self.show_info_message(message)
+                self.last_message = message
+                return
+
 
     def try_to_get_pixel_size_of_layer(self, layer):
         """Method to attempt to retrieve the pixel size of an image layer.
@@ -289,8 +496,8 @@ class ADSplugin(QWidget):
         )
         self.apply_model_thread.path_model = model_path
         self.apply_model_thread.gpu_id = self.settings.gpu_id
-        show_info(
-            "Applying ADS model... This can take a few seconds. Check the console for more information."
+        self.show_info_message(
+            "Running AI model... This can take a few seconds or minutes. Check the console/terminal for more information."
         )
         self.apply_model_thread.start()
 
@@ -317,6 +524,10 @@ class ADSplugin(QWidget):
         selected_layer = self.apply_model_thread.selected_layer
         image_directory = self.apply_model_thread.image_directory
         image_name_no_extension = selected_layer.name
+        # check if segment.prepare_inputs changed the target name
+        potential_target_name = image_name_no_extension + "_grayscale.png"
+        if (image_directory / potential_target_name).exists():
+            image_name_no_extension += '_grayscale'
         axon_mask_path = image_directory / (
             image_name_no_extension + str(axon_suffix)
         )
@@ -359,7 +570,6 @@ class ADSplugin(QWidget):
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
             return
-
         mask_file_path, _ = QFileDialog.getOpenFileName(
             self, "Select the mask you wish to load"
         )
@@ -370,7 +580,6 @@ class ADSplugin(QWidget):
             "The mask will be associated with " + microscopy_image_layer.name
         ):
             return
-
         img_png2D = ads_utils.imread(mask_file_path)
         # Extract the Axon mask
         axon_data = img_png2D > 200
@@ -402,6 +611,103 @@ class ADSplugin(QWidget):
         microscopy_image_layer.metadata[
             "associated_myelin_mask_name"
         ] = myelin_mask_name
+
+    def _on_remove_axons_click(self):
+        """Handles the click event of the 'Toggle axon removal' button.
+
+        Switches the state of the remove_axon_state attribute, which is used to determine whether the user can click axons to remove
+
+        Returns:
+            None
+        """
+
+        if not self.image_loaded_after_plugin_start:
+            self.show_info_message("Please load an image first. If you loaded an image and are seeing this, you loaded the image prior to the plugin. Please remove and relopen the image and masks.")
+            
+            # Uncheck the button
+            self.remove_axon_state = False
+            self.remove_axons_button.setChecked(False)
+            return
+
+        axon_layer = self.get_axon_layer()
+        myelin_layer = self.get_myelin_layer()
+
+        if (axon_layer is None) or (myelin_layer is None):
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\nPlease load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+
+            # Uncheck the button
+            self.remove_axon_state = False
+            self.remove_axons_button.setChecked(False)
+
+            return
+        else:
+            if self.im_axonmyelin_label is None:
+
+                axon_data = axon_layer.data
+                myelin_data = myelin_layer.data
+
+                # Label each axon object
+                im_axon_label = measure.label(axon_data)
+                # Measure properties for each axon object
+                axon_objects = measure.regionprops(im_axon_label)
+
+                ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
+                                [int(props.centroid[1]) for props in axon_objects])
+
+                self.im_axonmyelin_label = compute_morphs.get_watershed_segmentation(axon_data, myelin_data, ind_centroid)
+
+            self.remove_axon_state = not self.remove_axon_state
+
+            if self.remove_axon_state:
+                image_label = self.viewer.layers[0]
+                self.viewer.layers.selection.select_only(image_label)
+                show_info(f"How to use the remove axons feature.\nRaw histology image must be selected in the layers list.\nHold CONTROL/COMMAND and click on an axon to remove it in the axon and myelin masks.\nTo undo, select the axon layer and press CTRL+Z, then repeat with the myelin mask.")
+
+            print(f"remove_axon_state: {self.remove_axon_state}")
+            print(f"Button checked state: {self.remove_axons_button.isChecked()}")
+
+    def _on_show_axon_metrics(self):
+        """Handles the click event of the 'Show axon metrics' button.
+
+        Switches the state of the show_axon_metrices_state attribute, which is used to determine whether the user can click axons to remove
+
+        Returns:
+            None
+        """
+
+        if not self.image_loaded_after_plugin_start:
+            self.show_info_message("Please load an image first. If you loaded an image and are seeing this, you loaded the image prior to the plugin. Please remove and relopen the image and masks.")
+            # Uncheck the button
+            self.show_axon_metrics_state = False
+            self.show_axon_metrics_button.setChecked(False)
+            return
+
+        axon_layer = self.get_axon_layer()
+        myelin_layer = self.get_myelin_layer()
+
+        if (axon_layer is None) or (myelin_layer is None):
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\nPlease load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            # Uncheck the button
+            self.show_axon_metrics_state = False
+            self.show_axon_metrics_button.setChecked(False)
+            return
+        else:
+            if self.stats_dataframe is None:
+                self.show_info_message(f"Morphometrics for this image hasn't been computed yet - starting the Compute morphometrics process.")
+                status = self._on_compute_morphometrics_button()
+                if status == False:
+                    # Uncheck the button
+                    self.show_axon_metrics_state = False
+                    self.show_axon_metrics_button.setChecked(False)
+                    return
+
+            self.show_axon_metrics_state = not self.show_axon_metrics_state
+
+            if self.show_axon_metrics_state:
+                image_label = self.viewer.layers[0]
+                self.viewer.layers.selection.select_only(image_label)
+                show_info(f"How to use the show axon metrics feature.\nRaw histology image must be selected in the layers list.\nHold ALT/OPTION and click on an axon to show its metrics.")
+
 
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.
@@ -492,7 +798,7 @@ class ADSplugin(QWidget):
         Finally, adds an image to the viewer showing the index image array.
 
         Returns:
-            None
+            bool: True = success, False == failure
         """
         axon_layer = self.get_axon_layer()
         myelin_layer = self.get_myelin_layer()
@@ -515,7 +821,7 @@ class ADSplugin(QWidget):
             pixel_size = microscopy_image_layer.metadata["pixel_size"]
 
         if pixel_size is None:
-            return
+            return False
 
         # Ask the user where to save
         default_name = Path(os.getcwd()) / "Morphometrics.csv"
@@ -526,24 +832,38 @@ class ADSplugin(QWidget):
             filter="CSV file(*.csv)",
         )
         if file_name == "":
-            return
+            return False
 
         # Compute statistics
         (
             stats_dataframe,
             index_image_array,
+            im_instance_seg,
+            im_axonmyelin_label
         ) = compute_morphs.get_axon_morphometrics(
             im_axon=axon_data,
             im_myelin=myelin_data,
             pixel_size=pixel_size,
             axon_shape=self.settings.axon_shape,
             return_index_image=True,
+            return_border_info=True,
+            return_instance_seg=True,
+            return_im_axonmyelin_label=True
         )
         try:
             compute_morphs.save_axon_morphometrics(file_name, stats_dataframe)
 
         except IOError:
             self.show_info_message("Cannot save morphometrics")
+            return False
+
+        self.viewer.add_image(
+            data=im_axonmyelin_label,
+            rgb=False,
+            colormap="gist_earth",
+            blending="translucent",
+            name="instance seg",
+        )
 
 
         self.viewer.add_image(
@@ -565,6 +885,14 @@ class ADSplugin(QWidget):
         qa = MetricsQA(file_name)
 
         qa.plot_all(qa_folder, quiet=True)
+
+        self.stats_dataframe = stats_dataframe
+        self.index_image_array = index_image_array
+        self.im_instance_seg = im_instance_seg
+        self.im_axonmyelin_label = im_axonmyelin_label
+
+        return True
+
 
     def _on_settings_menu_clicked(self):
         """Create and display the settings menu when the settings menu button is clicked.
@@ -642,13 +970,19 @@ class ADSplugin(QWidget):
             return None
 
         if type_of_mask == "axon":
-            return self.get_layer_by_name(
-                image_label.metadata["associated_axon_mask_name"]
-            )
+            if "associated_axon_mask_name" not in image_label.metadata:
+                return None
+            else:
+                return self.get_layer_by_name(
+                    image_label.metadata["associated_axon_mask_name"]
+                )
         elif type_of_mask == "myelin":
-            return self.get_layer_by_name(
-                image_label.metadata["associated_myelin_mask_name"]
-            )
+            if "associated_myelin_mask_name" not in image_label.metadata:
+                return None
+            else:
+                return self.get_layer_by_name(
+                    image_label.metadata["associated_myelin_mask_name"]
+                )
         return None
 
     def get_axon_layer(self):
@@ -703,7 +1037,11 @@ class ADSplugin(QWidget):
         message_box.setIcon(QMessageBox.Information)
         message_box.setText(message)
         message_box.setStandardButtons(QMessageBox.Ok)
-        message_box.exec()
+
+        if message_box.exec() == QMessageBox.Ok:
+            return True
+        else:
+            return False
 
     def show_ok_cancel_message(self, message):
         """Displays a message box with an Ok and Cancel button and prompts the user to confirm an action.
@@ -745,14 +1083,10 @@ class ADSplugin(QWidget):
             The AxonDeepSeg citation
         """
         return (
-            "If you use this work in your research, please cite it as follows: \n"
-            "Zaimi, A., Wabartha, M., Herman, V., Antonsanti, P.-L., Perone, C. S., & Cohen-Adad, J. (2018). "
-            "AxonDeepSeg: automatic axon and myelin segmentation from microscopy data using convolutional "
-            "neural networks. Scientific Reports, 8(1), 3816. "
-            "Link to paper: https://doi.org/10.1038/s41598-018-22181-4. \n"
+            "If you use this work, please cite us: \n"
+            "Zaimi et al (2018): https://doi.org/10.1038/s41598-018-22181-4. \n"
             "Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)"
         )
-
 
 class ApplyModelThread(QtCore.QThread):
     """QThread class used to segment an image by applying a model in a separate thread.

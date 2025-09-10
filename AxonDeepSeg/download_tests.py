@@ -1,16 +1,35 @@
+import AxonDeepSeg
 from AxonDeepSeg.ads_utils import download_data, convert_path
 from pathlib import Path
+from loguru import logger
 import shutil
+import argparse
 
 
-def download_tests(destination=None):
+def download_tests(destination=None, overwrite=True):
+    '''
+    Download test data for AxonDeepSeg.
+    
+    Parameters
+    ----------
+    destination : str
+        Directory to download the tests to. Default: test/
+    '''
+    # Get AxonDeepSeg installation path
+    package_dir = Path(AxonDeepSeg.__file__).parent
     if destination is None:
-        test_files_destination = Path("test/__test_files__")
+        test_files_destination =  package_dir.parent / "test" / "__test_files__"
+        print('Downloading test files to default location: {}'.format(test_files_destination))
     else:
         destination = convert_path(destination)
         test_files_destination = destination / "__test_files__"
 
-    url_tests = "https://github.com/axondeepseg/data-testing/archive/refs/tags/r20250117.zip"  
+    if test_files_destination.exists() and overwrite == False:
+        logger.info("Overwrite set to False - not deleting old test files.")
+        return test_files_destination
+
+    url_tests = "https://github.com/axondeepseg/data-testing/archive/refs/tags/r20250610.zip"
+    
     files_before = list(Path.cwd().iterdir())
 
     if (
@@ -27,6 +46,8 @@ def download_tests(destination=None):
     # retrieving unknown test files names
     test_folder = list(set(files_after)-set(files_before))
     folder_name_test_files = ''.join([str(x) for x in test_folder if 'data-testing' in str(x)])
+    output_dir=test_files_destination.resolve()
+
 
     if test_files_destination.exists():
         print('Test files folder already existed - deleting old one.')
@@ -37,5 +58,20 @@ def download_tests(destination=None):
     # remove temporary folder
     shutil.rmtree(folder_name_test_files)
 
+    return output_dir
+
 def main(argv=None):
-    download_tests()
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-d", "--dir",
+        required=False,
+        help="Directory to download the tests to. Default: test/",
+        default = None,
+    )
+    args = vars(ap.parse_args(argv))
+
+    download_tests(destination=args["dir"], overwrite=True)
+
+if __name__ == "__main__":
+    with logger.catch():
+        main()

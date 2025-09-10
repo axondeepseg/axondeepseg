@@ -32,56 +32,155 @@ Installation
 ============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
-Install AxonDeepSeg
--------------------
+Install Options
+---------------
 
-To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+.. tabs::
 
-    git clone https://github.com/neuropoly/axondeepseg.git
-    cd axondeepseg
+   .. tab:: Install via ``pip`` (recommended)
 
-Then, for Linux or macOS systems, run::
+      This section provides instructions for installing the AxonDeepSeg plugin directly via `pip`. This method is useful if you prefer to manage your Python packages using `pip` instead of the Napari Plugin Manager.
 
-    ./install_ads
+      **Prerequisites**
 
-and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
+      Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
 
-    ./install_ads -y
+      1. **Python Version**: You need to have Python 3.11.x or 3.12.x installed. We recommend using a virtual environment to manage dependencies. If you are using ``conda``, you can create a virtual environment with the following command:
 
-.. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
-   ::
+         .. code-block:: bash
+         
+            conda create -n napari_venv python==3.12
+            conda activate napari_venv
 
-        # ~/.config/pip/pip.conf
-        [install]
-        extra-index-url =
-          https://download.pytorch.org/whl/cpu
-    
-.. comment: There's similar configs used for the opposite cases:
-            owning a GPU that's so new it needs CUDA 11, or owning a GPU but running Windows.
-            See https://github.com/axondeepseg/axondeepseg/pull/642#issuecomment-1142311380.
-            We don't document them publically because they are rare and the distraction will sew confusion.
-            People in these situations can ask us for help.
+      2. **Install Napari**: Install Napari with all its dependencies by running:
 
-For Windows systems, run::
+         .. code-block:: bash
+         
+            pip install "napari[all]"
 
-    install_ads.bat
+      **Installation Steps**
 
-Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
+      1. **Install AxonDeepSeg**:
+         Install the AxonDeepSeg plugin via `pip` by running the following command:
 
-1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
-2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
-3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
-4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
-5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
+         .. code-block:: bash
+         
+            pip install "axondeepseg>=5"
 
-Updating AxonDeepSeg
---------------------
+         This will install the latest version of AxonDeepSeg (version 5 or higher) along with its dependencies.
 
-To update the AxonDeepSeg to the latest version, run::
+      2. **Launch Napari**:
+         After installation, launch Napari by running:
 
-    git checkout master && git pull
+         .. code-block:: bash
+         
+            napari
 
-and then follow the installation instructions above specified for your operating system.
+      3. **Open the AxonDeepSeg Plugin**:
+         Once Napari is open, navigate to the top menu bar and click on:
+
+         .. code-block:: text
+         
+            Plugins -> ADS (AxonDeepSeg)
+
+         This will open the AxonDeepSeg plugin interface.
+
+      **Troubleshooting**
+
+      - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
+      - If the plugin does not appear in the Plugins menu, ensure that the installation was successful and that you are using the correct Python environment.
+      - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
+
+   .. tab:: Install via ``git`` (for  developpers)
+
+      To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+      
+          git clone https://github.com/neuropoly/axondeepseg.git
+          cd axondeepseg
+
+      .. tabs::
+         .. group-tab:: Linux/MacOS
+            For Linux or macOS systems, run::
+      
+                ./install_ads
+
+            and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
+      
+                ./install_ads -y
+
+            .. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
+               ::
+         
+                  # ~/.config/pip/pip.conf
+                  [install]
+                  extra-index-url =
+                  https://download.pytorch.org/whl/cpu
+
+            .. comment: There's similar configs used for the opposite cases:
+                        owning a GPU that's so new it needs CUDA 11, or owning a GPU but running Windows.
+                        See https://github.com/axondeepseg/axondeepseg/pull/642#issuecomment-1142311380.
+                        We don't document them publically because they are rare and the distraction will sew confusion.
+                        in these situations can ask us for help.
+
+         .. group-tab:: Windows
+            For Windows systems, run::
+      
+                install_ads.bat
+
+            Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
+      
+            1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
+            2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
+            3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
+            4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
+            5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
+
+      **Updating AxonDeepSeg**
+
+      To update the AxonDeepSeg to the latest version, run::
+
+         git checkout master && git pull
+
+      and then follow the installation instructions above specified for your operating system.
+
+   .. tab:: Install via ``napari``
+
+         AxonDeepSeg is also available on the Napari Plugin Manager. Follow these instructions to set up the plugin in your environment, however we recommend using the `pip` installation method for a more straightforward setup if you don't already have Napari installed
+
+         **Prerequisites**
+
+         Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
+
+         1. Napari
+         2. Python 3.11.x or 3.12.x
+
+         **Installation Steps**
+
+         1. **Launch Napari**:
+
+         2. **Open the Plugins Manager**:
+            Once Napari is open, navigate to the top menu bar and click on:
+
+            .. code-block:: text
+            
+               Plugins -> Install/Uninstall Plugins
+
+         3. **Search for AxonDeepSeg**:
+            In the Plugin Manager, use the search bar to look for the AxonDeepSeg plugin by typing:
+
+            .. code-block:: text
+            
+               axondeepseg
+
+         4. **Install the Plugin**:
+            Once the AxonDeepSeg plugin appears in the search results, click the **Install** button next to it. Napari will automatically download and install the plugin along with its dependencies.
+
+         **Troubleshooting**
+
+         - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
+         - If the plugin does not appear in the search results, ensure you have an active internet connection and try refreshing the Plugin Manager.
+         - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
+
 
 Testing the installation
 ------------------------
@@ -260,13 +359,11 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 -f FILENAME         Name of the excel file in which the morphometrics will be stored.
                     The excel file extension can either be **.xlsx** or **.csv**.
                     If name of the excel file is not provided, the morphometrics will be saved as **axon_morphometrics.xlsx**.
-
--b                  Flag to extract additionnal bounding box information on axonmyelin objects.
-                    Specifying this option ``-b`` flag will add a boolean value indicating if the axon touches one of the image border. It will also output every axon's bounding box (including its myelin). For more information, see the morphometrics file description in the subsection below.
-
 -c                  Flag to save the colorized instance segmentation. For more information about this feature, see the *Colorization* subsection below.
 
 -u                  Toggles *unmyelinated mode*. This will compute morphometrics for unmyelinated axons. Note that this requires a separate unmyelinated axon segmentation mask with suffix ``_seg-uaxon``.
+
+-n                  Computes morphometrics specific to **nerve sections** using the ``-n`` option. This enables analysis of axons **within nerve fascicle boundaries**, based on a segmentation mask with the suffix ``_seg-nerve.png``.
 
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -294,8 +391,8 @@ This generates a **'image_axon_morphometrics.xlsx'** file in the image directory
             
             axondeepseg -i test/__test_files__/__test_demo_files__/image.png -a ellipse
 
-Morphometrics of a specific image from multiple folders
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Morphometrics of specific images from multiple folders
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argument of the CLI separated by space. For instance, to compute morphometrics of the image **'image.png'** and **'image_2.png'** present in the folders **'test/__test_files__/__test_demo_files__/'** and **'test/__test_files__/__test_segment_files__/'** respectively of the test dataset, use the following command::
 
     axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png test/__test_files__/__test_segment_files__/image_2.png
@@ -343,6 +440,70 @@ This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morph
 
 
 Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
+
+Morphometrics for Nerve Sections
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can compute morphometrics specific to **nerve sections** using the ``-n`` option
+in the ``axondeepseg_morphometrics`` command-line interface. This enables analysis of axons
+within nerve fascicle boundaries, based on a segmentation mask with the suffix ``_seg-nerve.png``.
+Currently, ``axondeepseg`` does not produce this mask, so you will need to supply it manually.
+This is useful because the total nerve area allows for the calculation of axon density.
+
+When used, the ``-n`` option performs:
+
+- Morphometric extraction of axons and myelin *within* the nerve boundary.
+- Density estimation of axons inside the fascicle.
+- Removal of axons located *outside* of the nerve mask before final metrics are saved.
+
+.. code-block:: bash
+
+   axondeepseg_morphometrics -i <IMAGE_PATH> -n
+
+The image folder must contain:
+
+- Axon mask: ``*_seg-axon.png``
+- Myelin mask: ``*_seg-myelin.png``
+- Nerve segmentation mask: ``*_seg-nerve.png``
+
+One output file will be generated:
+
+- ``<filename>_nerve_morphometrics.json``: Morphometrics including axon count and density inside the nerve region.
+
+Below is an example of the JSON file generated when using the ``-n`` option on an image with two nerve fascicles 
+(in other words, two disjoint regions in the ``_seg-nerve.png`` mask). This file reports the nerve fascicle areas 
+and their respective axon densities, as well as global area and total axon density.
+
+.. code-block:: json
+
+    {
+        "fascicle_areas": {
+            "0": {
+                "value": 103021.45,
+                "unit": "um^2",
+                "axon_density": {
+                    "value": 0.00672,
+                    "unit": "axon/um^2"
+                }
+            },
+            "1": {
+                "value": 85792.12,
+                "unit": "um^2",
+                "axon_density": {
+                    "value": 0.00815,
+                    "unit": "axon/um^2"
+                }
+            }
+        },
+        "total_area": {
+            "value": 188813.57,
+            "unit": "um^2"
+        },
+        "total_axon_density": {
+            "value": 0.00741,
+            "unit": "axon/um^2"
+        }
+    }
     
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -427,10 +588,10 @@ By default for axon shape, that is, `circle`, the equivalent diameter is used. F
      - Maximum x value of the bounding box (in pixels). This bound is exclusive.
 
 
-Colorization
-~~~~~~~~~~~~
+Colorization & Instance Segmentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-During the morphometrics computation, ``axondeepseg`` internally converts the semantic segmentation (output of the deep learning model) into an instance segmentation. This step is essential to take measurements on individual axons when the axon density is high, because if two or more elements have their myelin touching, the software needs to know which axon it is attached to. Using the ``-c`` flag, you can obtain the colorized instance segmentation to take a look at this internal representation. The image below illustrates what a typical instance segmentation looks like.
+During the morphometrics computation, ``axondeepseg`` internally converts the semantic segmentation (output of the deep learning model) into an instance segmentation. This step is essential to take measurements on individual axons when the axon density is high, because if two or more elements have their myelin touching, the software needs to know which axon it is attached to. Using the ``-c`` flag, you can obtain the colorized instance segmentation to take a look at this internal representation. The image below illustrates what a typical instance segmentation looks like. This option will also save the raw instance segmentation in 16-bit format (with value 0 for background, 1 for the first axon, 2 for the second axon, etc.) in the same folder as the input image, with the suffix ``_seg-instance-map.png``.
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/instance_seg_example.png
 
@@ -464,6 +625,36 @@ because they are easier to compute.
 .. comment: We need to add explanation for perimeter estimation, but this 
             part would need to be refactored beforehand.
 
+Postprocessing
+--------------
+The morphometrics computation can be followed by optional postprocessing steps. The following sections describe the postprocessing options available in AxonDeepSeg.
+
+Morphometrics aggregation
+~~~~~~~~~~~~~~~~~~~~~~~~~
+This feature aggregates morphometrics per subject. It is useful when you have multiple images per subject and you want to compute statistics per subject. 
+
+To use this feature, need to have done the following:
+
+1. Segment all the images of interest using AxonDeepSeg using the **axondeepseg** command.
+2. Compute the morphometrics of all the images using the **axondeepseg_morphometrics** command. Make sure that the morphometrics files are named with the same prefix as the image name (e.g. **image_axon_morphometrics.xlsx** for **image.png**).
+3. Have the following folder structure::
+
+    folder_with_all_subjects/
+    ├── subject1/
+    │   ├── image1.png
+    │   ├── image1_axon_morphometrics.xlsx
+    │   ├── image2.png
+    │   ├── image2_axon_morphometrics.xlsx
+    │   ├── ...
+    ├── subject2/
+    |   ├── ...
+    └── ...
+
+To aggregate the morphometrics per subject, use the following command::
+
+    axondeepseg_aggregate -i folder_with_all_subjects
+
+This will generate a folder called **morphometrics_agg** in the input folder, containing the aggregated morphometrics per subject. It will also contain a short summary file named **statistics_per_axon_caliber.xlsx** which contains basic statistics for axon diameter, myelin thickness and g-ratio. These statistics are computed per axon diameter range.
 
 .. _manual-correction-label:
 
@@ -533,8 +724,33 @@ Modify the mask
 
 .. warning:: The "Fill axons" functionality will not behave properly if there are myelin objects not closed, or if multiple myelin objects touch each other to form a big closed cluster.
 
-Modify the mask
-~~~~~~~~~~~~~~~
+Axon removal toggle
+~~~~~~~~~~~~~~~~~~~
+
+.. note::
+   To use this feature, the image must have been loaded after the plugin, and the mask must have been loaded or generated. Lastly, the image layer must be selected.
+
+* The "Axon removal toggle" button in the AxonDeepSeg plugin (right panel) can be used to remove axons from the mask.
+* After activated, CTRL-click on the axon you want to remove. The axon will be removed from the mask.
+
+.. note::
+   To undo, select the axon layer and press CTRL+Z, then repeat with the myelin mask.
+
+* To deactivate the "Axon removal toggle" mode, click on the button again.
+
+
+Show axon metrics
+~~~~~~~~~~~~~~~~~
+
+.. note::
+   To use this feature, the image must have been loaded after the plugin, and the mask must have been loaded or generated. Lastly, the image layer must be selected.
+
+* The "Show axon metrics" button in the AxonDeepSeg plugin (right panel) can be used to pview some key metrics of a clicked axon.
+* After activated, ALT/OPTION-click on the axon you want to view the metrics of. A pop-up window will show the metrics of the clicked axon at the bottom right of the image viewer.
+* To deactivate the "Toggle axon removal" mode, click on the button again.
+
+Save the mask
+~~~~~~~~~~~~~
 
 * Click the "Save segmentation" button in the AxonDeepSeg plugin (right panel).
 * Note: In case of an overlap between the axons mask and the myelin mask, the myelin will have priority when saving the new segmentation.

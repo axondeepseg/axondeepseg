@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from loguru import logger
+import json
 
 # Scientific modules imports
 import math
@@ -15,7 +16,7 @@ import pandas as pd
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from AxonDeepSeg.ads_utils import convert_path
+from AxonDeepSeg.ads_utils import convert_path, imread
 from AxonDeepSeg import postprocessing, params
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
 
@@ -85,8 +86,9 @@ def get_axon_morphometrics(
         pixel_size=None, 
         axon_shape="circle", 
         return_index_image=False, 
-        return_border_info=False,
-        return_instance_seg=False
+        return_border_info=True,
+        return_instance_seg=False,
+        return_im_axonmyelin_label=False
     ):
     """
     Find each axon and compute axon-wise morphometric data, e.g., equivalent diameter, eccentricity, etc.
@@ -98,9 +100,11 @@ def get_axon_morphometrics(
                             if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
                             if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
     :param return_index_image (optional): If set to true, an image with the index numbers at the axon centroids will be
-    returned as a second return array
+                                          returned as a second return array
     :param return_border_info (optional): Flag to output if axons touch the image border along with their bounding box 
-
+    :param return_instance_seg (optional): To return a colorized instance map of the axonmyelin 
+    :param return_im_axonmyelin_label (optional): To return the raw instance map of the axonmyelin mask
+    
     :return: Array(dict): dictionaries containing morphometric results for each axon
     """
 
@@ -114,7 +118,8 @@ def get_axon_morphometrics(
         pixelsize = pixel_size
 
     # Label each axon object
-    im_axon_label = measure.label(im_axon)
+    connectivity = 1 if im_myelin is None else 2
+    im_axon_label = measure.label(im_axon, connectivity=connectivity)
     # Measure properties for each axon object
     axon_objects = measure.regionprops(im_axon_label)
 
@@ -139,7 +144,7 @@ def get_axon_morphometrics(
 
     # Declare a DataFrame that will be used to store the result of the morphometrics
     stats_dataframe = pd.DataFrame()
-
+    
     # Loop across axon property and fill up dictionary with morphometrics of interest
     for prop_axon in axon_objects:
         # Centroid
@@ -231,30 +236,40 @@ def get_axon_morphometrics(
                 logger.warning(f"WARNING: Myelin object not found for axon centroid [y:{y0}, x:{x0}]")
 
         # Add the stats to the dataframe
-        if stats_dataframe.empty:
-            stats_dataframe = pd.DataFrame(stats, index=[0]) # First iteration
-        else:
-            stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
+        stats_dataframe = pd.concat([stats_dataframe, pd.DataFrame(stats, index=[0])], ignore_index=True)
+
+    if stats_dataframe.empty:
+        stats_dataframe = pd.DataFrame(columns=['x0','y0','axon_diam','axon_area','axon_perimeter', 'gratio', 'myelin_thickness', 'myelin_area', 'solidity','eccentricity', 'orientation']) 
+        empty_df = True
+    else: 
+        empty_df = False
 
     if (not return_index_image) and (not return_instance_seg):
         return stats_dataframe
     else:
         output = (stats_dataframe,)
-    if return_index_image is True:
-        # Extract the information required to generate the index image
-        x0_array = stats_dataframe["x0"].to_numpy()
-        y0_array = stats_dataframe["y0"].to_numpy()
-        diam_array = stats_dataframe["axon_diam"].to_numpy()
-        # Create the axon coordinate array, then generate the image
-        mean_diameter_in_pixel = np.average(diam_array) / pixelsize
-        axon_indexes = np.arange(stats_dataframe.shape[0])
-        index_image_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
-                                                                  tuple(reversed(im_axon.shape)),
-                                                                  mean_diameter_in_pixel)
-        output = (*output, index_image_array)
+        
+    if return_index_image is True: 
+        if empty_df:
+            index_image_array = np.zeros_like(im_axon, dtype='uint8')
+            output = (*output, index_image_array)
+        else:
+            # Extract the information required to generate the index image
+            x0_array = stats_dataframe["x0"].to_numpy()
+            y0_array = stats_dataframe["y0"].to_numpy()
+            diam_array = stats_dataframe["axon_diam"].to_numpy()
+            # Create the axon coordinate array, then generate the image
+            mean_diameter_in_pixel = np.average(diam_array) / pixelsize
+            axon_indexes = np.arange(stats_dataframe.shape[0])
+            index_image_array = postprocessing.generate_axon_numbers_image(axon_indexes, x0_array, y0_array,
+                                                                    tuple(reversed(im_axon.shape)),
+                                                                    mean_diameter_in_pixel)
+            output = (*output, index_image_array)
     
     if return_instance_seg:
         output = (*output, im_instance_seg)
+
+    if return_im_axonmyelin_label:
         output = (*output, im_axonmyelin_label)
 
     return output
@@ -543,3 +558,113 @@ def write_aggregate_morphometrics(path_folder, aggregate_metrics):
         msg = f"Error: Could not save file \"aggregate_morphometrics.txt\" in directory \"{path_folder}\"."
         logger.error(msg)
         raise
+
+def save_nerve_morphometrics_to_json(stats_dataframe, output_path):
+    """
+    Saves nerve morphometrics (fascicle areas and total area) to a JSON file.
+    """
+    to_drop = ['axon_perimeter', 'axon_diam', 'solidity', 'eccentricity', 'orientation']
+    stats_dataframe = stats_dataframe.drop(columns=[col for col in to_drop if col in stats_dataframe.columns])
+
+    # rename 'axon_area' to 'nerve_area'
+    stats_dataframe = stats_dataframe.rename(columns={'axon_area': 'nerve_area'})
+
+    total_nerve_area = stats_dataframe['nerve_area'].sum()
+
+    fascicle_areas = {
+        str(idx): {"value": row["nerve_area"], "unit": "um^2"}
+        for idx, row in stats_dataframe.iterrows()
+    }
+
+    nerve_morphometrics_data = {
+        "fascicle_areas": fascicle_areas,
+        "total_area": {"value": total_nerve_area, "unit": "um^2"}
+    }
+    
+    with open(output_path, "w", encoding="utf-8") as json_file:
+        json.dump(nerve_morphometrics_data, json_file, indent=4)
+
+
+def remove_outside_nerve(pred_axon, pred_myelin, pred_nerve):
+    """
+    Removes axons and myelin that are outside the nerve section.
+    """
+    # ensure all masks are binary
+    pred_nerve = pred_nerve > 0  
+    pred_axon = pred_axon > 0    
+    pred_myelin = pred_myelin > 0 
+
+    # apply removal
+    pred_axon = np.logical_and(pred_axon, pred_nerve)
+    pred_myelin = np.logical_and(pred_myelin, pred_nerve)
+
+    return pred_axon, pred_myelin
+
+def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
+    """
+    Assigns axons to the labeled fascicles in 'nerve_mask', 
+    then uses the area for each label from 'nerve_data' to compute density.
+    """
+
+    # read columns in (y, x) order so the loop matches (y, x)
+    axon_positions = axon_df[["x0 (px)", "y0 (px)"]].values
+
+    axon_df["fascicle_id"] = -1
+
+    nerve_fascicles = measure.label(nerve_mask)
+    print(f"Regions identified: {nerve_fascicles.max()}")
+
+    height, width = nerve_fascicles.shape
+
+    # assign each axon to the label in nerve_fascicles
+    for i, (x, y) in enumerate(axon_positions):
+        y_int, x_int = int(y), int(x)
+        if 0 <= y_int < height and 0 <= x_int < width:
+            label_id = nerve_fascicles[y_int, x_int]
+            if label_id > 0:
+                axon_df.loc[i, "fascicle_id"] = label_id - 1
+
+    # count how many axons in each label
+    estimated_axons = axon_df["fascicle_id"].value_counts().to_dict()
+
+    fascicle_densities = {}
+    for label_str, fascicle_info in nerve_data["fascicle_areas"].items():
+        fascicle_area = fascicle_info["value"]
+        label_id = int(label_str)  
+        num_axons = estimated_axons.get(label_id, 0)
+        density = round(num_axons / fascicle_area, 5) if fascicle_area > 0 else 0
+        fascicle_densities[label_str] = {
+            "value": density,
+            "unit": "axon/um^2"
+        }
+    total_axons = len(axon_df[axon_df["fascicle_id"] >= 0])
+
+    return fascicle_densities, total_axons
+
+
+def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path, nerve_mask_path):
+    """
+    Computes axon density per fascicle and total axon density.
+    """
+    axon_df = pd.read_excel(axon_morphometrics_path)
+
+    with open(nerve_morphometrics_path, "r", encoding="utf-8") as json_file:
+        nerve_data = json.load(json_file)
+
+    if "total_area" not in nerve_data:
+        raise KeyError("total_area not found in nerve_morphometrics JSON")
+    total_nerve_area = nerve_data["total_area"]["value"]
+
+    nerve_mask = imread(nerve_mask_path)
+    fascicle_densities, total_axons = compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask)
+
+    total_density = round(total_axons / total_nerve_area, 5) if total_nerve_area > 0 else 0
+    nerve_data["total_axon_density"] = {"value": total_density, "unit": "axon/um^2"}
+
+    for idx, density in fascicle_densities.items():
+        nerve_data["fascicle_areas"][idx]["axon_density"] = density
+
+    # add axon densities to the nerve morphometrics JSON
+    with open(nerve_morphometrics_path, "w", encoding="utf-8") as json_file:
+        json.dump(nerve_data, json_file, indent=4)
+

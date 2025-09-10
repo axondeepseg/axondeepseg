@@ -123,7 +123,7 @@ class TestCore(object):
             file.unlink()
 
     # --------------segment_folder tests-------------- #
-    @pytest.mark.unit
+    @pytest.mark.integration
     def test_segment_folder_creates_expected_files(self):
 
         outputFiles = [

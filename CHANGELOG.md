@@ -1,6 +1,153 @@
 Changelog
 ===============================================================================
 
+
+## v5.2.0 (2025-09-04)
+
+**FEATURE**
+
+ - Save raw instance segmentation v2 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/926)
+
+**BUG**
+
+ - Quick fix for aggregation file search [View pull request](https://github.com/axondeepseg/axondeepseg/pull/924)
+
+**TESTING**
+
+ - Change mousepress location for tests compatibility with napari>0.6.1 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/928)
+ - Ensure pip tests only run tests in the latest release branch [View pull request](https://github.com/axondeepseg/axondeepseg/pull/927)
+
+## v5.1.1 (2025-07-02)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.1.0...v5.1.1)
+
+**INSTALLATION**
+
+ - Pin napari<0.6.2 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/918)
+
+## v5.1.0 (2025-06-27)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.0.1...v5.1.0)
+
+**GUI**
+
+ - Add click to delete "axon" objects and click to view morphometrics [View pull request](https://github.com/axondeepseg/axondeepseg/pull/868)
+
+**Installation**
+ 
+ - Pre-release changes for 5.1.0 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/903)
+ - Add checks to run download models if API called without having been downloaded during installation [View pull request](https://github.com/axondeepseg/axondeepseg/pull/887)
+ - Transition installation from deprecated setup.py+requirements.txt to pyproject.toml [View pull request](https://github.com/axondeepseg/axondeepseg/pull/886)
+ - Move napari plugin into main package [View pull request](https://github.com/axondeepseg/axondeepseg/pull/891)
+
+**CLI** 
+
+ - Log current commit hash in CLI [View pull request](https://github.com/axondeepseg/axondeepseg/pull/884)
+
+**Morphometrics**
+
+ - Morphometric aggregation + visualization [View pull request](https://github.com/axondeepseg/axondeepseg/pull/898)
+ - Use skimage.measure.label with 1-connectivity [View pull request](https://github.com/axondeepseg/axondeepseg/pull/910)
+
+**Testing**
+
+ - Update skimage and data-testing versions, update morphometrics pkl for consistency check [View pull request](https://github.com/axondeepseg/axondeepseg/pull/890)
+
+**BUG** 
+
+ - Create true alias for ads_activate [View pull request](https://github.com/axondeepseg/axondeepseg/pull/901)
+ - Fix bug loading predictions of grayscale converted img [View pull request](https://github.com/axondeepseg/axondeepseg/pull/895)
+ - Fix destination feature for download models/tests [View pull request](https://github.com/axondeepseg/axondeepseg/pull/889)
+ - Make get_existing_models_list returns None when no models exist [View pull request](https://github.com/axondeepseg/axondeepseg/issues/883)
+
+
+## v5.0.1 (2025-02-07)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v5.0.0...v5.0.1)
+
+**BUG** 
+
+ - Remove pygit2 & commit logging - breaks when ADS not downloaded as a git repo [View pull request](https://github.com/axondeepseg/axondeepseg/issues/876)
+
+## v5.0.0 (2025-01-23)
+[View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v4.1.0...v5.0.0)
+
+**BUG**
+
+ - Fix 16 bit conversion bug.  [View pull request]( https://github.com/axondeepseg/axondeepseg/pull/710)
+ - Fix windows install bug.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/734)
+ - Fix a bug where the error message would not show up if the model couldn't be applied.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/750)
+ - Change imageio as_gray to mode=L due to imageio v2->v3.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/739)
+ - Remove unicode in units names.  [View pull request](ttps://github.com/axondeepseg/axondeepseg/pull/780)
+ - Fix download_models bug - download to path.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/836)
+ - Update _widget.py [View pull request](https://github.com/axondeepseg/axondeepseg/pull/861)
+
+**ENHANCEMENT**
+
+ - Add warnings related to "no-patch" option.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/704)
+ - Change pixel size to reduce RAM usage during no-patch test.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/707)
+ - Support unmyelinated axons in morphometrics.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/796)
+ - CLI: Log/print commit hash, and --version option.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/847)
+
+**FEATURE**
+
+ - Segment images without patches.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/696)
+ - Add GPU ID setting in CLI and FSLeyes.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/701)
+- `ivadomed` to `nnunetv2` backend migration.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/800)
+ - Log CLI args, add breakline [View pull request](https://github.com/neuropoly/axondeepseg/pull/854)
+
+
+**DOCUMENTATION**
+
+ - Fix broken link.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/720)
+ - Patch RTD setup to deprication.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/762)
+ - Add testimonial section in documentation.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/764)
+ - Add A. Wheeler testimonial.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/767)
+ - Add morphometrics algorithms description.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/777)
+ - Update sphinx to fix doc build.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/816)
+ - Fix youtube bug in docs.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/825)
+ - Set `fail_on_warning = True` and resolve documentation warnings to ensure docs pass.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/846)
+ - Add Napari Plugin animation in doc.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/850)
+ - README: Add dark/light mode compatibility.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/853)
+ - Add reinstallation documentation [View pull request](https://github.com/neuropoly/axondeepseg/pull/788)
+ - Add preprint link to model_cards [View pull request](https://github.com/neuropoly/axondeepseg/pull/851)
+ - Fix crosslink bug in documentation [View pull request](https://github.com/neuropoly/axondeepseg/pull/858)
+ - Add generalist preprint in readme [View pull request](https://github.com/neuropoly/axondeepseg/pull/859)
+
+**GUI**
+
+ - Add no patch option to the FSLeyes plugin settings menu.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/700)
+ - Add napari plugin, set as default GUI tool.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/726)
+ - fix napari plugin not launching properly on Windows.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/828)
+
+**INSTALLATION**
+
+ - Update IVADOMED version.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/693)
+ - Update ivadomed version to 2.9.8.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/708)
+ - remove openCV requirement.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/713)
+ - [patch] remove matplotlib version requirement.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/729)
+ - Fix imagio below latest version by @mathieuboudreau in https://github.com/axondeepseg/axondeepseg/pull/740
+ - Remove conda-forge channel for speed and refactor environment.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/756)
+ - Patch onnxissue 1.16.0 issue.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/758)
+ - Update ivadomed version to 2.9.10.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/792)
+ - Pin acvl_utils!=0.2.1.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/834)
+ - Pin skimage<0.25.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/848)
+ - Remove scikitlearn pinned version and use updated reference pickle for morphometrics data testing   [View pull request](https://github.com/axondeepseg/axondeepseg/pull/860)
+
+**REFACTORING**
+
+ - Resolves warnings.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/694)
+ - Remove deprecated file and folder.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/721)
+ - Change "download_models" to "download_model".  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/830)
+ - Class value check - Change error to warning.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/838)
+ - Refactor config.py into ADS/params.py.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/844)
+
+**TESTING**
+
+ - Improve and force imread/imwrite conversion to 8bit int.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/669)
+ - Github Actions failure: macos " No installed conda 'base' environment found at !".  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/801)
+ - Consolidate coveralls services.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/819)
+ - Add CLI option to run all tests.  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/845)
+ - Update imread/imwrite functionality and tests  [View pull request](https://github.com/axondeepseg/axondeepseg/pull/855)
+ - Change test image(s) in rtd [View pull request](https://github.com/axondeepseg/axondeepseg/pull/852)
+
 ## v4.1.0 (2022-10-07)
 [View detailed changelog](https://github.com/axondeepseg/axondeepseg/compare/v4.0.0...v4.1.0)
 

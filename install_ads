@@ -297,6 +297,10 @@ function edit_shellrc() {
     fi
     # add line
     echo ""
+    # Add ads_activate alias
+    echo "alias ads_activate=\"source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/\""
+    # add line
+    echo ""
   ) >> "$RC_FILE_PATH"
 }
 
@@ -635,26 +639,12 @@ fi
 
 ## Install the axondeepseg into the Conda venv
 print info "Installing Python dependencies..."
-# Check if a frozen version of the requirements exist (for release only)
-if [[ -f "requirements-freeze.txt" ]]; then
-  print info "Using requirements-freeze.txt (release installation)"
-  REQUIREMENTS_FILE="requirements-freeze.txt"
-else
-  # Not a package
-  print info "Using requirements.txt (git installation)"
-  REQUIREMENTS_FILE="requirements.txt"
-fi
-(
-  # We use "--ignore-installed" to preserve the version of `certifi` installed into the conda
-  # env, which prevents https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3609
-  # We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
-  # This is necessary in order to install 'macosx_11_0' wheels. See also:
-  # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
-  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -r "$REQUIREMENTS_FILE" --ignore-installed certifi &&
-  print info "Installing axondeepseg..." &&
-  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . plugins/
-) ||
-  die "Failed running pip install: $?"
+# We use "--ignore-installed" to preserve the version of `certifi` installed into the conda
+# env, which prevents https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3609
+# We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
+# This is necessary in order to install 'macosx_11_0' wheels. See also:
+# https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
+SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . --ignore-installed certifi && print info "Installing axondeepseg..." &&  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . || die "Failed running pip install: $?"
 print info "All requirements installed!"
 
 ## Create launchers for Python scripts
@@ -667,8 +657,6 @@ for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*download*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
 cp "$ADS_DIR/$CONDA_DIR/envs/venv_ads/bin/napari" "$ADS_DIR/$BIN_DIR/ads_napari" || die "Problem creating launchers!"
-echo "source $ADS_DIR/ads_conda/bin/activate $ADS_DIR/ads_conda/envs/venv_ads/" > "$ADS_DIR/$BIN_DIR/ads_activate"
-chmod +x "$ADS_DIR/$BIN_DIR/ads_activate"
 
 # Activate the launchers, particularly download_model, download_tests, and axondeepseg_test
 export PATH="$ADS_DIR/$BIN_DIR:$PATH"

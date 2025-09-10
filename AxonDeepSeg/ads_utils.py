@@ -5,7 +5,6 @@ AxonDeepSeg utilities module.
 import os
 import sys
 from pathlib import Path
-import cgi
 import tempfile
 import zipfile
 import requests
@@ -17,6 +16,7 @@ import numpy as np
 from loguru import logger
 
 from AxonDeepSeg.params import valid_extensions
+import re
 
 def download_data(url_data):
     """ Downloads and extracts zip files from the web.
@@ -29,13 +29,19 @@ def download_data(url_data):
         session = requests.Session()
         session.mount('https://', HTTPAdapter(max_retries=retry))
         response = session.get(url_data, stream=True)
-
         if "Content-Disposition" in response.headers:
-            _, content = cgi.parse_header(response.headers['Content-Disposition'])
-            zip_filename = content["filename"]
+            header = response.headers["Content-Disposition"]
+            
+            # Extract filename manually using regex
+            match = re.search(r'filename="?(?P<filename>[^";]+)"?', header)
+            if match:
+                zip_filename = match.group("filename")
+            else:
+                print("Unexpected: Unable to extract filename from Content-Disposition")
         else:
             print("Unexpected: link doesn't provide a filename")
 
+        # Save to temporary directory
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir) / zip_filename
             with open(tmp_path, 'wb') as tmp_file:
@@ -91,7 +97,7 @@ def convert_path(object_path):
         else:
             raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
 
-def imread(filename):
+def imread(filename, use_16bit=False):
     """ Read image and convert it to desired bitdepth without truncation.
     """
 
@@ -148,21 +154,22 @@ def imread(filename):
     if len(_img.shape) < 3:
         _img = np.expand_dims(_img, axis=-1)
 
-    img = imageio.core.image_as_uint(_img, bitdepth=8)
+    bitdepth = 16 if use_16bit else 8
+    img = imageio.core.image_as_uint(_img, bitdepth=bitdepth)
 
     # Remove singleton dimension
-    print(img.ndim)
-    print(img.shape)
     if img.ndim == 3 and img.shape[-1] == 1:
        img = img[:, :, 0]
 
     return img
 
-def imwrite(filename, img, format='png'):
+def imwrite(filename, img, format='png', use_16bit=False):
     """ Write image.
     """
     # check datatype:
-    conversion_list = ['float64', 'float32', 'float16', 'uint16']
+    conversion_list = ['float64', 'float32', 'float16']
+    if not use_16bit:
+        conversion_list.append('uint16')
 
     if img.dtype in conversion_list:
         img = img.astype(np.uint8)
@@ -194,6 +201,11 @@ def get_existing_models_list():
     """
     ADS_path = os.path.dirname(os.path.realpath(__file__))
     models_path = os.path.join(ADS_path, "models")
+
+    # If models folder doesn't exist or it's empty, return None
+    if not os.path.exists(models_path) or not os.listdir(models_path):
+        return None
+
     models_list = next(os.walk(models_path))[1]
     if "__pycache__" in models_list:
         models_list.remove("__pycache__")

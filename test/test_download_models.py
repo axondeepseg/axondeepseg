@@ -31,7 +31,7 @@ class TestCore(object):
     def teardown_method(self):
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
-        print(fullPath)
+
         # Move up to the test directory, "test/"
         testPath = fullPath.parent 
         tmpPath = testPath / '__tmp__'
@@ -48,6 +48,12 @@ class TestCore(object):
         assert not self.valid_model_path.exists()
         download_model(self.valid_model, 'light', self.tmpPath)
         assert self.valid_model_path.exists()
+
+    @pytest.mark.unit
+    def test_main_cli_runs_succesfully_no_destination(self):
+        cli_test_model_path =  Path(AxonDeepSeg.__file__).parent / 'models' / 'model_seg_generalist_light'
+        output_dir = download_model(destination=None, overwrite=False)
+        assert output_dir == cli_test_model_path
 
     @pytest.mark.unit
     def test_download_model_cli_throws_error_for_unavailable_model(self):
@@ -79,14 +85,6 @@ class TestCore(object):
             AxonDeepSeg.download_model.main(["--list"])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
-
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_no_destination(self):
-        cli_test_model_path = Path('.') / 'models' / 'model_seg_generalist_light'
-
-        AxonDeepSeg.download_model.main(["-t","light"])
-
-        assert cli_test_model_path.exists()
 
     @pytest.mark.integration
     def test_main_cli_downloads_to_path(self):

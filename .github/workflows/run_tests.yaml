@@ -30,6 +30,7 @@ env:
   # This will be defined for non-debian platforms below too, but there's no harm in that.
   # (TravisCI quietly defined this on all their platforms, but we have to give it manually on GithubCI.)
   DEBIAN_FRONTEND: 'noninteractive'
+  VISPY_GL_BACKEND: 'osmesa'
 
 jobs:
   ultra_matrix_test:
@@ -106,18 +107,17 @@ jobs:
         run: |
           CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads
           pytest.exe ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
-
       # Step 4: Submnit to coveralls
       - name: Submit to coveralls
         uses: coverallsapp/github-action@v2
         with:
-          flag-name: ${matrix.os}
+          flag-name: ${{ matrix.os }}
           parallel: true
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
   finish:
-    needs: ultra_matrix_test
+    needs: [ultra_matrix_test]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -126,4 +126,3 @@ jobs:
       with:
         github-token: ${{ secrets.github_token }}
         parallel-finished: true
-        carryforward: "ubuntu-latest,macos-12,windows-latest"

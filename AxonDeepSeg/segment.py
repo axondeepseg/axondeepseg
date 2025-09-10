@@ -14,7 +14,6 @@ from pathlib import Path
 import json
 import argparse
 from argparse import RawTextHelpFormatter
-import pkg_resources
 from typing import Literal, List, NoReturn
 from loguru import logger
 
@@ -29,8 +28,9 @@ from AxonDeepSeg.params import valid_extensions, side_effect_suffixes
 
 # Global variables
 DEFAULT_MODEL_NAME = "model_seg_generalist_light"
-MODELS_PATH = pkg_resources.resource_filename('AxonDeepSeg', 'models')
-MODELS_PATH = Path(MODELS_PATH)
+
+package_dir = Path(AxonDeepSeg.__file__).parent
+MODELS_PATH = package_dir / 'models'
 
 DEFAULT_MODEL_PATH = MODELS_PATH / DEFAULT_MODEL_NAME
 
@@ -143,6 +143,21 @@ def segment_images(
 
     path_images = [convert_path(p) for p in path_images]
     path_model = convert_path(path_model)
+
+    available_models = ads.get_existing_models_list()
+    if not available_models or path_model.stem not in available_models:
+            try:
+                print('Model not found, attempting to download')
+                # Call download models from the AxonDeepSeg/download_model.py module
+
+                import AxonDeepSeg.download_model as download_model
+                download_model.download_model()
+
+                available_models = ads.get_existing_models_list()
+                assert path_model.stem in available_models
+            except Exception as e:
+                raise Exception('Could not download models, try again.') from e
+
     (fileformat, n_channels) = get_model_input_format(path_model)
         
     for path_img in path_images:
@@ -237,13 +252,6 @@ def main(argv=None):
         default=0,
     )
     ap.add_argument(
-        '-V',
-        '--version', 
-        action='version', 
-        version=AxonDeepSeg.__version_string__,
-        help='Displays the version and commit hash of AxonDeepSeg.',
-    )
-    ap.add_argument(
         "--gpu-id",
         dest="gpu_id",
         required=False,
@@ -261,8 +269,6 @@ def main(argv=None):
         f.write("===================================================================================\n")
 
     logger.info(AxonDeepSeg.__version_string__)
-
-    # Log command line arguments
     logger.info(f"Command line arguments: {args}")
 
     verbosity_level = int(args["verbose"])

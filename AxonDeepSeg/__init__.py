@@ -1,6 +1,5 @@
 import os
 import sys
-import pygit2
 
 __name__ = "AxonDeepSeg"
 
@@ -12,7 +11,10 @@ with open(version_file, 'r') as f:
 __repo_dir__ = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))
 sys.path.append(__repo_dir__)
 
-repo = pygit2.Repository(__repo_dir__)
-__git_version__ = str(repo.head.target)
-__git_name__ = repo.head.shorthand
-__version_string__ = f"{__name__} v{__version__} ({__git_name__}: {__git_version__})"
+# verify that the repo was downloaded with `git clone`
+if os.path.exists(os.path.join(__repo_dir__, ".git")):
+    import subprocess
+    __git_sha1__ = subprocess.check_output(["git", "-C", __repo_dir__, "rev-parse", "HEAD"]).decode("utf-8").rstrip()
+else:
+    __git_sha1__ = "unknown commit"    
+__version_string__ = f"AxonDeepSeg v{__version__} - {__git_sha1__}"
