@@ -123,4 +123,4 @@ class MetricsQA:
             locations = np.where(np.isclose(morph_out[2], id+1))
             mask[locations] = 1
 
-        ads.imwrite(Path(save_folder) / 'flagged_objjects.png', mask)
+        ads.imwrite(Path(save_folder) / 'flagged_objects.png', mask)
