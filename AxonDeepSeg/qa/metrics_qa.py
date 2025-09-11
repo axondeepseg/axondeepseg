@@ -41,7 +41,7 @@ class MetricsQA:
 
         # bins='fd' uses the Freedman Diaconis Estimator to find the optimal number of bins
         count, bins, ignored = ax1.hist(x,bins='fd', histtype='bar', ec='black')
-        ax1.set(xlabel=metric_name, ylabel='Count', title='Histogram') 
+        ax1.set(xlabel=metric_name, ylabel='Count') 
 
         ax2.axis('off')
         ax2.set(title='Stats')
@@ -84,29 +84,24 @@ class MetricsQA:
 
         if save_folder is not None:
             plt.savefig(Path(Path(save_folder) / metric_name))
+        
+        mean = np.format_float_positional(np.nanmean(x), precision=2, trim='0')
+        std = np.format_float_positional(np.nanstd(x), precision=2, trim='0')
+
+        return (mean, std)
     
     def plot_all(self, save_folder=None, quiet=False):
         metric_list = list(self.df.columns.values[3:])
 
         for metric in metric_list:
-            if self.df[metric].to_numpy().dtype is not np.dtype('bool'): 
+            if self.df[metric].to_numpy().dtype==np.float64:
                 self.plot(metric, save_folder, quiet)
 
-    def get_flagged_objects(self, axon_file, myelin_file, pixel_file, folder, save_folder):
 
-        axon_img = ads.imread(axon_file)
-        myelin_img = ads.imread(myelin_file)
+    def get_flagged_objects(self, im_axonmyelin_label, save_folder):
 
-        morph_out = get_axon_morphometrics(
-                axon_img, 
-                path_folder=folder, 
-                im_myelin=myelin_img, 
-                pixel_size=pixel_file, 
-                axon_shape="circle", 
-                return_index_image=False, 
-                return_border_info=False,
-                return_instance_seg=True
-            )
+        axonmyelin_img = im_axonmyelin_label
+
         df = self.df
 
         
@@ -117,11 +112,12 @@ class MetricsQA:
 
         flagged_objects = np.unique(flagged_objects)
 
-        mask = np.zeros_like(morph_out[2])
+        mask = np.zeros_like(axonmyelin_img)
 
         # go through each element in arr
         for id in flagged_objects:
-            locations = np.where(np.isclose(morph_out[2], id+1))
+            locations = np.where(np.isclose(axonmyelin_img, id+1))
             mask[locations] = 1
-
-        ads.imwrite(Path(save_folder) / 'flagged_objects.png', mask)
+    
+        ads.imwrite(Path(save_folder) / 'flagged_objects.png', mask*255)
+        return (flagged_objects, mask)

@@ -12,7 +12,7 @@
     .tab-content { border: 1px solid #ccc; padding: 20px; display: none; }
     .tab-content.active { display: block; }
     .plot { margin-bottom: 30px; }
-    .thumbs img { max-width: 300px; margin: 10px; border: 1px solid #ccc; border-radius: 6px; }
+    .matplotlib img { max-width: 800px; margin: auto; border: 1px solid #ccc; border-radius: 6px; }
   </style>
 </head>
 <body>
@@ -29,12 +29,15 @@
 
   {% for section_name, items in sections.items() %}
     <div id="{{ section_name|replace(' ', '_') }}" class="tab-content {% if loop.first %}active{% endif %}">
-      <h2>{{ section_name }}</h2>
       {% for item in items %}
         {% if item.type == "plot" %}
           <div class="plot">{{ item.html|safe }}</div>
         {% elif item.type == "image" %}
-          <div class="thumbs"><img src="{{ item.src }}" alt="QA Image"></div>
+          <div class="matplotlib"><img src="{{ item.src }}" alt="QA Image"></div>
+        {% elif item.type == "flagged" %}
+          <div class="matplotlib"><img src="{{ item.src }}" alt="QA Image"></div>
+        {% elif item.type == "text" %}
+          <div class="text">{{ item.content }}</div>
         {% endif %}
       {% endfor %}
     </div>

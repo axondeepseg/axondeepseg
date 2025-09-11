@@ -38,7 +38,7 @@ from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
 from vispy.util import keys
 import webbrowser
-
+from weasyprint import HTML
 
 _CONTROL =  keys.CONTROL
 _ALT = 'Alt'
@@ -481,14 +481,17 @@ class ADSplugin(QWidget):
         else:
             return False
 
-    def _on_apply_model_button_click(self):
+    def _on_apply_model_button_click(self, layer):
         """Apply the selected AxonDeepSeg model to the active layer of the viewer.
 
         Returns:
             None
         """
+
         selected_layers = self.viewer.layers.selection
         selected_model = self.model_selection_combobox.currentText()
+
+
 
         if selected_model not in self.available_models:
             self.show_info_message("No model selected")
@@ -501,6 +504,8 @@ class ADSplugin(QWidget):
             return
         selected_layer = selected_layers.active
         image_directory = Path(selected_layer.source.path).parents[0]
+    
+        self.image_path = Path(selected_layer.source.path)
 
         self.apply_model_button.setEnabled(False)
         self.apply_model_thread.selected_layer = selected_layer
@@ -581,6 +586,8 @@ class ADSplugin(QWidget):
             None
         """
         microscopy_image_layer = self.get_microscopy_image()
+        self.image_path = Path(microscopy_image_layer.source.path)
+
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
             return
@@ -744,6 +751,8 @@ class ADSplugin(QWidget):
 
         qa.plot_all(qa_folder, quiet=True)
 
+
+
         # --- Example Data ---
         df1 = pd.DataFrame({"axon_diameter": [1, 2, 3, 4], "count": [10, 30, 50, 20]})
         df2 = pd.DataFrame({"myelin_thickness": [0.2, 0.3, 0.4, 0.5], "count": [15, 40, 35, 10]})
@@ -756,19 +765,37 @@ class ADSplugin(QWidget):
 
         # Example image thumbnails (replace with your real histology images)
         # For demo, these can be small PNGs in the same folder.
-        example_images = ["example1.png", "example2.png"]
+        histogram_images = ["gratio.png", "axon_diam (um).png", "myelin_thickness (um).png","axon_area (um^2).png", "myelin_area (um^2).png"]
 
+
+        (flagged_objects, mask) = qa.get_flagged_objects(self.im_axonmyelin_label,qa_folder)
+        print(f"Flagged objects: {flagged_objects}")
+
+        image = ads_utils.imread(self.image_path)
+        ads_utils.imwrite(qa_folder / "flagged_objects.png", image*mask)
+        flagged_objects_path = qa_folder / "flagged_objects.png"
+
+
+        # Summary
+        
+        # Axon diameter
+        (axondiameter_mean, axondiameter_std) = qa.plot("axon_diam (um)", quiet=True)
+
+        # Myelin thickness
+        (myelinthickness_mean, myelinthickness_std) = qa.plot("myelin_thickness (um)", quiet=True)
+
+        # g-ratio
+        (gratio_mean, gratio_std) = qa.plot("gratio", quiet=True)
+        print(type(gratio_mean))
         # --- Build Sections Dynamically ---
         sections = {
-            "Morphometrics": [
-                {"type": "plot", "html": fig1_html},
-                {"type": "plot", "html": fig2_html},
-            ],
-            "Segmentation QC": [
-                {"type": "image", "src": img} for img in example_images
-            ],
             "Summary": [
-                {"type": "plot", "html": fig1_html},  # just reusing for demo
+                {"type": "text", "content": f'<h3>Statistics</h3><p><b>Axon Diameter:</b> {axondiameter_mean} ± {axondiameter_std} µm<p><b>Myelin Thickness:</b> {myelinthickness_mean} ± {myelinthickness_std} µm<p><b>g-ratio:</b> {gratio_mean} ± {gratio_std}'},
+                {"type": "text", "content": f'<h3>Flagged Objects</h3>'},
+                {"type": "flagged", "src": flagged_objects_path},
+            ],
+            "Histograms": [
+                {"type": "image", "src": img} for img in histogram_images
             ],
         }
 
@@ -787,6 +814,10 @@ class ADSplugin(QWidget):
         file_url = html_file.resolve().as_uri()  # converts to file:// URL
         webbrowser.open(file_url)
         print("✅ Generated AxonDeepSeg_QA_demo.html")
+
+        # Save to PDF
+        HTML(string=html_out, base_url=os.getcwd()).write_pdf("qa_report.pdf")
+        print("PDF created: qa_report.pdf")
 
 
 
@@ -956,6 +987,8 @@ class ADSplugin(QWidget):
             blending="additive",
             name="numbers",
         )
+        
+        self.im_axonmyelin_label = im_axonmyelin_label
 
         return True
 
