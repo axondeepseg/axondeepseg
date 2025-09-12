@@ -592,12 +592,12 @@
                 </div>
               </div>
             </div>
-          {% elif item.type == "flagged" %}
+          {% elif item.type == "segmented" %}
             <div class="card">
-              <div class="card-header">Flagged Segmentation Areas</div>
+              <div class="card-header">Segmented image</div>
               <div class="card-body">
                 <div class="image-container">
-                  <img src="{{ item.src }}" alt="Flagged objects">
+                  <img src="{{ item.src }}" alt="Segmented objects">
                 </div>
               </div>
             </div>
@@ -744,10 +744,15 @@ function showAxon(axonId) {
     document.getElementById('stat-thickness').textContent = axon.thickness.toFixed(2);
     document.getElementById('stat-gratio').textContent = axon.gratio.toFixed(2);
     
-    // Update percentiles
-    document.getElementById('stat-diameter-pct').textContent = `Top ${axon.diameterPercentile}%`;
-    document.getElementById('stat-thickness-pct').textContent = `Top ${axon.thicknessPercentile}%`;
-    document.getElementById('stat-gratio-pct').textContent = `Top ${axon.gratioPercentile}%`;
+    document.getElementById('stat-diameter-pct').textContent = 
+        `${axon.diameterPercentile}th percentile (${axon.diameterRank})`;
+
+    document.getElementById('stat-thickness-pct').textContent = 
+        `${axon.thicknessPercentile}th percentile (${axon.thicknessRank})`;
+
+    document.getElementById('stat-gratio-pct').textContent = 
+        `${axon.gratioPercentile}th percentile (${axon.gratioRank})`;
+
     
     // Update counter
     document.getElementById('currentAxon').textContent = axonId + 1;

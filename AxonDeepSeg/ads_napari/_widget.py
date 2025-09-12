@@ -786,7 +786,7 @@ class ADSplugin(QWidget):
                     "content": "<h3>Quality Assessment</h3><p>This report shows automated quality control metrics for axon segmentation.</p>"
                 },
                 {
-                    "type": "flagged", 
+                    "type": "segmented", 
                     "src": str(qa_folder / 'ads_overlay.png')
                 }
             ],

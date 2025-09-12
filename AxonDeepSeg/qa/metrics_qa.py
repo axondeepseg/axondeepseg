@@ -132,12 +132,21 @@ class MetricsQA:
             axon_diameter = row['axon_diam (um)']
             myelin_thickness = row['myelin_thickness (um)']
             gratio = row['gratio']
-            
-            # Calculate percentiles
-            diameter_pct = (1 - self.df['axon_diam (um)'].rank(pct=True).iloc[axon_id]) * 100
-            thickness_pct = (1 - self.df['myelin_thickness (um)'].rank(pct=True).iloc[axon_id]) * 100
-            gratio_pct = (1 - self.df['gratio'].rank(pct=True).iloc[axon_id]) * 100
-            
+
+            # Total number of axons
+            n_axons = len(self.df)
+
+            # Percentile rank (0-100, where 100 = largest)
+            diameter_pct = self.df['axon_diam (um)'].rank(pct=True).iloc[axon_id] * 100
+            thickness_pct = self.df['myelin_thickness (um)'].rank(pct=True).iloc[axon_id] * 100
+            gratio_pct = self.df['gratio'].rank(pct=True).iloc[axon_id] * 100
+
+            # Absolute rank (1 = smallest, n = largest)
+            diameter_rank = int(self.df['axon_diam (um)'].rank(method="min").iloc[axon_id])
+            thickness_rank = int(self.df['myelin_thickness (um)'].rank(method="min").iloc[axon_id])
+            gratio_rank = int(self.df['gratio'].rank(method="min").iloc[axon_id])
+
+
             # Find the axon pixels in the label image (axon_id + 1 because labels start at 1)
             current_axon_id = axon_id + 1
             axon_myelin_mask = (im_axonmyelin_label == current_axon_id)
@@ -218,8 +227,11 @@ class MetricsQA:
                 'diameterPercentile': f"{diameter_pct:.1f}",
                 'thicknessPercentile': f"{thickness_pct:.1f}",
                 'gratioPercentile': f"{gratio_pct:.1f}",
-                'imagePath': str(original_path.name),  # Original image path
-                'labeledImagePath': str(labeled_path.name)  # Labeled image path
+                'diameterRank': f"{diameter_rank} of {n_axons}",
+                'thicknessRank': f"{thickness_rank} of {n_axons}",
+                'gratioRank': f"{gratio_rank} of {n_axons}",
+                'imagePath': str(original_path.name),
+                'labeledImagePath': str(labeled_path.name)
             })
         
         return axon_data
