@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 
-import os, sys
+import os, sys, json
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 import AxonDeepSeg
 import AxonDeepSeg.params as config
@@ -23,8 +24,12 @@ from qtpy.QtCore import QStringListModel, QObject, Signal
 from qtpy.QtGui import QPixmap
 
 from skimage import measure
+import pandas as pd 
+import plotly.express as px
+from jinja2 import Environment, FileSystemLoader
 
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
+from AxonDeepSeg.qa.metrics_qa import MetricsQA
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
@@ -33,6 +38,7 @@ import napari
 from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
 from vispy.util import keys
+import webbrowser
 
 _CONTROL =  keys.CONTROL
 _ALT = 'Alt'
@@ -230,7 +236,15 @@ class ADSplugin(QWidget):
             "QPushButton:checked{background-color:blue;}"
         )
 
-        settings_menu_button = QPushButton("Settings")
+
+        qa_report_button = QPushButton("QA Report")
+        qa_report_button.clicked.connect(
+            self._on_qa_report_button
+        )
+        qa_report_button.setToolTip("Generate quality assurance report for the segmentation.\nRequires morphometrics to be computed.")
+        self.qa_report_button = qa_report_button
+
+        settings_menu_button = QPushButton("Settingss")
         settings_menu_button.clicked.connect(self._on_settings_menu_clicked)
 
         self.setLayout(QVBoxLayout())
@@ -248,6 +262,7 @@ class ADSplugin(QWidget):
         self.layout().addWidget(save_segmentation_button)
         self.layout().addWidget(compute_morphometrics_button)
         self.layout().addWidget(show_axon_metrics_button)
+        self.layout().addWidget(qa_report_button)
         self.layout().addWidget(settings_menu_button)
         self.layout().addStretch()
 
@@ -466,14 +481,17 @@ class ADSplugin(QWidget):
         else:
             return False
 
-    def _on_apply_model_button_click(self):
+    def _on_apply_model_button_click(self, layer):
         """Apply the selected AxonDeepSeg model to the active layer of the viewer.
 
         Returns:
             None
         """
+
         selected_layers = self.viewer.layers.selection
         selected_model = self.model_selection_combobox.currentText()
+
+
 
         if selected_model not in self.available_models:
             self.show_info_message("No model selected")
@@ -486,6 +504,8 @@ class ADSplugin(QWidget):
             return
         selected_layer = selected_layers.active
         image_directory = Path(selected_layer.source.path).parents[0]
+    
+        self.image_path = Path(selected_layer.source.path)
 
         self.apply_model_button.setEnabled(False)
         self.apply_model_thread.selected_layer = selected_layer
@@ -566,6 +586,9 @@ class ADSplugin(QWidget):
             None
         """
         microscopy_image_layer = self.get_microscopy_image()
+        self.image_path = Path(microscopy_image_layer.source.path)
+        self.image = ads_utils.imread(self.image_path)
+
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
             return
@@ -583,10 +606,12 @@ class ADSplugin(QWidget):
         # Extract the Axon mask
         axon_data = img_png2D > 200
         axon_data = axon_data.astype(np.uint8)
+        self.axon_label = axon_data
         axon_mask_name = microscopy_image_layer.name + config.axon_suffix.stem
         # Extract the Myelin mask
         myelin_data = (img_png2D > 100) & (img_png2D < 200)
         myelin_data = myelin_data.astype(np.uint8)
+        self.myelin_label = myelin_data
         myelin_mask_name = (
             microscopy_image_layer.name + config.myelin_suffix.stem
         )
@@ -707,6 +732,90 @@ class ADSplugin(QWidget):
                 self.viewer.layers.selection.select_only(image_label)
                 show_info(f"How to use the show axon metrics feature.\nRaw histology image must be selected in the layers list.\nHold ALT/OPTION and click on an axon to show its metrics.")
 
+
+    def _on_qa_report_button(self):
+        """Quick MVP QA Report"""
+        morphometrics_folder = Path(self.file_name).parents[0]
+        qa_folder = Path(morphometrics_folder / 'QA')
+        
+        if not os.path.exists(qa_folder):
+            os.makedirs(qa_folder)
+        
+        qa = MetricsQA(self.file_name)
+        qa.plot_all(qa_folder, quiet=True)
+
+        # Get basic stats
+        axon_stats = qa.plot("axon_diam (um)", quiet=True)
+        myelin_stats = qa.plot("myelin_thickness (um)", quiet=True)
+        gratio_stats = qa.plot("gratio", quiet=True)
+
+        # --- Create overlay image for QA ---
+        overlay_path = qa_folder / "axon_myelin_overlay.png"
+        
+        fig, ax = plt.subplots(figsize=(10,10))
+        ax.imshow(self.image, cmap='gray')
+        
+        # Overlay axons in red
+        ax.imshow(np.ma.masked_where(self.axon_label == 0, self.axon_label), 
+                cmap='Reds', alpha=0.5)
+        
+        # Overlay myelin in blue
+        ax.imshow(np.ma.masked_where(self.myelin_label == 0, self.myelin_label), 
+                cmap='Blues', alpha=0.5)
+        
+        ax.axis('off')
+        plt.tight_layout()
+        plt.savefig(overlay_path, dpi=150)
+        plt.close(fig)
+        # Generate axon closeups
+        axon_data = qa.generate_axon_closeups(qa_folder, self.image, self.axon_label, self.myelin_label, self.im_axonmyelin_label, buffer_pixels=20)
+
+        # Prepare sections with better visuals
+        sections = {
+            "📊 Summary": [
+                {
+                    "type": "stats", 
+                    "stats": [
+                        {"label": "Axon Diameter (µm)", "value": f"{axon_stats[0]} ± {axon_stats[1]}"},
+                        {"label": "Myelin Thickness (µm)", "value": f"{myelin_stats[0]} ± {myelin_stats[1]}"},
+                        {"label": "g-ratio", "value": f"{gratio_stats[0]} ± {gratio_stats[1]}"},
+                    ]
+                },
+                {
+                    "type": "text", 
+                    "content": "<h3>Quality Assessment</h3><p>This report shows automated quality control metrics for axon segmentation.</p>"
+                },
+                {
+                    "type": "segmented", 
+                    "labeled_src": str(qa_folder / 'ads_overlay.png'),
+                    "original_src": str(qa_folder / 'original_image.png')
+                }
+            ],
+            "📈 Histograms": [
+                {"type": "image", "src": str(qa_folder / "axon_diam (um).png")},
+                {"type": "image", "src": str(qa_folder / "myelin_thickness (um).png")},
+                {"type": "image", "src": str(qa_folder / "gratio.png")},
+                {"type": "image", "src": str(qa_folder / "axon_area (um^2).png")},
+                {"type": "image", "src": str(qa_folder / "myelin_area (um^2).png")}
+            ],
+        }
+
+        # Render and open
+        package_dir = Path(AxonDeepSeg.__file__).parent
+        env = Environment(loader=FileSystemLoader((package_dir / "qa").resolve()))
+        template = env.get_template("report_template.html")
+
+        # Pass axon_data directly to the template
+        html_out = template.render(sections=sections, axon_data=axon_data)
+        
+        with open(qa_folder / "AxonDeepSeg_QA_Report.html", "w") as f:
+            f.write(html_out)
+        
+        # Open in the default browser
+        html_file = qa_folder / "AxonDeepSeg_QA_Report.html"
+        file_url = html_file.resolve().as_uri()  # converts to file:// URL
+        webbrowser.open(file_url)
+        print("✅ QA Report Generated!")
 
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.
@@ -833,6 +942,8 @@ class ADSplugin(QWidget):
         if file_name == "":
             return False
 
+        self.file_name = file_name
+
         # Compute statistics
         (
             stats_dataframe,
@@ -864,6 +975,7 @@ class ADSplugin(QWidget):
             name="instance seg",
         )
 
+
         self.viewer.add_image(
             data=index_image_array,
             rgb=False,
@@ -871,13 +983,11 @@ class ADSplugin(QWidget):
             blending="additive",
             name="numbers",
         )
-
-        self.stats_dataframe = stats_dataframe
-        self.index_image_array = index_image_array
-        self.im_instance_seg = im_instance_seg
+        
         self.im_axonmyelin_label = im_axonmyelin_label
 
         return True
+
 
     def _on_settings_menu_clicked(self):
         """Create and display the settings menu when the settings menu button is clicked.
