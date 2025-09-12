@@ -787,7 +787,8 @@ class ADSplugin(QWidget):
                 },
                 {
                     "type": "segmented", 
-                    "src": str(qa_folder / 'ads_overlay.png')
+                    "labeled_src": str(qa_folder / 'ads_overlay.png'),
+                    "original_src": str(qa_folder / 'original_image.png')
                 }
             ],
             "📈 Histograms": [

@@ -593,14 +593,19 @@
               </div>
             </div>
           {% elif item.type == "segmented" %}
-            <div class="card">
-              <div class="card-header">Segmented image</div>
-              <div class="card-body">
-                <div class="image-container">
-                  <img src="{{ item.src }}" alt="Segmented objects">
-                </div>
+          <div class="card">
+            <div class="card-header">Segmented image</div>
+            <div class="card-body">
+              <div class="image-container">
+                <img src="{{ item.labeled_src }}" 
+                    data-labeled="{{ item.labeled_src }}" 
+                    data-original="{{ item.original_src }}" 
+                    class="toggle-image"
+                    alt="Segmentation result">
               </div>
+              <div class="toggle-hint">Press and hold 'T' to view original image</div>
             </div>
+          </div>
           {% elif item.type == "text" %}
             <div class="alert info">
               {{ item.content }}
@@ -689,8 +694,8 @@
 </div>
 
 
-  <script>
-  function openTab(evt, tabId) {
+<script>
+function openTab(evt, tabId) {
   var i, tabcontent, tablinks;
   tabcontent = document.getElementsByClassName("tab-content");
   for (i = 0; i < tabcontent.length; i++) {
@@ -722,8 +727,6 @@ function loadAxonViewer() {
   if (totalAxons > 0) {
     showAxon(0);
   }
-  
-  setupKeyboardNavigation();
 }
 
 function showAxon(axonId) {
@@ -793,28 +796,22 @@ function updateAxonImage() {
   }
 }
 
+function updateToggleImages() {
+  document.querySelectorAll('.toggle-image').forEach(img => {
+    if (tKeyPressed) {
+      if (img.dataset.original) {
+        img.src = img.dataset.original;
+      }
+    } else {
+      if (img.dataset.labeled) {
+        img.src = img.dataset.labeled;
+      }
+    }
+  });
+}
+
 function setupKeyboardNavigation() {
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'ArrowLeft') {
-      previousAxon();
-    } else if (e.key === 'ArrowRight') {
-      nextAxon();
-    } else if (e.key === 't' || e.key === 'T') {
-      tKeyPressed = true;
-      updateAxonImage();
-      document.getElementById('toggleHint').style.background = "var(--success)";
-      document.getElementById('toggleHint').style.color = "white";
-    }
-  });
-  
-  document.addEventListener('keyup', function(e) {
-    if (e.key === 't' || e.key === 'T') {
-      tKeyPressed = false;
-      updateAxonImage();
-      document.getElementById('toggleHint').style.background = "var(--warning)";
-      document.getElementById('toggleHint').style.color = "var(--dark-text)";
-    }
-  });
+  // This function is now called on page load
 }
 
 // Initialize when DOM is loaded
@@ -823,6 +820,31 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById("axonIdInput").addEventListener("keyup", function(event) {
     if (event.key === "Enter") {
       goToAxon();
+    }
+  });
+  
+  // Set up global keyboard listeners
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') {
+      if (document.getElementById('Single_Axon_Viewer').classList.contains('active')) {
+        previousAxon();
+      }
+    } else if (e.key === 'ArrowRight') {
+      if (document.getElementById('Single_Axon_Viewer').classList.contains('active')) {
+        nextAxon();
+      }
+    } else if (e.key === 't' || e.key === 'T') {
+      tKeyPressed = true;
+      updateAxonImage();
+      updateToggleImages();
+    }
+  });
+  
+  document.addEventListener('keyup', function(e) {
+    if (e.key === 't' || e.key === 'T') {
+      tKeyPressed = false;
+      updateAxonImage();
+      updateToggleImages();
     }
   });
   
