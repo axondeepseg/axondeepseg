@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-import os, sys
+import os, sys, json
 from pathlib import Path
 
 import AxonDeepSeg
@@ -38,7 +38,6 @@ from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
 from vispy.util import keys
 import webbrowser
-from weasyprint import HTML
 
 _CONTROL =  keys.CONTROL
 _ALT = 'Alt'
@@ -587,6 +586,7 @@ class ADSplugin(QWidget):
         """
         microscopy_image_layer = self.get_microscopy_image()
         self.image_path = Path(microscopy_image_layer.source.path)
+        self.image = ads_utils.imread(self.image_path)
 
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
@@ -605,10 +605,12 @@ class ADSplugin(QWidget):
         # Extract the Axon mask
         axon_data = img_png2D > 200
         axon_data = axon_data.astype(np.uint8)
+        self.axon_label = axon_data
         axon_mask_name = microscopy_image_layer.name + config.axon_suffix.stem
         # Extract the Myelin mask
         myelin_data = (img_png2D > 100) & (img_png2D < 200)
         myelin_data = myelin_data.astype(np.uint8)
+        self.myelin_label = myelin_data
         myelin_mask_name = (
             microscopy_image_layer.name + config.myelin_suffix.stem
         )
@@ -731,95 +733,75 @@ class ADSplugin(QWidget):
 
 
     def _on_qa_report_button(self):
-        """Handles the click event of the 'QA Report' button.
-
-        The method generates a quality assurance report for the segmentation by computing various metrics
-        and saving them to a CSV file. It prompts the user to select a location to save the report and
-        checks if the necessary layers are present in the viewer before proceeding.
-
-        Returns:
-            None
-        """
-
+        """Quick MVP QA Report"""
         morphometrics_folder = Path(self.file_name).parents[0]
         qa_folder = Path(morphometrics_folder / 'QA')
-
-        if os.path.isdir(qa_folder) == False:
-            os.mkdir(Path(morphometrics_folder / 'QA'))
+        
+        if not os.path.exists(qa_folder):
+            os.makedirs(qa_folder)
         
         qa = MetricsQA(self.file_name)
-
         qa.plot_all(qa_folder, quiet=True)
 
+        # Get basic stats
+        axon_stats = qa.plot("axon_diam (um)", quiet=True)
+        myelin_stats = qa.plot("myelin_thickness (um)", quiet=True)
+        gratio_stats = qa.plot("gratio", quiet=True)
 
-
-        # --- Example Data ---
-        df1 = pd.DataFrame({"axon_diameter": [1, 2, 3, 4], "count": [10, 30, 50, 20]})
-        df2 = pd.DataFrame({"myelin_thickness": [0.2, 0.3, 0.4, 0.5], "count": [15, 40, 35, 10]})
-
-        # Plotly figures
-        fig1_html = px.bar(df1, x="axon_diameter", y="count",
-                        title="Axon Diameter Distribution").to_html(full_html=False, include_plotlyjs=False)
-        fig2_html = px.bar(df2, x="myelin_thickness", y="count",
-                        title="Myelin Thickness Distribution").to_html(full_html=False, include_plotlyjs=False)
-
-        # Example image thumbnails (replace with your real histology images)
-        # For demo, these can be small PNGs in the same folder.
-        histogram_images = ["gratio.png", "axon_diam (um).png", "myelin_thickness (um).png","axon_area (um^2).png", "myelin_area (um^2).png"]
-
-
-        (flagged_objects, mask) = qa.get_flagged_objects(self.im_axonmyelin_label,qa_folder)
-        print(f"Flagged objects: {flagged_objects}")
-
-        image = ads_utils.imread(self.image_path)
-        ads_utils.imwrite(qa_folder / "flagged_objects.png", image*mask)
-        flagged_objects_path = qa_folder / "flagged_objects.png"
-
-
-        # Summary
+        # Get flagged objects
+        flagged_objects, mask = qa.get_flagged_objects(self.im_axonmyelin_label, qa_folder)
         
-        # Axon diameter
-        (axondiameter_mean, axondiameter_std) = qa.plot("axon_diam (um)", quiet=True)
+        # Generate axon closeups
+        axon_data = qa.generate_axon_closeups(qa_folder, self.image, self.axon_label, self.myelin_label, self.im_axonmyelin_label, buffer_pixels=20)
 
-        # Myelin thickness
-        (myelinthickness_mean, myelinthickness_std) = qa.plot("myelin_thickness (um)", quiet=True)
-
-        # g-ratio
-        (gratio_mean, gratio_std) = qa.plot("gratio", quiet=True)
-        print(type(gratio_mean))
-        # --- Build Sections Dynamically ---
+        # Prepare sections with better visuals
         sections = {
-            "Summary": [
-                {"type": "text", "content": f'<h3>Statistics</h3><p><b>Axon Diameter:</b> {axondiameter_mean} ± {axondiameter_std} µm<p><b>Myelin Thickness:</b> {myelinthickness_mean} ± {myelinthickness_std} µm<p><b>g-ratio:</b> {gratio_mean} ± {gratio_std}'},
-                {"type": "text", "content": f'<h3>Flagged Objects</h3>'},
-                {"type": "flagged", "src": flagged_objects_path},
+            "📊 Summary": [
+                {
+                    "type": "stats", 
+                    "stats": [
+                        {"label": "Axon Diameter (µm)", "value": f"{axon_stats[0]} ± {axon_stats[1]}"},
+                        {"label": "Myelin Thickness (µm)", "value": f"{myelin_stats[0]} ± {myelin_stats[1]}"},
+                        {"label": "g-ratio", "value": f"{gratio_stats[0]} ± {gratio_stats[1]}"},
+                        {"label": "Flagged Objects", "value": f"{len(flagged_objects)}"}
+                    ]
+                },
+                {
+                    "type": "text", 
+                    "content": "<h3>Quality Assessment</h3><p>This report shows automated quality control metrics for axon segmentation.</p>"
+                },
+                {
+                    "type": "flagged", 
+                    "src": str(qa_folder / 'flagged_objects.png')
+                }
             ],
-            "Histograms": [
-                {"type": "image", "src": img} for img in histogram_images
+            "📈 Histograms": [
+                {"type": "image", "src": str(qa_folder / "axon_diam (um).png")},
+                {"type": "image", "src": str(qa_folder / "myelin_thickness (um).png")},
+                {"type": "image", "src": str(qa_folder / "gratio.png")},
+                {"type": "image", "src": str(qa_folder / "axon_area (um^2).png")},
+                {"type": "image", "src": str(qa_folder / "myelin_area (um^2).png")}
             ],
         }
 
-        # --- Render Jinja2 template ---
-        package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
+        # Add axon data to template
+        axon_data_js = f"<script>window.axonData = {json.dumps(axon_data)};</script>"
+        
+        # Render and open
+        package_dir = Path(AxonDeepSeg.__file__).parent
         env = Environment(loader=FileSystemLoader((package_dir / "qa").resolve()))
         template = env.get_template("report_template.html")
-
-        html_out = template.render(sections=sections)
-
-        with open(morphometrics_folder / 'QA' / "AxonDeepSeg_QA_demo.html", "w") as f:
+        
+        html_out = template.render(sections=sections) + axon_data_js
+        
+        with open(qa_folder / "AxonDeepSeg_QA_Report.html", "w") as f:
             f.write(html_out)
-
+        
         # Open in the default browser
-        html_file = morphometrics_folder / 'QA' / "AxonDeepSeg_QA_demo.html"
+        html_file = qa_folder / "AxonDeepSeg_QA_Report.html"
         file_url = html_file.resolve().as_uri()  # converts to file:// URL
         webbrowser.open(file_url)
-        print("✅ Generated AxonDeepSeg_QA_demo.html")
-
-        # Save to PDF
-        HTML(string=html_out, base_url=os.getcwd()).write_pdf("qa_report.pdf")
-        print("PDF created: qa_report.pdf")
-
-
+        print("✅ QA Report Generated!")
 
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.

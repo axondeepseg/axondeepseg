@@ -121,3 +121,119 @@ class MetricsQA:
     
         ads.imwrite(Path(save_folder) / 'flagged_objects.png', mask*255)
         return (flagged_objects, mask)
+    
+    def generate_axon_closeups(self, qa_folder, image, axon_label, myelin_label, im_axonmyelin_label, buffer_pixels=20):
+        """Generate closeup images of each axon with overlay using real image data - ONLY current axon"""
+        axon_data = []
+        
+        for axon_id in range(len(self.df)):
+            # Get axon properties
+            row = self.df.iloc[axon_id]
+            axon_diameter = row['axon_diam (um)']
+            myelin_thickness = row['myelin_thickness (um)']
+            gratio = row['gratio']
+            
+            # Calculate percentiles
+            diameter_pct = (1 - self.df['axon_diam (um)'].rank(pct=True).iloc[axon_id]) * 100
+            thickness_pct = (1 - self.df['myelin_thickness (um)'].rank(pct=True).iloc[axon_id]) * 100
+            gratio_pct = (1 - self.df['gratio'].rank(pct=True).iloc[axon_id]) * 100
+            
+            # Find the axon pixels in the label image (axon_id + 1 because labels start at 1)
+            current_axon_id = axon_id + 1
+            axon_myelin_mask = (im_axonmyelin_label == current_axon_id)
+            
+            if not np.any(axon_myelin_mask):
+                print(f"Warning: No pixels found for axon {axon_id} (ID: {current_axon_id})")
+                continue
+                
+            # Get bounding box coordinates
+            y_coords, x_coords = np.where(axon_myelin_mask)
+            y_min, y_max = np.min(y_coords), np.max(y_coords)
+            x_min, x_max = np.min(x_coords), np.max(x_coords)
+            
+            # Add buffer with boundary checks
+            y_min_buf = max(0, y_min - buffer_pixels)
+            y_max_buf = min(image.shape[0], y_max + buffer_pixels + 1)
+            x_min_buf = max(0, x_min - buffer_pixels)
+            x_max_buf = min(image.shape[1], x_max + buffer_pixels + 1)
+            
+            # Crop all images to the same region
+            image_crop = image[y_min_buf:y_max_buf, x_min_buf:x_max_buf]
+            axon_crop = axon_label[y_min_buf:y_max_buf, x_min_buf:x_max_buf]  # Boolean: 1=axon, 0=not axon
+            myelin_crop = myelin_label[y_min_buf:y_max_buf, x_min_buf:x_max_buf]  # Boolean: 1=myelin, 0=not myelin
+            label_crop = im_axonmyelin_label[y_min_buf:y_max_buf, x_min_buf:x_max_buf]  # Integer IDs
+            
+            # Debug print to understand what's happening
+            print(f"Axon {axon_id}:")
+            print(f"  axon_crop unique values: {np.unique(axon_crop)}")
+            print(f"  myelin_crop unique values: {np.unique(myelin_crop)}")
+            print(f"  label_crop unique values: {np.unique(label_crop)}")
+            print(f"  Current axon ID in label: {current_axon_id}")
+            
+            # Create masks for ONLY the current axon
+            # Since axon_label and myelin_label are already boolean masks for their respective tissues,
+            # we just need to make sure we're only showing the current axon's region
+            
+            # The current axon's entire region (axon + myelin)
+            current_region_mask = (label_crop == current_axon_id)
+            
+            # Now get just the axon part (within the current region)
+            axon_current_mask = axon_crop.astype(bool) & current_region_mask
+            
+            # And just the myelin part (within the current region)
+            myelin_current_mask = myelin_crop.astype(bool) & current_region_mask
+            
+            # Debug print to check the masks
+            print(f"  axon_current_mask pixels: {np.sum(axon_current_mask)}")
+            print(f"  myelin_current_mask pixels: {np.sum(myelin_current_mask)}")
+            print(f"  current_region_mask pixels: {np.sum(current_region_mask)}")
+            
+            # Create the closeup image with overlay
+            closeup_path = qa_folder / f'axon_{axon_id}_closeup.png'
+            
+            # Create figure with original image and overlay
+            fig, ax = plt.subplots(figsize=(8, 8))
+            
+            # Display original image (convert to RGB if grayscale)
+            if len(image_crop.shape) == 2:
+                ax.imshow(image_crop, cmap='gray', alpha=1.0)
+            else:
+                ax.imshow(image_crop, alpha=1.0)
+            
+            # Create overlay with semi-transparent colors - ONLY for current axon
+            overlay = np.zeros((image_crop.shape[0], image_crop.shape[1], 4))
+            
+            # Blue for axon (RGBA: 0,0,1,0.5) - ONLY current axon
+            overlay[axon_current_mask] = [0, 0, 1, 0.5]  # Blue with 50% opacity
+            
+            # Red for myelin (RGBA: 1,0,0,0.5) - ONLY current axon's myelin
+            overlay[myelin_current_mask] = [1, 0, 0, 0.5]  # Red with 50% opacity
+            
+            ax.imshow(overlay)
+            
+            # Remove axes and add title
+            ax.axis('off')
+            ax.set_title(f'Axon {axon_id} (ID: {current_axon_id})', fontsize=16, fontweight='bold')
+            
+            # Add scale bar (optional)
+            #ax.plot([10, 60], [image_crop.shape[0]-10, image_crop.shape[0]-10], 
+            #        'w-', linewidth=3)  # 50 pixel scale bar
+            #ax.text(35, image_crop.shape[0]-20, '10µm', color='white', 
+            #        ha='center', fontweight='bold', fontsize=12)
+            
+            plt.tight_layout()
+            plt.savefig(closeup_path, dpi=150, bbox_inches='tight', facecolor='black')
+            plt.close()
+            
+            axon_data.append({
+                'id': axon_id,
+                'diameter': float(axon_diameter),
+                'thickness': float(myelin_thickness),
+                'gratio': float(gratio),
+                'diameterPercentile': f"{diameter_pct:.1f}",
+                'thicknessPercentile': f"{thickness_pct:.1f}",
+                'gratioPercentile': f"{gratio_pct:.1f}",
+                'imagePath': f'axon_{axon_id}_closeup.png'
+            })
+        
+        return axon_data

@@ -2,46 +2,321 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AxonDeepSeg QA Report Demo</title>
+  <title>AxonDeepSeg QA Report</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    .tabs { display: flex; cursor: pointer; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab { padding: 10px 20px; border: 1px solid #ccc; border-bottom: none; background: #eee; margin-right: 5px; }
-    .tab.active { background: #fff; font-weight: bold; }
-    .tab-content { border: 1px solid #ccc; padding: 20px; display: none; }
-    .tab-content.active { display: block; }
-    .plot { margin-bottom: 30px; }
-    .matplotlib img { max-width: 800px; margin: auto; border: 1px solid #ccc; border-radius: 6px; }
+    body { 
+      font-family: 'Arial', sans-serif; 
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .tabs { 
+      display: flex; 
+      cursor: pointer; 
+      margin-bottom: 20px; 
+      flex-wrap: wrap;
+      background: #ecf0f1;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    
+    .tab { 
+      padding: 15px 25px; 
+      background: #3498db; 
+      color: white;
+      margin: 5px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-weight: bold;
+    }
+    
+    .tab:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+    
+    .tab.active { 
+      background: #e74c3c; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .tab-content { 
+      padding: 25px; 
+      display: none; 
+      background: white;
+      border-radius: 10px;
+      border: 2px solid #bdc3c7;
+    }
+    
+    .tab-content.active { 
+      display: block; 
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .plot { 
+      margin: 25px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+    
+    .matplotlib {
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .matplotlib img { 
+      max-width: 90%; 
+      border: 3px solid #34495e;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    
+    .matplotlib img:hover {
+      transform: scale(1.02);
+    }
+    
+    .text {
+      background: linear-gradient(135deg, #74b9ff, #0984e3);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      font-size: 1.1em;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-left: 5px solid #e74c3c;
+    }
+    
+    .stat-value {
+      font-size: 2em;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    
+    .stat-label {
+      color: #7f8c8d;
+      font-weight: bold;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .header img {
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
+    /* Axon Viewer Styles */
+    .axon-viewer {
+        text-align: center;
+    }
+
+    .axon-controls {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .axon-controls button {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s ease;
+    }
+
+    .axon-controls button:hover {
+        background: #2980b9;
+    }
+
+    .axon-controls input {
+        padding: 10px;
+        border: 2px solid #bdc3c7;
+        border-radius: 5px;
+        width: 120px;
+        text-align: center;
+    }
+
+    .axon-counter {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-left: 20px;
+    }
+
+    .axon-image-container {
+        position: relative;
+        margin: 20px auto;
+        max-width: 600px;
+    }
+
+    #axonImage {
+        max-width: 100%;
+        border: 3px solid #34495e;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    #axonOverlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .axon-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .stat-percentile {
+        font-size: 0.9em;
+        color: #7f8c8d;
+        margin-top: 5px;
+    }
   </style>
 </head>
 <body>
-  <h1>AxonDeepSeg Morphometrics QA Report</h1>
+  <div class="container">
+    <div class="header">
+      <h1>🧠 AxonDeepSeg QA Report</h1>
+    </div>
 
-  <div class="tabs">
-    {% for section_name, _ in sections.items() %}
+    <div class="tabs">
+      {% for section_name, _ in sections.items() %}
         <div class="tab {% if loop.first %}active{% endif %}"
             onclick="openTab(event, '{{ section_name|replace(" ", "_") }}')">
-        {{ section_name }}
+          {{ section_name }}
         </div>
+      {% endfor %}
+    <div class="tab" onclick="openTab(event, 'Single_Axon_Viewer')">
+    🔍 Single Axon Viewer
+    </div>
+
+
+    {% for section_name, items in sections.items() %}
+      <div id="{{ section_name|replace(' ', '_') }}" class="tab-content {% if loop.first %}active{% endif %}">
+        {% for item in items %}
+          {% if item.type == "plot" %}
+            <div class="plot">{{ item.html|safe }}</div>
+          {% elif item.type == "image" %}
+            <div class="matplotlib">
+              <img src="{{ item.src }}" alt="QA Image">
+            </div>
+          {% elif item.type == "flagged" %}
+            <div class="matplotlib">
+              <h3>🚩 Flagged Objects</h3>
+              <img src="{{ item.src }}" alt="Flagged objects">
+            </div>
+          {% elif item.type == "text" %}
+            <div class="text">{{ item.content }}</div>
+          {% elif item.type == "stats" %}
+            <div class="stats-grid">
+              {% for stat in item.stats %}
+                <div class="stat-card">
+                  <div class="stat-value">{{ stat.value }}</div>
+                  <div class="stat-label">{{ stat.label }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
     {% endfor %}
   </div>
 
-  {% for section_name, items in sections.items() %}
-    <div id="{{ section_name|replace(' ', '_') }}" class="tab-content {% if loop.first %}active{% endif %}">
-      {% for item in items %}
-        {% if item.type == "plot" %}
-          <div class="plot">{{ item.html|safe }}</div>
-        {% elif item.type == "image" %}
-          <div class="matplotlib"><img src="{{ item.src }}" alt="QA Image"></div>
-        {% elif item.type == "flagged" %}
-          <div class="matplotlib"><img src="{{ item.src }}" alt="QA Image"></div>
-        {% elif item.type == "text" %}
-          <div class="text">{{ item.content }}</div>
-        {% endif %}
-      {% endfor %}
-    </div>
-  {% endfor %}
+  <div id="Single_Axon_Viewer" class="tab-content">
+ 
+      <h3>Single Axon Inspection</h3><p>Use the controls below to navigate through individual axons.</p>
+
+      <div class="axon-viewer">
+          <div class="axon-controls">
+              <button onclick="previousAxon()">⬅ Previous</button>
+              <input type="number" id="axonIdInput" placeholder="Enter Axon ID" min="0">
+              <button onclick="goToAxon()">Go</button>
+              <button onclick="nextAxon()">Next ➡</button>
+              <span class="axon-counter">Axon <span id="currentAxon">0</span>/<span id="totalAxons">0</span></span>
+          </div>
+          
+          <div class="axon-image-container">
+              <img id="axonImage" src="" alt="Axon closeup view">
+          </div>
+          
+          <div class="axon-stats">
+              <div class="stat-card">
+                  <div class="stat-label">Axon ID</div>
+                  <div class="stat-value" id="stat-id">-</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-label">Axon Diameter (µm)</div>
+                  <div class="stat-value" id="stat-diameter">-</div>
+                  <div class="stat-percentile" id="stat-diameter-pct">-</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-label">Myelin Thickness (µm)</div>
+                  <div class="stat-value" id="stat-thickness">-</div>
+                  <div class="stat-percentile" id="stat-thickness-pct">-</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-label">g-ratio</div>
+                  <div class="stat-value" id="stat-gratio">-</div>
+                  <div class="stat-percentile" id="stat-gratio-pct">-</div>
+              </div>
+          </div>
+      </div>
+  </div>
 
   <script>
     function openTab(evt, tabId) {
@@ -56,7 +331,88 @@
       }
       document.getElementById(tabId).classList.add("active");
       evt.currentTarget.classList.add("active");
-    };
+    }
+    // Replace the entire axon viewer JavaScript section with this:
+
+  // Axon viewer state
+  let currentAxonId = 0;
+  let totalAxons = 0;
+  let axonData = [];
+
+  function loadAxonViewer() {
+      // Load axon data from global variable
+      axonData = window.axonData || [];
+      totalAxons = axonData.length;
+      
+      if (totalAxons > 0) {
+          showAxon(0);
+      }
+  }
+
+  function showAxon(axonId) {
+      if (axonId < 0 || axonId >= totalAxons) return;
+      
+      currentAxonId = axonId;
+      const axon = axonData[axonId];
+      
+      // Update image - use the actual path from axon data
+      if (axon && axon.imagePath) {
+          document.getElementById('axonImage').src = axon.imagePath;
+          document.getElementById('axonImage').style.display = 'block';
+      }
+      
+      // Update stats
+      document.getElementById('stat-id').textContent = axonId;
+      document.getElementById('stat-diameter').textContent = axon.diameter.toFixed(2);
+      document.getElementById('stat-thickness').textContent = axon.thickness.toFixed(2);
+      document.getElementById('stat-gratio').textContent = axon.gratio.toFixed(2);
+      
+      // Update percentiles
+      document.getElementById('stat-diameter-pct').textContent = `Top ${axon.diameterPercentile}%`;
+      document.getElementById('stat-thickness-pct').textContent = `Top ${axon.thicknessPercentile}%`;
+      document.getElementById('stat-gratio-pct').textContent = `Top ${axon.gratioPercentile}%`;
+      
+      // Update counter
+      document.getElementById('currentAxon').textContent = axonId + 1;
+      document.getElementById('totalAxons').textContent = totalAxons;
+      
+      // Update input field
+      document.getElementById('axonIdInput').value = axonId;
+  }
+
+  function previousAxon() {
+      showAxon(currentAxonId - 1);
+  }
+
+  function nextAxon() {
+      showAxon(currentAxonId + 1);
+  }
+
+  function goToAxon() {
+      const input = document.getElementById('axonIdInput');
+      const axonId = parseInt(input.value);
+      if (!isNaN(axonId) && axonId >= 0 && axonId < totalAxons) {
+          showAxon(axonId);
+      }
+  }
+
+  // Load axon viewer when the Single Axon Viewer tab is opened
+  document.addEventListener('DOMContentLoaded', function() {
+      // Check if we're on the Single Axon Viewer tab initially
+      const axonViewerTab = document.getElementById('Single_Axon_Viewer');
+      if (axonViewerTab.classList.contains('active')) {
+          loadAxonViewer();
+      }
+      
+      // Also set up a listener for when the tab is clicked
+      const tabElement = document.querySelector('.tab[onclick*="Single_Axon_Viewer"]');
+      if (tabElement) {
+          tabElement.addEventListener('click', function() {
+              // Small delay to ensure tab is active before loading
+              setTimeout(loadAxonViewer, 100);
+          });
+      }
+  });
   </script>
 </body>
 </html>
