@@ -163,33 +163,25 @@ class MetricsQA:
             myelin_crop = myelin_label[y_min_buf:y_max_buf, x_min_buf:x_max_buf]  # Boolean: 1=myelin, 0=not myelin
             label_crop = im_axonmyelin_label[y_min_buf:y_max_buf, x_min_buf:x_max_buf]  # Integer IDs
             
-            # Debug print to understand what's happening
-            print(f"Axon {axon_id}:")
-            print(f"  axon_crop unique values: {np.unique(axon_crop)}")
-            print(f"  myelin_crop unique values: {np.unique(myelin_crop)}")
-            print(f"  label_crop unique values: {np.unique(label_crop)}")
-            print(f"  Current axon ID in label: {current_axon_id}")
-            
             # Create masks for ONLY the current axon
-            # Since axon_label and myelin_label are already boolean masks for their respective tissues,
-            # we just need to make sure we're only showing the current axon's region
-            
-            # The current axon's entire region (axon + myelin)
             current_region_mask = (label_crop == current_axon_id)
-            
-            # Now get just the axon part (within the current region)
             axon_current_mask = axon_crop.astype(bool) & current_region_mask
-            
-            # And just the myelin part (within the current region)
             myelin_current_mask = myelin_crop.astype(bool) & current_region_mask
             
-            # Debug print to check the masks
-            print(f"  axon_current_mask pixels: {np.sum(axon_current_mask)}")
-            print(f"  myelin_current_mask pixels: {np.sum(myelin_current_mask)}")
-            print(f"  current_region_mask pixels: {np.sum(current_region_mask)}")
+            # Save original axon image (without labels)
+            original_path = qa_folder / f'axon_{axon_id}_original.png'
+            plt.figure(figsize=(8, 8))
+            if len(image_crop.shape) == 2:
+                plt.imshow(image_crop, cmap='gray')
+            else:
+                plt.imshow(image_crop)
+            plt.axis('off')
+            plt.tight_layout()
+            plt.savefig(original_path, dpi=150, bbox_inches='tight')
+            plt.close()
             
-            # Create the closeup image with overlay
-            closeup_path = qa_folder / f'axon_{axon_id}_closeup.png'
+            # Create the labeled closeup image with overlay
+            labeled_path = qa_folder / f'axon_{axon_id}_labeled.png'
             
             # Create figure with original image and overlay
             fig, ax = plt.subplots(figsize=(8, 8))
@@ -213,16 +205,9 @@ class MetricsQA:
             
             # Remove axes and add title
             ax.axis('off')
-            ax.set_title(f'Axon {axon_id} (ID: {current_axon_id})', fontsize=16, fontweight='bold')
-            
-            # Add scale bar (optional)
-            #ax.plot([10, 60], [image_crop.shape[0]-10, image_crop.shape[0]-10], 
-            #        'w-', linewidth=3)  # 50 pixel scale bar
-            #ax.text(35, image_crop.shape[0]-20, '10µm', color='white', 
-            #        ha='center', fontweight='bold', fontsize=12)
             
             plt.tight_layout()
-            plt.savefig(closeup_path, dpi=150, bbox_inches='tight', facecolor='black')
+            plt.savefig(labeled_path, dpi=150, bbox_inches='tight')
             plt.close()
             
             axon_data.append({
@@ -233,7 +218,8 @@ class MetricsQA:
                 'diameterPercentile': f"{diameter_pct:.1f}",
                 'thicknessPercentile': f"{thickness_pct:.1f}",
                 'gratioPercentile': f"{gratio_pct:.1f}",
-                'imagePath': f'axon_{axon_id}_closeup.png'
+                'imagePath': str(original_path.name),  # Original image path
+                'labeledImagePath': str(labeled_path.name)  # Labeled image path
             })
         
         return axon_data

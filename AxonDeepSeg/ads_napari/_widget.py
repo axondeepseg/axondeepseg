@@ -799,15 +799,13 @@ class ADSplugin(QWidget):
             ],
         }
 
-        # Add axon data to template
-        axon_data_js = f"<script>window.axonData = {json.dumps(axon_data)};</script>"
-        
         # Render and open
         package_dir = Path(AxonDeepSeg.__file__).parent
         env = Environment(loader=FileSystemLoader((package_dir / "qa").resolve()))
         template = env.get_template("report_template.html")
-        
-        html_out = template.render(sections=sections) + axon_data_js
+
+        # Pass axon_data directly to the template
+        html_out = template.render(sections=sections, axon_data=axon_data)
         
         with open(qa_folder / "AxonDeepSeg_QA_Report.html", "w") as f:
             f.write(html_out)

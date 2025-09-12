@@ -226,6 +226,44 @@
         color: #7f8c8d;
         margin-top: 5px;
     }
+    .toggle-hint {
+        margin-top: 10px;
+        padding: 8px;
+        background: #f1c40f;
+        color: #2c3e50;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+.commands-table {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.commands-table table {
+  margin: 0 auto;
+  border-collapse: collapse;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.commands-table th {
+  background: #2c3e50;
+  color: white;
+  padding: 10px;
+  font-size: 1.1em;
+}
+
+.commands-table td {
+  padding: 8px 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.commands-table tr:last-child td {
+  border-bottom: none;
+}
   </style>
 </head>
 <body>
@@ -289,7 +327,13 @@
               <button onclick="nextAxon()">Next ➡</button>
               <span class="axon-counter">Axon <span id="currentAxon">0</span>/<span id="totalAxons">0</span></span>
           </div>
-          
+          <div class="commands-table">
+            <table>
+              <tr><th colspan="2">COMMANDS</th></tr>
+              <tr><td>T key</td><td>Show original axon (hold)</td></tr>
+              <tr><td>← → keys</td><td>Navigate between axons</td></tr>
+            </table>
+          </div>
           <div class="axon-image-container">
               <img id="axonImage" src="" alt="Axon closeup view">
           </div>
@@ -319,106 +363,169 @@
   </div>
 
   <script>
-    function openTab(evt, tabId) {
-      var i, tabcontent, tablinks;
-      tabcontent = document.getElementsByClassName("tab-content");
-      for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].classList.remove("active");
-      }
-      tablinks = document.getElementsByClassName("tab");
-      for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].classList.remove("active");
-      }
-      document.getElementById(tabId).classList.add("active");
-      evt.currentTarget.classList.add("active");
+  function openTab(evt, tabId) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].classList.remove("active");
     }
-    // Replace the entire axon viewer JavaScript section with this:
+    tablinks = document.getElementsByClassName("tab");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].classList.remove("active");
+    }
+    document.getElementById(tabId).classList.add("active");
+    evt.currentTarget.classList.add("active");
+  }
 
   // Axon viewer state
   let currentAxonId = 0;
   let totalAxons = 0;
   let axonData = [];
+  let tKeyPressed = false;
+
+  function setupKeyboardToggle() {
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 't' || e.key === 'T') {
+        tKeyPressed = true;
+        updateAxonImage();
+      }
+    });
+    
+    document.addEventListener('keyup', function(e) {
+      if (e.key === 't' || e.key === 'T') {
+        tKeyPressed = false;
+        updateAxonImage();
+      }
+    });
+  }
+
+  function updateAxonImage() {
+    if (!axonData || axonData.length === 0) return;
+    
+    const axon = axonData[currentAxonId];
+    if (axon) {
+      const imageElement = document.getElementById('axonImage');
+      if (tKeyPressed && axon.imagePath) {
+        imageElement.src = axon.imagePath;
+      } else if (axon.labeledImagePath) {
+        imageElement.src = axon.labeledImagePath;
+      }
+    }
+  }
 
   function loadAxonViewer() {
-      // Load axon data from global variable
-      axonData = window.axonData || [];
-      totalAxons = axonData.length;
-      
-      if (totalAxons > 0) {
-          showAxon(0);
-      }
+    // Load axon data from global variable
+    axonData = window.axonData || [];
+    totalAxons = axonData.length;
+    
+    if (totalAxons > 0) {
+      showAxon(0);
+    }
+    
+    // Set up keyboard toggle
+    setupKeyboardToggle();
   }
 
   function showAxon(axonId) {
-      if (axonId < 0 || axonId >= totalAxons) return;
-      
-      currentAxonId = axonId;
-      const axon = axonData[axonId];
-      
-      // Update image - use the actual path from axon data
-      if (axon && axon.imagePath) {
-          document.getElementById('axonImage').src = axon.imagePath;
-          document.getElementById('axonImage').style.display = 'block';
-      }
-      
-      // Update stats
-      document.getElementById('stat-id').textContent = axonId;
-      document.getElementById('stat-diameter').textContent = axon.diameter.toFixed(2);
-      document.getElementById('stat-thickness').textContent = axon.thickness.toFixed(2);
-      document.getElementById('stat-gratio').textContent = axon.gratio.toFixed(2);
-      
-      // Update percentiles
-      document.getElementById('stat-diameter-pct').textContent = `Top ${axon.diameterPercentile}%`;
-      document.getElementById('stat-thickness-pct').textContent = `Top ${axon.thicknessPercentile}%`;
-      document.getElementById('stat-gratio-pct').textContent = `Top ${axon.gratioPercentile}%`;
-      
-      // Update counter
-      document.getElementById('currentAxon').textContent = axonId + 1;
-      document.getElementById('totalAxons').textContent = totalAxons;
-      
-      // Update input field
-      document.getElementById('axonIdInput').value = axonId;
+    if (axonId < 0 || axonId >= totalAxons) return;
+    
+    currentAxonId = axonId;
+    const axon = axonData[axonId];
+    
+    // Update image - use labeled image by default
+    if (axon && axon.labeledImagePath) {
+      document.getElementById('axonImage').src = axon.labeledImagePath;
+      document.getElementById('axonImage').style.display = 'block';
+    }
+  
+    // Update stats
+    document.getElementById('stat-id').textContent = axonId;
+    document.getElementById('stat-diameter').textContent = axon.diameter.toFixed(2);
+    document.getElementById('stat-thickness').textContent = axon.thickness.toFixed(2);
+    document.getElementById('stat-gratio').textContent = axon.gratio.toFixed(2);
+    
+    // Update percentiles
+    document.getElementById('stat-diameter-pct').textContent = `Top ${axon.diameterPercentile}%`;
+    document.getElementById('stat-thickness-pct').textContent = `Top ${axon.thicknessPercentile}%`;
+    document.getElementById('stat-gratio-pct').textContent = `Top ${axon.gratioPercentile}%`;
+    
+    // Update counter
+    document.getElementById('currentAxon').textContent = axonId + 1;
+    document.getElementById('totalAxons').textContent = totalAxons;
+    
+    // Update input field
+    document.getElementById('axonIdInput').value = axonId;
   }
 
   function previousAxon() {
-      showAxon(currentAxonId - 1);
+    showAxon(currentAxonId - 1);
   }
 
   function nextAxon() {
-      showAxon(currentAxonId + 1);
+    showAxon(currentAxonId + 1);
   }
 
   function goToAxon() {
-      const input = document.getElementById('axonIdInput');
-      const axonId = parseInt(input.value);
-      if (!isNaN(axonId) && axonId >= 0 && axonId < totalAxons) {
-          showAxon(axonId);
-      }
+    const input = document.getElementById('axonIdInput');
+    const axonId = parseInt(input.value);
+    if (!isNaN(axonId) && axonId >= 0 && axonId < totalAxons) {
+      showAxon(axonId);
+    }
   }
 
   // Load axon viewer when the Single Axon Viewer tab is opened
   document.addEventListener('DOMContentLoaded', function() {
-      // Check if we're on the Single Axon Viewer tab initially
-      const axonViewerTab = document.getElementById('Single_Axon_Viewer');
-      if (axonViewerTab.classList.contains('active')) {
-          loadAxonViewer();
-      }
-      
-      // Also set up a listener for when the tab is clicked
-      const tabElement = document.querySelector('.tab[onclick*="Single_Axon_Viewer"]');
-      if (tabElement) {
-          tabElement.addEventListener('click', function() {
-              // Small delay to ensure tab is active before loading
-              setTimeout(loadAxonViewer, 100);
-          });
-      }
+    // Check if we're on the Single Axon Viewer tab initially
+    const axonViewerTab = document.getElementById('Single_Axon_Viewer');
+    if (axonViewerTab.classList.contains('active')) {
+      loadAxonViewer();
+    }
+    
+    // Also set up a listener for when the tab is clicked
+    const tabElement = document.querySelector('.tab[onclick*="Single_Axon_Viewer"]');
+    if (tabElement) {
+      tabElement.addEventListener('click', function() {
+        // Small delay to ensure tab is active before loading
+        setTimeout(loadAxonViewer, 100);
+      });
+    }
   });
+  
   document.getElementById("axonIdInput").addEventListener("keyup", function(event) {
-      if (event.key === "Enter") {
-          goToAxon();
-      }
+    if (event.key === "Enter") {
+      goToAxon();
+    }
   });
-
-  </script>
+  function setupKeyboardToggle() {
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 't' || e.key === 'T') {
+        tKeyPressed = true;
+        updateAxonImage();
+        document.getElementById('toggleHint').textContent = "Release 'T' to show labeled axon";
+        document.getElementById('toggleHint').style.background = "#2ecc71";
+      }
+      // Add arrow key navigation
+      else if (e.key === 'ArrowLeft') {
+        previousAxon();
+      }
+      else if (e.key === 'ArrowRight') {
+        nextAxon();
+      }
+    });
+    
+    document.addEventListener('keyup', function(e) {
+      if (e.key === 't' || e.key === 'T') {
+        tKeyPressed = false;
+        updateAxonImage();
+        document.getElementById('toggleHint').textContent = "Press and hold 'T' to show original axon";
+        document.getElementById('toggleHint').style.background = "#f1c40f";
+      }
+    });
+  }
+</script>
+<script>
+  // Pass axon data from template to global variable
+  window.axonData = {{ axon_data|tojson }};
+</script>
 </body>
 </html>
