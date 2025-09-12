@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 import os, sys, json
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 import AxonDeepSeg
 import AxonDeepSeg.params as config
@@ -748,9 +749,24 @@ class ADSplugin(QWidget):
         myelin_stats = qa.plot("myelin_thickness (um)", quiet=True)
         gratio_stats = qa.plot("gratio", quiet=True)
 
-        # Get flagged objects
-        flagged_objects, mask = qa.get_flagged_objects(self.im_axonmyelin_label, qa_folder)
+        # --- Create overlay image for QA ---
+        overlay_path = qa_folder / "axon_myelin_overlay.png"
         
+        fig, ax = plt.subplots(figsize=(10,10))
+        ax.imshow(self.image, cmap='gray')
+        
+        # Overlay axons in red
+        ax.imshow(np.ma.masked_where(self.axon_label == 0, self.axon_label), 
+                cmap='Reds', alpha=0.5)
+        
+        # Overlay myelin in blue
+        ax.imshow(np.ma.masked_where(self.myelin_label == 0, self.myelin_label), 
+                cmap='Blues', alpha=0.5)
+        
+        ax.axis('off')
+        plt.tight_layout()
+        plt.savefig(overlay_path, dpi=150)
+        plt.close(fig)
         # Generate axon closeups
         axon_data = qa.generate_axon_closeups(qa_folder, self.image, self.axon_label, self.myelin_label, self.im_axonmyelin_label, buffer_pixels=20)
 
@@ -763,7 +779,6 @@ class ADSplugin(QWidget):
                         {"label": "Axon Diameter (µm)", "value": f"{axon_stats[0]} ± {axon_stats[1]}"},
                         {"label": "Myelin Thickness (µm)", "value": f"{myelin_stats[0]} ± {myelin_stats[1]}"},
                         {"label": "g-ratio", "value": f"{gratio_stats[0]} ± {gratio_stats[1]}"},
-                        {"label": "Flagged Objects", "value": f"{len(flagged_objects)}"}
                     ]
                 },
                 {
@@ -772,7 +787,7 @@ class ADSplugin(QWidget):
                 },
                 {
                     "type": "flagged", 
-                    "src": str(qa_folder / 'flagged_objects.png')
+                    "src": str(qa_folder / 'ads_overlay.png')
                 }
             ],
             "📈 Histograms": [

@@ -257,7 +257,7 @@
             </div>
           {% elif item.type == "flagged" %}
             <div class="matplotlib">
-              <h3>🚩 Flagged Objects</h3>
+              <h3>🚩 Segmentation</h3>
               <img src="{{ item.src }}" alt="Flagged objects">
             </div>
           {% elif item.type == "text" %}
@@ -413,6 +413,12 @@
           });
       }
   });
+  document.getElementById("axonIdInput").addEventListener("keyup", function(event) {
+      if (event.key === "Enter") {
+          goToAxon();
+      }
+  });
+
   </script>
 </body>
 </html>
