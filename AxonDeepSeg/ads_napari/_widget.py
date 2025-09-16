@@ -806,7 +806,7 @@ class ADSplugin(QWidget):
 
         # Prepare sections with better visuals
         sections = {
-            "📊 Summary": [
+            "Summary": [
                 {
                     "type": "stats", 
                     "stats": [
@@ -825,7 +825,7 @@ class ADSplugin(QWidget):
                     "original_src": str(base_image_path)
                 }
             ],
-            "📈 Histograms": [
+            "Histograms": [
                 {
                     "type": "histogram_viewer",
                     "histograms": [
