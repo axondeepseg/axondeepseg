@@ -1,5 +1,15 @@
 from typing import TYPE_CHECKING
 
+import os
+os.environ['QTWEBENGINE_CHROMIUM_FLAGS'] = '--single-process'  # Helps with some environments
+
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QApplication
+from qtpy.QtCore import QCoreApplication
+
+# Set this before creating any QApplication instance
+QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts, True)
+
 import os, sys, json
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -42,6 +52,7 @@ import webbrowser
 
 _CONTROL =  keys.CONTROL
 _ALT = 'Alt'
+
 
 class ADSsettings:
     """Plugin settings class.
@@ -733,6 +744,42 @@ class ADSplugin(QWidget):
                 show_info(f"How to use the show axon metrics feature.\nRaw histology image must be selected in the layers list.\nHold ALT/OPTION and click on an axon to show its metrics.")
 
 
+    def export_flagged_axons_mask(self, flagged_axons):
+        """Export a binary mask of axons marked for deletion"""
+        if not hasattr(self, 'im_axonmyelin_label') or self.im_axonmyelin_label is None:
+            self.show_info_message("No labeled data available for export")
+            return False
+        
+        if not flagged_axons:
+            self.show_info_message("No axons marked for deletion")
+            return False
+        
+        # Convert axon IDs (0-indexed in UI) to label values (1-indexed in image)
+        axon_labels = [axon_id + 1 for axon_id in flagged_axons]
+        
+        # Create binary mask where only the flagged axons are 1, others are 0
+        mask = np.isin(self.im_axonmyelin_label, axon_labels).astype(np.uint8) * 255
+        
+        # Ask user where to save
+        default_name = Path(self.file_name).parent / "flagged_axons_mask.png"
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            caption="Save Flagged Axons Mask",
+            directory=str(default_name),
+            filter="PNG files (*.png)"
+        )
+        
+        if file_path:
+            try:
+                ads_utils.imwrite(file_path, mask)
+                self.show_info_message(f"Successfully exported mask for {len(flagged_axons)} axons")
+                return True
+            except Exception as e:
+                self.show_info_message(f"Error exporting mask: {e}")
+                return False
+        
+        return False
+
     def _on_qa_report_button(self):
         """Quick MVP QA Report"""
         morphometrics_folder = Path(self.file_name).parents[0]
@@ -805,17 +852,51 @@ class ADSplugin(QWidget):
         env = Environment(loader=FileSystemLoader((package_dir / "qa").resolve()))
         template = env.get_template("report_template.html")
 
-        # Pass axon_data directly to the template
-        html_out = template.render(sections=sections, axon_data=axon_data)
-        
+        # In your _on_qa_report_button method, add this before rendering the template:
+        axon_mask_base64 = self._image_to_base64(self.axon_label * 255)  # Convert to 0-255
+        myelin_mask_base64 = self._image_to_base64(self.myelin_label * 255)
+        index_mask_base64 = self._image_to_base64(self.im_axonmyelin_label)
+
+        # Pass these to the template
+        html_out = template.render(
+            sections=sections, 
+            axon_data=axon_data,
+            sample_id=Path(self.file_name).stem,
+            report_date=pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
+            software_version=AxonDeepSeg.__version__,
+            axon_mask_data=axon_mask_base64,
+            myelin_mask_data=myelin_mask_base64,
+            index_mask_data=index_mask_base64
+        )
+
+        # Write the HTML file
         with open(qa_folder / "AxonDeepSeg_QA_Report.html", "w") as f:
             f.write(html_out)
         
-        # Open in the default browser
+        # Open in the default browser but with a custom handler
         html_file = qa_folder / "AxonDeepSeg_QA_Report.html"
-        file_url = html_file.resolve().as_uri()  # converts to file:// URL
+        file_url = html_file.resolve().as_uri()
         webbrowser.open(file_url)
+
         print("✅ QA Report Generated!")
+    
+
+    def _image_to_base64(self, image_array):
+        """Convert numpy array to base64 PNG"""
+        import base64
+        from io import BytesIO
+        from PIL import Image
+            
+        # Convert to PIL Image
+        if image_array.dtype != np.uint8:
+            image_array = image_array.astype(np.uint8)
+        pil_img = Image.fromarray(image_array)
+            
+        # Convert to base64
+        buffered = BytesIO()
+        pil_img.save(buffered, format="PNG")
+        return base64.b64encode(buffered.getvalue()).decode('utf-8')
+                
 
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.

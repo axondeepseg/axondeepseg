@@ -258,29 +258,6 @@
         margin-left: auto;
       }
 
-      .axon-image-comparison {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 20px;
-      }
-
-      .axon-image-box {
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        overflow: hidden;
-      }
-
-      .axon-image-box .card-header {
-        text-align: center;
-        font-size: 14px;
-      }
-
-      .axon-image-box img {
-        width: 100%;
-        display: block;
-      }
-
       .axon-stats {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -377,26 +354,6 @@
         .grid-container {
           grid-template-columns: 1fr;
         }
-      }
-
-      .quality-indicator {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-right: 8px;
-      }
-
-      .quality-good {
-        background-color: var(--success);
-      }
-
-      .quality-warning {
-        background-color: var(--warning);
-      }
-
-      .quality-bad {
-        background-color: var(--danger);
       }
 
       .metric-comparison {
@@ -551,6 +508,74 @@
         font-size: 13px;
         transition: all 0.3s ease;
       }
+
+      .flag-indicator {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid white;
+      }
+
+      .flag-good {
+        background-color: var(--success);
+      }
+
+      .flag-warning {
+        background-color: var(--warning);
+      }
+
+      .flag-bad {
+        background-color: var(--danger);
+      }
+
+      .flags-table {
+        margin-top: 20px;
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .flags-table th,
+      .flags-table td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .flags-table th {
+        background-color: var(--light-bg);
+        font-weight: 500;
+      }
+
+      .flag-status {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+
+      .export-container {
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      .export-btn {
+        padding: 10px 20px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+      }
+
+      .export-btn:hover {
+        background: #2980b9;
+      }
     </style>
   </head>
   <body>
@@ -662,10 +687,6 @@
           >
         </div>
 
-        <div class="axon-image-container">
-          <img id="axonImage" src="" alt="Segmented axon view" />
-        </div>
-
         <div class="axon-stats">
           <div class="axon-stat-item">
             <div class="axon-stat-label">Axon ID</div>
@@ -702,9 +723,104 @@
             <span>Show Original (hold)</span>
             <span class="shortcut-key">T</span>
           </div>
+          <div class="shortcut-item">
+            <span>Mark as Good (Green)</span>
+            <span class="shortcut-key">1</span>
+          </div>
+          <div class="shortcut-item">
+            <span>Needs Correction (Yellow)</span>
+            <span class="shortcut-key">2</span>
+          </div>
+          <div class="shortcut-item">
+            <span>Mark for Deletion (Red)</span>
+            <span class="shortcut-key">3</span>
+          </div>
+          <div class="shortcut-item">
+            <span>Clear Flag</span>
+            <span class="shortcut-key">0</span>
+          </div>
+        </div>
+        <div class="axon-image-container">
+          <img id="axonImage" src="" alt="Segmented axon view" />
+          <div
+            id="flagIndicator"
+            class="flag-indicator"
+            style="display: none"
+          ></div>
+        </div>
+
+        <!-- Add flag status display -->
+        <div class="axon-stats">
+          <!-- Existing stats... -->
+          <div class="axon-stat-item">
+            <div class="axon-stat-label">Flag Status</div>
+            <div class="axon-stat-value" id="stat-flag">None</div>
+          </div>
+        </div>
+
+        <!-- Add flags table -->
+        <div class="card">
+          <div class="card-header">Flagged Axons</div>
+          <div class="card-body">
+            <table class="flags-table">
+              <thead>
+                <tr>
+                  <th>Axon ID</th>
+                  <th>Status</th>
+                  <th>Diameter (µm)</th>
+                  <th>g-ratio</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="flagsTableBody">
+                <!-- Will be populated dynamically -->
+              </tbody>
+            </table>
+
+            <!-- Add export button -->
+            <div class="export-container">
+              <button class="export-btn" onclick="exportFlaggedAxons()">
+                Export Flagged Axons Mask
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+<script>
+  function exportFlaggedAxons() {
+    // Create CSV content
+    let csvContent = "Axon ID,Flag Status,Diameter (µm),g-ratio\n";
+    
+    // Add each flagged axon to the CSV
+    Object.entries(axonFlags).forEach(([axonId, flag]) => {
+      const axon = axonData[parseInt(axonId)];
+      if (axon) {
+        csvContent += `${parseInt(axonId) + 1},${getFlagLabel(flag)},${axon.diameter.toFixed(2)},${axon.gratio.toFixed(2)}\n`;
+      }
+    });
+    
+    // Create a Blob and download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a temporary download link
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `flagged_axons_${date}.csv`);
+    link.style.visibility = 'hidden';
+    
+    // Add to document, trigger click, and remove
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+    <script>
+      // Pass axon data from template to global variable
+      window.axonData = {{ axon_data|tojson }};
+    </script>
 
     <script>
       function openTab(evt, tabId) {
@@ -741,6 +857,7 @@
         }
       }
 
+      let axonFlags = {};
       function showAxon(axonId) {
         if (axonId < 0 || axonId >= totalAxons) return;
 
@@ -781,6 +898,80 @@
           // Update input field
           document.getElementById("axonIdInput").value = axonId;
         }
+        updateFlagDisplay(axonId);
+      }
+
+      function updateFlagDisplay(axonId) {
+        const flagIndicator = document.getElementById("flagIndicator");
+        const flagStat = document.getElementById("stat-flag");
+        const flag = axonFlags[axonId];
+
+        if (flag) {
+          flagIndicator.style.display = "block";
+          flagStat.textContent = getFlagLabel(flag);
+
+          // Set appropriate color
+          flagIndicator.className = "flag-indicator";
+          if (flag === "good") flagIndicator.classList.add("flag-good");
+          else if (flag === "warning")
+            flagIndicator.classList.add("flag-warning");
+          else if (flag === "bad") flagIndicator.classList.add("flag-bad");
+        } else {
+          flagIndicator.style.display = "none";
+          flagStat.textContent = "None";
+        }
+      }
+
+      function getFlagLabel(flag) {
+        switch (flag) {
+          case "good":
+            return "Good Segmentation";
+          case "warning":
+            return "Needs Correction";
+          case "bad":
+            return "Marked for Deletion";
+          default:
+            return "None";
+        }
+      }
+
+      function flagAxon(axonId, flagType) {
+        if (flagType === "none") {
+          delete axonFlags[axonId];
+        } else {
+          axonFlags[axonId] = flagType;
+        }
+
+        updateFlagDisplay(axonId);
+        updateFlagsTable();
+      }
+
+      function updateFlagsTable() {
+        const tableBody = document.getElementById("flagsTableBody");
+        tableBody.innerHTML = "";
+
+        Object.entries(axonFlags).forEach(([axonId, flag]) => {
+          const axon = axonData[parseInt(axonId)];
+          if (!axon) return;
+
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${parseInt(axonId) + 1}</td>
+            <td><span class="flag-status ${
+              "flag-" + flag
+            }"></span>${getFlagLabel(flag)}</td>
+            <td>${axon.diameter.toFixed(2)}</td>
+            <td>${axon.gratio.toFixed(2)}</td>
+            <td><button onclick="goToFlaggedAxon(${axonId})">View</button></td>
+            `;
+
+          tableBody.appendChild(row);
+        });
+      }
+
+      function goToFlaggedAxon(axonId) {
+        showAxon(parseInt(axonId));
       }
 
       function previousAxon() {
@@ -827,10 +1018,6 @@
         });
       }
 
-      function setupKeyboardNavigation() {
-        // This function is now called on page load
-      }
-
       // Initialize when DOM is loaded
       document.addEventListener("DOMContentLoaded", function () {
         // Set up axon ID input listener
@@ -865,6 +1052,22 @@
             updateAxonImage();
             updateToggleImages();
           }
+          // Add flagging keys
+          if (
+            document
+              .getElementById("Single_Axon_Viewer")
+              .classList.contains("active")
+          ) {
+            if (e.key === "1") {
+              flagAxon(currentAxonId, "good");
+            } else if (e.key === "2") {
+              flagAxon(currentAxonId, "warning");
+            } else if (e.key === "3") {
+              flagAxon(currentAxonId, "bad");
+            } else if (e.key === "0") {
+              flagAxon(currentAxonId, "none");
+            }
+          }
         });
 
         document.addEventListener("keyup", function (e) {
@@ -883,12 +1086,9 @@
         ) {
           loadAxonViewer();
         }
-      });
-    </script>
 
-    <script>
-      // Pass axon data from template to global variable
-      window.axonData = {{ axon_data|tojson }};
+        updateFlagsTable();
+      });
     </script>
   </body>
 </html>
