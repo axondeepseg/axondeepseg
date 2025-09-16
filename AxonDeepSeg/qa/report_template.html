@@ -305,6 +305,27 @@
         font-size: 14px;
       }
 
+      .axon-content-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        align-items: flex-start;
+      }
+
+      .axon-image-container {
+        position: relative;
+        flex: 1;
+        max-width: 600px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .keyboard-shortcuts {
+        flex: 0 0 250px;
+        margin-top: 0;
+      }
+
       .shortcut-item {
         display: flex;
         justify-content: space-between;
@@ -675,6 +696,7 @@
         the original axon image.
       </div>
 
+      <!-- Replace the existing axon-viewer section with this code -->
       <div class="axon-viewer">
         <div class="axon-controls">
           <button onclick="previousAxon()">Previous</button>
@@ -685,6 +707,55 @@
             >Axon <span id="currentAxon">0</span> of
             <span id="totalAxons">0</span></span
           >
+
+          <!-- Moved export button to controls -->
+          <button class="export-btn" onclick="exportFlaggedAxons()">
+            Export Flagged Axons
+          </button>
+        </div>
+
+        <div class="axon-content-container">
+          <div class="axon-image-container">
+            <img id="axonImage" src="" alt="Segmented axon view" />
+            <div
+              id="flagIndicator"
+              class="flag-indicator"
+              style="display: none"
+            ></div>
+          </div>
+
+          <!-- Keyboard shortcuts moved to right of image -->
+          <div class="keyboard-shortcuts">
+            <h4>Keyboard Shortcuts</h4>
+            <div class="shortcut-item">
+              <span>Previous Axon</span>
+              <span class="shortcut-key">←</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Next Axon</span>
+              <span class="shortcut-key">→</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Show Original (hold)</span>
+              <span class="shortcut-key">T</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Mark as Good (Green)</span>
+              <span class="shortcut-key">1</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Needs Correction (Yellow)</span>
+              <span class="shortcut-key">2</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Mark for Deletion (Red)</span>
+              <span class="shortcut-key">3</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Clear Flag</span>
+              <span class="shortcut-key">0</span>
+            </div>
+          </div>
         </div>
 
         <div class="axon-stats">
@@ -707,58 +778,13 @@
             <div class="axon-stat-value" id="stat-gratio">-</div>
             <div class="axon-stat-percentile" id="stat-gratio-pct">-</div>
           </div>
-        </div>
-
-        <div class="keyboard-shortcuts">
-          <h4>Keyboard Shortcuts</h4>
-          <div class="shortcut-item">
-            <span>Previous Axon</span>
-            <span class="shortcut-key">←</span>
-          </div>
-          <div class="shortcut-item">
-            <span>Next Axon</span>
-            <span class="shortcut-key">→</span>
-          </div>
-          <div class="shortcut-item">
-            <span>Show Original (hold)</span>
-            <span class="shortcut-key">T</span>
-          </div>
-          <div class="shortcut-item">
-            <span>Mark as Good (Green)</span>
-            <span class="shortcut-key">1</span>
-          </div>
-          <div class="shortcut-item">
-            <span>Needs Correction (Yellow)</span>
-            <span class="shortcut-key">2</span>
-          </div>
-          <div class="shortcut-item">
-            <span>Mark for Deletion (Red)</span>
-            <span class="shortcut-key">3</span>
-          </div>
-          <div class="shortcut-item">
-            <span>Clear Flag</span>
-            <span class="shortcut-key">0</span>
-          </div>
-        </div>
-        <div class="axon-image-container">
-          <img id="axonImage" src="" alt="Segmented axon view" />
-          <div
-            id="flagIndicator"
-            class="flag-indicator"
-            style="display: none"
-          ></div>
-        </div>
-
-        <!-- Add flag status display -->
-        <div class="axon-stats">
-          <!-- Existing stats... -->
           <div class="axon-stat-item">
             <div class="axon-stat-label">Flag Status</div>
             <div class="axon-stat-value" id="stat-flag">None</div>
           </div>
         </div>
 
-        <!-- Add flags table -->
+        <!-- Flags table - export button removed from here -->
         <div class="card">
           <div class="card-header">Flagged Axons</div>
           <div class="card-body">
@@ -776,47 +802,42 @@
                 <!-- Will be populated dynamically -->
               </tbody>
             </table>
-
-            <!-- Add export button -->
-            <div class="export-container">
-              <button class="export-btn" onclick="exportFlaggedAxons()">
-                Export Flagged Axons Mask
-              </button>
-            </div>
           </div>
         </div>
-      </div>
-    </div>
-<script>
-  function exportFlaggedAxons() {
-    // Create CSV content
-    let csvContent = "Axon ID,Flag Status,Diameter (µm),g-ratio\n";
-    
-    // Add each flagged axon to the CSV
-    Object.entries(axonFlags).forEach(([axonId, flag]) => {
-      const axon = axonData[parseInt(axonId)];
-      if (axon) {
-        csvContent += `${parseInt(axonId) + 1},${getFlagLabel(flag)},${axon.diameter.toFixed(2)},${axon.gratio.toFixed(2)}\n`;
+    <script>
+      function exportFlaggedAxons() {
+        // Create CSV content
+        let csvContent = "Axon ID,Flag Status,Diameter (µm),g-ratio\n";
+
+        // Add each flagged axon to the CSV
+        Object.entries(axonFlags).forEach(([axonId, flag]) => {
+          const axon = axonData[parseInt(axonId)];
+          if (axon) {
+            csvContent += `${parseInt(axonId) + 1},${getFlagLabel(
+              flag
+            )},${axon.diameter.toFixed(2)},${axon.gratio.toFixed(2)}\n`;
+          }
+        });
+
+        // Create a Blob and download link
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary download link
+        const link = document.createElement("a");
+        const date = new Date().toISOString().slice(0, 10);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `flagged_axons_${date}.csv`);
+        link.style.visibility = "hidden";
+
+        // Add to document, trigger click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
-    });
-    
-    // Create a Blob and download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    // Create a temporary download link
-    const link = document.createElement("a");
-    const date = new Date().toISOString().slice(0, 10);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `flagged_axons_${date}.csv`);
-    link.style.visibility = 'hidden';
-    
-    // Add to document, trigger click, and remove
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-</script>
+    </script>
     <script>
       // Pass axon data from template to global variable
       window.axonData = {{ axon_data|tojson }};
