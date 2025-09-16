@@ -235,3 +235,21 @@ class MetricsQA:
             })
         
         return axon_data
+
+    def save_seg_overlay(self, image, axon_label, myelin_label, qa_folder):
+        """Save overlay of axons and myelin."""
+        overlay = np.zeros((image.shape[0], image.shape[1], 3))
+        overlay[axon_label == 1] = [255, 0, 0]
+        overlay[myelin_label == 1] = [0, 255, 0]
+        overlay = overlay.astype(np.uint8)
+
+        plt.figure(figsize=(8, 8))
+        plt.imshow(image, cmap='gray')
+        plt.axis('off')
+        plt.tight_layout()
+        plt.savefig(qa_folder / 'base_image.png', dpi=150, bbox_inches='tight')
+
+        plt.imshow(overlay, alpha=0.5)
+
+        plt.savefig(qa_folder / 'segmentation_overlay.png', dpi=150, bbox_inches='tight')
+        plt.close()

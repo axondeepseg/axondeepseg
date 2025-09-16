@@ -797,23 +797,10 @@ class ADSplugin(QWidget):
         gratio_stats = qa.plot("gratio", quiet=True)
 
         # --- Create overlay image for QA ---
-        overlay_path = qa_folder / "axon_myelin_overlay.png"
-        
-        fig, ax = plt.subplots(figsize=(10,10))
-        ax.imshow(self.image, cmap='gray')
-        
-        # Overlay axons in red
-        ax.imshow(np.ma.masked_where(self.axon_label == 0, self.axon_label), 
-                cmap='Reds', alpha=0.5)
-        
-        # Overlay myelin in blue
-        ax.imshow(np.ma.masked_where(self.myelin_label == 0, self.myelin_label), 
-                cmap='Blues', alpha=0.5)
-        
-        ax.axis('off')
-        plt.tight_layout()
-        plt.savefig(overlay_path, dpi=150)
-        plt.close(fig)
+        qa.save_seg_overlay(self.image, self.axon_label, self.myelin_label, qa_folder)
+        base_image_path = qa_folder / 'base_image.png'
+        overlay_path = qa_folder / 'segmentation_overlay.png'
+
         # Generate axon closeups
         axon_data = qa.generate_axon_closeups(qa_folder, self.image, self.axon_label, self.myelin_label, self.im_axonmyelin_label, buffer_pixels=20)
 
@@ -834,16 +821,21 @@ class ADSplugin(QWidget):
                 },
                 {
                     "type": "segmented", 
-                    "labeled_src": str(qa_folder / 'ads_overlay.png'),
-                    "original_src": str(qa_folder / 'original_image.png')
+                    "labeled_src": str(overlay_path),
+                    "original_src": str(base_image_path)
                 }
             ],
             "📈 Histograms": [
-                {"type": "image", "src": str(qa_folder / "axon_diam (um).png")},
-                {"type": "image", "src": str(qa_folder / "myelin_thickness (um).png")},
-                {"type": "image", "src": str(qa_folder / "gratio.png")},
-                {"type": "image", "src": str(qa_folder / "axon_area (um^2).png")},
-                {"type": "image", "src": str(qa_folder / "myelin_area (um^2).png")}
+                {
+                    "type": "histogram_viewer",
+                    "histograms": [
+                        {"name": "Axon Diameter", "src": str(qa_folder / "axon_diam (um).png")},
+                        {"name": "Myelin Thickness", "src": str(qa_folder / "myelin_thickness (um).png")},
+                        {"name": "g-ratio", "src": str(qa_folder / "gratio.png")},
+                        {"name": "Axon Area", "src": str(qa_folder / "axon_area (um^2).png")},
+                        {"name": "Myelin Area", "src": str(qa_folder / "myelin_area (um^2).png")}
+                    ]
+                }
             ],
         }
 
