@@ -363,7 +363,7 @@ class TestCore(object):
             
             ## User loads image
             wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
-    
+
             ## User loads mask
             with patch('PyQt5.QtWidgets.QFileDialog.getOpenFileName', return_value=(str(self.mask_path), '')):
                 with patch('AxonDeepSeg.ads_napari._widget.ADSplugin.show_ok_cancel_message', return_value=(False, '')):

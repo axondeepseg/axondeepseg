@@ -346,7 +346,7 @@ class TestCore(object):
         instance_map = ads.imread(str(instance_seg_filename), use_16bit=True)
         assert instance_map.dtype == 'uint16'
 
-    @pytest.mark.single
+    @pytest.mark.integration
     def test_main_cli_gives_consistent_morphometrics_and_instance_map(self):
         pathImg = self.dataPath / 'image.png'
         instance_seg_filename = self.dataPath / f'image{instance_suffix}'
