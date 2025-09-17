@@ -590,8 +590,6 @@ class ADSplugin(QWidget):
             None
         """
         microscopy_image_layer = self.get_microscopy_image()
-        self.image_path = Path(microscopy_image_layer.source.path)
-        self.image = ads_utils.imread(self.image_path)
 
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
@@ -601,6 +599,9 @@ class ADSplugin(QWidget):
         )
         if mask_file_path == "":
             return
+
+        self.image_path = Path(microscopy_image_layer.source.path)
+        self.image = ads_utils.imread(self.image_path)
 
         if not self.show_ok_cancel_message(
             "The mask will be associated with " + microscopy_image_layer.name
