@@ -1,14 +1,7 @@
 from typing import TYPE_CHECKING
 
-import os
-os.environ['QTWEBENGINE_CHROMIUM_FLAGS'] = '--single-process'  # Helps with some environments
-
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QApplication
-from qtpy.QtCore import QCoreApplication
-
-# Set this before creating any QApplication instance
-QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts, True)
 
 import os, sys, json
 from pathlib import Path
@@ -1005,7 +998,7 @@ class ADSplugin(QWidget):
             return False
 
         # Ask the user where to save
-        default_name = Path(os.getcwd()) / "Morphometrics.csv"
+        default_name = Path(microscopy_image_layer.source.path).parents[0] / "Morphometrics.csv"
         file_name, selected_filter = QFileDialog.getSaveFileName(
             self,
             caption="Select where to save morphometrics",

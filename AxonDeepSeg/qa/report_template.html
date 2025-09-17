@@ -41,6 +41,13 @@
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
       }
 
+
+
+      .header-logo {
+          height: 70px;
+          width: auto;
+      }
+
       .header {
         background: var(--primary);
         color: white;
@@ -59,9 +66,11 @@
 
       .header-info {
         display: flex;
-        gap: 20px;
+        flex-direction: column;
+        gap: 5px;
         font-size: 14px;
         opacity: 0.8;
+        text-align: right;
       }
 
       .tabs-container {
@@ -597,77 +606,82 @@
       .export-btn:hover {
         background: #2980b9;
       }
-.histogram-viewer {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
+      .histogram-viewer {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
 
-.histogram-selector {
-  flex: 0 0 200px;
-  background: var(--light-bg);
-  border-radius: 6px;
-  padding: 15px;
-}
+      .histogram-selector {
+        flex: 0 0 200px;
+        background: var(--light-bg);
+        border-radius: 6px;
+        padding: 15px;
+      }
 
-.histogram-selector h4 {
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: var(--secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+      .histogram-selector h4 {
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: var(--secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
 
-.histogram-option {
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-}
+      .histogram-option {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+      }
 
-.histogram-option:hover {
-  background: rgba(52, 152, 219, 0.1);
-}
+      .histogram-option:hover {
+        background: rgba(52, 152, 219, 0.1);
+      }
 
-.histogram-option.active {
-  background: var(--accent);
-  color: white;
-}
+      .histogram-option.active {
+        background: var(--accent);
+        color: white;
+      }
 
-.histogram-display {
-  flex: 1;
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-}
+      .histogram-display {
+        flex: 1;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+      }
 
-.histogram-display img {
-  max-width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-}
+      .histogram-display img {
+        max-width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+      }
 
-.histogram-placeholder {
-  color: #7f8c8d;
-  font-style: italic;
-}
+      .histogram-placeholder {
+        color: #7f8c8d;
+        font-style: italic;
+      }
+
+
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>AxonDeepSeg Quality Assessment Report</h1>
-        <div class="header-info">
-          <span>Generated: {{ report_date }}</span>
-          <span>Sample: {{ sample_id }}</span>
-          <span>Version: {{ software_version }}</span>
-        </div>
+          <div class="header-left">
+              <img src="https://raw.githubusercontent.com/axondeepseg/doc-figures/refs/heads/main/logo/logo_ads-notext.png" alt="AxonDeepSeg Logo" class="header-logo">
+              <h1>AxonDeepSeg Quality Assessment Report</h1>
+          </div>
+          <div class="header-info">
+              <span>Generated: {{ report_date }}</span>
+              <span>Sample: {{ sample_id }}</span>
+              <span>Version: {{ software_version }}</span>
+          </div>
       </div>
 
       <div class="tabs-container">
@@ -684,11 +698,7 @@
     </div>
 
     {% for section_name, items in sections.items() %}
-    <div
-      id="{{ section_name|replace(' ', '_') }}"
-      class="tab-content {% if loop.first %}active{% endif %}"
-    >
-      <h2 class="section-title">{{ section_name }}</h2>
+    <div id="{{ section_name|replace(' ', '_') }}" class="tab-content {% if loop.first %}active{% endif %}" >
 
       {% for item in items %} {% if item.type == "plot" %}
       <div class="card">
@@ -745,24 +755,26 @@
         {% endfor %}
       </div>
       {% elif item.type == "histogram_viewer" %}
-<div class="card">
-  <div class="card-header">Distribution Histograms</div>
-  <div class="card-body">
-    <div class="histogram-viewer">
-      <div class="histogram-selector">
-        <h4>Select Metric</h4>
-        {% for histogram in item.histograms %}
-        <div class="histogram-option" data-src="{{ histogram.src }}">
-          {{ histogram.name }}
+      <div class="card">
+        <div class="card-header">Distribution Histograms</div>
+        <div class="card-body">
+          <div class="histogram-viewer">
+            <div class="histogram-selector">
+              <h4>Select Metric</h4>
+              {% for histogram in item.histograms %}
+              <div class="histogram-option" data-src="{{ histogram.src }}">
+                {{ histogram.name }}
+              </div>
+              {% endfor %}
+            </div>
+            <div class="histogram-display">
+              <div class="histogram-placeholder">
+                Select a metric to view histogram
+              </div>
+            </div>
+          </div>
         </div>
-        {% endfor %}
       </div>
-      <div class="histogram-display">
-        <div class="histogram-placeholder">Select a metric to view histogram</div>
-      </div>
-    </div>
-  </div>
-</div>
       {% endif %} {% endfor %}
     </div>
     {% endfor %}
@@ -883,6 +895,9 @@
             </table>
           </div>
         </div>
+      </div>
+    </div>
+    </div>
     <script>
       function exportFlaggedAxons() {
         // Create CSV content
@@ -917,31 +932,31 @@
         document.body.removeChild(link);
       }
 
-function initHistogramViewer() {
-  const viewers = document.querySelectorAll('.histogram-viewer');
-  
-  viewers.forEach(viewer => {
-    const options = viewer.querySelectorAll('.histogram-option');
-    const display = viewer.querySelector('.histogram-display');
-    
-    options.forEach(option => {
-      option.addEventListener('click', function() {
-        // Update active state
-        options.forEach(opt => opt.classList.remove('active'));
-        this.classList.add('active');
-        
-        // Update displayed image
-        const imgSrc = this.getAttribute('data-src');
-        display.innerHTML = `<img src="${imgSrc}" alt="${this.textContent}">`;
-      });
-    });
-    
-    // Activate the first option by default
-    if (options.length > 0) {
-      options[0].click();
-    }
-  });
-}
+      function initHistogramViewer() {
+        const viewers = document.querySelectorAll(".histogram-viewer");
+
+        viewers.forEach((viewer) => {
+          const options = viewer.querySelectorAll(".histogram-option");
+          const display = viewer.querySelector(".histogram-display");
+
+          options.forEach((option) => {
+            option.addEventListener("click", function () {
+              // Update active state
+              options.forEach((opt) => opt.classList.remove("active"));
+              this.classList.add("active");
+
+              // Update displayed image
+              const imgSrc = this.getAttribute("data-src");
+              display.innerHTML = `<img src="${imgSrc}" alt="${this.textContent}">`;
+            });
+          });
+
+          // Activate the first option by default
+          if (options.length > 0) {
+            options[0].click();
+          }
+        });
+      }
     </script>
     <script>
       // Pass axon data from template to global variable
