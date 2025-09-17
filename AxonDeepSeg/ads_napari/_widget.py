@@ -1005,7 +1005,10 @@ class ADSplugin(QWidget):
             return False
 
         # Ask the user where to save
-        default_name = Path(microscopy_image_layer.source.path).parents[0] / "Morphometrics.csv"
+        if microscopy_image_layer.source.path is None:
+            default_name = Path(os.getcwd())  / "Morphometrics.csv"
+        else:
+            default_name = Path(microscopy_image_layer.source.path).parents[0] / "Morphometrics.csv"
         file_name, selected_filter = QFileDialog.getSaveFileName(
             self,
             caption="Select where to save morphometrics",
