@@ -727,9 +727,13 @@ class ADSplugin(QWidget):
             self.show_axon_metrics_button.setChecked(False)
             return
         else:
+            print("1")
+            print(self.stats_dataframe)
             if self.stats_dataframe is None:
                 self.show_info_message(f"Morphometrics for this image hasn't been computed yet - starting the Compute morphometrics process.")
                 status = self._on_compute_morphometrics_button()
+                print("2")
+                print(self.stats_dataframe)
                 if status == False:
                     # Uncheck the button
                     self.show_axon_metrics_state = False
@@ -1036,6 +1040,7 @@ class ADSplugin(QWidget):
             return_instance_seg=True,
             return_im_axonmyelin_label=True
         )
+        self.stats_dataframe = stats_dataframe
         try:
             compute_morphs.save_axon_morphometrics(file_name, stats_dataframe)
 
