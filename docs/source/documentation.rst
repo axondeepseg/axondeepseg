@@ -675,8 +675,8 @@ The QA report can be generated directly from the AxonDeepSeg Napari plugin:
 2. **Load your image**.
 3. **Load your mask or generate a segmentation** using the plugin.
 4. **Generate a Morphometrics file** using the plugin.
-2. **Click the "QA Report" button** in the plugin interface  
-3. **The report will automatically generate** and open in your default web browser
+5. **Click the "QA Report" button** in the plugin interface  
+6. **The report will automatically generate** and open in your default web browser
 
 The report is saved in a ``QA`` folder within your morphometrics directory, containing:
 
