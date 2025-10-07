@@ -3,6 +3,7 @@
 from pathlib import Path
 from loguru import logger
 import json
+from scipy import ndimage
 
 # Scientific modules imports
 import math
@@ -76,8 +77,11 @@ def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
         # Note: The value "i" corresponds to the label number of im_axon_label
         im_centroid[seed_points[0][i], seed_points[1][i]] = i + 1
 
+    # Fill holes in axonmelin mask to ensure watershed doesn't omit them
+    im_axonmyelin_filled = ndimage.binary_fill_holes(im_axonmyelin).astype(int)
+
     # Watershed segmentation of axonmyelin using distance map
-    return watershed(-distance, im_centroid, mask=im_axonmyelin)
+    return watershed(-distance, im_centroid, mask=im_axonmyelin_filled)
 
 def get_axon_morphometrics(
         im_axon, 
@@ -118,6 +122,7 @@ def get_axon_morphometrics(
         pixelsize = pixel_size
 
     # Label each axon object
+
     connectivity = 1 if im_myelin is None else 2
     im_axon_label = measure.label(im_axon, connectivity=connectivity)
     # Measure properties for each axon object
@@ -132,6 +137,7 @@ def get_axon_morphometrics(
                         [int(props.centroid[1]) for props in axon_objects])
 
         im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
+
         if return_instance_seg:
             im_instance_seg = colorize_instance_segmentation(im_axonmyelin_label)
         
