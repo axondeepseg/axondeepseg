@@ -667,7 +667,7 @@ Generating QA Reports
 ---------------------
 
 Through Napari Plugin
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 
 The QA report can be generated directly from the AxonDeepSeg Napari plugin:
 
@@ -691,21 +691,21 @@ Report Features
 The QA report includes several interactive sections:
 
 Summary Section
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 - **Key Statistics**: Mean ± standard deviation for axon diameter, myelin thickness, and g-ratio
 - **Segmentation Visualization**: Overlay of axon (blue) and myelin (red) masks on the original image
 - **Interactive Toggle**: Press and hold 'T' to temporarily view the original image without segmentation overlays
 
 Histograms Section
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~
 
 - **Distribution Analysis**: Interactive histogram viewer for the mophrometrics.
 - **Available Metrics**: Axon diameter, myelin thickness, g-ratio, axon area, myelin area
 - **Statistical Summary**: Each histogram displays mean, median, standard deviation, IQR, min/max values, and NaN counts
 
 Single Axon Viewer
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~
 
 - **Individual Axon Inspection**: Navigate through each axon with detailed closeup views
 - **Dual Image Display**: Toggle between original and labeled views for each axon
@@ -718,7 +718,7 @@ Single Axon Viewer
   - **Clear Flag** - Press '0'
 
 Keyboard Shortcuts
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :header-rows: 1
@@ -741,7 +741,7 @@ Keyboard Shortcuts
      - 0 key
 
 Export Features
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 - **Export Flagged Axons** button: Export a CSV file containing all flagged axons with their IDs, status, diameter, and g-ratio.
 
