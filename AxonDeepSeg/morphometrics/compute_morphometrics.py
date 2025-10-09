@@ -4,6 +4,7 @@ from pathlib import Path
 from loguru import logger
 import json
 from scipy import ndimage
+import inspect
 
 # Scientific modules imports
 import math
@@ -76,12 +77,27 @@ def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
     for i in range(len(seed_points[0])):
         # Note: The value "i" corresponds to the label number of im_axon_label
         im_centroid[seed_points[0][i], seed_points[1][i]] = i + 1
+    
 
-    # Fill holes in axonmelin mask to ensure watershed doesn't omit them
-    im_axonmyelin_filled = ndimage.binary_fill_holes(im_axonmyelin).astype(int)
+    ## Verify if call is coming from plugin
+    # Get the current frame
+    current_frame = inspect.currentframe()
+        
+    # Get the caller's frame (two level up in the call stack)
+    caller_frame = current_frame.f_back
+    caller_frame = caller_frame.f_back
+        
+    # Get information about the caller
+    caller_info = inspect.getframeinfo(caller_frame)
+
+    if "ads_napari/_widget.py" in str(caller_info):
+        # Fill holes in axonmelin mask to ensure watershed doesn't omit them
+        im_axonmyelin = ndimage.binary_fill_holes(im_axonmyelin).astype(int)
+        logger.debug("Napari plugin: Filling holes in axon mask before watershed segmentation.")
+
 
     # Watershed segmentation of axonmyelin using distance map
-    return watershed(-distance, im_centroid, mask=im_axonmyelin_filled)
+    return watershed(-distance, im_centroid, mask=im_axonmyelin)
 
 def get_axon_morphometrics(
         im_axon, 

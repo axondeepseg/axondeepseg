@@ -663,6 +663,10 @@ Quality Assessment (QA) Report
 
 AxonDeepSeg now includes a comprehensive Quality Assessment (QA) feature that generates interactive HTML reports for evaluating segmentation results. This feature provides detailed visualizations and statistics to help users assess the quality of their axon and myelin segmentations.
 
+.. raw:: html
+
+   <iframe width="700" height="394" src="https://www.youtube.com/embed/vI5deXs5vKc?si=YW1GtzPeySG-d7Tn" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 Generating QA Reports
 ---------------------
 

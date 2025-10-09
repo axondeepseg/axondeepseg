@@ -45,7 +45,8 @@ import webbrowser
 
 _CONTROL =  keys.CONTROL
 _ALT = 'Alt'
-
+global NAPARI_VIEWER_OPEN
+NAPARI_VIEWER_OPEN = True  # Whether to fill holes in the axon mask when loading a mask
 
 class ADSsettings:
     """Plugin settings class.
