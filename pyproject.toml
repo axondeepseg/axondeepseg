@@ -53,6 +53,8 @@ dependencies =[
     "pytest-qt",
     "magicgui",
     "qtpy",
+    "jinja2",
+    "plotly",
 ]
 
 keywords = ["axon", "myelin", "segmentation", "microscopy"]

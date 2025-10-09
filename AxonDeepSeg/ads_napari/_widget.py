@@ -1,7 +1,11 @@
 from typing import TYPE_CHECKING
 
-import os, sys
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QApplication
+
+import os, sys, json
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 import AxonDeepSeg
 import AxonDeepSeg.params as config
@@ -23,8 +27,12 @@ from qtpy.QtCore import QStringListModel, QObject, Signal
 from qtpy.QtGui import QPixmap
 
 from skimage import measure
+import pandas as pd 
+import plotly.express as px
+from jinja2 import Environment, FileSystemLoader
 
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
+from AxonDeepSeg.qa.metrics_qa import MetricsQA
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
@@ -33,9 +41,12 @@ import napari
 from napari.utils.notifications import show_info
 from .settings_menu_ui import Ui_Settings_menu_ui
 from vispy.util import keys
+import webbrowser
 
 _CONTROL =  keys.CONTROL
 _ALT = 'Alt'
+global NAPARI_VIEWER_OPEN
+NAPARI_VIEWER_OPEN = True  # Whether to fill holes in the axon mask when loading a mask
 
 class ADSsettings:
     """Plugin settings class.
@@ -230,7 +241,15 @@ class ADSplugin(QWidget):
             "QPushButton:checked{background-color:blue;}"
         )
 
-        settings_menu_button = QPushButton("Settings")
+
+        qa_report_button = QPushButton("QA Report")
+        qa_report_button.clicked.connect(
+            self._on_qa_report_button
+        )
+        qa_report_button.setToolTip("Generate quality assurance report for the segmentation.\nRequires morphometrics to be computed.")
+        self.qa_report_button = qa_report_button
+
+        settings_menu_button = QPushButton("Settingss")
         settings_menu_button.clicked.connect(self._on_settings_menu_clicked)
 
         self.setLayout(QVBoxLayout())
@@ -248,6 +267,7 @@ class ADSplugin(QWidget):
         self.layout().addWidget(save_segmentation_button)
         self.layout().addWidget(compute_morphometrics_button)
         self.layout().addWidget(show_axon_metrics_button)
+        self.layout().addWidget(qa_report_button)
         self.layout().addWidget(settings_menu_button)
         self.layout().addStretch()
 
@@ -466,14 +486,17 @@ class ADSplugin(QWidget):
         else:
             return False
 
-    def _on_apply_model_button_click(self):
+    def _on_apply_model_button_click(self, layer):
         """Apply the selected AxonDeepSeg model to the active layer of the viewer.
 
         Returns:
             None
         """
+
         selected_layers = self.viewer.layers.selection
         selected_model = self.model_selection_combobox.currentText()
+
+
 
         if selected_model not in self.available_models:
             self.show_info_message("No model selected")
@@ -486,6 +509,8 @@ class ADSplugin(QWidget):
             return
         selected_layer = selected_layers.active
         image_directory = Path(selected_layer.source.path).parents[0]
+    
+        self.image_path = Path(selected_layer.source.path)
 
         self.apply_model_button.setEnabled(False)
         self.apply_model_thread.selected_layer = selected_layer
@@ -566,12 +591,22 @@ class ADSplugin(QWidget):
             None
         """
         microscopy_image_layer = self.get_microscopy_image()
+
         if microscopy_image_layer is None:
             self.show_info_message("No single image selected/detected")
             return
+
+        if microscopy_image_layer.source.path is None:
+            self.image_path = None
+            self.image = None
+        else:
+            self.image_path = Path(microscopy_image_layer.source.path)
+            self.image = ads_utils.imread(self.image_path)
+
         mask_file_path, _ = QFileDialog.getOpenFileName(
             self, "Select the mask you wish to load"
         )
+
         if mask_file_path == "":
             return
 
@@ -583,10 +618,12 @@ class ADSplugin(QWidget):
         # Extract the Axon mask
         axon_data = img_png2D > 200
         axon_data = axon_data.astype(np.uint8)
+        self.axon_label = axon_data
         axon_mask_name = microscopy_image_layer.name + config.axon_suffix.stem
         # Extract the Myelin mask
         myelin_data = (img_png2D > 100) & (img_png2D < 200)
         myelin_data = myelin_data.astype(np.uint8)
+        self.myelin_label = myelin_data
         myelin_mask_name = (
             microscopy_image_layer.name + config.myelin_suffix.stem
         )
@@ -691,9 +728,13 @@ class ADSplugin(QWidget):
             self.show_axon_metrics_button.setChecked(False)
             return
         else:
+            print("1")
+            print(self.stats_dataframe)
             if self.stats_dataframe is None:
                 self.show_info_message(f"Morphometrics for this image hasn't been computed yet - starting the Compute morphometrics process.")
                 status = self._on_compute_morphometrics_button()
+                print("2")
+                print(self.stats_dataframe)
                 if status == False:
                     # Uncheck the button
                     self.show_axon_metrics_state = False
@@ -707,6 +748,152 @@ class ADSplugin(QWidget):
                 self.viewer.layers.selection.select_only(image_label)
                 show_info(f"How to use the show axon metrics feature.\nRaw histology image must be selected in the layers list.\nHold ALT/OPTION and click on an axon to show its metrics.")
 
+
+    def export_flagged_axons_mask(self, flagged_axons):
+        """Export a binary mask of axons marked for deletion"""
+        if not hasattr(self, 'im_axonmyelin_label') or self.im_axonmyelin_label is None:
+            self.show_info_message("No labeled data available for export")
+            return False
+        
+        if not flagged_axons:
+            self.show_info_message("No axons marked for deletion")
+            return False
+        
+        # Convert axon IDs (0-indexed in UI) to label values (1-indexed in image)
+        axon_labels = [axon_id + 1 for axon_id in flagged_axons]
+        
+        # Create binary mask where only the flagged axons are 1, others are 0
+        mask = np.isin(self.im_axonmyelin_label, axon_labels).astype(np.uint8) * 255
+        
+        # Ask user where to save
+        default_name = Path(self.file_name).parent / "flagged_axons_mask.png"
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            caption="Save Flagged Axons Mask",
+            directory=str(default_name),
+            filter="PNG files (*.png)"
+        )
+        
+        if file_path:
+            try:
+                ads_utils.imwrite(file_path, mask)
+                self.show_info_message(f"Successfully exported mask for {len(flagged_axons)} axons")
+                return True
+            except Exception as e:
+                self.show_info_message(f"Error exporting mask: {e}")
+                return False
+        
+        return False
+
+    def _on_qa_report_button(self):
+        """Quick MVP QA Report"""
+        morphometrics_folder = Path(self.file_name).parents[0]
+        qa_folder = Path(morphometrics_folder / 'QA')
+        
+        if not os.path.exists(qa_folder):
+            os.makedirs(qa_folder)
+        
+        qa = MetricsQA(self.file_name)
+        qa.plot_all(qa_folder, quiet=True)
+
+        # Get basic stats
+        axon_stats = qa.plot("axon_diam (um)", quiet=True)
+        myelin_stats = qa.plot("myelin_thickness (um)", quiet=True)
+        gratio_stats = qa.plot("gratio", quiet=True)
+
+        # --- Create overlay image for QA ---
+        qa.save_seg_overlay(self.image, self.axon_label, self.myelin_label, qa_folder)
+        base_image_path = qa_folder / 'base_image.png'
+        overlay_path = qa_folder / 'segmentation_overlay.png'
+
+        # Generate axon closeups
+        axon_data = qa.generate_axon_closeups(qa_folder, self.image, self.axon_label, self.myelin_label, self.im_axonmyelin_label, buffer_pixels=20)
+
+        # Prepare sections with better visuals
+        sections = {
+            "Summary": [
+                {
+                    "type": "stats", 
+                    "stats": [
+                        {"label": "Axon Diameter (µm)", "value": f"{axon_stats[0]} ± {axon_stats[1]}"},
+                        {"label": "Myelin Thickness (µm)", "value": f"{myelin_stats[0]} ± {myelin_stats[1]}"},
+                        {"label": "g-ratio", "value": f"{gratio_stats[0]} ± {gratio_stats[1]}"},
+                    ]
+                },
+                {
+                    "type": "text", 
+                    "content": "<h3>Quality Assessment</h3><p>This report shows automated quality control metrics for axon segmentation.</p>"
+                },
+                {
+                    "type": "segmented", 
+                    "labeled_src": str(overlay_path),
+                    "original_src": str(base_image_path)
+                }
+            ],
+            "Histograms": [
+                {
+                    "type": "histogram_viewer",
+                    "histograms": [
+                        {"name": "Axon Diameter", "src": str(qa_folder / "axon_diam (um).png")},
+                        {"name": "Myelin Thickness", "src": str(qa_folder / "myelin_thickness (um).png")},
+                        {"name": "g-ratio", "src": str(qa_folder / "gratio.png")},
+                        {"name": "Axon Area", "src": str(qa_folder / "axon_area (um^2).png")},
+                        {"name": "Myelin Area", "src": str(qa_folder / "myelin_area (um^2).png")}
+                    ]
+                }
+            ],
+        }
+
+        # Render and open
+        package_dir = Path(AxonDeepSeg.__file__).parent
+        env = Environment(loader=FileSystemLoader((package_dir / "qa").resolve()))
+        template = env.get_template("report_template.html")
+
+        # In your _on_qa_report_button method, add this before rendering the template:
+        axon_mask_base64 = self._image_to_base64(self.axon_label * 255)  # Convert to 0-255
+        myelin_mask_base64 = self._image_to_base64(self.myelin_label * 255)
+        index_mask_base64 = self._image_to_base64(self.im_axonmyelin_label)
+
+        # Pass these to the template
+        html_out = template.render(
+            sections=sections, 
+            axon_data=axon_data,
+            sample_id=Path(self.file_name).stem,
+            report_date=pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
+            software_version=AxonDeepSeg.__version__,
+            axon_mask_data=axon_mask_base64,
+            myelin_mask_data=myelin_mask_base64,
+            index_mask_data=index_mask_base64
+        )
+
+        # Write the HTML file
+        with open(qa_folder / "AxonDeepSeg_QA_Report.html", "w") as f:
+            f.write(html_out)
+        
+        # Open in the default browser but with a custom handler
+        html_file = qa_folder / "AxonDeepSeg_QA_Report.html"
+        file_url = html_file.resolve().as_uri()
+        webbrowser.open(file_url)
+
+        print("✅ QA Report Generated!")
+    
+
+    def _image_to_base64(self, image_array):
+        """Convert numpy array to base64 PNG"""
+        import base64
+        from io import BytesIO
+        from PIL import Image
+            
+        # Convert to PIL Image
+        if image_array.dtype != np.uint8:
+            image_array = image_array.astype(np.uint8)
+        pil_img = Image.fromarray(image_array)
+            
+        # Convert to base64
+        buffered = BytesIO()
+        pil_img.save(buffered, format="PNG")
+        return base64.b64encode(buffered.getvalue()).decode('utf-8')
+                
 
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.
@@ -823,7 +1010,10 @@ class ADSplugin(QWidget):
             return False
 
         # Ask the user where to save
-        default_name = Path(os.getcwd()) / "Morphometrics.csv"
+        if microscopy_image_layer.source.path is None:
+            default_name = Path(os.getcwd())  / "Morphometrics.csv"
+        else:
+            default_name = Path(microscopy_image_layer.source.path).parents[0] / "Morphometrics.csv"
         file_name, selected_filter = QFileDialog.getSaveFileName(
             self,
             caption="Select where to save morphometrics",
@@ -832,6 +1022,8 @@ class ADSplugin(QWidget):
         )
         if file_name == "":
             return False
+
+        self.file_name = file_name
 
         # Compute statistics
         (
@@ -849,6 +1041,7 @@ class ADSplugin(QWidget):
             return_instance_seg=True,
             return_im_axonmyelin_label=True
         )
+        self.stats_dataframe = stats_dataframe
         try:
             compute_morphs.save_axon_morphometrics(file_name, stats_dataframe)
 
@@ -864,6 +1057,7 @@ class ADSplugin(QWidget):
             name="instance seg",
         )
 
+
         self.viewer.add_image(
             data=index_image_array,
             rgb=False,
@@ -871,13 +1065,11 @@ class ADSplugin(QWidget):
             blending="additive",
             name="numbers",
         )
-
-        self.stats_dataframe = stats_dataframe
-        self.index_image_array = index_image_array
-        self.im_instance_seg = im_instance_seg
+        
         self.im_axonmyelin_label = im_axonmyelin_label
 
         return True
+
 
     def _on_settings_menu_clicked(self):
         """Create and display the settings menu when the settings menu button is clicked.

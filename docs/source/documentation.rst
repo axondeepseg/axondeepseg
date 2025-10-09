@@ -656,6 +656,124 @@ To aggregate the morphometrics per subject, use the following command::
 
 This will generate a folder called **morphometrics_agg** in the input folder, containing the aggregated morphometrics per subject. It will also contain a short summary file named **statistics_per_axon_caliber.xlsx** which contains basic statistics for axon diameter, myelin thickness and g-ratio. These statistics are computed per axon diameter range.
 
+.. _quality-assurance-label:
+
+Quality Assessment (QA) Report
+==============================
+
+AxonDeepSeg now includes a comprehensive Quality Assessment (QA) feature that generates interactive HTML reports for evaluating segmentation results. This feature provides detailed visualizations and statistics to help users assess the quality of their axon and myelin segmentations.
+
+.. raw:: html
+
+   <iframe width="700" height="394" src="https://www.youtube.com/embed/vI5deXs5vKc?si=YW1GtzPeySG-d7Tn" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+Generating QA Reports
+---------------------
+
+Through Napari Plugin
+~~~~~~~~~~~~~~~~~~~~~
+
+The QA report can be generated directly from the AxonDeepSeg Napari plugin:
+
+1. **Open napari and the AxonDeepSeg plugin**.
+2. **Load your image**.
+3. **Load your mask or generate a segmentation** using the plugin.
+4. **Generate a Morphometrics file** using the plugin.
+5. **Click the "QA Report" button** in the plugin interface  
+6. **The report will automatically generate** and open in your default web browser
+
+The report is saved in a ``QA`` folder within your morphometrics directory, containing:
+
+- Interactive HTML report (``AxonDeepSeg_QA_Report.html``)
+- Individual metric histograms
+- Segmentation overlays  
+- Individual axon closeup images
+
+Report Features
+---------------
+
+The QA report includes several interactive sections:
+
+Summary Section
+~~~~~~~~~~~~~~~
+
+- **Key Statistics**: Mean ± standard deviation for axon diameter, myelin thickness, and g-ratio
+- **Segmentation Visualization**: Overlay of axon (blue) and myelin (red) masks on the original image
+- **Interactive Toggle**: Press and hold 'T' to temporarily view the original image without segmentation overlays
+
+Histograms Section
+~~~~~~~~~~~~~~~~~~
+
+- **Distribution Analysis**: Interactive histogram viewer for the mophrometrics.
+- **Available Metrics**: Axon diameter, myelin thickness, g-ratio, axon area, myelin area
+- **Statistical Summary**: Each histogram displays mean, median, standard deviation, IQR, min/max values, and NaN counts
+
+Single Axon Viewer
+~~~~~~~~~~~~~~~~~~
+
+- **Individual Axon Inspection**: Navigate through each axon with detailed closeup views
+- **Dual Image Display**: Toggle between original and labeled views for each axon
+- **Metric Rankings**: Percentile rankings and absolute ranks for diameter, thickness, and g-ratio
+- **Flagging System**: Manually flag axons as:
+
+  - **Good Segmentation** (Green) - Press '1'
+  - **Needs Correction** (Yellow) - Press '2' 
+  - **Marked for Deletion** (Red) - Press '3'
+  - **Clear Flag** - Press '0'
+
+Keyboard Shortcuts
+~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Shortcut
+   * - Previous axon
+     - Left Arrow (←)
+   * - Next axon  
+     - Right Arrow (→)
+   * - Show original (hold)
+     - T key
+   * - Good segmentation
+     - 1 key
+   * - Needs correction
+     - 2 key
+   * - Mark for deletion
+     - 3 key
+   * - Clear flag
+     - 0 key
+
+Export Features
+~~~~~~~~~~~~~~~
+
+- **Export Flagged Axons** button: Export a CSV file containing all flagged axons with their IDs, status, diameter, and g-ratio.
+
+Technical Details
+-----------------
+
+The QA report generation process:
+
+1. **Morphometrics Analysis**: Uses the existing morphometrics computation pipeline
+2. **Image Processing**: Generates individual axon closeups with buffer regions around each axon
+3. **Statistical Analysis**: Computes comprehensive statistics for all morphometric parameters  
+4. **Interactive Visualization**: Creates an HTML-based report with JavaScript-powered interactivity
+
+The report includes:
+
+- Sample identification and generation timestamp
+- Software version information
+- Comprehensive metric distributions
+- Individual axon inspection capabilities
+- Professional styling and responsive design
+
+The QA feature is particularly useful for:
+
+- **Quality Control**: Quickly identifying segmentation issues
+- **Research Validation**: Statistical validation of segmentation results  
+- **Manual Correction**: Targeted identification of axons needing manual intervention
+- **Result Documentation**: Professional reporting for publications and presentations
+
 .. _manual-correction-label:
 
 Manual correction of segmentation masks

@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AxonDeepSeg QA Report</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+      :root {
+        --primary: #2c3e50;
+        --secondary: #34495e;
+        --accent: #3498db;
+        --highlight: #e74c3c;
+        --light-bg: #f8f9fa;
+        --dark-text: #2c3e50;
+        --light-text: #ecf0f1;
+        --border: #bdc3c7;
+        --success: #27ae60;
+        --warning: #f39c12;
+        --danger: #e74c3c;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Roboto", "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: var(--light-bg);
+        color: var(--dark-text);
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+
+
+      .header-logo {
+          height: 70px;
+          width: auto;
+      }
+
+      .header {
+        background: var(--primary);
+        color: white;
+        padding: 25px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .header h1 {
+        font-weight: 300;
+        font-size: 24px;
+        margin: 0;
+      }
+
+      .header-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 14px;
+        opacity: 0.8;
+        text-align: right;
+      }
+
+      .tabs-container {
+        background: white;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .tabs {
+        display: flex;
+        cursor: pointer;
+        padding: 0 40px;
+        overflow-x: auto;
+      }
+
+      .tab {
+        padding: 15px 25px;
+        color: var(--dark-text);
+        margin-right: 5px;
+        border-bottom: 3px solid transparent;
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+      }
+
+      .tab:hover {
+        color: var(--accent);
+        border-bottom: 3px solid var(--accent);
+      }
+
+      .tab.active {
+        color: var(--accent);
+        border-bottom: 3px solid var(--accent);
+        background: rgba(52, 152, 219, 0.05);
+      }
+
+      .tab-content {
+        padding: 30px 40px;
+        display: none;
+        background: white;
+        min-height: 500px;
+      }
+
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
+        color: var(--secondary);
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+
+      .card-header {
+        padding: 15px 20px;
+        background: var(--light-bg);
+        border-bottom: 1px solid var(--border);
+        font-weight: 500;
+        color: var(--secondary);
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .plot-container {
+        width: 100%;
+        height: 400px;
+      }
+
+      .image-container {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .image-container img {
+        max-width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 6px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 300;
+        color: var(--primary);
+        margin-bottom: 5px;
+      }
+
+      .stat-label {
+        font-size: 13px;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        background: #fff4e6;
+        border-left: 4px solid var(--warning);
+      }
+
+      .alert.warning {
+        background: #fff4e6;
+        border-left-color: var(--warning);
+      }
+
+      .alert.info {
+        background: #e1f5fe;
+        border-left-color: var(--accent);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Axon Viewer Styles */
+      .axon-viewer {
+        padding: 20px 0;
+      }
+
+      .axon-controls {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .axon-controls button {
+        padding: 8px 16px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+      }
+
+      .axon-controls button:hover {
+        background: #2980b9;
+      }
+
+      .axon-controls input {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        width: 80px;
+        text-align: center;
+      }
+
+      .axon-counter {
+        font-size: 14px;
+        color: var(--dark-text);
+        margin-left: auto;
+      }
+
+      .axon-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .axon-stat-item {
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 6px;
+        text-align: center;
+      }
+
+      .axon-stat-value {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--primary);
+        margin-bottom: 5px;
+      }
+
+      .axon-stat-label {
+        font-size: 13px;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .axon-stat-percentile {
+        font-size: 12px;
+        color: var(--accent);
+        margin-top: 5px;
+      }
+
+      .keyboard-shortcuts {
+        margin-top: 20px;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 6px;
+        font-size: 13px;
+      }
+
+      .keyboard-shortcuts h4 {
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .axon-content-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        align-items: flex-start;
+      }
+
+      .axon-image-container {
+        position: relative;
+        flex: 1;
+        max-width: 600px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .keyboard-shortcuts {
+        flex: 0 0 250px;
+        margin-top: 0;
+      }
+
+      .shortcut-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .shortcut-key {
+        background: var(--secondary);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 992px) {
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .header-info {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .axon-image-comparison {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .header,
+        .tabs,
+        .tab-content {
+          padding: 20px;
+        }
+
+        .tabs {
+          overflow-x: auto;
+          padding-bottom: 5px;
+        }
+
+        .grid-container {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .metric-comparison {
+        display: flex;
+        align-items: center;
+        margin-top: 5px;
+        font-size: 12px;
+      }
+
+      .metric-trend {
+        margin-left: 5px;
+        font-weight: bold;
+      }
+
+      .trend-up {
+        color: var(--success);
+      }
+
+      .trend-down {
+        color: var(--danger);
+      }
+
+      .trend-neutral {
+        color: #7f8c8d;
+      }
+      .axon-viewer {
+        padding: 20px 0;
+      }
+
+      .axon-controls {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .axon-controls button {
+        padding: 8px 16px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+      }
+
+      .axon-controls button:hover {
+        background: #2980b9;
+      }
+
+      .axon-controls input {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        width: 80px;
+        text-align: center;
+      }
+
+      .axon-counter {
+        font-size: 14px;
+        color: var(--dark-text);
+        margin-left: auto;
+      }
+
+      .axon-image-container {
+        position: relative;
+        margin: 0 auto 20px;
+        max-width: 600px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .axon-image-container img {
+        width: 100%;
+        display: block;
+      }
+
+      .axon-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .axon-stat-item {
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 6px;
+        text-align: center;
+      }
+
+      .axon-stat-value {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--primary);
+        margin-bottom: 5px;
+      }
+
+      .axon-stat-label {
+        font-size: 13px;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .axon-stat-percentile {
+        font-size: 12px;
+        color: var(--accent);
+        margin-top: 5px;
+      }
+
+      .keyboard-shortcuts {
+        margin-top: 20px;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 6px;
+        font-size: 13px;
+      }
+
+      .keyboard-shortcuts h4 {
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .shortcut-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .shortcut-key {
+        background: var(--secondary);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+      }
+
+      .toggle-hint {
+        margin-top: 10px;
+        padding: 8px;
+        background: var(--warning);
+        color: var(--dark-text);
+        border-radius: 4px;
+        font-weight: 500;
+        text-align: center;
+        font-size: 13px;
+        transition: all 0.3s ease;
+      }
+
+      .flag-indicator {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid white;
+      }
+
+      .flag-good {
+        background-color: var(--success);
+      }
+
+      .flag-warning {
+        background-color: var(--warning);
+      }
+
+      .flag-bad {
+        background-color: var(--danger);
+      }
+
+      .flags-table {
+        margin-top: 20px;
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .flags-table th,
+      .flags-table td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .flags-table th {
+        background-color: var(--light-bg);
+        font-weight: 500;
+      }
+
+      .flag-status {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+
+      .export-container {
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      .export-btn {
+        padding: 10px 20px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+      }
+
+      .export-btn:hover {
+        background: #2980b9;
+      }
+      .histogram-viewer {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .histogram-selector {
+        flex: 0 0 200px;
+        background: var(--light-bg);
+        border-radius: 6px;
+        padding: 15px;
+      }
+
+      .histogram-selector h4 {
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: var(--secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .histogram-option {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+      }
+
+      .histogram-option:hover {
+        background: rgba(52, 152, 219, 0.1);
+      }
+
+      .histogram-option.active {
+        background: var(--accent);
+        color: white;
+      }
+
+      .histogram-display {
+        flex: 1;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+      }
+
+      .histogram-display img {
+        max-width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+      }
+
+      .histogram-placeholder {
+        color: #7f8c8d;
+        font-style: italic;
+      }
+
+
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+          <div class="header-left">
+              <img src="https://raw.githubusercontent.com/axondeepseg/doc-figures/refs/heads/main/logo/logo_ads-notext.png" alt="AxonDeepSeg Logo" class="header-logo">
+              <h1>AxonDeepSeg Quality Assessment Report</h1>
+          </div>
+          <div class="header-info">
+              <span>Generated: {{ report_date }}</span>
+              <span>Sample: {{ sample_id }}</span>
+              <span>Version: {{ software_version }}</span>
+          </div>
+      </div>
+
+      <div class="tabs-container">
+        <div class="tabs">
+          {% for section_name, _ in sections.items() %} <div class="tab {% if
+          loop.first %}active{% endif %}" onclick="openTab(event, '{{
+          section_name|replace(" ", "_") }}')"> {{ section_name }}
+        </div>
+        {% endfor %}
+        <div class="tab" onclick="openTab(event, 'Single_Axon_Viewer')">
+          Single Axon Viewer
+        </div>
+      </div>
+    </div>
+
+    {% for section_name, items in sections.items() %}
+    <div id="{{ section_name|replace(' ', '_') }}" class="tab-content {% if loop.first %}active{% endif %}" >
+
+      {% for item in items %} {% if item.type == "plot" %}
+      <div class="card">
+        <div class="card-body">
+          <div class="plot-container">{{ item.html|safe }}</div>
+        </div>
+      </div>
+      {% elif item.type == "image" %}
+      <div class="card">
+        <div class="card-header">Segmentation Visualization</div>
+        <div class="card-body">
+          <div class="image-container">
+            <img src="{{ item.src }}" alt="Segmentation result" />
+          </div>
+        </div>
+      </div>
+      {% elif item.type == "segmented" %}
+      <div class="card">
+        <div class="card-header">Segmented image</div>
+        <div class="card-body">
+          <div class="image-container">
+            <img
+              src="{{ item.labeled_src }}"
+              data-labeled="{{ item.labeled_src }}"
+              data-original="{{ item.original_src }}"
+              class="toggle-image"
+              alt="Segmentation result"
+            />
+          </div>
+          <div class="toggle-hint">
+            Press and hold 'T' to view original image
+          </div>
+        </div>
+      </div>
+      {% elif item.type == "text" %}
+      <div class="alert info">{{ item.content }}</div>
+      {% elif item.type == "stats" %}
+      <div class="stats-grid">
+        {% for stat in item.stats %}
+        <div class="stat-item">
+          <div class="stat-value">{{ stat.value }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+          {% if stat.trend %}
+          <div class="metric-comparison">
+            <span>vs expected: </span>
+            <span
+              class="metric-trend {% if stat.trend == 'up' %}trend-up{% elif stat.trend == 'down' %}trend-down{% else %}trend-neutral{% endif %}"
+            >
+              {{ stat.trend_value }}
+            </span>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% elif item.type == "histogram_viewer" %}
+      <div class="card">
+        <div class="card-header">Distribution Histograms</div>
+        <div class="card-body">
+          <div class="histogram-viewer">
+            <div class="histogram-selector">
+              <h4>Select Metric</h4>
+              {% for histogram in item.histograms %}
+              <div class="histogram-option" data-src="{{ histogram.src }}">
+                {{ histogram.name }}
+              </div>
+              {% endfor %}
+            </div>
+            <div class="histogram-display">
+              <div class="histogram-placeholder">
+                Select a metric to view histogram
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %} {% endfor %}
+    </div>
+    {% endfor %}
+    <div id="Single_Axon_Viewer" class="tab-content">
+      <h2 class="section-title">Single Axon Inspection</h2>
+
+      <div class="alert info">
+        Use this tool to examine individual axons in detail. Navigate using the
+        controls or keyboard shortcuts. Press and hold 'T' to temporarily view
+        the original axon image.
+      </div>
+
+      <!-- Replace the existing axon-viewer section with this code -->
+      <div class="axon-viewer">
+        <div class="axon-controls">
+          <button onclick="previousAxon()">Previous</button>
+          <input type="number" id="axonIdInput" placeholder="Axon ID" min="0" />
+          <button onclick="goToAxon()">Go</button>
+          <button onclick="nextAxon()">Next</button>
+          <span class="axon-counter"
+            >Axon <span id="currentAxon">0</span> of
+            <span id="totalAxons">0</span></span
+          >
+
+          <!-- Moved export button to controls -->
+          <button class="export-btn" onclick="exportFlaggedAxons()">
+            Export Flagged Axons
+          </button>
+        </div>
+
+        <div class="axon-content-container">
+          <div class="axon-image-container">
+            <img id="axonImage" src="" alt="Segmented axon view" />
+            <div
+              id="flagIndicator"
+              class="flag-indicator"
+              style="display: none"
+            ></div>
+          </div>
+
+          <!-- Keyboard shortcuts moved to right of image -->
+          <div class="keyboard-shortcuts">
+            <h4>Keyboard Shortcuts</h4>
+            <div class="shortcut-item">
+              <span>Previous Axon</span>
+              <span class="shortcut-key">←</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Next Axon</span>
+              <span class="shortcut-key">→</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Show Original (hold)</span>
+              <span class="shortcut-key">T</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Mark as Good (Green)</span>
+              <span class="shortcut-key">1</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Needs Correction (Yellow)</span>
+              <span class="shortcut-key">2</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Mark for Deletion (Red)</span>
+              <span class="shortcut-key">3</span>
+            </div>
+            <div class="shortcut-item">
+              <span>Clear Flag</span>
+              <span class="shortcut-key">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="axon-stats">
+          <div class="axon-stat-item">
+            <div class="axon-stat-label">Axon ID</div>
+            <div class="axon-stat-value" id="stat-id">-</div>
+          </div>
+          <div class="axon-stat-item">
+            <div class="axon-stat-label">Diameter (µm)</div>
+            <div class="axon-stat-value" id="stat-diameter">-</div>
+            <div class="axon-stat-percentile" id="stat-diameter-pct">-</div>
+          </div>
+          <div class="axon-stat-item">
+            <div class="axon-stat-label">Myelin Thickness (µm)</div>
+            <div class="axon-stat-value" id="stat-thickness">-</div>
+            <div class="axon-stat-percentile" id="stat-thickness-pct">-</div>
+          </div>
+          <div class="axon-stat-item">
+            <div class="axon-stat-label">g-ratio</div>
+            <div class="axon-stat-value" id="stat-gratio">-</div>
+            <div class="axon-stat-percentile" id="stat-gratio-pct">-</div>
+          </div>
+          <div class="axon-stat-item">
+            <div class="axon-stat-label">Flag Status</div>
+            <div class="axon-stat-value" id="stat-flag">None</div>
+          </div>
+        </div>
+
+        <!-- Flags table - export button removed from here -->
+        <div class="card">
+          <div class="card-header">Flagged Axons</div>
+          <div class="card-body">
+            <table class="flags-table">
+              <thead>
+                <tr>
+                  <th>Axon ID</th>
+                  <th>Status</th>
+                  <th>Diameter (µm)</th>
+                  <th>g-ratio</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="flagsTableBody">
+                <!-- Will be populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <script>
+      function exportFlaggedAxons() {
+        // Create CSV content
+        let csvContent = "Axon ID,Flag Status,Diameter (µm),g-ratio\n";
+
+        // Add each flagged axon to the CSV
+        Object.entries(axonFlags).forEach(([axonId, flag]) => {
+          const axon = axonData[parseInt(axonId)];
+          if (axon) {
+            csvContent += `${parseInt(axonId) + 1},${getFlagLabel(
+              flag
+            )},${axon.diameter.toFixed(2)},${axon.gratio.toFixed(2)}\n`;
+          }
+        });
+
+        // Create a Blob and download link
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary download link
+        const link = document.createElement("a");
+        const date = new Date().toISOString().slice(0, 10);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `flagged_axons_${date}.csv`);
+        link.style.visibility = "hidden";
+
+        // Add to document, trigger click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function initHistogramViewer() {
+        const viewers = document.querySelectorAll(".histogram-viewer");
+
+        viewers.forEach((viewer) => {
+          const options = viewer.querySelectorAll(".histogram-option");
+          const display = viewer.querySelector(".histogram-display");
+
+          options.forEach((option) => {
+            option.addEventListener("click", function () {
+              // Update active state
+              options.forEach((opt) => opt.classList.remove("active"));
+              this.classList.add("active");
+
+              // Update displayed image
+              const imgSrc = this.getAttribute("data-src");
+              display.innerHTML = `<img src="${imgSrc}" alt="${this.textContent}">`;
+            });
+          });
+
+          // Activate the first option by default
+          if (options.length > 0) {
+            options[0].click();
+          }
+        });
+      }
+    </script>
+    <script>
+      // Pass axon data from template to global variable
+      window.axonData = {{ axon_data|tojson }};
+    </script>
+
+    <script>
+      function openTab(evt, tabId) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab");
+        for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+
+        // Load axon viewer if that tab was selected
+        if (tabId === "Single_Axon_Viewer") {
+          setTimeout(loadAxonViewer, 100);
+        }
+      }
+
+      // Axon viewer state
+      let currentAxonId = 0;
+      let totalAxons = 0;
+      let axonData = [];
+      let tKeyPressed = false;
+
+      function loadAxonViewer() {
+        axonData = window.axonData || [];
+        totalAxons = axonData.length;
+
+        if (totalAxons > 0) {
+          showAxon(0);
+        }
+      }
+
+      let axonFlags = {};
+      function showAxon(axonId) {
+        if (axonId < 0 || axonId >= totalAxons) return;
+
+        currentAxonId = axonId;
+        const axon = axonData[axonId];
+
+        if (axon) {
+          // Update image - use labeled image by default
+          if (axon.labeledImagePath) {
+            document.getElementById("axonImage").src = axon.labeledImagePath;
+          }
+
+          // Update stats
+          document.getElementById("stat-id").textContent = axonId;
+          document.getElementById("stat-diameter").textContent =
+            axon.diameter.toFixed(2);
+          document.getElementById("stat-thickness").textContent =
+            axon.thickness.toFixed(2);
+          document.getElementById("stat-gratio").textContent =
+            axon.gratio.toFixed(2);
+
+          document.getElementById(
+            "stat-diameter-pct"
+          ).textContent = `${axon.diameterPercentile}th percentile (${axon.diameterRank})`;
+
+          document.getElementById(
+            "stat-thickness-pct"
+          ).textContent = `${axon.thicknessPercentile}th percentile (${axon.thicknessRank})`;
+
+          document.getElementById(
+            "stat-gratio-pct"
+          ).textContent = `${axon.gratioPercentile}th percentile (${axon.gratioRank})`;
+
+          // Update counter
+          document.getElementById("currentAxon").textContent = axonId + 1;
+          document.getElementById("totalAxons").textContent = totalAxons;
+
+          // Update input field
+          document.getElementById("axonIdInput").value = axonId;
+        }
+        updateFlagDisplay(axonId);
+      }
+
+      function updateFlagDisplay(axonId) {
+        const flagIndicator = document.getElementById("flagIndicator");
+        const flagStat = document.getElementById("stat-flag");
+        const flag = axonFlags[axonId];
+
+        if (flag) {
+          flagIndicator.style.display = "block";
+          flagStat.textContent = getFlagLabel(flag);
+
+          // Set appropriate color
+          flagIndicator.className = "flag-indicator";
+          if (flag === "good") flagIndicator.classList.add("flag-good");
+          else if (flag === "warning")
+            flagIndicator.classList.add("flag-warning");
+          else if (flag === "bad") flagIndicator.classList.add("flag-bad");
+        } else {
+          flagIndicator.style.display = "none";
+          flagStat.textContent = "None";
+        }
+      }
+
+      function getFlagLabel(flag) {
+        switch (flag) {
+          case "good":
+            return "Good Segmentation";
+          case "warning":
+            return "Needs Correction";
+          case "bad":
+            return "Marked for Deletion";
+          default:
+            return "None";
+        }
+      }
+
+      function flagAxon(axonId, flagType) {
+        if (flagType === "none") {
+          delete axonFlags[axonId];
+        } else {
+          axonFlags[axonId] = flagType;
+        }
+
+        updateFlagDisplay(axonId);
+        updateFlagsTable();
+      }
+
+      function updateFlagsTable() {
+        const tableBody = document.getElementById("flagsTableBody");
+        tableBody.innerHTML = "";
+
+        Object.entries(axonFlags).forEach(([axonId, flag]) => {
+          const axon = axonData[parseInt(axonId)];
+          if (!axon) return;
+
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${parseInt(axonId) + 1}</td>
+            <td><span class="flag-status ${
+              "flag-" + flag
+            }"></span>${getFlagLabel(flag)}</td>
+            <td>${axon.diameter.toFixed(2)}</td>
+            <td>${axon.gratio.toFixed(2)}</td>
+            <td><button onclick="goToFlaggedAxon(${axonId})">View</button></td>
+            `;
+
+          tableBody.appendChild(row);
+        });
+      }
+
+      function goToFlaggedAxon(axonId) {
+        showAxon(parseInt(axonId));
+      }
+
+      function previousAxon() {
+        showAxon(currentAxonId - 1);
+      }
+
+      function nextAxon() {
+        showAxon(currentAxonId + 1);
+      }
+
+      function goToAxon() {
+        const input = document.getElementById("axonIdInput");
+        const axonId = parseInt(input.value);
+        if (!isNaN(axonId) && axonId >= 0 && axonId < totalAxons) {
+          showAxon(axonId);
+        }
+      }
+
+      function updateAxonImage() {
+        if (!axonData || axonData.length === 0) return;
+
+        const axon = axonData[currentAxonId];
+        if (axon) {
+          const imageElement = document.getElementById("axonImage");
+          if (tKeyPressed && axon.imagePath) {
+            imageElement.src = axon.imagePath;
+          } else if (axon.labeledImagePath) {
+            imageElement.src = axon.labeledImagePath;
+          }
+        }
+      }
+
+      function updateToggleImages() {
+        document.querySelectorAll(".toggle-image").forEach((img) => {
+          if (tKeyPressed) {
+            if (img.dataset.original) {
+              img.src = img.dataset.original;
+            }
+          } else {
+            if (img.dataset.labeled) {
+              img.src = img.dataset.labeled;
+            }
+          }
+        });
+      }
+
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Set up axon ID input listener
+        document
+          .getElementById("axonIdInput")
+          .addEventListener("keyup", function (event) {
+            if (event.key === "Enter") {
+              goToAxon();
+            }
+          });
+
+        // Set up global keyboard listeners
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "ArrowLeft") {
+            if (
+              document
+                .getElementById("Single_Axon_Viewer")
+                .classList.contains("active")
+            ) {
+              previousAxon();
+            }
+          } else if (e.key === "ArrowRight") {
+            if (
+              document
+                .getElementById("Single_Axon_Viewer")
+                .classList.contains("active")
+            ) {
+              nextAxon();
+            }
+          } else if (e.key === "t" || e.key === "T") {
+            tKeyPressed = true;
+            updateAxonImage();
+            updateToggleImages();
+          }
+          // Add flagging keys
+          if (
+            document
+              .getElementById("Single_Axon_Viewer")
+              .classList.contains("active")
+          ) {
+            if (e.key === "1") {
+              flagAxon(currentAxonId, "good");
+            } else if (e.key === "2") {
+              flagAxon(currentAxonId, "warning");
+            } else if (e.key === "3") {
+              flagAxon(currentAxonId, "bad");
+            } else if (e.key === "0") {
+              flagAxon(currentAxonId, "none");
+            }
+          }
+        });
+
+        document.addEventListener("keyup", function (e) {
+          if (e.key === "t" || e.key === "T") {
+            tKeyPressed = false;
+            updateAxonImage();
+            updateToggleImages();
+          }
+        });
+
+        // Load axon viewer if we're on that tab initially
+        if (
+          document
+            .getElementById("Single_Axon_Viewer")
+            .classList.contains("active")
+        ) {
+          loadAxonViewer();
+        }
+
+        updateFlagsTable();
+
+        initHistogramViewer();
+      });
+    </script>
+  </body>
+</html>
