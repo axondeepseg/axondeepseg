@@ -1,6 +1,11 @@
 Changelog
 ===============================================================================
 
+## v5.3.0 (2025-10-10)
+
+**FEATURE**
+ - Add Quality Assurance Report feature [View pull request](https://github.com/axondeepseg/axondeepseg/pull/781)
+
 
 ## v5.2.0 (2025-09-04)
 
