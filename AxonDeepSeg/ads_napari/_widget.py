@@ -28,7 +28,6 @@ from qtpy.QtGui import QPixmap
 
 from skimage import measure
 import pandas as pd 
-import plotly.express as px
 from jinja2 import Environment, FileSystemLoader
 
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
