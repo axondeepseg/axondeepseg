@@ -4,7 +4,12 @@ Changelog
 ## v5.3.0 (2025-10-10)
 
 **FEATURE**
- - Add Quality Assurance Report feature [View pull request](https://github.com/axondeepseg/axondeepseg/pull/781)
+
+ - Add Quality Assurance Report feature & button in napari plugin [View pull request](https://github.com/axondeepseg/axondeepseg/pull/781)
+
+**BUG**
+
+ - Remove unused plotly dependency [View pull request](https://github.com/axondeepseg/axondeepseg/pull/985)
 
 
 ## v5.2.0 (2025-09-04)
