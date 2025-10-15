@@ -16,9 +16,9 @@ from torch.cuda import device_count
 
 class TestCore(object):
     def setup_method(self):
-        self.osf_link = "https://osf.io/uw5hv/?action=download"
+        self.data_link = "https://github.com/axondeepseg/data-testing/releases/download/r20251015/TEM_striatum.zip"
         
-        self.bad_osf_link = "https://af7lafuoDs"
+        self.bad_data_link = "https://af7lafuoDs"
 
         self.precision_path = Path('test/__test_files__/__test_precision_files__')
 
