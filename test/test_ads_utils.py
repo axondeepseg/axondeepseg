@@ -16,9 +16,9 @@ from torch.cuda import device_count
 
 class TestCore(object):
     def setup_method(self):
-        self.osf_link = "https://osf.io/uw5hv/?action=download"
+        self.data_link = "https://github.com/axondeepseg/data-testing/releases/download/r20251015/TEM_striatum.zip"
         
-        self.bad_osf_link = "https://af7lafuoDs"
+        self.bad_data_link = "https://af7lafuoDs"
 
         self.precision_path = Path('test/__test_files__/__test_precision_files__')
 
@@ -51,14 +51,12 @@ class TestCore(object):
     # --------------download_data tests-------------- #
     @pytest.mark.unit
     def test_download_data_returns_0_for_valid_link(self):
-        exit_code = download_data(str(self.osf_link))
-        print(exit_code)
-        print(self.osf_link)
+        exit_code = download_data(str(self.data_link))
         assert exit_code == 0
 
     @pytest.mark.unit
     def test_download_data_returns_1_for_invalid_link(self):
-        exit_code = download_data(str(self.bad_osf_link))
+        exit_code = download_data(str(self.bad_data_link))
         assert exit_code == 1
 
     # --------------convert_path tests-------------- #
