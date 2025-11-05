@@ -345,56 +345,6 @@ Morphometrics
 
 You can generate morphometrics using AxonDeepSeg via the command line interface.
 
-ImageJ ROI to Mask Conversion
------------------------------
-
-AxonDeepSeg provides a command-line tool to convert ImageJ ROI files into binary masks. This is useful when you have manually annotated regions in ImageJ and want to convert them to segmentation masks compatible with AxonDeepSeg.
-
-Usage
-~~~~~
-
-.. code-block:: bash
-
-    axondeepseg_roi_to_mask -i IMAGE_PATH -r ROI_FOLDER
-
-Required Arguments
-~~~~~~~~~~~~~~~~~~
-
-* ``-i, --image``: Path to the reference image file
-* ``-r, --roi-folder``: Path to the folder containing .roi files
-
-How it works
-~~~~~~~~~~~~
-
-The tool:
-
-1. Reads the reference image to get dimensions and metadata
-2. Processes all ``.roi`` files in the specified folder
-3. Converts each ROI polygon to a binary mask
-4. Combines all ROIs into a single mask
-5. Saves the output mask as ``<image_name>_imagej-roi.png`` in the same directory as the input image
-
-Example
-~~~~~~~
-
-.. code-block:: bash
-
-    axondeepseg_roi_to_mask -i my_image.png -r my_rois/
-
-This command will create ``my_image_imagej-roi.png`` containing a binary mask where pixels inside the ROIs are white (255) and outside are black (0).
-
-Output
-~~~~~~
-
-The generated mask can be used for:
-
-* Quality control of manual annotations
-* Training data preparation  
-* Comparison with automated segmentation results
-* Manual correction of existing segmentations
-
-Note: The tool automatically handles multiple ROIs per file and processes all ``.roi`` files in the specified directory.
-
 Syntax
 ~~~~~~
 
@@ -716,6 +666,57 @@ To aggregate the morphometrics per subject, use the following command::
 This will generate a folder called **morphometrics_agg** in the input folder, containing the aggregated morphometrics per subject. It will also contain a short summary file named **statistics_per_axon_caliber.xlsx** which contains basic statistics for axon diameter, myelin thickness and g-ratio. These statistics are computed per axon diameter range.
 
 .. _quality-assurance-label:
+
+ImageJ ROI to Mask Conversion
+-----------------------------
+
+AxonDeepSeg provides a command-line tool to convert ImageJ ROI files into binary masks. This is useful when you have manually annotated regions in ImageJ and want to convert them to segmentation masks compatible with AxonDeepSeg.
+
+Usage
+~~~~~
+
+.. code-block:: bash
+
+    axondeepseg_roi_to_mask -i IMAGE_PATH -r ROI_FOLDER
+
+Required Arguments
+~~~~~~~~~~~~~~~~~~
+
+* ``-i, --image``: Path to the reference image file
+* ``-r, --roi-folder``: Path to the folder containing .roi files
+
+How it works
+~~~~~~~~~~~~
+
+The tool:
+
+1. Reads the reference image to get dimensions and metadata
+2. Processes all ``.roi`` files in the specified folder
+3. Converts each ROI polygon to a binary mask
+4. Combines all ROIs into a single mask
+5. Saves the output mask as ``<image_name>_imagej-roi.png`` in the same directory as the input image
+
+Example
+~~~~~~~
+
+.. code-block:: bash
+
+    axondeepseg_roi_to_mask -i my_image.png -r my_rois/
+
+This command will create ``my_image_imagej-roi.png`` containing a binary mask where pixels inside the ROIs are white (255) and outside are black (0).
+
+Output
+~~~~~~
+
+The generated mask can be used for:
+
+* Quality control of manual annotations
+* Training data preparation  
+* Comparison with automated segmentation results
+* Manual correction of existing segmentations
+
+Note: The tool automatically handles multiple ROIs per file and processes all ``.roi`` files in the specified directory.
+
 
 Quality Assessment (QA) Report
 ==============================
