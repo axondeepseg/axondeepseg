@@ -76,6 +76,7 @@ axondeepseg = "AxonDeepSeg.segment:main"
 axondeepseg_test = "AxonDeepSeg.integrity_test:main"
 axondeepseg_morphometrics = "AxonDeepSeg.morphometrics.launch_morphometrics_computation:main"
 axondeepseg_aggregate = "AxonDeepSeg.morphometrics.aggregate:main"
+axondeepseg_roi = "AxonDeepSeg.visualization.imagej:main"
 
 [tool.setuptools]
 packages = ["AxonDeepSeg"]
