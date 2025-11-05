@@ -54,6 +54,7 @@ dependencies =[
     "magicgui",
     "qtpy",
     "jinja2",
+    "read-roi"
 ]
 
 keywords = ["axon", "myelin", "segmentation", "microscopy"]
