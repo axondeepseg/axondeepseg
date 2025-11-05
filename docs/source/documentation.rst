@@ -670,7 +670,7 @@ This will generate a folder called **morphometrics_agg** in the input folder, co
 ImageJ ROI to Mask Conversion
 -----------------------------
 
-AxonDeepSeg provides a command-line tool to convert ImageJ ROI files into binary masks. This is useful when you have manually annotated regions in ImageJ and want to convert them to segmentation masks compatible with AxonDeepSeg.
+AxonDeepSeg provides a command-line tool to convert ImageJ ROI files into axon and myelin segmentation masks. This is particularly useful when you have manually annotated both axon boundaries and outer myelin boundaries in ImageJ and want to convert them to the standard AxonDeepSeg segmentation format.
 
 Usage
 ~~~~~
@@ -688,13 +688,15 @@ Required Arguments
 How it works
 ~~~~~~~~~~~~
 
-The tool:
+The tool automatically pairs axon and myelin ROIs based on geometric relationships:
 
 1. Reads the reference image to get dimensions and metadata
 2. Processes all ``.roi`` files in the specified folder
-3. Converts each ROI polygon to a binary mask
-4. Combines all ROIs into a single mask
-5. Saves the output mask as ``<image_name>_imagej-roi.png`` in the same directory as the input image
+3. **Automatically classifies ROIs** as axon (inner boundaries) or myelin (outer boundaries) based on containment
+4. **Creates three output masks** in AxonDeepSeg standard format:
+   - Axon mask from inner ROIs
+   - Myelin mask by subtracting axon areas from outer boundaries
+   - Combined axon+myelin mask
 
 Example
 ~~~~~~~
@@ -703,19 +705,35 @@ Example
 
     axondeepseg_roi_to_mask -i my_image.png -r my_rois/
 
-This command will create ``my_image_imagej-roi.png`` containing a binary mask where pixels inside the ROIs are white (255) and outside are black (0).
+This command will create three output files:
+- ``my_image_seg-axonmyelin.png``: Combined mask (0=background, 127=myelin, 255=axon)
+- ``my_image_seg-axon.png``: Axon-only binary mask
+- ``my_image_seg-myelin.png``: Myelin-only binary mask
+
+Annotation Guidelines
+~~~~~~~~~~~~~~~~~~~~~
+
+For optimal results when creating ROIs in ImageJ:
+
+1. **Trace both boundaries**: For each myelinated axon, create two ROIs:
+   - **Inner ROI**: Trace the axon boundary
+   - **Outer ROI**: Trace the outer myelin boundary
+
+2. **Ensure proper containment**: The axon ROI should be completely contained within its corresponding myelin ROI
+
+3. **No specific naming required**: The tool automatically detects the relationships based on geometry
 
 Output
 ~~~~~~
 
-The generated mask can be used for:
+The generated masks are compatible with all AxonDeepSeg tools and can be used for:
 
-* Quality control of manual annotations
-* Training data preparation  
-* Comparison with automated segmentation results
-* Manual correction of existing segmentations
+* **Training data preparation** - Create ground truth masks for model training
+* **Manual segmentation validation** - Compare automated results with manual annotations
+* **Morphometrics computation** - Use the ``axondeepseg_morphometrics`` tool on the generated masks
+* **Quality control** - Visual inspection and manual correction if needed
 
-Note: The tool automatically handles multiple ROIs per file and processes all ``.roi`` files in the specified directory.
+Note: The tool handles multiple ROIs per file and automatically processes all ``.roi`` files in the specified directory.
 
 
 Quality Assessment (QA) Report
