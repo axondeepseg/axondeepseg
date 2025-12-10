@@ -560,6 +560,9 @@ class ADSplugin(QWidget):
         )
         myelin_mask_name = image_name_no_extension + myelin_suffix.stem
 
+        # Reset cached state when new masks are loaded
+        self._reset_cached_state()
+
         axon_data = ads_utils.imread(axon_mask_path).astype(bool)
         self.viewer.add_labels(
             axon_data,
@@ -613,6 +616,10 @@ class ADSplugin(QWidget):
             "The mask will be associated with " + microscopy_image_layer.name
         ):
             return
+
+        # Reset cached state when new masks are loaded
+        self._reset_cached_state()
+
         img_png2D = ads_utils.imread(mask_file_path)
         # Extract the Axon mask
         axon_data = img_png2D > 200
@@ -1263,6 +1270,20 @@ class ADSplugin(QWidget):
             "Zaimi et al (2018): https://doi.org/10.1038/s41598-018-22181-4. \n"
             "Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)"
         )
+
+    def _reset_cached_state(self):
+        """Reset all cached state variables related to the current image/mask.
+
+        This should be called when new masks are loaded to prevent state from
+        previous images from affecting operations on the new image.
+
+        Returns:
+            None
+        """
+        self.im_instance_seg = None
+        self.stats_dataframe = None
+        self.index_image_array = None
+        self.im_axonmyelin_label = None
 
 class ApplyModelThread(QtCore.QThread):
     """QThread class used to segment an image by applying a model in a separate thread.
