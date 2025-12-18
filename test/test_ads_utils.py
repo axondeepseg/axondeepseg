@@ -13,6 +13,9 @@ from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_mode
 from AxonDeepSeg.model_cards import get_supported_models
 from AxonDeepSeg import params
 from torch.cuda import device_count
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = None
+
 
 class TestCore(object):
     def setup_method(self):

@@ -47,6 +47,10 @@ _ALT = 'Alt'
 global NAPARI_VIEWER_OPEN
 NAPARI_VIEWER_OPEN = True  # Whether to fill holes in the axon mask when loading a mask
 
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = None  # Remove the limit entirely
+
+
 class ADSsettings:
     """Plugin settings class.
 
