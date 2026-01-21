@@ -81,7 +81,7 @@ Which installation method should I use?
        │
        ├── Do you already have Napari installed?
        │   │
-       │   ├── YES → Install via napari Plugin Manager
+       │   ├── YES → Install via Napari Plugin Manager
        │   │         • Integrates with existing Napari setup
        │   │
        │   └── NO → Install via pip
@@ -95,7 +95,7 @@ Which installation method should I use?
 
 - **GitHub** (recommended): Best for most users on any OS. Handles environment setup automatically and verifies installation with tests.
 - **pip**: For users who already have a Python 3.11/3.12 environment configured.
-- **napari Plugin Manager**: For users who already have Napari installed.
+- **Napari Plugin Manager**: For users who already have Napari installed.
 
 Install Options
 ---------------
@@ -198,9 +198,9 @@ Install Options
 
       - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
 
-   .. tab:: Install via ``napari``
+   .. tab:: Install via ``Napari Plugin Manager``
 
-      AxonDeepSeg can also be installed via the Napari Plugin Manager.Install Napari following the `Napari installation instructions <https://napari.org/stable/tutorials/fundamentals/installation.html>`__. Then, use the `Napari Plugin Manager <https://napari.org/stable/plugins/start_using_plugins/finding_and_installing_plugins.html>`__ to search for and install ``axondeepseg``.
+      AxonDeepSeg can also be installed via the Napari Plugin Manager. Install Napari following the `Napari installation instructions <https://napari.org/stable/tutorials/fundamentals/installation.html>`__. Then, use the `Napari Plugin Manager <https://napari.org/stable/plugins/start_using_plugins/finding_and_installing_plugins.html>`__ to search for and install ``axondeepseg``.
 
       .. NOTE ::
          - AxonDeepSeg is only compatible with Python 3.11.x and 3.12.x. Ensure your Napari installation uses a compatible Python version.
@@ -677,7 +677,7 @@ Through Napari Plugin
 
 The QA report can be generated directly from the AxonDeepSeg Napari plugin:
 
-1. **Open napari and the AxonDeepSeg plugin**.
+1. **Open Napari and the AxonDeepSeg plugin**.
 2. **Load your image**.
 3. **Load your mask or generate a segmentation** using the plugin.
 4. **Generate a Morphometrics file** using the plugin.
