@@ -172,24 +172,7 @@ To develop code in the AxonDeepSeg software package and use it in a python shell
 
        conda deactivate
 
-If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open Jupyter notebook from within an activated virtual environment. 
-
-Running the testing suite
-=========================
-
-Developers are encouraged to run the testing suite in the terminal, and develop relevant tests as needed. To run the testing suite, 
-
-To run the testing suite, run the following command within the AxonDeepSeg directory::
-
-    axondeepseg_test --full
-
-Alternatively, `pytest` commands can be run directly from the terminal for more control over the testing suite. For example, to run all tests, use::
-
-    pytest test/
-
-and to run a specific test file, use::
-
-    pytest test/test_segment.py
+If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open Jupyter notebook from within an activated virtual environment.
 
 Existing models
 ===============
@@ -832,6 +815,23 @@ GIMP software
 * To create a new axon+myelin manual mask or to make manual correction on an existing segmentation mask, you can use the GIMP software (`Link for download <https://www.gimp.org/>`__).
 * If you are making correction on an existing segmentation mask, note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). You can then manually correct the myelin mask and create a corrected axon+myelin mask.
 * For a detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`__.
+
+Running the testing suite
+=========================
+
+Developers are encouraged to run the testing suite in the terminal, and develop relevant tests as needed.
+
+To run the testing suite, run the following command within the AxonDeepSeg directory::
+
+    axondeepseg_test --full
+
+Alternatively, `pytest` commands can be run directly from the terminal for more control over the testing suite. For example, to run all tests, use::
+
+    pytest test/
+
+and to run a specific test file, use::
+
+    pytest test/test_segment.py
 
 Training Models
 ===============
