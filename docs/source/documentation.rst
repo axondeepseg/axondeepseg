@@ -9,7 +9,7 @@ Quick Start
 
 These instructions are for Linux/macOS. For Windows instructions, see the :ref:`installation section <install-git>`.
 
-1. **Download and install AxonDeepSeg**::
+1. **Download and install AxonDeepSeg** (requires `git <https://git-scm.com/downloads>`__)::
 
        git clone https://github.com/neuropoly/axondeepseg.git
        cd axondeepseg
