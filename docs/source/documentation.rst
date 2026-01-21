@@ -4,6 +4,32 @@ AxonDeepSeg is an open-source software using deep learning and aiming at automat
 
 AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University of Montreal, Canada.
 
+Quick Start
+===========
+
+These instructions are for Linux/macOS. For Windows instructions, see the :ref:`installation section <install-git>`.
+
+1. **Clone and install AxonDeepSeg**::
+
+       git clone https://github.com/neuropoly/axondeepseg.git
+       cd axondeepseg
+       ./install_ads -y
+
+2. **Launch the GUI**::
+
+       ads_napari
+
+3. **Open the plugin**: In Napari, go to ``Plugins -> ADS (AxonDeepSeg)``
+
+4. **Segment an image**:
+   - Load your microscopy image via ``File -> Open file(s)``
+   - Select the **generalist** model from the dropdown
+   - Click **Apply ADS model**
+
+5. **Extract morphometrics**: Click the **Morphometrics** button to generate measurements for each axon.
+
+For more detailed instructions, see the :ref:`installation <install-git>` and usage sections below.
+
 Testimonials
 ============
 Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`__. Thank you 😊
