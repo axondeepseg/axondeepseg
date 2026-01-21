@@ -218,7 +218,7 @@ Launch Napari ::
            ads_napari
 
 In Napari, do the following:
-- Click on ``Plugins -> ADS plugin (napari-ads)``
+- Click on ``Plugins -> ADS (AxonDeepSeg)``
 
 In the :ref:`manual-correction-label` section, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 
@@ -790,7 +790,7 @@ Open image and mask
 ~~~~~~~~~~~~~~~~~~~
 
 * Open Napari by entering `ads_napari` in the terminal.
-* Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS plugin (napari-ads)
+* Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS (AxonDeepSeg)
 * Load the microscopy image using the Napari toolbar: File -> Open file(s)
 * If no segmentation masks already exists:
    * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
