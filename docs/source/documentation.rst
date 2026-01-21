@@ -58,6 +58,45 @@ Installation
 ============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
+Which installation method should I use?
+---------------------------------------
+
+.. code-block:: text
+
+   What operating system are you using?
+   │
+   ├── Linux/macOS
+   │   └── Install via GitHub (recommended)
+   │       • Automatic environment setup
+   │       • Runs tests to verify installation
+   │       • Easy updates via git pull
+   │
+   ├── Windows
+   │   └── Install via GitHub (recommended)
+   │       • Automatic environment setup
+   │       • Runs tests to verify installation
+   │       • Requires additional environment variable configuration (see instructions)
+   │
+   └── Any OS with existing Python 3.11/3.12 environment
+       │
+       ├── Do you already have Napari installed?
+       │   │
+       │   ├── YES → Install via napari Plugin Manager
+       │   │         • Integrates with existing Napari setup
+       │   │
+       │   └── NO → Install via pip
+       │             • Installs AxonDeepSeg and Napari together
+       │
+       └── Both options:
+           • Require manual Python environment setup
+           • No automatic test verification
+
+**Summary:**
+
+- **GitHub** (recommended): Best for most users on any OS. Handles environment setup automatically and verifies installation with tests.
+- **pip**: For users who already have a Python 3.11/3.12 environment configured.
+- **napari Plugin Manager**: For users who already have Napari installed.
+
 Install Options
 ---------------
 
