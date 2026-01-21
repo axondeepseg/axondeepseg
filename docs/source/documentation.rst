@@ -72,14 +72,16 @@ Install Options
           git clone https://github.com/neuropoly/axondeepseg.git
           cd axondeepseg
 
+      .. NOTE :: The installation script automatically runs tests at the end to verify proper installation.
+
       .. tabs::
          .. group-tab:: Linux/MacOS
             For Linux or macOS systems, run::
-      
+
                 ./install_ads
 
             and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
-      
+
                 ./install_ads -y
 
             .. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
@@ -150,6 +152,8 @@ Install Options
             Plugins -> ADS (AxonDeepSeg)
 
          This will open the AxonDeepSeg plugin interface.
+
+      You're ready to segment images!
 
       **Troubleshooting**
 
