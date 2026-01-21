@@ -35,9 +35,9 @@ The following sections will help you install all the tools you need to run AxonD
 Install Options
 ---------------
 
-.. tabs::
+.. _install-git:
 
-   .. _install-git:
+.. tabs::
 
    .. tab:: Install via ``GitHub`` (recommended)
 
