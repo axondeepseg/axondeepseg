@@ -635,7 +635,7 @@ Morphometrics aggregation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 This feature aggregates morphometrics per subject. It is useful when you have multiple images per subject and you want to compute statistics per subject. 
 
-To use this feature, need to have done the following:
+To use this feature, you need to have done the following:
 
 1. Segment all the images of interest using AxonDeepSeg using the **axondeepseg** command.
 2. Compute the morphometrics of all the images using the **axondeepseg_morphometrics** command. Make sure that the morphometrics files are named with the same prefix as the image name (e.g. **image_axon_morphometrics.xlsx** for **image.png**).
@@ -830,7 +830,7 @@ Modify the mask
 
    * **Paint brush** |brush|: Add pixels to the mask.
       * The size of the paint brush is determined by the "brush size" option in the "layer list" panel.
-   * **Eraser** |eraser|: Remove pizels from the mask.
+   * **Eraser** |eraser|: Remove pixels from the mask.
       *  The size of the eraser is also determined by the "brush size" option in the "layer list" panel.
    * **Bucket tool** |bucket|: Fills a closed area of the mask with the values of that same mask.
 
@@ -865,7 +865,7 @@ Show axon metrics
 .. note::
    To use this feature, the image must have been loaded after the plugin, and the mask must have been loaded or generated. Lastly, the image layer must be selected.
 
-* The "Show axon metrics" button in the AxonDeepSeg plugin (right panel) can be used to pview some key metrics of a clicked axon.
+* The "Show axon metrics" button in the AxonDeepSeg plugin (right panel) can be used to view some key metrics of a clicked axon.
 * After activated, ALT/OPTION-click on the axon you want to view the metrics of. A pop-up window will show the metrics of the clicked axon at the bottom right of the image viewer.
 * To deactivate the "Toggle axon removal" mode, click on the button again.
 
@@ -905,7 +905,7 @@ and to run a specific test file, use::
 Training Models
 ===============
 
-If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your appliucations and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg to schedule a video-call to discuss more.
+If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your applications and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg team to schedule a video-call to discuss more.
 
 .. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
 
