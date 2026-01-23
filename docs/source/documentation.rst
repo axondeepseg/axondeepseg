@@ -15,18 +15,20 @@ These instructions are for Linux/macOS. For Windows instructions, see the :ref:`
        cd axondeepseg
        ./install_ads -y
 
-2. **Launch the GUI**::
+2. **Close and reopen your terminal** to load the environment variables.
+
+3. **Launch the GUI**::
 
        ads_napari
 
-3. **Open the plugin**: In Napari, go to ``Plugins -> ADS (AxonDeepSeg)``
+4. **Open the plugin**: In Napari, go to ``Plugins -> ADS (AxonDeepSeg)``
 
-4. **Segment an image**:
+5. **Segment an image**:
    - Load your microscopy image via ``File -> Open file(s)``
    - Select the **generalist** model from the dropdown
    - Click **Apply ADS model**
 
-5. **Extract morphometrics**: Click the **Morphometrics** button to generate measurements for each axon.
+6. **Extract morphometrics**: Click the **Morphometrics** button to generate measurements for each axon.
 
 For more detailed instructions, see the :ref:`installation <install-git>` and usage sections below.
 
