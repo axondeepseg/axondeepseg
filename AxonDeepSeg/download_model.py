@@ -1,12 +1,12 @@
 import AxonDeepSeg
 from AxonDeepSeg.ads_utils import convert_path, download_data
-from AxonDeepSeg.model_cards import MODELS
 from pathlib import Path
 import shutil
 from loguru import logger
 import sys
 import argparse
-import pprint
+import yaml
+import textwrap
 
 # exit codes
 SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
@@ -62,6 +62,30 @@ def download_model(model='generalist', model_type='light', destination=None, ove
 
     return output_dir
 
+def print_available_models(model_dict: dict):
+    '''
+    Print all available models for download.
+    '''
+    logger.info("Printing available models:")
+    for model in model_dict:
+        logger.info(model)
+        to_print = [
+            ["Nb of classes", model_dict[model]['n_classes']],
+            ["Model info", model_dict[model]['model-info']],
+            ["Training data", model_dict[model]['training-data']],
+        ]
+        for label, content in to_print:
+            print(label, '\t', textwrap.fill(str(content), width=90).replace('\n', '\n\t\t '))
+            
+def get_model_cards(model_list_path: Path) -> dict:
+    '''
+    Load the model list from a YAML file.
+    '''
+    with open(model_list_path, 'r') as f:
+        model_dict = yaml.safe_load(f)
+    return model_dict
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -93,17 +117,10 @@ def main(argv=None):
     )
     args = vars(ap.parse_args(argv))
 
+    model_cards = get_model_cards(Path(__file__).parent / 'model_cards.yaml')
+
     if args["list"]:
-        logger.info("Printing available models:")
-        for model in MODELS:
-            logger.info(model)
-            model_details = {
-                "MODEL NAME": MODELS[model]['name'],
-                "NUMBER OF CLASSES": MODELS[model]['n_classes'],
-                "OVERVIEW": MODELS[model]['model-info'],
-                "TRAINING DATA": MODELS[model]['training-data'],
-            }
-            pprint.pprint(model_details)
+        print_available_models(model_cards)
         sys.exit(SUCCESS)
     else:
         download_model(args["model_name"], args["model_type"], args["dir"], overwrite=True)
