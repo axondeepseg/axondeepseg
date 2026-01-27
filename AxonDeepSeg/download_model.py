@@ -68,12 +68,13 @@ def print_available_models(model_dict: dict):
     '''
     logger.info("Printing available models:")
     for model in model_dict:
-        logger.info(model)
         to_print = [
+            ["Model name", model],
             ["Nb of classes", model_dict[model]['n_classes']],
             ["Model info", model_dict[model]['model-info']],
             ["Training data", model_dict[model]['training-data']],
         ]
+        print("\n")
         for label, content in to_print:
             print(label, '\t', textwrap.fill(str(content), width=90).replace('\n', '\n\t\t '))
             
