@@ -23,7 +23,7 @@ dedicated-SEM:
   task: myelinated-axon-segmentation
   n_classes: 2
   model-info: Axon and myelin segmentation model trained on Scanning Electron Microscopy data.
-  training-data: 14.8 Mpx of SEM rat spinal cord images with a resolution of 0.13 um/px. The dataset used for this model is publicly available here: https://github.com/axondeepseg/data_axondeepseg_sem.
+  training-data: 14.8 Mpx of SEM rat spinal cord images with a resolution of 0.13 um/px. The dataset used for this model is publicly available. See https://github.com/axondeepseg/data_axondeepseg_sem.
   weights:
     ensemble: https://github.com/axondeepseg/default-SEM-model/releases/download/r20240403/model_seg_rat_axon-myelin_sem_ensemble.zip
     single_fold: https://github.com/axondeepseg/default-SEM-model/releases/download/r20240403/model_seg_rat_axon-myelin_sem_light.zip
