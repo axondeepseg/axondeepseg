@@ -11,21 +11,35 @@ import textwrap
 # exit codes
 SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
 
-def download_model(model='generalist', model_type='light', destination=None, overwrite=True):
+def download_model(model_name='generalist', destination=None, overwrite=True):
     '''
     Download a model for AxonDeepSeg.
     Parameters
     ----------
-    model : str, optional
+    model_name : str, optional
         Name of the model, by default 'generalist'. 
     model_type :  Literal['light', 'ensemble'], optional
         Type of model, by default 'light'. 
     destination : str, optional
         Directory to download the model to. Default: None.
     '''
-    model_suffix = 'light' if model_type == 'light' else 'ensemble'
-    full_model_name = f'{MODELS[model]["name"]}_{model_suffix}'
+    models = get_model_cards(Path(__file__).parent / 'model_cards.yaml')
+    if model_name not in models.keys():
+        logger.error('Model not found.')
+        sys.exit(MODEL_NOT_FOUND)
 
+    # default to single_fold model if available (lighter and faster)
+    if models[model_name]['weights']['single_fold'] is not None:
+        model_suffix = 'light'
+        url_model_destination = models[model_name]['weights']['single_fold']
+    elif models[model_name]['weights']['ensemble'] is not None:
+        model_suffix = 'ensemble'
+        url_model_destination = models[model_name]['weights']['ensemble']
+    else:
+        logger.error('No available model weights found for this model.')
+        sys.exit(MODEL_NOT_FOUND)
+
+    full_model_name = f'{models[model_name]["full_name"]}_{model_suffix}'
     if destination is None:
         package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
         model_destination = package_dir / "models" / full_model_name
@@ -36,11 +50,6 @@ def download_model(model='generalist', model_type='light', destination=None, ove
     if model_destination.exists() and overwrite == False:
         logger.info("Overwrite set to False - not deleting old model.")
         return model_destination
-    
-    url_model_destination = MODELS[model]['weights'][model_type]
-    if url_model_destination is None:
-        logger.error('Model not found.')
-        sys.exit(MODEL_NOT_FOUND)
 
     files_before = list(Path.cwd().iterdir())
     if download_data(url_model_destination) == 0:
@@ -97,13 +106,6 @@ def main(argv=None):
         type=str,
     )
     ap.add_argument(
-        "-t", "--model-type",
-        required=False,
-        help="Model type to download. Default: light",
-        default='light',
-        type=str,
-    )
-    ap.add_argument(
         "-l", "--list",
         required=False,
         help="List all available models for download",
@@ -124,7 +126,7 @@ def main(argv=None):
         print_available_models(model_cards)
         sys.exit(SUCCESS)
     else:
-        download_model(args["model_name"], args["model_type"], args["dir"], overwrite=True)
+        download_model(args["model_name"], args["dir"], overwrite=True)
 
 if __name__ == "__main__":
     with logger.catch():
