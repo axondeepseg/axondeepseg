@@ -43,7 +43,9 @@ Whether you are a newcomer or an experienced user, we will do our best to help a
 Training Models
 ===============
 
-If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your applications and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg team to schedule a video-call to discuss more.
+Training models requires a significant amount of **quality** data, **high-performance** computational resources, and most importantly–**expertise**. We don't recommend you train, retrain, or finetune our models without first contacting the AxonDeepSeg team.
+
+If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your applications and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg team `here <axondeepseg@googlegroups.com>`__ to schedule a video-call to discuss more.
 
 .. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
 
