@@ -26,7 +26,7 @@ These instructions are for Linux/macOS. For Windows instructions, see the :ref:`
 5. **Segment an image**:
    - Load your microscopy image via ``File -> Open file(s)``
    - Select the **generalist** model from the dropdown
-   - Click **Apply ADS model**
+   - Click **Segment image**
 
 6. **Extract morphometrics**: Click the **Morphometrics** button to generate measurements for each axon.
 
@@ -796,7 +796,7 @@ Open image and mask
 * Load the microscopy image using the Napari toolbar: File -> Open file(s)
 * If no segmentation masks already exists:
    * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
-   * Then click on the Apply ADS model button
+   * Then click on the "Segment image" button
 * If a segmentation masks already exists:
    * Click on the "Load mask" button and select the image with the suffix "_seg-axonmyelin"
 * After a mask is loaded or generated, the axon (blue) and myelin (red) layers will be overlayed on top of the histology image.
