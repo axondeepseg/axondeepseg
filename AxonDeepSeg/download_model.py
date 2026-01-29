@@ -89,7 +89,7 @@ def print_available_models(model_dict: dict):
         for label, content in to_print:
             print(label, '\t', textwrap.fill(str(content), width=90).replace('\n', '\n\t\t '))
             
-def get_model_cards(model_list_path: Path) -> dict:
+def get_model_cards(model_list_path=MODEL_CARDS_PATH) -> dict:
     '''
     Load the model list from a YAML file.
     '''
@@ -133,7 +133,7 @@ def main(argv=None):
     )
     args = vars(ap.parse_args(argv))
 
-    model_cards = get_model_cards(MODEL_CARDS_PATH)
+    model_cards = get_model_cards()
 
     if args["list"]:
         print_available_models(model_cards)
