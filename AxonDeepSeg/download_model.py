@@ -11,6 +11,8 @@ import textwrap
 # exit codes
 SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
 
+MODEL_CARDS_PATH = Path(__file__).parent / 'model_cards.yaml'
+
 def download_model(model_name='generalist', destination=None, overwrite=True):
     '''
     Download a model for AxonDeepSeg.
@@ -95,6 +97,17 @@ def get_model_cards(model_list_path: Path) -> dict:
         model_dict = yaml.safe_load(f)
     return model_dict
 
+def get_fullnames_of_downloadable_models() -> list:
+    '''
+    Get the full names of all downloadable models.
+    '''
+    model_cards = get_model_cards(MODEL_CARDS_PATH)
+    downloadable_models = []
+    for model_name, model_info in model_cards.items():
+        if model_info['weights']['single_fold'] is not None:
+            downloadable_models.append(model_info['full_name'] + '_light')
+    return downloadable_models
+
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
@@ -120,7 +133,7 @@ def main(argv=None):
     )
     args = vars(ap.parse_args(argv))
 
-    model_cards = get_model_cards(Path(__file__).parent / 'model_cards.yaml')
+    model_cards = get_model_cards(MODEL_CARDS_PATH)
 
     if args["list"]:
         print_available_models(model_cards)
