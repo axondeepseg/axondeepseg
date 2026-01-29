@@ -1,13 +1,13 @@
 import pytest
 import requests
 
-import AxonDeepSeg.model_cards as cards
+from AxonDeepSeg.download_model import get_model_cards
 
 HTTP_FOUND = 302
 
 class TestCore(object):
     def setup_method(self):
-        self.model_dict = cards.MODELS
+        self.model_dict = get_model_cards()
 
     # --------------model_cards tests-------------- #
     @pytest.mark.unit

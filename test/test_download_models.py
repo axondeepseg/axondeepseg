@@ -46,7 +46,7 @@ class TestCore(object):
     def test_download_valid_model_works(self):
 
         assert not self.valid_model_path.exists()
-        download_model(self.valid_model, 'light', self.tmpPath)
+        download_model(self.valid_model, self.tmpPath)
         assert self.valid_model_path.exists()
 
     @pytest.mark.unit
@@ -68,8 +68,8 @@ class TestCore(object):
     @pytest.mark.unit
     def test_redownload_model_multiple_times_works(self):
 
-        download_model(self.valid_model, 'light', self.tmpPath)
-        download_model(self.valid_model, 'light', self.tmpPath)
+        download_model(self.valid_model, self.tmpPath)
+        download_model(self.valid_model, self.tmpPath)
         
     @pytest.mark.unit
     def test_list_models(self):
