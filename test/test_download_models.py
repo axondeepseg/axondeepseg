@@ -5,7 +5,12 @@ import shutil
 
 import pytest
 
-from AxonDeepSeg.download_model import download_model
+from AxonDeepSeg.download_model import (
+    download_model,
+    SUCCESS_EXIT_CODE,
+    MODEL_NOT_FOUND_CODE,
+    DOWNLOAD_ERROR_CODE
+)
 import AxonDeepSeg
 import AxonDeepSeg.download_model
 
@@ -25,6 +30,10 @@ class TestCore(object):
 
         self.valid_model = 'generalist'
         self.valid_model_path = self.tmpPath / 'model_seg_generalist_light'
+
+        self.success_exit_code = SUCCESS_EXIT_CODE
+        self.model_not_found_code = MODEL_NOT_FOUND_CODE
+        self.download_error_code = DOWNLOAD_ERROR_CODE
 
     def teardown_method(self):
         # Get the directory where this current file is saved
@@ -63,7 +72,7 @@ class TestCore(object):
     def test_list_models(self):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(["-l"])
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == self.success_exit_code)
 
     # --------------main (cli) tests-------------- #
     @pytest.mark.integration
@@ -72,7 +81,7 @@ class TestCore(object):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(["--list"])
 
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == self.success_exit_code)
 
     @pytest.mark.integration
     def test_main_cli_downloads_to_path(self):
@@ -88,7 +97,7 @@ class TestCore(object):
     def test_main_cli_fails_for_model_that_does_not_exist(self):
         model_name = "no_model"
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.download_model.main(["-m ", model_name])
+            AxonDeepSeg.download_model.main(["-m", model_name])
 
-        expected_code = 2
+        expected_code = self.model_not_found_code
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == expected_code)

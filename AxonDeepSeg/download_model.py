@@ -9,7 +9,9 @@ import yaml
 import textwrap
 
 # exit codes
-SUCCESS, MODEL_NOT_FOUND, DOWNLOAD_ERROR = 0, 1, 2
+SUCCESS_EXIT_CODE = 0
+MODEL_NOT_FOUND_CODE = 1
+DOWNLOAD_ERROR_CODE = 2
 
 MODEL_CARDS_PATH = Path(__file__).parent / 'model_cards.yaml'
 
@@ -26,9 +28,10 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
         Directory to download the model to. Default: None.
     '''
     models = get_model_cards(Path(__file__).parent / 'model_cards.yaml')
+    print('WTF???')
     if model_name not in models.keys():
         logger.error('Model not found.')
-        sys.exit(MODEL_NOT_FOUND)
+        sys.exit(MODEL_NOT_FOUND_CODE)
 
     # default to single_fold model if available (lighter and faster)
     if models[model_name]['weights']['single_fold'] is not None:
@@ -39,7 +42,7 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
         url_model_destination = models[model_name]['weights']['ensemble']
     else:
         logger.error('No available model weights found for this model.')
-        sys.exit(MODEL_NOT_FOUND)
+        sys.exit(MODEL_NOT_FOUND_CODE)
 
     full_model_name = f'{models[model_name]["full_name"]}_{model_suffix}'
     if destination is None:
@@ -58,7 +61,7 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
         logger.info("Model downloaded and unzipped succesfully.")
     else:
         logger.error("An error occured. The model was not downloaded.")
-        sys.exit(DOWNLOAD_ERROR)
+        sys.exit(DOWNLOAD_ERROR_CODE)
     files_after = list(Path.cwd().iterdir())
 
     # retrieving unknown model folder name
@@ -137,7 +140,7 @@ def main(argv=None):
 
     if args["list"]:
         print_available_models(model_cards)
-        sys.exit(SUCCESS)
+        sys.exit(SUCCESS_EXIT_CODE)
     else:
         download_model(args["model_name"], args["dir"], overwrite=True)
 
