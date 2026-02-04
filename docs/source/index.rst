@@ -6,6 +6,18 @@
 Welcome to AxonDeepSeg !
 =======================================
 
+.. image:: https://img.shields.io/github/stars/axondeepseg/AxonDeepSeg?style=social
+   :target: https://github.com/axondeepseg/AxonDeepSeg
+
+.. image:: https://github.com/axondeepseg/axondeepseg/actions/workflows/run_tests.yaml/badge.svg
+   :target: https://github.com/axondeepseg/axondeepseg/actions/workflows/run_tests.yaml
+
+.. image:: https://readthedocs.org/projects/axondeepseg/badge/?version=stable
+   :target: http://axondeepseg.readthedocs.io/en/latest/?badge=latest
+
+.. image:: https://coveralls.io/repos/github/axondeepseg/axondeepseg/badge.svg?branch=master
+   :target: https://coveralls.io/github/axondeepseg/axondeepseg?branch=master
+
 Welcome to the AxonDeepSeg framework. In this site you will find the documentation on how to install and how to use AxonDeepSeg to obtain segmentations of your own microscopy data.
 
 AxonDeepSeg is a segmentation software for microscopy data of nerve fibers. It is based on convolutional neural networks. The package also includes a tool for automatic morphometrics computation.
