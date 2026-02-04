@@ -15,18 +15,20 @@ These instructions are for Linux/macOS. For Windows instructions, see the :ref:`
        cd axondeepseg
        ./install_ads -y
 
-2. **Launch the GUI**::
+2. **Close and reopen your terminal** to load the environment variables.
+
+3. **Launch the GUI**::
 
        ads_napari
 
-3. **Open the plugin**: In Napari, go to ``Plugins -> ADS (AxonDeepSeg)``
+4. **Open the plugin**: In Napari, go to ``Plugins -> ADS (AxonDeepSeg)``
 
-4. **Segment an image**:
+5. **Segment an image**:
    - Load your microscopy image via ``File -> Open file(s)``
    - Select the **generalist** model from the dropdown
    - Click **Segment image**
 
-5. **Extract morphometrics**: Click the **Morphometrics** button to generate measurements for each axon.
+6. **Extract morphometrics**: Click the **Morphometrics** button to generate measurements for each axon.
 
 For more detailed instructions, see the :ref:`installation <install-git>` and usage sections below.
 
@@ -34,6 +36,22 @@ For more detailed instructions, see the :ref:`installation <install-git>` and us
 
    <iframe width="700" src="https://www.youtube.com/embed/dHufMyNG2WU?si=4ON2OA-IiA7VbPer" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
+Help
+====
+
+Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
+
+* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`__. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
+* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`__.
+
+Training Models
+===============
+
+Training models requires a significant amount of **quality** data, **high-performance** computational resources, and most importantly–**expertise**. We don't recommend you train, retrain, or finetune our models without first contacting the AxonDeepSeg team.
+
+If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your applications and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg team at axondeepseg@googlegroups.com to schedule a video-call to discuss more.
+
+.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
 
 Testimonials
 ============
@@ -128,19 +146,7 @@ Install Options
 
                 ./install_ads -y
 
-            .. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
-               ::
-         
-                  # ~/.config/pip/pip.conf
-                  [install]
-                  extra-index-url =
-                  https://download.pytorch.org/whl/cpu
-
-            .. comment: There's similar configs used for the opposite cases:
-                        owning a GPU that's so new it needs CUDA 11, or owning a GPU but running Windows.
-                        See https://github.com/axondeepseg/axondeepseg/pull/642#issuecomment-1142311380.
-                        We don't document them publically because they are rare and the distraction will sew confusion.
-                        in these situations can ask us for help.
+            After the installation is complete, close and reopen your terminal to load the environment variables before using AxonDeepSeg commands.
 
          .. group-tab:: Windows
             For Windows systems, run::
@@ -799,7 +805,7 @@ Open image and mask
 * Load the microscopy image using the Napari toolbar: File -> Open file(s)
 * If no segmentation masks already exists:
    * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
-   * Then click on the Segment image button
+   * Then click on the "Segment image" button
 * If a segmentation masks already exists:
    * Click on the "Load mask" button and select the image with the suffix "_seg-axonmyelin"
 * After a mask is loaded or generated, the axon (blue) and myelin (red) layers will be overlayed on top of the histology image.
@@ -906,22 +912,6 @@ Alternatively, `pytest` commands can be run directly from the terminal for more 
 and to run a specific test file, use::
 
     pytest test/test_segment.py
-
-Training Models
-===============
-
-If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your applications and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg team to schedule a video-call to discuss more.
-
-.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
-
-
-Help
-====
-
-Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
-
-* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`__. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
-* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`__.
 
 Citation
 ========

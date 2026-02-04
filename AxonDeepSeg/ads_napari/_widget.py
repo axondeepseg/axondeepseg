@@ -551,6 +551,8 @@ class ADSplugin(QWidget):
         potential_target_name = image_name_no_extension + "_grayscale.png"
         if (image_directory / potential_target_name).exists():
             image_name_no_extension += '_grayscale'
+            # Update the napari layer name to match the converted file
+            selected_layer.name = image_name_no_extension
         axon_mask_path = image_directory / (
             image_name_no_extension + str(axon_suffix)
         )
