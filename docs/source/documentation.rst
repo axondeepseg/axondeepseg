@@ -648,7 +648,7 @@ This feature aggregates morphometrics per subject. It is useful when you have mu
 
 To use this feature, you need to have done the following:
 
-1. Segment all the images of interest using AxonDeepSeg using the **axondeepseg** command.
+1. Segment all the images of interest with AxonDeepSeg using the **axondeepseg** command.
 2. Compute the morphometrics of all the images using the **axondeepseg_morphometrics** command. Make sure that the morphometrics files are named with the same prefix as the image name (e.g. **image_axon_morphometrics.xlsx** for **image.png**).
 3. Have the following folder structure::
 
