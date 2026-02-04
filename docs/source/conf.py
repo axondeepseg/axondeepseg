@@ -99,6 +99,13 @@ html_theme_options = {
 }
 html_logo = '_static/logo_ads-alpha.png'
 
+html_context = {
+    "display_github": True,
+    "github_user": "axondeepseg",
+    "github_repo": "axondeepseg",
+    "github_version": "master",
+    "conf_py_path": "/docs/source/",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
