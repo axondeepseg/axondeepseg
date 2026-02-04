@@ -39,11 +39,11 @@ dedicated-CARS:
     single_fold: https://github.com/axondeepseg/default-CARS-model/releases/download/r20240403/model_seg_rat_axon-myelin_cars_light.zip
 
 unmyelinated-TEM:
-  full_name: model_seg_unmyelinated_sickkids
-  task: unmyelinated-axon-segmentation
-  n_classes: 1
-  model-info: Unmyelinated axon segmentation model trained on TEM data.
-  training-data: 5 large TEM mouse images, resolution of 0.0048 um/px. Unmyelinated axons were manually annotated. The data comes from Sick Kids Hospital, Toronto.
+  full_name: model_seg_unmyelinated_stanford
+  task: unmyelinated-axon-segmentation, myelinated-axon-segmentation
+  n_classes: 5
+  model-info: Segments both myelinated and unmyelinated axons on TEM data. Also segments oligodendrocyte  (nuclei and cytoplasmic processes) 
+  training-data: Available at https://dandiarchive.org/dandiset/001350?pos=4
   weights:
-    ensemble: https://github.com/axondeepseg/model_seg_unmyelinated_tem/releases/download/v1.1.0/model_seg_unmyelinated_sickkids_tem_best.zip
+    ensemble: https://github.com/axondeepseg/model_seg_unmyelinated_tem/releases/download/r20240708-stanford/model_seg_unmyelinated_stanford_tem_best.zip
     single_fold: ~

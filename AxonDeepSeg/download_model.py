@@ -28,7 +28,6 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
         Directory to download the model to. Default: None.
     '''
     models = get_model_cards(Path(__file__).parent / 'model_cards.yaml')
-    print('WTF???')
     if model_name not in models.keys():
         logger.error('Model not found.')
         sys.exit(MODEL_NOT_FOUND_CODE)
