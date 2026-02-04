@@ -39,9 +39,6 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
     elif models[model_name]['weights']['ensemble'] is not None:
         model_suffix = 'ensemble'
         url_model_destination = models[model_name]['weights']['ensemble']
-    else:
-        logger.error('No available model weights found for this model.')
-        sys.exit(MODEL_NOT_FOUND_CODE)
 
     full_model_name = f'{models[model_name]["full_name"]}_{model_suffix}'
     if destination is None:

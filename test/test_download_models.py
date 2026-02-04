@@ -31,10 +31,6 @@ class TestCore(object):
         self.valid_model = 'generalist'
         self.valid_model_path = self.tmpPath / 'model_seg_generalist_light'
 
-        self.success_exit_code = SUCCESS_EXIT_CODE
-        self.model_not_found_code = MODEL_NOT_FOUND_CODE
-        self.download_error_code = DOWNLOAD_ERROR_CODE
-
     def teardown_method(self):
         # Get the directory where this current file is saved
         fullPath = Path(__file__).resolve().parent
@@ -72,7 +68,7 @@ class TestCore(object):
     def test_list_models(self):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(["-l"])
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == self.success_exit_code)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == SUCCESS_EXIT_CODE)
 
     # --------------main (cli) tests-------------- #
     @pytest.mark.integration
@@ -81,7 +77,7 @@ class TestCore(object):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(["--list"])
 
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == self.success_exit_code)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == SUCCESS_EXIT_CODE)
 
     @pytest.mark.integration
     def test_main_cli_downloads_to_path(self):
@@ -99,5 +95,4 @@ class TestCore(object):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(["-m", model_name])
 
-        expected_code = self.model_not_found_code
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == expected_code)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == MODEL_NOT_FOUND_CODE)
