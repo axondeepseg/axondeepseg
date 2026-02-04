@@ -34,7 +34,7 @@ For more detailed instructions, see the :ref:`installation <install-git>` and us
 
 .. raw:: html
 
-   <iframe width="700" height="320" src="https://www.youtube.com/embed/dHufMyNG2WU?si=4ON2OA-IiA7VbPer" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   <iframe width="700" height="380" src="https://www.youtube.com/embed/dHufMyNG2WU?si=4ON2OA-IiA7VbPer" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 Help
 ====
