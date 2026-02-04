@@ -127,7 +127,7 @@ Install Options
 
 .. tabs::
 
-   .. tab:: Install via ``GitHub`` (recommended)
+   .. tab:: ``GitHub`` (recommended)
 
       To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
       
@@ -169,7 +169,7 @@ Install Options
 
       and then follow the installation instructions above specified for your operating system.
 
-   .. tab:: Install via ``pip``
+   .. tab:: ``pip``
 
       .. NOTE ::
          - This installation method does not support running the test suite. For software development, please use the :ref:`installation via git <install-git>`.
@@ -209,7 +209,7 @@ Install Options
 
       - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
 
-   .. tab:: Install via ``Napari Plugin Manager``
+   .. tab:: ``Napari Plugin Manager``
 
       AxonDeepSeg can also be installed via the Napari Plugin Manager. Install Napari following the `Napari installation instructions <https://napari.org/stable/tutorials/fundamentals/installation.html>`__. Then, use the `Napari Plugin Manager <https://napari.org/stable/plugins/start_using_plugins/finding_and_installing_plugins.html>`__ to search for and install ``axondeepseg``.
 
