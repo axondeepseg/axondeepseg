@@ -7,7 +7,7 @@ AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University o
 Quick Start
 ===========
 
-These instructions are for Linux/macOS. For Windows instructions, see the :ref:`installation section <install-git>`.
+These instructions are for Linux/macOS. For Windows instructions, see the :ref:`installation section <install-git>`. For a video demonstration, see below.
 
 1. **Download and install AxonDeepSeg** (requires `git <https://git-scm.com/downloads>`__)::
 
@@ -24,11 +24,16 @@ These instructions are for Linux/macOS. For Windows instructions, see the :ref:`
 4. **Segment an image**:
    - Load your microscopy image via ``File -> Open file(s)``
    - Select the **generalist** model from the dropdown
-   - Click **Apply ADS model**
+   - Click **Segment image**
 
 5. **Extract morphometrics**: Click the **Morphometrics** button to generate measurements for each axon.
 
 For more detailed instructions, see the :ref:`installation <install-git>` and usage sections below.
+
+.. raw:: html
+
+   <iframe width="700" src="https://www.youtube.com/embed/dHufMyNG2WU?si=4ON2OA-IiA7VbPer" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 
 Testimonials
 ============
@@ -794,7 +799,7 @@ Open image and mask
 * Load the microscopy image using the Napari toolbar: File -> Open file(s)
 * If no segmentation masks already exists:
    * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
-   * Then click on the Apply ADS model button
+   * Then click on the Segment image button
 * If a segmentation masks already exists:
    * Click on the "Load mask" button and select the image with the suffix "_seg-axonmyelin"
 * After a mask is loaded or generated, the axon (blue) and myelin (red) layers will be overlayed on top of the histology image.
