@@ -96,7 +96,6 @@ html_theme_options = {
     'collapse_navigation': False,
     'version_selector': False,
     'navigation_depth': 4,
-    'logo_url': 'https://github.com/axondeepseg/axondeepseg',
 }
 html_logo = '_static/logo_ads-alpha.png'
 
