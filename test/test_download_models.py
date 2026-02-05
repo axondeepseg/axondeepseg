@@ -71,32 +71,6 @@ class TestCore(object):
             AxonDeepSeg.download_model.main(["-l"])
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == SUCCESS_EXIT_CODE)
 
-    # --------------main (cli) tests-------------- #
-    @pytest.mark.integration
-    def test_main_cli_runs_succesfully_for_list_models(self):
-
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.download_model.main(["--list"])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == SUCCESS_EXIT_CODE)
-
-    @pytest.mark.integration
-    def test_main_cli_downloads_to_path(self):
-        cli_test_path = self.tmpPath / 'cli_test'
-        cli_test_model_path = cli_test_path / 'model_seg_generalist_light'
-
-        AxonDeepSeg.download_model.main(["-d", str(cli_test_path)])
-
-        assert cli_test_model_path.exists()
-
-
-    @pytest.mark.integration
-    def test_main_cli_fails_for_model_that_does_not_exist(self):
-        model_name = "no_model"
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.download_model.main(["-m", model_name])
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == MODEL_NOT_FOUND_CODE)
 
     @pytest.mark.unit
     def test_download_model_fails_when_download_data_fails(self):
@@ -141,3 +115,30 @@ class TestCore(object):
             assert mock_download.called
             called_url = mock_download.call_args[0][0]            
             assert called_url == fake_url
+
+    # --------------main (cli) tests-------------- #
+    @pytest.mark.integration
+    def test_main_cli_runs_succesfully_for_list_models(self):
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.download_model.main(["--list"])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == SUCCESS_EXIT_CODE)
+
+    @pytest.mark.integration
+    def test_main_cli_downloads_to_path(self):
+        cli_test_path = self.tmpPath / 'cli_test'
+        cli_test_model_path = cli_test_path / 'model_seg_generalist_light'
+
+        AxonDeepSeg.download_model.main(["-d", str(cli_test_path)])
+
+        assert cli_test_model_path.exists()
+
+
+    @pytest.mark.integration
+    def test_main_cli_fails_for_model_that_does_not_exist(self):
+        model_name = "no_model"
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.download_model.main(["-m", model_name])
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == MODEL_NOT_FOUND_CODE)
