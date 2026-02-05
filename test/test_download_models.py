@@ -105,3 +105,39 @@ class TestCore(object):
                 download_model(self.valid_model, self.tmpPath)
             
             assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == DOWNLOAD_ERROR_CODE)
+
+    @pytest.mark.unit
+    def test_download_model_selects_ensemble_if_necessary(self):
+        # Mock download_data to return 0 (success) without downloading ensemble models (1+ Gb)
+        def mock_download_data(url):
+            # Create the expected folder that download_data would create
+            model_folder = Path.cwd() / 'model_seg_generalist_ensemble_fake'
+            model_folder.mkdir(exist_ok=True)
+            return 0
+        
+        with patch('AxonDeepSeg.download_model.download_data', side_effect=mock_download_data) as mock_download:
+            fake_url = 'https://github.com/axondeepseg/model_seg_generalist/releases/download/r20240416/model_seg_generalist_ensemble.zip'
+            
+            # Mock get_model_cards to remove single_fold URL (set to None)
+            # This forces download_model to fall back to ensemble
+            def mock_get_model_cards(path=None):
+                return {
+                    'generalist': {
+                        'full_name': 'model_seg_generalist',
+                        'weights': {
+                            'single_fold': None,  # Not available
+                            'ensemble': fake_url
+                        },
+                        'n_classes': 2,
+                        'model-info': 'Test model',
+                        'training-data': 'Test data'
+                    }
+                }
+            
+            with patch('AxonDeepSeg.download_model.get_model_cards', side_effect=mock_get_model_cards):
+                result = download_model(self.valid_model, self.tmpPath)
+
+            assert result == self.tmpPath / 'model_seg_generalist_ensemble'
+            assert mock_download.called
+            called_url = mock_download.call_args[0][0]            
+            assert called_url == fake_url
