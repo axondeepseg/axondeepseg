@@ -191,7 +191,7 @@ class ADSplugin(QWidget):
             ["Select the model"] + self.available_models
         )
 
-        self.apply_model_button = QPushButton("Apply ADS model")
+        self.apply_model_button = QPushButton("Segment image")
         self.apply_model_button.clicked.connect(
             self._on_apply_model_button_click
         )
@@ -367,7 +367,7 @@ class ADSplugin(QWidget):
                     else:
                         show_info("Clicked pixel is out of bounds of the image.")
                 else:
-                    self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.")
+                    self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Segment image.")
 
         if self.show_axon_metrics_state:
             if _ALT in event.modifiers:
@@ -677,7 +677,7 @@ class ADSplugin(QWidget):
         myelin_layer = self.get_myelin_layer()
 
         if (axon_layer is None) or (myelin_layer is None):
-            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\nPlease load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Segment image.\nPlease load the masks or segment the image via Segment image, and ensure that the image is selected as the active layer.")
 
             # Uncheck the button
             self.remove_axon_state = False
@@ -730,7 +730,7 @@ class ADSplugin(QWidget):
         myelin_layer = self.get_myelin_layer()
 
         if (axon_layer is None) or (myelin_layer is None):
-            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\nPlease load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Segment image.\nPlease load the masks or segment the image via Segment image, and ensure that the image is selected as the active layer.")
             # Uncheck the button
             self.show_axon_metrics_state = False
             self.show_axon_metrics_button.setChecked(False)
