@@ -64,4 +64,4 @@ Pipfile
 *.egg-info/
 qa_test/
 
-source/_generated_models.rst
+docs/source/_generated_models.rst

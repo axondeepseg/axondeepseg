@@ -1,9 +1,52 @@
+'''
+This lightweight extension simply reads the model_cards.yaml file and creates a 
+RST block to insert directly inside the documentation. Thus, to modify the model
+list, we can simply edit the model_cards.yaml file and the doc will be auto-updated 
+accordingly.
+'''
+
 from sphinx.util import logging
-import yaml
 import os
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+def parse_yaml_simple(file_path):
+    """
+    Simple YAML parser that extracts top-level keys and model-info values.
+    This avoids the dependency on PyYAML which may not be available to the
+    RTD venv.
+    """
+    model_dict = {}
+    
+    with open(file_path, 'r') as f:
+        content = f.read()
+    
+    lines = content.strip().split('\n')
+    current_model = None
+    current_indent = -1
+    
+    for line in lines:
+        # Skip empty lines and comments
+        if not line.strip() or line.strip().startswith('#'):
+            continue
+        
+        # Calculate indentation
+        indent = len(line) - len(line.lstrip())
+        
+        # Check if this is a top-level model key (no indentation)
+        if indent == 0 and ':' in line and not line.strip().startswith('-'):
+            current_model = line.split(':')[0].strip()
+            model_dict[current_model] = {'model-info': ''}
+            current_indent = 0
+        
+        # Check if this is a model-info line
+        elif current_model and 'model-info:' in line:
+            # Extract the value after 'model-info:'
+            value = line.split('model-info:', 1)[1].strip()
+            model_dict[current_model]['model-info'] = value
+    
+    return model_dict
 
 def get_model_cards(model_list_path=None):
     """Load the model list from a YAML file."""
@@ -11,9 +54,7 @@ def get_model_cards(model_list_path=None):
         # Get the path relative to this extension file
         model_list_path = Path(__file__).parent.parent.parent.parent / 'AxonDeepSeg' / 'model_cards.yaml'
     
-    with open(model_list_path, 'r') as f:
-        model_dict = yaml.safe_load(f)
-    return model_dict
+    return parse_yaml_simple(model_list_path)
 
 def generate_model_cards_rst(app, config):
     """Generate RST content from model_cards.yaml"""
