@@ -1,5 +1,5 @@
- sphinx>=5.0.0,<9.0.0
- sphinx_rtd_theme>=0.2.4
- recommonmark
- pygit2
+sphinx>=5.0.0,<9.0.0
+sphinx_rtd_theme>=0.2.4
+recommonmark
+pygit2
 sphinx-tabs>=3.4.5

@@ -2,10 +2,16 @@
 
 from pathlib import Path
 import shutil
+from unittest.mock import patch
 
 import pytest
 
-from AxonDeepSeg.download_model import download_model
+from AxonDeepSeg.download_model import (
+    download_model,
+    SUCCESS_EXIT_CODE,
+    MODEL_NOT_FOUND_CODE,
+    DOWNLOAD_ERROR_CODE
+)
 import AxonDeepSeg
 import AxonDeepSeg.download_model
 
@@ -25,8 +31,6 @@ class TestCore(object):
 
         self.valid_model = 'generalist'
         self.valid_model_path = self.tmpPath / 'model_seg_generalist_light'
-        self.invalid_model = 'dedicated-BF' # (ensembled version unavailable)
-        self.invalid_model_type = 'ensemble'
 
     def teardown_method(self):
         # Get the directory where this current file is saved
@@ -46,7 +50,7 @@ class TestCore(object):
     def test_download_valid_model_works(self):
 
         assert not self.valid_model_path.exists()
-        download_model(self.valid_model, 'light', self.tmpPath)
+        download_model(self.valid_model, self.tmpPath)
         assert self.valid_model_path.exists()
 
     @pytest.mark.unit
@@ -56,26 +60,52 @@ class TestCore(object):
         assert output_dir == cli_test_model_path
 
     @pytest.mark.unit
-    def test_download_model_cli_throws_error_for_unavailable_model(self):
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.download_model.main(
-                ["-m", self.invalid_model, "-t", self.invalid_model_type]
-            )
-
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 1)
-
-
-    @pytest.mark.unit
     def test_redownload_model_multiple_times_works(self):
 
-        download_model(self.valid_model, 'light', self.tmpPath)
-        download_model(self.valid_model, 'light', self.tmpPath)
+        download_model(self.valid_model, self.tmpPath)
+        download_model(self.valid_model, self.tmpPath)
         
     @pytest.mark.unit
     def test_list_models(self):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(["-l"])
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == SUCCESS_EXIT_CODE)
+
+    @pytest.mark.unit
+    def test_download_model_selects_ensemble_if_necessary(self):
+        # Mock download_data to return 0 (success) without downloading ensemble models (1+ Gb)
+        def mock_download_data(url):
+            # Create the expected folder that download_data would create
+            model_folder = Path.cwd() / 'model_seg_generalist_ensemble_fake'
+            model_folder.mkdir(exist_ok=True)
+            return 0
+        
+        with patch('AxonDeepSeg.download_model.download_data', side_effect=mock_download_data) as mock_download:
+            fake_url = 'https://github.com/axondeepseg/model_seg_generalist/releases/download/r20240416/model_seg_generalist_ensemble.zip'
+            
+            # Mock get_model_cards to remove single_fold URL (set to None)
+            # This forces download_model to fall back to ensemble
+            def mock_get_model_cards(path=None):
+                return {
+                    'generalist': {
+                        'full_name': 'model_seg_generalist',
+                        'weights': {
+                            'single_fold': None,  # Not available
+                            'ensemble': fake_url
+                        },
+                        'n_classes': 2,
+                        'model-info': 'Test model',
+                        'training-data': 'Test data'
+                    }
+                }
+            
+            with patch('AxonDeepSeg.download_model.get_model_cards', side_effect=mock_get_model_cards):
+                result = download_model(self.valid_model, self.tmpPath)
+
+            assert result == self.tmpPath / 'model_seg_generalist_ensemble'
+            assert mock_download.called
+            called_url = mock_download.call_args[0][0]            
+            assert called_url == fake_url
 
     # --------------main (cli) tests-------------- #
     @pytest.mark.integration
@@ -84,7 +114,7 @@ class TestCore(object):
         with pytest.raises(SystemExit) as pytest_wrapped_e:
             AxonDeepSeg.download_model.main(["--list"])
 
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == SUCCESS_EXIT_CODE)
 
     @pytest.mark.integration
     def test_main_cli_downloads_to_path(self):
@@ -95,12 +125,18 @@ class TestCore(object):
 
         assert cli_test_model_path.exists()
 
-
     @pytest.mark.integration
     def test_main_cli_fails_for_model_that_does_not_exist(self):
         model_name = "no_model"
         with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AxonDeepSeg.download_model.main(["-m ", model_name])
+            AxonDeepSeg.download_model.main(["-m", model_name])
 
-        expected_code = 2
-        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == expected_code)
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == MODEL_NOT_FOUND_CODE)
+
+    @pytest.mark.integration
+    def test_download_model_fails_when_download_data_fails(self):
+        with patch('AxonDeepSeg.download_model.download_data', return_value=1):
+            with pytest.raises(SystemExit) as pytest_wrapped_e:
+                download_model(self.valid_model, self.tmpPath)
+            
+            assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == DOWNLOAD_ERROR_CODE)

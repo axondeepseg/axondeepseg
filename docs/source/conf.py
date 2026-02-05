@@ -19,6 +19,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('.'))  # Add this line to find _extensions module
 
 import AxonDeepSeg
 
@@ -34,7 +35,9 @@ import AxonDeepSeg
 extensions = [
 	'sphinx.ext.githubpages',
     'sphinx_tabs.tabs',
-	'recommonmark']
+	'recommonmark',
+    '_extensions.model_cards_ext',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

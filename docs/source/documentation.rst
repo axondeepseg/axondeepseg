@@ -265,19 +265,15 @@ For each model, a *light* and/or *ensemble* version is available. *Light* models
 
 Here are the details of all the models currently supported by AxonDeepSeg:
 
-* **generalist** model (*model_seg_generalist*): Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data. For more information, please visit the `generalist model repository <https://github.com/axondeepseg/model_seg_generalist>`__.
-* **dedicated-SEM** model (*model_seg_rat_axon-myelin_SEM*): Axon and myelin segmentation model trained on Scanning Electron Microscopy data. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`__.
-* **dedicated-BF** (bright-field) model (*model_seg_generalist_BF*): Axon and myelin segmentation model trained on Bright-Field data. For more information, please visit the `BF release of the generalist model repository <https://github.com/axondeepseg/model_seg_generalist/releases/tag/r20240416>`__.
-* **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`__.
-* **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`__.
+.. include:: _generated_models.rst
 
-To download these models, you must first have AxonDeepSeg installed. Afterwards, run::
-
-    download_model -m <model name> -t <model type>
-
-where <model name> is the full name (e.g. *model_seg_rat_axon-myelin_SEM*) and <model type> is either *light* or *ensemble*. To view available models and their details, run::
+To download these models, you must first have AxonDeepSeg installed. Afterwards, use the following command to list available models::
 
     download_model --list
+
+Then, use the following to download a specific model::
+
+    download_model -m <model name>
 
 Using AxonDeepSeg
 =================
