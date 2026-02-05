@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import shutil
+from unittest.mock import patch
 
 import pytest
 
@@ -96,3 +97,11 @@ class TestCore(object):
             AxonDeepSeg.download_model.main(["-m", model_name])
 
         assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == MODEL_NOT_FOUND_CODE)
+
+    @pytest.mark.unit
+    def test_download_model_fails_when_download_data_fails(self):
+        with patch('AxonDeepSeg.download_model.download_data', return_value=1):
+            with pytest.raises(SystemExit) as pytest_wrapped_e:
+                download_model(self.valid_model, self.tmpPath)
+            
+            assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == DOWNLOAD_ERROR_CODE)
