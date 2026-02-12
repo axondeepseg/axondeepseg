@@ -13,7 +13,6 @@ on:
     branches:
       - master
       - 'release/**'
-      - 'ac/v5.4.0'
 
   # Trigger current workflow on PR from ANY branch
   pull_request:
@@ -60,7 +59,7 @@ jobs:
       - name: Install Latest pypi version of AxonDeepSeg
         run: |
           pip install --upgrade pip
-          pip install axondeepseg==5.4.0rc1 --no-cache-dir
+          pip install axondeepseg==5.4.0 --no-cache-dir
 
 
       # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
