@@ -4,6 +4,55 @@ AxonDeepSeg is an open-source software using deep learning and aiming at automat
 
 AxonDeepSeg was developed at NeuroPoly Lab, Polytechnique Montreal, University of Montreal, Canada.
 
+Quick Start
+===========
+
+These instructions are for Linux/macOS. For Windows instructions, see the :ref:`installation section <install-git>`. For a video demonstration, see below.
+
+1. **Download and install AxonDeepSeg** (requires `git <https://git-scm.com/downloads>`__)::
+
+       git clone https://github.com/neuropoly/axondeepseg.git
+       cd axondeepseg
+       ./install_ads -y
+
+2. **Close and reopen your terminal** to load the environment variables.
+
+3. **Launch the GUI**::
+
+       ads_napari
+
+4. **Open the plugin**: In Napari, go to ``Plugins -> ADS (AxonDeepSeg)``
+
+5. **Segment an image**:
+   - Load your microscopy image via ``File -> Open file(s)``
+   - Select the **generalist** model from the dropdown
+   - Click **Segment image**
+
+6. **Extract morphometrics**: Click the **Morphometrics** button to generate measurements for each axon.
+
+For more detailed instructions, see the :ref:`installation <install-git>` and usage sections below.
+
+.. raw:: html
+
+   <iframe width="700" height="395" src="https://www.youtube.com/embed/dHufMyNG2WU?si=4ON2OA-IiA7VbPer" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+Help
+====
+
+Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
+
+* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`__. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
+* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`__.
+
+Training Models
+===============
+
+Training models requires a significant amount of **quality** data, **high-performance** computational resources, and most importantly–**expertise**. We don't recommend you train, retrain, or finetune our models without first contacting the AxonDeepSeg team.
+
+If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your applications and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg team at axondeepseg@googlegroups.com to schedule a video-call to discuss more.
+
+.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
+
 Testimonials
 ============
 Do you also use AxonDeepSeg and would like to share your feedback with the community? Please add your testimonial by clicking `here <https://docs.google.com/forms/d/e/1FAIpQLSdEbhUKqJ775XHItPteq7Aa3LDOk790p_1tq9auo9xoYS32Ig/viewform?usp=sf_link>`__. Thank you 😊
@@ -32,33 +81,102 @@ Installation
 ============
 The following sections will help you install all the tools you need to run AxonDeepSeg.
 
+Which installation method should I use?
+---------------------------------------
+
+.. code-block:: text
+
+   What operating system are you using?
+   │
+   ├── Linux/macOS
+   │   └── Install via GitHub (recommended)
+   │       • Automatic environment setup
+   │       • Runs tests to verify installation
+   │       • Easy updates via git pull
+   │
+   ├── Windows
+   │   └── Install via GitHub (recommended)
+   │       • Automatic environment setup
+   │       • Runs tests to verify installation
+   │       • Requires additional environment variable configuration (see instructions)
+   │
+   └── Any OS with existing Python 3.11/3.12 environment
+       │
+       ├── Do you already have Napari installed?
+       │   │
+       │   ├── YES → Install via Napari Plugin Manager
+       │   │         • Integrates with existing Napari setup
+       │   │
+       │   └── NO → Install via pip
+       │             • Installs AxonDeepSeg and Napari together
+       │
+       └── Both options:
+           • Require manual Python environment setup
+           • No automatic test verification
+
+**Summary:**
+
+- **GitHub** (recommended): Best for most users on any OS. Handles environment setup automatically and verifies installation with tests.
+- **pip**: For users who already have a Python 3.11/3.12 environment configured.
+- **Napari Plugin Manager**: For users who already have Napari installed.
+
 Install Options
 ---------------
 
+.. _install-git:
+
 .. tabs::
 
-   .. tab:: Install via ``pip`` (recommended)
+   .. tab:: ``GitHub`` (recommended)
+
+      To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
+      
+          git clone https://github.com/neuropoly/axondeepseg.git
+          cd axondeepseg
+
+      .. NOTE :: The installation script automatically runs tests at the end to verify proper installation.
+
+      .. tabs::
+         .. group-tab:: Linux/MacOS
+            For Linux or macOS systems, run::
+
+                ./install_ads
+
+            and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
+
+                ./install_ads -y
+
+            After the installation is complete, close and reopen your terminal to load the environment variables before using AxonDeepSeg commands.
+
+         .. group-tab:: Windows
+            For Windows systems, run::
+      
+                install_ads.bat
+
+            Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
+      
+            1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
+            2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
+            3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
+            4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
+            5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
+
+      **Updating AxonDeepSeg**
+
+      To update the AxonDeepSeg to the latest version, run::
+
+         git checkout master && git pull
+
+      and then follow the installation instructions above specified for your operating system.
+
+   .. tab:: ``pip``
+
+      .. NOTE ::
+         - This installation method does not support running the test suite. For software development, please use the :ref:`installation via git <install-git>`.
+         - This method is only compatible with Python 3.11.x and 3.12.x.
+         - Virtual environments are recommended. See the `Python venv documentation <https://docs.python.org/3/library/venv.html>`__ or `conda documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`__ for instructions.
 
       This section provides instructions for installing the AxonDeepSeg plugin directly via `pip`. This method is useful if you prefer to manage your Python packages using `pip` instead of the Napari Plugin Manager.
-
-      **Prerequisites**
-
-      Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
-
-      1. **Python Version**: You need to have Python 3.11.x or 3.12.x installed. We recommend using a virtual environment to manage dependencies. If you are using ``conda``, you can create a virtual environment with the following command:
-
-         .. code-block:: bash
-         
-            conda create -n napari_venv python==3.12
-            conda activate napari_venv
-
-      2. **Install Napari**: Install Napari with all its dependencies by running:
-
-         .. code-block:: bash
-         
-            pip install "napari[all]"
-
-      **Installation Steps**
 
       1. **Install AxonDeepSeg**:
          Install the AxonDeepSeg plugin via `pip` by running the following command:
@@ -85,134 +203,19 @@ Install Options
 
          This will open the AxonDeepSeg plugin interface.
 
+      You're ready to segment images!
+
       **Troubleshooting**
 
-      - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
-      - If the plugin does not appear in the Plugins menu, ensure that the installation was successful and that you are using the correct Python environment.
       - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
 
-   .. tab:: Install via ``git`` (for  developpers)
+   .. tab:: ``Napari Plugin Manager``
 
-      To install AxonDeepSeg, in a terminal window (macOS or Linux) or Command Prompt (Windows), "clone" AxonDeepSeg's repository (you will need to have ``git`` installed on your system) and then open the directory::
-      
-          git clone https://github.com/neuropoly/axondeepseg.git
-          cd axondeepseg
+      AxonDeepSeg can also be installed via the Napari Plugin Manager. Install Napari following the `Napari installation instructions <https://napari.org/stable/tutorials/fundamentals/installation.html>`__. Then, use the `Napari Plugin Manager <https://napari.org/stable/plugins/start_using_plugins/finding_and_installing_plugins.html>`__ to search for and install ``axondeepseg``.
 
-      .. tabs::
-         .. group-tab:: Linux/MacOS
-            For Linux or macOS systems, run::
-      
-                ./install_ads
-
-            and follow the prompts. Or, if you want to install AxonDeepSeg with default settings, run::
-      
-                ./install_ads -y
-
-            .. NOTE :: Linux systems can accelerate some of AxonDeepSeg's functions with an `NVIDIA GPU <https://developer.nvidia.com/cuda-gpus>`__, but these are expensive and rare, and if you do not own one you can save some time and space by not downloading the accelerated codes. You can do this by putting this in your `pip.conf <https://pip.pypa.io/en/stable/topics/configuration/#location>`__ before continuing:
-               ::
-         
-                  # ~/.config/pip/pip.conf
-                  [install]
-                  extra-index-url =
-                  https://download.pytorch.org/whl/cpu
-
-            .. comment: There's similar configs used for the opposite cases:
-                        owning a GPU that's so new it needs CUDA 11, or owning a GPU but running Windows.
-                        See https://github.com/axondeepseg/axondeepseg/pull/642#issuecomment-1142311380.
-                        We don't document them publically because they are rare and the distraction will sew confusion.
-                        in these situations can ask us for help.
-
-         .. group-tab:: Windows
-            For Windows systems, run::
-      
-                install_ads.bat
-
-            Then, to use ADS's command-line scripts in Command Prompt, please follow these instructions:
-      
-            1. Open the Start Menu -> Type 'edit environment' -> Open 'Edit environment variables for your account'
-            2. Click 'New', then enter 'ADS_DIR' for the variable name. For the value, copy and paste the path to the ADS directory (see full path displayed after install_ads.bat is completed)
-            3. Click 'OK', then click on the 'Path' variable, then click the 'Edit...' button.
-            4. Click 'New', then copy and paste the (ADS_PATH)\bin directory:
-            5. Click 'OK' three times. You can now access ADS's scripts in the Command Prompt.
-
-      **Updating AxonDeepSeg**
-
-      To update the AxonDeepSeg to the latest version, run::
-
-         git checkout master && git pull
-
-      and then follow the installation instructions above specified for your operating system.
-
-   .. tab:: Install via ``napari``
-
-         AxonDeepSeg is also available on the Napari Plugin Manager. Follow these instructions to set up the plugin in your environment, however we recommend using the `pip` installation method for a more straightforward setup if you don't already have Napari installed
-
-         **Prerequisites**
-
-         Before installing the AxonDeepSeg plugin, ensure you meet the following requirements:
-
-         1. Napari
-         2. Python 3.11.x or 3.12.x
-
-         **Installation Steps**
-
-         1. **Launch Napari**:
-
-         2. **Open the Plugins Manager**:
-            Once Napari is open, navigate to the top menu bar and click on:
-
-            .. code-block:: text
-            
-               Plugins -> Install/Uninstall Plugins
-
-         3. **Search for AxonDeepSeg**:
-            In the Plugin Manager, use the search bar to look for the AxonDeepSeg plugin by typing:
-
-            .. code-block:: text
-            
-               axondeepseg
-
-         4. **Install the Plugin**:
-            Once the AxonDeepSeg plugin appears in the search results, click the **Install** button next to it. Napari will automatically download and install the plugin along with its dependencies.
-
-         **Troubleshooting**
-
-         - If you encounter any issues during installation, ensure that your Python version is compatible (3.11.x or 3.12.x) and that Napari is installed correctly.
-         - If the plugin does not appear in the search results, ensure you have an active internet connection and try refreshing the Plugin Manager.
-         - For additional support, refer to the `AxonDeepSeg documentation <https://axondeepseg.readthedocs.io>`_ or the `Napari Plugin Manager documentation <https://napari.org/stable/plugins/index.html>`_.
-
-
-.. note:: AxonDeepSeg provides several command-line tools:
-
-   - ``axondeepseg``: Main segmentation tool
-   - ``axondeepseg_morphometrics``: Morphometrics computation
-   - ``axondeepseg_roi_to_mask``: Convert ImageJ ROIs to binary masks
-   - ``axondeepseg_aggregate``: Aggregate morphometrics across subjects
-   - ``axondeepseg_test``: Integrity testing
-   - ``download_model``: Download additional models
-
-Testing the installation
-------------------------
-
-Quick test
-~~~~~~~~~~
-
-To test if the software was installed correctly, you can launch a quick integrity test by running the following command on the terminal::
-
-    axondeepseg_test
-
-This integrity test automatically performs the axon and myelin segmentation of a test sample. If the test succeeds, the following message will appear in the terminal::
-
-    * * * Integrity test passed. AxonDeepSeg is correctly installed. * * * 
-
-Comprehensive test
-~~~~~~~~~~~~~~~~~~
-
-To run the entire testing suite (more code coverage), run::
-
-    axondeepseg_test --full
-
-If all tests pass, AxonDeepSeg was installed succesfully.
+      .. NOTE ::
+         - AxonDeepSeg is only compatible with Python 3.11.x and 3.12.x. Ensure your Napari installation uses a compatible Python version.
+         - For any issues related to Napari installation, please reach out to the Napari community via their `GitHub issues <https://github.com/napari/napari/issues>`__.
 
 Graphical User Interface (GUI)
 -----------------------------------------
@@ -226,7 +229,7 @@ Launch Napari ::
            ads_napari
 
 In Napari, do the following:
-- Click on ``Plugins -> ADS plugin (napari-ads)``
+- Click on ``Plugins -> ADS (AxonDeepSeg)``
 
 In the :ref:`manual-correction-label` section, we provide a short tutorial describing how to use the AxonDeepSeg plugin for Napari.
 
@@ -238,6 +241,8 @@ In the :ref:`manual-correction-label` section, we provide a short tutorial descr
 Software Development with AxonDeepSeg
 -----------------------------------------
 
+Software development with AxonDeepSeg requires an :ref:`installation via git <install-git>`.
+
 To develop code in the AxonDeepSeg software package and use it in a python shell, and to run the full test suite, you'll need to first activate your virtual environment::
 
     ads_activate
@@ -247,8 +252,7 @@ To develop code in the AxonDeepSeg software package and use it in a python shell
 
        conda deactivate
 
-If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open Jupyter notebook from within an activated virtual environment. 
-
+If using AxonDeepSeg in a Jupyter Notebook, you'll need to ensure that the virtual environment's kernel is selected, or open Jupyter notebook from within an activated virtual environment.
 
 Existing models
 ===============
@@ -261,19 +265,15 @@ For each model, a *light* and/or *ensemble* version is available. *Light* models
 
 Here are the details of all the models currently supported by AxonDeepSeg:
 
-* **generalist** model (*model_seg_generalist*): Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data. For more information, please visit the `generalist model repository <https://github.com/axondeepseg/model_seg_generalist>`__.
-* **dedicated-SEM** model (*model_seg_rat_axon-myelin_SEM*): Axon and myelin segmentation model trained on Scanning Electron Microscopy data. For more information, please visit the `SEM model repository <https://github.com/axondeepseg/default-SEM-model>`__.
-* **dedicated-BF** (bright-field) model (*model_seg_generalist_BF*): Axon and myelin segmentation model trained on Bright-Field data. For more information, please visit the `BF release of the generalist model repository <https://github.com/axondeepseg/model_seg_generalist/releases/tag/r20240416>`__.
-* **dedicated-CARS** (Coherent Anti-Stokes Raman Scattering) model (*model_seg_rat_axon-myelin_CARS*): Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data. For more information, please visit the `CARS model repository <https://github.com/axondeepseg/default-CARS-model>`__.
-* **unmyelinated-TEM** model (*model_seg_unmyelinated_sickkids*): Unmyelinated axon segmentation model trained on TEM data. For more information, please visit the `unmyelinated-TEM model repository <https://github.com/axondeepseg/model_seg_unmyelinated_tem>`__.
+.. include:: _generated_models.rst
 
-To download these models, you must first have AxonDeepSeg installed. Afterwards, run::
-
-    download_model -m <model name> -t <model type>
-
-where <model name> is the full name (e.g. *model_seg_rat_axon-myelin_SEM*) and <model type> is either *light* or *ensemble*. To view available models and their details, run::
+To download these models, you must first have AxonDeepSeg installed. Afterwards, use the following command to list available models::
 
     download_model --list
+
+Then, use the following to download a specific model::
+
+    download_model -m <model name>
 
 Using AxonDeepSeg
 =================
@@ -642,9 +642,9 @@ Morphometrics aggregation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 This feature aggregates morphometrics per subject. It is useful when you have multiple images per subject and you want to compute statistics per subject. 
 
-To use this feature, need to have done the following:
+To use this feature, you need to have done the following:
 
-1. Segment all the images of interest using AxonDeepSeg using the **axondeepseg** command.
+1. Segment all the images of interest with AxonDeepSeg using the **axondeepseg** command.
 2. Compute the morphometrics of all the images using the **axondeepseg_morphometrics** command. Make sure that the morphometrics files are named with the same prefix as the image name (e.g. **image_axon_morphometrics.xlsx** for **image.png**).
 3. Have the following folder structure::
 
@@ -753,7 +753,7 @@ Through Napari Plugin
 
 The QA report can be generated directly from the AxonDeepSeg Napari plugin:
 
-1. **Open napari and the AxonDeepSeg plugin**.
+1. **Open Napari and the AxonDeepSeg plugin**.
 2. **Load your image**.
 3. **Load your mask or generate a segmentation** using the plugin.
 4. **Generate a Morphometrics file** using the plugin.
@@ -866,11 +866,11 @@ Open image and mask
 ~~~~~~~~~~~~~~~~~~~
 
 * Open Napari by entering `ads_napari` in the terminal.
-* Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS plugin (napari-ads)
+* Load the AxonDeepSeg plugin using the Napari toolbar: Plugins -> ADS (AxonDeepSeg)
 * Load the microscopy image using the Napari toolbar: File -> Open file(s)
 * If no segmentation masks already exists:
    * Choose one of AxonDeepSeg's default models in the dropdown menu "Select the model"
-   * Then click on the Apply ADS model button
+   * Then click on the "Segment image" button
 * If a segmentation masks already exists:
    * Click on the "Load mask" button and select the image with the suffix "_seg-axonmyelin"
 * After a mask is loaded or generated, the axon (blue) and myelin (red) layers will be overlayed on top of the histology image.
@@ -906,7 +906,7 @@ Modify the mask
 
    * **Paint brush** |brush|: Add pixels to the mask.
       * The size of the paint brush is determined by the "brush size" option in the "layer list" panel.
-   * **Eraser** |eraser|: Remove pizels from the mask.
+   * **Eraser** |eraser|: Remove pixels from the mask.
       *  The size of the eraser is also determined by the "brush size" option in the "layer list" panel.
    * **Bucket tool** |bucket|: Fills a closed area of the mask with the values of that same mask.
 
@@ -941,7 +941,7 @@ Show axon metrics
 .. note::
    To use this feature, the image must have been loaded after the plugin, and the mask must have been loaded or generated. Lastly, the image layer must be selected.
 
-* The "Show axon metrics" button in the AxonDeepSeg plugin (right panel) can be used to pview some key metrics of a clicked axon.
+* The "Show axon metrics" button in the AxonDeepSeg plugin (right panel) can be used to view some key metrics of a clicked axon.
 * After activated, ALT/OPTION-click on the axon you want to view the metrics of. A pop-up window will show the metrics of the clicked axon at the bottom right of the image viewer.
 * To deactivate the "Toggle axon removal" mode, click on the button again.
 
@@ -961,21 +961,22 @@ GIMP software
 * If you are making correction on an existing segmentation mask, note that when you launch a segmentation, in the folder output, you will also find the axon and myelin masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). You can then manually correct the myelin mask and create a corrected axon+myelin mask.
 * For a detailed procedure, please consult the following link: `Manual labelling with GIMP <https://docs.google.com/document/d/10E6gzMP6BNGJ_7Y5PkDFmum34U-IcbMi8AvRruhIzvM/edit>`__.
 
-Training Models
-===============
+Running the testing suite
+=========================
 
-If the current models available in AxonDeepSeg do not perform sufficiently well with your dataset or for your appliucations and you are interested in training a model for AxonDeepSeg for your specific dataset, please reach out to the AxonDeepSeg to schedule a video-call to discuss more.
+Developers are encouraged to run the testing suite in the terminal, and develop relevant tests as needed.
 
-.. NOTE :: To get more information on how our current models were trained, please refer to this GitHub repository: `https://github.com/axondeepseg/model_seg_generalist <https://github.com/axondeepseg/model_seg_generalist>`__ 
+To run the testing suite, run the following command within the AxonDeepSeg directory::
 
+    axondeepseg_test --full
 
-Help
-====
+Alternatively, `pytest` commands can be run directly from the terminal for more control over the testing suite. For example, to run all tests, use::
 
-Whether you are a newcomer or an experienced user, we will do our best to help and reply to you as soon as possible. Of course, please be considerate and respectful of all people participating in our community interactions.
+    pytest test/
 
-* If you encounter difficulties during installation and/or while using AxonDeepSeg, or have general questions about the project, you can start a new discussion on `AxonDeepSeg GitHub Discussions forum <https://github.com/neuropoly/axondeepseg/discussions>`__. We also encourage you, once you've familiarized yourself with the software, to continue participating in the forum by helping answer future questions from fellow users!
-* If you encounter bugs during installation and/or use of AxonDeepSeg, you can open a new issue ticket on the `AxonDeepSeg GitHub issues tracker <https://github.com/neuropoly/axondeepseg/issues>`__.
+and to run a specific test file, use::
+
+    pytest test/test_segment.py
 
 Citation
 ========

@@ -10,7 +10,7 @@ import pytest
 
 import AxonDeepSeg
 from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, imwrite, get_file_extension, check_available_gpus
-from AxonDeepSeg.model_cards import get_supported_models
+from AxonDeepSeg.download_model import get_fullnames_of_downloadable_models
 from AxonDeepSeg import params
 from torch.cuda import device_count
 from PIL import Image
@@ -115,7 +115,7 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_get_existing_models_list_returns_known_models(self):
-        known_models = get_supported_models()
+        known_models = get_fullnames_of_downloadable_models()
 
         for downloaded_model in get_existing_models_list():
             assert downloaded_model in known_models

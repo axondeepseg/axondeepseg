@@ -195,7 +195,7 @@ class ADSplugin(QWidget):
             ["Select the model"] + self.available_models
         )
 
-        self.apply_model_button = QPushButton("Apply ADS model")
+        self.apply_model_button = QPushButton("Segment image")
         self.apply_model_button.clicked.connect(
             self._on_apply_model_button_click
         )
@@ -371,7 +371,7 @@ class ADSplugin(QWidget):
                     else:
                         show_info("Clicked pixel is out of bounds of the image.")
                 else:
-                    self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.")
+                    self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Segment image.")
 
         if self.show_axon_metrics_state:
             if _ALT in event.modifiers:
@@ -555,6 +555,8 @@ class ADSplugin(QWidget):
         potential_target_name = image_name_no_extension + "_grayscale.png"
         if (image_directory / potential_target_name).exists():
             image_name_no_extension += '_grayscale'
+            # Update the napari layer name to match the converted file
+            selected_layer.name = image_name_no_extension
         axon_mask_path = image_directory / (
             image_name_no_extension + str(axon_suffix)
         )
@@ -563,6 +565,9 @@ class ADSplugin(QWidget):
             image_name_no_extension + str(myelin_suffix)
         )
         myelin_mask_name = image_name_no_extension + myelin_suffix.stem
+
+        # Reset cached state when new masks are loaded
+        self._reset_cached_state()
 
         axon_data = ads_utils.imread(axon_mask_path).astype(bool)
         self.viewer.add_labels(
@@ -617,6 +622,10 @@ class ADSplugin(QWidget):
             "The mask will be associated with " + microscopy_image_layer.name
         ):
             return
+
+        # Reset cached state when new masks are loaded
+        self._reset_cached_state()
+
         img_png2D = ads_utils.imread(mask_file_path)
         # Extract the Axon mask
         axon_data = img_png2D > 200
@@ -672,7 +681,7 @@ class ADSplugin(QWidget):
         myelin_layer = self.get_myelin_layer()
 
         if (axon_layer is None) or (myelin_layer is None):
-            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\nPlease load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Segment image.\nPlease load the masks or segment the image via Segment image, and ensure that the image is selected as the active layer.")
 
             # Uncheck the button
             self.remove_axon_state = False
@@ -725,7 +734,7 @@ class ADSplugin(QWidget):
         myelin_layer = self.get_myelin_layer()
 
         if (axon_layer is None) or (myelin_layer is None):
-            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Apply ADS model.\nPlease load the masks or segment the image via Apply ADS model, and ensure that the image is selected as the active layer.")
+            self.show_info_message(f"To use this feature, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Segment image.\nPlease load the masks or segment the image via Segment image, and ensure that the image is selected as the active layer.")
             # Uncheck the button
             self.show_axon_metrics_state = False
             self.show_axon_metrics_button.setChecked(False)
@@ -1267,6 +1276,20 @@ class ADSplugin(QWidget):
             "Zaimi et al (2018): https://doi.org/10.1038/s41598-018-22181-4. \n"
             "Copyright (c) 2018 NeuroPoly (Polytechnique Montreal)"
         )
+
+    def _reset_cached_state(self):
+        """Reset all cached state variables related to the current image/mask.
+
+        This should be called when new masks are loaded to prevent state from
+        previous images from affecting operations on the new image.
+
+        Returns:
+            None
+        """
+        self.im_instance_seg = None
+        self.stats_dataframe = None
+        self.index_image_array = None
+        self.im_axonmyelin_label = None
 
 class ApplyModelThread(QtCore.QThread):
     """QThread class used to segment an image by applying a model in a separate thread.

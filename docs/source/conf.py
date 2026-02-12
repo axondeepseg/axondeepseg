@@ -19,6 +19,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('.'))  # Add this line to find _extensions module
 
 import AxonDeepSeg
 
@@ -34,7 +35,9 @@ import AxonDeepSeg
 extensions = [
 	'sphinx.ext.githubpages',
     'sphinx_tabs.tabs',
-	'recommonmark']
+	'recommonmark',
+    '_extensions.model_cards_ext',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -99,6 +102,13 @@ html_theme_options = {
 }
 html_logo = '_static/logo_ads-alpha.png'
 
+html_context = {
+    "display_github": True,
+    "github_user": "axondeepseg",
+    "github_repo": "axondeepseg",
+    "github_version": "master",
+    "conf_py_path": "/docs/source/",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
