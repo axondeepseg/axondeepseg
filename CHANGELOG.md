@@ -1,6 +1,18 @@
 Changelog
 ===============================================================================
 
+## v5.4.0 (2026-02-11)
+
+**Model download**
+- Refactoring of `model_download` command [View pull request](https://github.com/axondeepseg/axondeepseg/pull/955)
+
+**Installation**
+- Installation documentation improvement [View pull request](https://github.com/axondeepseg/axondeepseg/pull/949)
+
+**GUI**
+- Reset instance seg and database state [View pull request](https://github.com/axondeepseg/axondeepseg/pull/942)
+- Fix bug when RGB image is loaded to napari [View pull request](https://github.com/axondeepseg/axondeepseg/pull/952)
+
 ## v5.3.0 (2025-10-10)
 
 **FEATURE**
