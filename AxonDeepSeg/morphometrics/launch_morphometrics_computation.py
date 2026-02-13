@@ -13,6 +13,9 @@ from loguru import logger
 import numpy as np
 import pandas as pd
 
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = None
+
 # AxonDeepSeg imports
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
     get_axon_morphometrics,
