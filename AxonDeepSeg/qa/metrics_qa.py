@@ -3,6 +3,7 @@
 # Scientific modules imports
 import numpy as np
 import scipy
+from scipy.ndimage import center_of_mass, map_coordinates
 
 # Graphs and plots imports
 import matplotlib.pyplot as plt
@@ -19,6 +20,65 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import get_axon_morphometri
 mpl_config = Path(pathlib.Path(__file__).parent.resolve() / 'custom_matplotlibrc')
 plt.style.use(mpl_config)
 plt.rcParams["figure.figsize"] = (9,6)
+
+def _find_boundary_radius(image, center, angle_deg, threshold, max_radius=None):
+    """Find the radius to a mask boundary along a ray from center.
+
+    Casts a ray from the center outward at the given angle and finds
+    the last pixel along the ray whose interpolated value meets the threshold.
+    """
+    if max_radius is None:
+        max_radius = np.sqrt(image.shape[0]**2 + image.shape[1]**2) / 2
+
+    angle_rad = np.deg2rad(angle_deg)
+    dx = np.cos(angle_rad)
+    dy = -np.sin(angle_rad)  # negate: image y increases downward
+
+    n_samples = int(max_radius * 2)
+    distances = np.linspace(0, max_radius, n_samples)
+
+    x_samples = center[0] + distances * dx
+    y_samples = center[1] + distances * dy
+
+    coords = np.vstack([y_samples, x_samples])
+    sampled = map_coordinates(image.astype(float), coords, order=1, mode='constant', cval=0)
+
+    mask_points = sampled >= threshold
+    if not np.any(mask_points):
+        return 0.0
+
+    last_index = np.where(mask_points)[0][-1]
+    return distances[last_index]
+
+
+def _compute_angular_gratio(seg, center, n_angles=360):
+    """Compute diameter-based angular g-ratio from a seg image (255/127/0).
+
+    Returns dict with angles (0-180), d_axon, d_fiber, gratio arrays.
+    """
+    max_radius = max(seg.shape)
+    angles = np.linspace(0, 180, n_angles, endpoint=False)
+    d_axon = np.zeros(n_angles)
+    d_fiber = np.zeros(n_angles)
+
+    for i, angle in enumerate(angles):
+        r1_axon = _find_boundary_radius(seg, center, angle, threshold=200, max_radius=max_radius)
+        r2_axon = _find_boundary_radius(seg, center, angle + 180, threshold=200, max_radius=max_radius)
+        d_axon[i] = r1_axon + r2_axon
+
+        r1_fiber = _find_boundary_radius(seg, center, angle, threshold=60, max_radius=max_radius)
+        r2_fiber = _find_boundary_radius(seg, center, angle + 180, threshold=60, max_radius=max_radius)
+        d_fiber[i] = r1_fiber + r2_fiber
+
+    gratio = np.divide(d_axon, d_fiber, out=np.zeros_like(d_axon), where=d_fiber != 0)
+
+    return {
+        'angles': angles,
+        'd_axon': d_axon,
+        'd_fiber': d_fiber,
+        'gratio': gratio,
+    }
+
 
 class MetricsQA:
     def __init__(self, morphometrics_file):
@@ -211,14 +271,64 @@ class MetricsQA:
             overlay[myelin_current_mask] = [1, 0, 0, 0.5]  # Red with 50% opacity
             
             ax.imshow(overlay)
-            
+
             # Remove axes and add title
             ax.axis('off')
-            
+
             plt.tight_layout()
             plt.savefig(labeled_path, dpi=150, bbox_inches='tight')
             plt.close()
-            
+
+            # --- Angular g-ratio computation ---
+            # Build seg image: 255=axon, 127=myelin, 0=background
+            seg_crop = np.zeros(label_crop.shape, dtype=np.uint8)
+            seg_crop[axon_current_mask] = 255
+            seg_crop[myelin_current_mask] = 127
+
+            # Compute center of mass of the axon mask
+            if np.any(axon_current_mask):
+                y_cm, x_cm = center_of_mass(axon_current_mask)
+                angular_center = (x_cm, y_cm)
+            else:
+                angular_center = (seg_crop.shape[1] / 2, seg_crop.shape[0] / 2)
+
+            angular_results = _compute_angular_gratio(seg_crop, angular_center, n_angles=180)
+
+            # Plot angular diameters (polar)
+            angular_diam_path = qa_folder / f'axon_{axon_id}_angular_diameter.png'
+            fig_ad, ax_ad = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(6, 6))
+            theta = np.deg2rad(angular_results['angles'])
+            ax_ad.plot(theta, angular_results['d_axon'], label='Axon diameter', linewidth=1.5)
+            ax_ad.plot(theta, angular_results['d_fiber'], label='Fiber diameter', linewidth=1.5)
+            ax_ad.set_theta_zero_location('E')
+            ax_ad.set_theta_direction(1)
+            ax_ad.legend(loc='upper right', fontsize=9)
+            ax_ad.set_title('Diameters vs Angle', pad=15)
+            plt.tight_layout()
+            plt.savefig(angular_diam_path, dpi=150, bbox_inches='tight')
+            plt.close()
+
+            # Plot angular g-ratio
+            angular_gratio_path = qa_folder / f'axon_{axon_id}_angular_gratio.png'
+            valid_gratio = angular_results['gratio'][angular_results['gratio'] > 0]
+            fig_ag, ax_ag = plt.subplots(figsize=(6, 4))
+            ax_ag.plot(angular_results['angles'], angular_results['gratio'], linewidth=1.5)
+            if len(valid_gratio) > 0:
+                mean_ag = np.mean(valid_gratio)
+                median_ag = np.median(valid_gratio)
+                ax_ag.axhline(mean_ag, color='r', linestyle='--', label=f'Mean: {mean_ag:.3f}')
+                ax_ag.axhline(median_ag, color='g', linestyle='--', label=f'Median: {median_ag:.3f}')
+            ax_ag.set_xlabel('Angle (degrees)')
+            ax_ag.set_ylabel('G-ratio')
+            ax_ag.set_title('G-ratio vs Angle (diameter method)')
+            ax_ag.set_xlim(0, 180)
+            ax_ag.set_ylim(0, 1)
+            ax_ag.grid(True, alpha=0.3)
+            ax_ag.legend()
+            plt.tight_layout()
+            plt.savefig(angular_gratio_path, dpi=150, bbox_inches='tight')
+            plt.close()
+
             axon_data.append({
                 'id': axon_id,
                 'diameter': float(axon_diameter),
@@ -231,7 +341,9 @@ class MetricsQA:
                 'thicknessRank': f"{thickness_rank} of {n_axons}",
                 'gratioRank': f"{gratio_rank} of {n_axons}",
                 'imagePath': str(original_path.name),
-                'labeledImagePath': str(labeled_path.name)
+                'labeledImagePath': str(labeled_path.name),
+                'angularDiameterPath': str(angular_diam_path.name),
+                'angularGratioPath': str(angular_gratio_path.name),
             })
         
         return axon_data

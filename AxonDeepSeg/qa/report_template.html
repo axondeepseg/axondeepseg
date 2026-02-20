@@ -849,6 +849,18 @@
           </div>
         </div>
 
+        <!-- Angular analysis plots -->
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+          <div style="flex: 1; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; text-align: center;">
+            <div class="card-header">Angular Diameters</div>
+            <img id="angularDiameterImage" src="" alt="Angular diameter plot" style="max-width: 100%; display: block; margin: 0 auto;" />
+          </div>
+          <div style="flex: 1; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; text-align: center;">
+            <div class="card-header">Angular G-ratio</div>
+            <img id="angularGratioImage" src="" alt="Angular g-ratio plot" style="max-width: 100%; display: block; margin: 0 auto;" />
+          </div>
+        </div>
+
         <div class="axon-stats">
           <div class="axon-stat-item">
             <div class="axon-stat-label">Axon ID</div>
@@ -1009,6 +1021,14 @@
           // Update image - use labeled image by default
           if (axon.labeledImagePath) {
             document.getElementById("axonImage").src = axon.labeledImagePath;
+          }
+
+          // Update angular analysis plots
+          if (axon.angularDiameterPath) {
+            document.getElementById("angularDiameterImage").src = axon.angularDiameterPath;
+          }
+          if (axon.angularGratioPath) {
+            document.getElementById("angularGratioImage").src = axon.angularGratioPath;
           }
 
           // Update stats
