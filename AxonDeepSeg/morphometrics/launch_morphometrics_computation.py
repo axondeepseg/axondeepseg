@@ -349,12 +349,11 @@ def main(argv=None):
                     ads.imwrite(outfile_basename + str(instance_suffix), instance_map, use_16bit=True)
 
                 # Generate diameter overlay if requested (only for myelinated mode with circle axon shape)
-                if diameter_overlay_flag and morphometrics_mode == 'myelinated' and axon_shape == "circle":
+                if diameter_overlay_flag and morphometrics_mode == 'myelinated':
                     overlay_array = postprocessing.generate_diameter_overlay(
                         stats_dataframe, 
                         pred_axon.shape, 
-                        psm, 
-                        axon_shape=axon_shape
+                        psm
                     )
                     if overlay_array is not None:
                         overlay_fname = outfile_basename + str(diameter_overlay_suffix)

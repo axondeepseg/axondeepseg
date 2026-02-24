@@ -174,21 +174,18 @@ def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
     myelin_array = (im_myelin & new_axonmyelin_array).astype(np.uint8)
     return axon_array, myelin_array
 
-def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size, axon_shape="circle"):
+def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size):
     """
     Generate an overlay image with concentric circles for each axon.
     Each axon has two circles: one with axon_diameter and one with axon_diameter + 2*myelin_thickness.
     
+    This function is agnostic to axon shape and works for both circle and ellipse modes.
+    
     :param stats_dataframe: DataFrame containing axon morphometrics with columns: x0, y0, axon_diam, myelin_thickness
     :param image_shape: Tuple (height, width) of the image
     :param pixel_size: Pixel size in micrometers (used to convert diameters back to pixels)
-    :param axon_shape: str: only works for "circle" mode (will skip for ellipse)
     :return: numpy array with white circle outlines on black background
     """    
-
-    if axon_shape != "circle":
-        logger.debug("Diameter overlay only supported for axon_shape='circle'. Skipping.")
-        return None
     
     overlay = Image.new('L', (image_shape[1], image_shape[0]), color=0)
     draw = ImageDraw.Draw(overlay)
