@@ -4,9 +4,13 @@ Tools for the FSLeyes plugin and other functions for manipulating masks.
 from skimage import measure, morphology, segmentation
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
-from AxonDeepSeg import params
-import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
+import pandas as pd
 from matplotlib import font_manager
+from loguru import logger
+
+from AxonDeepSeg import params
+from AxonDeepSeg.ads_utils import convert_path, imwrite
+import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 
 def get_centroids(mask):
     """
@@ -169,3 +173,90 @@ def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
     axon_array = (im_axon & new_axonmyelin_array).astype(np.uint8)
     myelin_array = (im_myelin & new_axonmyelin_array).astype(np.uint8)
     return axon_array, myelin_array
+
+def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size, axon_shape="circle"):
+    """
+    Generate an overlay image with concentric circles for each axon.
+    Each axon has two circles: one with axon_diameter and one with axon_diameter + 2*myelin_thickness.
+    
+    :param stats_dataframe: DataFrame containing axon morphometrics with columns: x0, y0, axon_diam, myelin_thickness
+    :param image_shape: Tuple (height, width) of the image
+    :param pixel_size: Pixel size in micrometers (used to convert diameters back to pixels)
+    :param axon_shape: str: only works for "circle" mode (will skip for ellipse)
+    :return: numpy array with white circle outlines on black background
+    """    
+
+    if axon_shape != "circle":
+        logger.debug("Diameter overlay only supported for axon_shape='circle'. Skipping.")
+        return None
+    
+    overlay = Image.new('L', (image_shape[1], image_shape[0]), color=0)
+    draw = ImageDraw.Draw(overlay)
+    line_width = 2
+    
+    compute_bbox = lambda center_x, center_y, radius: (
+        center_x - radius,
+        center_y - radius,
+        center_x + radius,
+        center_y + radius
+    )
+    
+    # Iterate through each axon in the stats_dataframe
+    for idx, row in stats_dataframe.iterrows():
+        x0 = row['x0']
+        y0 = row['y0']
+        
+        if pd.isna(x0) or pd.isna(y0) or pd.isna(row['axon_diam']):
+            logger.debug(f"Skipping axon {idx}: missing centroid or axon_diam")
+            continue
+        
+        # Convert from micrometers to pixels
+        axon_diam_px = row['axon_diam'] / pixel_size
+        axon_radius_px = axon_diam_px / 2
+        
+        # Draw inner circle (axon diameter)
+        x_min, y_min, x_max, y_max = compute_bbox(x0, y0, axon_radius_px)
+        
+        draw.ellipse(
+            [(x_min, y_min), (x_max, y_max)],
+            outline=255,
+            width=line_width
+        )
+        
+        # Draw outer circle (axon + myelin) if myelin_thickness is available
+        if not pd.isna(row['myelin_thickness']):
+            myelin_thickness_px = row['myelin_thickness'] / pixel_size
+            outer_radius_px = axon_radius_px + myelin_thickness_px
+            
+            x_min_outer, y_min_outer, x_max_outer, y_max_outer = compute_bbox(x0, y0, outer_radius_px)
+            
+            draw.ellipse(
+                [(x_min_outer, y_min_outer), (x_max_outer, y_max_outer)],
+                outline=255,
+                width=line_width
+            )
+    
+    # Convert PIL image to numpy array
+    overlay_array = np.array(overlay, dtype=np.uint8)
+    
+    return overlay_array
+
+def save_diameter_overlay(overlay_array, output_path):
+    """
+    Save the diameter overlay array as an image file.
+    
+    :param overlay_array: numpy array with the diameter overlay
+    :param output_path: Path where the overlay image will be saved
+    :return: None
+    """    
+    if overlay_array is None:
+        logger.debug("Diameter overlay is None, skipping save.")
+        return
+    
+    output_path = convert_path(output_path)
+    
+    try:
+        imwrite(str(output_path), overlay_array)
+        logger.info(f"Diameter overlay saved to {output_path}")
+    except Exception as e:
+        logger.warning(f"Could not save diameter overlay to {output_path}: {e}")
