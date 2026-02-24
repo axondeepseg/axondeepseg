@@ -12,6 +12,7 @@ unmyelinated_index_suffix = Path('_uaxon_index.png')    # Colored unmyelinated a
 nnunet_suffix=Path('_seg-nnunet.png')                   # nnunet raw segmentation suffix
 nerve_suffix=Path('_seg-nerve.png')                     # nerve segmentation suffix
 nerve_index_suffix=Path('_nerve_index.png')             # Colored nerve segmentation + the index image
+diameter_overlay_suffix = Path('_diameter_overlay.png') # Diameter overlay with concentric circles
 
 side_effect_suffixes = tuple(
     [
