@@ -353,7 +353,8 @@ def main(argv=None):
                     overlay_array = postprocessing.generate_diameter_overlay(
                         stats_dataframe, 
                         pred_axon.shape, 
-                        psm
+                        psm,
+                        axon_shape=axon_shape
                     )
                     if overlay_array is not None:
                         overlay_fname = outfile_basename + str(diameter_overlay_suffix)

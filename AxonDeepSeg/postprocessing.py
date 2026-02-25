@@ -174,24 +174,57 @@ def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
     myelin_array = (im_myelin & new_axonmyelin_array).astype(np.uint8)
     return axon_array, myelin_array
 
-def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size):
+def generate_rotated_ellipse_points(center_x, center_y, semi_major, semi_minor, orientation, num_points=64):
     """
-    Generate an overlay image with concentric circles for each axon.
-    Each axon has two circles: one with axon_diameter and one with axon_diameter + 2*myelin_thickness.
+    Generate points along a rotated ellipse perimeter.
     
-    This function is agnostic to axon shape and works for both circle and ellipse modes.
+    :param center_x: X coordinate of ellipse center
+    :param center_y: Y coordinate of ellipse center
+    :param semi_major: Semi-major axis length
+    :param semi_minor: Semi-minor axis length
+    :param orientation: Rotation angle in radians (0th axis to major axis)
+    :param num_points: Number of points to sample along the ellipse
+    :return: List of (x, y) tuples representing the ellipse perimeter
+    """
+    points = []
+    orientation = -orientation  # Negate to match image coordinate system
+    for i in range(num_points):
+        t = 2 * np.pi * i / num_points
+        # Unrotated ellipse points
+        x_ellipse = semi_minor * np.cos(t)
+        y_ellipse = semi_major * np.sin(t)
+        
+        # Rotate by orientation angle
+        cos_angle = np.cos(orientation)
+        sin_angle = np.sin(orientation)
+        x_rotated = x_ellipse * cos_angle - y_ellipse * sin_angle
+        y_rotated = x_ellipse * sin_angle + y_ellipse * cos_angle
+        
+        # Translate to center
+        x_final = center_x + x_rotated
+        y_final = center_y + y_rotated
+        points.append((x_final, y_final))
     
-    :param stats_dataframe: DataFrame containing axon morphometrics with columns: x0, y0, axon_diam, myelin_thickness
+    return points
+
+def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size, line_width=2, axon_shape='circle'):
+    """
+    Generate an overlay image with concentric circles or ellipses for each axon.
+    For circles: each axon has two circles: one with axon_diameter and one with axon_diameter + 2*myelin_thickness.
+    For ellipses: each axon has two ellipses with correct major/minor axes and orientation based on eccentricity and orientation columns.
+    
+    :param stats_dataframe: DataFrame containing axon morphometrics with columns: x0, y0, axon_diam, myelin_thickness, eccentricity, orientation
     :param image_shape: Tuple (height, width) of the image
     :param pixel_size: Pixel size in micrometers (used to convert diameters back to pixels)
-    :return: numpy array with white circle outlines on black background
+    :param line_width: Width of the outlines in pixels (default: 2)
+    :param axon_shape: Shape of the axons ('circle' or 'ellipse').
+    :return: numpy array with white circle/ellipse outlines on black background
     """    
     
     overlay = Image.new('L', (image_shape[1], image_shape[0]), color=0)
     draw = ImageDraw.Draw(overlay)
-    line_width = 2
     
-    compute_bbox = lambda center_x, center_y, radius: (
+    compute_bbox_circle = lambda center_x, center_y, radius: (
         center_x - radius,
         center_y - radius,
         center_x + radius,
@@ -211,27 +244,60 @@ def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size):
         axon_diam_px = row['axon_diam'] / pixel_size
         axon_radius_px = axon_diam_px / 2
         
-        # Draw inner circle (axon diameter)
-        x_min, y_min, x_max, y_max = compute_bbox(x0, y0, axon_radius_px)
-        
-        draw.ellipse(
-            [(x_min, y_min), (x_max, y_max)],
-            outline=255,
-            width=line_width
-        )
-        
-        # Draw outer circle (axon + myelin) if myelin_thickness is available
-        if not pd.isna(row['myelin_thickness']):
-            myelin_thickness_px = row['myelin_thickness'] / pixel_size
-            outer_radius_px = axon_radius_px + myelin_thickness_px
+        if axon_shape == 'ellipse':
+            # For ellipse mode, axon_diam is the minor axis
+            # Calculate semi-major axis from eccentricity using: a = b / sqrt(1 - e^2)
+            if pd.isna(row['eccentricity']):
+                logger.debug(f"Skipping axon {idx}: missing eccentricity for ellipse mode")
+                continue
             
-            x_min_outer, y_min_outer, x_max_outer, y_max_outer = compute_bbox(x0, y0, outer_radius_px)
+            e = row['eccentricity']
+            # Avoid division by zero and invalid eccentricity values
+            if e >= 1.0 or e < 0.0:
+                logger.debug(f"Skipping axon {idx}: invalid eccentricity value {e}")
+                continue
+            
+            # Get orientation if available, default to 0
+            orientation = row['orientation'] if not pd.isna(row['orientation']) else 0.0
+            
+            semi_minor_axis_px = axon_radius_px  # This is b
+            # Calculate semi-major axis: a = b / sqrt(1 - e**2)
+            semi_major_axis_px = semi_minor_axis_px / np.sqrt(1 - e**2)
+            
+            # Generate and draw inner ellipse (axon)
+            inner_points = generate_rotated_ellipse_points(x0, y0, semi_major_axis_px, semi_minor_axis_px, orientation)
+            draw.polygon(inner_points, outline=255, width=line_width)
+            
+            # Draw outer ellipse (axon + myelin) if myelin_thickness is available
+            if not pd.isna(row['myelin_thickness']):
+                myelin_thickness_px = row['myelin_thickness'] / pixel_size
+                outer_semi_major_px = semi_major_axis_px + myelin_thickness_px
+                outer_semi_minor_px = semi_minor_axis_px + myelin_thickness_px
+                
+                outer_points = generate_rotated_ellipse_points(x0, y0, outer_semi_major_px, outer_semi_minor_px, orientation)
+                draw.polygon(outer_points, outline=255, width=line_width)
+        elif axon_shape == 'circle':
+            # Draw inner circle (axon diameter)
+            x_min, y_min, x_max, y_max = compute_bbox_circle(x0, y0, axon_radius_px)
             
             draw.ellipse(
-                [(x_min_outer, y_min_outer), (x_max_outer, y_max_outer)],
+                [(x_min, y_min), (x_max, y_max)],
                 outline=255,
                 width=line_width
             )
+            
+            # Draw outer circle (axon + myelin) if myelin_thickness is available
+            if not pd.isna(row['myelin_thickness']):
+                myelin_thickness_px = row['myelin_thickness'] / pixel_size
+                outer_radius_px = axon_radius_px + myelin_thickness_px
+                
+                x_min_outer, y_min_outer, x_max_outer, y_max_outer = compute_bbox_circle(x0, y0, outer_radius_px)
+                
+                draw.ellipse(
+                    [(x_min_outer, y_min_outer), (x_max_outer, y_max_outer)],
+                    outline=255,
+                    width=line_width
+                )
     
     # Convert PIL image to numpy array
     overlay_array = np.array(overlay, dtype=np.uint8)
