@@ -202,6 +202,8 @@ def get_axon_morphometrics(
         if im_myelin is not None:
             # Declare the statistics to add for the myelin and add them to the stats dictionary
             myelin_stats = {
+                'fiber_orientation': np.nan,
+                'fiber_eccentricity': np.nan,
                 'gratio': np.nan,
                 'myelin_thickness': np.nan,
                 'myelin_area': np.nan,
@@ -216,6 +218,9 @@ def get_axon_morphometrics(
             if label_axonmyelin:
                 idx = axonmyelin_labels_list.index(label_axonmyelin)
                 prop_axonmyelin = axonmyelin_objects[idx]
+
+                stats['fiber_orientation'] = prop_axonmyelin.orientation
+                stats['fiber_eccentricity'] = prop_axonmyelin.eccentricity
 
                 _res1 = evaluate_myelin_thickness_in_px(prop_axon, prop_axonmyelin, axon_shape)
                 myelin_thickness = pixelsize * _res1

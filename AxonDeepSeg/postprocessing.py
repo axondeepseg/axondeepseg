@@ -213,7 +213,7 @@ def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size, line_wid
     For circles: each axon has two circles: one with axon_diameter and one with axon_diameter + 2*myelin_thickness.
     For ellipses: each axon has two ellipses with correct major/minor axes and orientation based on eccentricity and orientation columns.
     
-    :param stats_dataframe: DataFrame containing axon morphometrics with columns: x0, y0, axon_diam, myelin_thickness, eccentricity, orientation
+    :param stats_dataframe: DataFrame containing axon morphometrics with columns: x0, y0, axon_diam, myelin_thickness, eccentricity, orientation, fiber_eccentricity, fiber_orientation
     :param image_shape: Tuple (height, width) of the image
     :param pixel_size: Pixel size in micrometers (used to convert diameters back to pixels)
     :param line_width: Width of the outlines in pixels (default: 2)
@@ -271,10 +271,24 @@ def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size, line_wid
             # Draw outer ellipse (axon + myelin) if myelin_thickness is available
             if not pd.isna(row['myelin_thickness']):
                 myelin_thickness_px = row['myelin_thickness'] / pixel_size
-                outer_semi_major_px = semi_major_axis_px + myelin_thickness_px
                 outer_semi_minor_px = semi_minor_axis_px + myelin_thickness_px
                 
-                outer_points = generate_rotated_ellipse_points(x0, y0, outer_semi_major_px, outer_semi_minor_px, orientation)
+                # Use fiber_eccentricity and fiber_orientation if available
+                if not pd.isna(row['fiber_eccentricity']) and not pd.isna(row['fiber_orientation']):
+                    fiber_e = row['fiber_eccentricity']
+                    # Avoid division by zero and invalid eccentricity values
+                    if 0.0 <= fiber_e < 1.0:
+                        # Calculate semi-major axis from fiber eccentricity and outer minor axis
+                        outer_semi_major_px = outer_semi_minor_px / np.sqrt(1 - fiber_e**2)
+                        fiber_orientation = row['fiber_orientation']
+                    else:
+                        logger.debug(f"Skipping outer ellipse for axon {idx}: invalid fiber_eccentricity value {fiber_e}")
+                        continue
+                else:
+                    logger.debug(f"Skipping outer ellipse for axon {idx}: missing fiber_eccentricity or fiber_orientation")
+                    continue
+                
+                outer_points = generate_rotated_ellipse_points(x0, y0, outer_semi_major_px, outer_semi_minor_px, fiber_orientation)
                 draw.polygon(outer_points, outline=255, width=line_width)
         elif axon_shape == 'circle':
             # Draw inner circle (axon diameter)
