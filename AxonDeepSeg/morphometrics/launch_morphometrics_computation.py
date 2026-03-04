@@ -167,8 +167,8 @@ def main(argv=None):
         '-d', '--diameter-overlay',
         required=False,
         action='store_true',
-        help='Generate a diameter overlay image with concentric circles for each axon. \n'
-            +'Only works for myelinated axons with axon_shape="circle". \n'
+        help='Generate a diameter overlay image with concentric shapes for each axon. \n'
+            +'Works for myelinated axons with axon_shape="circle" or axon_shape="ellipse". \n'
             +'Skipped for unmyelinated and nerve modes.'
     )
 
@@ -348,7 +348,7 @@ def main(argv=None):
                     instance_map = instance_map.astype(np.uint16)
                     ads.imwrite(outfile_basename + str(instance_suffix), instance_map, use_16bit=True)
 
-                # Generate diameter overlay if requested (only for myelinated mode with circle axon shape)
+                # Generate diameter overlay if requested (myelinated mode only, circle or ellipse axon shape)
                 if diameter_overlay_flag and morphometrics_mode == 'myelinated':
                     overlay_array = postprocessing.generate_diameter_overlay(
                         stats_dataframe, 
