@@ -248,7 +248,7 @@ class ADSplugin(QWidget):
         qa_report_button.setToolTip("Generate quality assurance report for the segmentation.\nRequires morphometrics to be computed.")
         self.qa_report_button = qa_report_button
 
-        settings_menu_button = QPushButton("Settingss")
+        settings_menu_button = QPushButton("Settings")
         settings_menu_button.clicked.connect(self._on_settings_menu_clicked)
 
         self.setLayout(QVBoxLayout())
@@ -1075,6 +1075,21 @@ class ADSplugin(QWidget):
         )
         
         self.im_axonmyelin_label = im_axonmyelin_label
+
+        if self.settings.axon_shape == 'ellipse':
+            overlay_array = postprocessing.generate_diameter_overlay(
+                stats_dataframe=stats_dataframe,
+                image_shape=axon_data.shape,
+                pixel_size=pixel_size,
+                axon_shape=self.settings.axon_shape,
+            )
+            self.viewer.add_image(
+                data=np.array(overlay_array),
+                rgb=False,
+                colormap="yellow",
+                blending="additive",
+                name="diameter overlay",
+            )
 
         return True
 
