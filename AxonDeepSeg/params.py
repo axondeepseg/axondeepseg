@@ -91,4 +91,8 @@ column_names_ordered = [
     Morphometrics_Column_Name('myelin_thickness','myelin_thickness (um)'),
     Morphometrics_Column_Name('axonmyelin_area','axonmyelin_area (um^2)'),
     Morphometrics_Column_Name('axonmyelin_perimeter','axonmyelin_perimeter (um)'),
+    Morphometrics_Column_Name('eccentricity'),
+    Morphometrics_Column_Name('orientation'),
+    Morphometrics_Column_Name('fiber_eccentricity'),
+    Morphometrics_Column_Name('fiber_orientation'),
 ]
