@@ -210,10 +210,42 @@ def generate_rotated_ellipse_points(center_x, center_y, semi_major, semi_minor, 
 def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size, line_width=2, axon_shape='circle'):
     """
     Generate an overlay image with concentric circles or ellipses for each axon.
-    For circles: each axon has two circles: one with axon_diameter and one with axon_diameter + 2*myelin_thickness.
-    For ellipses: each axon has two ellipses with correct major/minor axes and orientation based on eccentricity and orientation columns.
-    
-    :param stats_dataframe: DataFrame containing axon morphometrics with columns: x0, y0, axon_diam, myelin_thickness, eccentricity, orientation, fiber_eccentricity, fiber_orientation
+
+    For circles: each axon has two circles: one with axon_diameter and one with
+    axon_diameter + 2*myelin_thickness.
+
+    For ellipses: the ellipses are NOT fits to the actual mask perimeters. They are
+    reconstructed from second-moment (inertia-tensor) statistics computed by
+    skimage.measure.regionprops (see
+    https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.regionprops).
+
+    For the inner (axon) ellipse:
+      1. regionprops computes minor_axis_length, eccentricity (e), and orientation for the axon
+         mask. These are stored as axon_diam (= minor_axis_length) and eccentricity in the
+         morphometrics dataframe.
+      2. The semi-minor axis b = axon_diam / 2.
+      3. The semi-major axis a is derived via a = b / sqrt(1 - e^2), which follows from
+         skimage's definition e = c/a (focal distance over major axis length) combined with the
+         ellipse identity c^2 = a^2 - b^2.
+      4. The inner ellipse is drawn using b, a, and orientation.
+
+    For the outer (fiber) ellipse:
+      1. regionprops separately computes minor_axis_length, eccentricity, and orientation for
+         the full axonmyelin mask. fiber_eccentricity and fiber_orientation are stored in the
+         morphometrics dataframe. myelin_thickness is derived as
+         (axonmyelin.minor_axis_length - axon.minor_axis_length) / 2.
+      2. NOTE: in ellipse mode, myelin_thickness represents the thickness along the minor axis
+         only — NOT a mean or uniform perimeter thickness. A true uniform myelin sheath on an
+         elliptical axon would not produce an elliptical outer boundary, so the two ellipses are
+         modeled independently from their respective regionprops. For circles, the ring is
+         uniform and this distinction does not apply.
+      3. The outer semi-minor axis = b + myelin_thickness (= axonmyelin.minor_axis_length / 2).
+      4. The outer semi-major axis is derived from fiber_eccentricity using the same formula,
+         and the ellipse is drawn using fiber_orientation.
+
+    :param stats_dataframe: DataFrame containing axon morphometrics with columns:
+        x0, y0, axon_diam, myelin_thickness, eccentricity, orientation,
+        fiber_eccentricity, fiber_orientation
     :param image_shape: Tuple (height, width) of the image
     :param pixel_size: Pixel size in micrometers (used to convert diameters back to pixels)
     :param line_width: Width of the outlines in pixels (default: 2)
