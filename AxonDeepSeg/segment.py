@@ -24,7 +24,7 @@ from AxonDeepSeg.apply_model import axon_segmentation
 from AxonDeepSeg.ads_utils import (convert_path, get_file_extension, 
                                    get_imshape, imwrite, imread)
 import AxonDeepSeg.ads_utils
-from AxonDeepSeg.params import valid_extensions, side_effect_suffixes
+from AxonDeepSeg.params import valid_extensions, generated_file_suffixes
 
 # Global variables
 DEFAULT_MODEL_NAME = "model_seg_generalist_light"
@@ -205,7 +205,7 @@ def segment_folder(
     img_files = [
         file for file in path_folder.iterdir() 
             if (file.suffix.lower() in valid_extensions)
-            and not str(file).endswith(side_effect_suffixes)
+            and not str(file).endswith(generated_file_suffixes)
     ]
 
     segment_images(img_files, path_model, gpu_id, verbosity_level)
