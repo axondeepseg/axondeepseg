@@ -1097,3 +1097,34 @@ class TestCore(object):
             nerve_morph = json.load(f)
         assert 'total_axon_density' in nerve_morph.keys()
         assert 'axon_density' in nerve_morph['fascicle_areas']['0'].keys()
+
+    # --------------circle vs ellipse mode equivalence tests-------------- #
+    @pytest.mark.unit
+    def test_get_axon_morphometrics_axon_diam_equals_for_circle_and_ellipse_mode_when_shape_is_circle(self):
+        """For a perfect circle axon, circle and ellipse modes must report the same axon_diam."""
+        image_sim = SimulateAxons()
+        image_sim.generate_axon(axon_radius=40, center=[100, 100], gratio=0.7, plane_angle=0)
+
+        pred = image_sim.image
+        pred_axon = pred > 200
+        pred_myelin = np.logical_and(pred >= 50, pred <= 200)
+
+        df_circle = get_axon_morphometrics(pred_axon, im_myelin=pred_myelin, pixel_size=1.0, axon_shape='circle')
+        df_ellipse = get_axon_morphometrics(pred_axon, im_myelin=pred_myelin, pixel_size=1.0, axon_shape='ellipse')
+
+        assert df_circle['axon_diam'][0] == pytest.approx(df_ellipse['axon_diam'][0], rel=0.02)
+
+    @pytest.mark.unit
+    def test_get_axon_morphometrics_myelin_thickness_equals_for_circle_and_ellipse_mode_when_shape_is_circle(self):
+        """For a perfect circle axon, circle and ellipse modes must report the same myelin_thickness."""
+        image_sim = SimulateAxons()
+        image_sim.generate_axon(axon_radius=40, center=[100, 100], gratio=0.7, plane_angle=0)
+
+        pred = image_sim.image
+        pred_axon = pred > 200
+        pred_myelin = np.logical_and(pred >= 50, pred <= 200)
+
+        df_circle = get_axon_morphometrics(pred_axon, im_myelin=pred_myelin, pixel_size=1.0, axon_shape='circle')
+        df_ellipse = get_axon_morphometrics(pred_axon, im_myelin=pred_myelin, pixel_size=1.0, axon_shape='ellipse')
+
+        assert df_circle['myelin_thickness'][0] == pytest.approx(df_ellipse['myelin_thickness'][0], rel=0.02)

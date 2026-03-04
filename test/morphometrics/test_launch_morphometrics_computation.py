@@ -13,9 +13,9 @@ import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.launch_morphometrics_computation import launch_morphometrics_computation
 from AxonDeepSeg.morphometrics.compute_morphometrics import load_axon_morphometrics
 from AxonDeepSeg.params import (
-    axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix, 
+    axonmyelin_suffix, axon_suffix, myelin_suffix, morph_suffix,
     index_suffix, axonmyelin_index_suffix, instance_suffix, instance_im_suffix,
-    unmyelinated_suffix, unmyelinated_morph_suffix,
+    unmyelinated_suffix, unmyelinated_morph_suffix, diameter_overlay_suffix,
 )
 
 
@@ -58,6 +58,10 @@ class TestCore(object):
             (self.nerve_test_file.parent / 'image_nerve_index.png').unlink()
         if (self.nerve_test_file.parent / 'image_nerve_morphometrics.json').exists():
             (self.nerve_test_file.parent / 'image_nerve_morphometrics.json').unlink()
+
+        overlay_path = self.dataPath / f'image{diameter_overlay_suffix}'
+        if overlay_path.exists():
+            overlay_path.unlink()
 
     # --------------launch_morphometrics_computation tests-------------- #
     @pytest.mark.unit
@@ -381,6 +385,32 @@ class TestCore(object):
         assert output_nerve_morphometrics.exists()
         assert output_nerve_index.exists()
         assert output_nerve_morphometrics.read_text() == expected.read_text()
+
+    @pytest.mark.integration
+    def test_main_cli_creates_diameter_overlay_in_circle_mode(self):
+        pathImg = self.dataPath / 'image.png'
+        overlay_path = self.dataPath / f'image{diameter_overlay_suffix}'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(
+                ["-i", str(pathImg), "-a", "circle", "-d"]
+            )
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+        assert overlay_path.exists(), f"Expected diameter overlay at {overlay_path}"
+
+    @pytest.mark.integration
+    def test_main_cli_creates_diameter_overlay_in_ellipse_mode(self):
+        pathImg = self.dataPath / 'image.png'
+        overlay_path = self.dataPath / f'image{diameter_overlay_suffix}'
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AxonDeepSeg.morphometrics.launch_morphometrics_computation.main(
+                ["-i", str(pathImg), "-a", "ellipse", "-d"]
+            )
+
+        assert (pytest_wrapped_e.type == SystemExit) and (pytest_wrapped_e.value.code == 0)
+        assert overlay_path.exists(), f"Expected diameter overlay at {overlay_path}"
 
     @pytest.mark.integration
     def test_main_cli_throws_error_if_nerve_mode_without_axon_mask(self):
