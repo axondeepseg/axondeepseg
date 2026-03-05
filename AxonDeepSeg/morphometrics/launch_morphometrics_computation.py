@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 
 # AxonDeepSeg imports
+import AxonDeepSeg
+from AxonDeepSeg.ads_utils import convert_path
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
     get_axon_morphometrics,
     save_axon_morphometrics,
@@ -26,17 +28,16 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
     compute_axon_density
 )
 import AxonDeepSeg.ads_utils as ads
+from AxonDeepSeg import postprocessing, params
 from AxonDeepSeg.params import (
     axon_suffix, myelin_suffix, axonmyelin_suffix,
     index_suffix, axonmyelin_index_suffix,
     morph_suffix, unmyelinated_morph_suffix, 
     instance_im_suffix, instance_suffix, 
     unmyelinated_suffix, unmyelinated_index_suffix,
-    nerve_suffix, nerve_morph_suffix, nerve_index_suffix
+    nerve_suffix, nerve_morph_suffix, nerve_index_suffix,
+    diameter_overlay_suffix
 )
-from AxonDeepSeg.ads_utils import convert_path
-from AxonDeepSeg import postprocessing, params
-import AxonDeepSeg
 
 
 def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle"):
@@ -162,6 +163,14 @@ def main(argv=None):
         help='Toggles morphometrics for nerve sections. This will only process masks with \n'
             +f'the "{nerve_suffix}" suffix, and compute axon density inside the nerve area.'
     )
+    ap.add_argument(
+        '-d', '--diameter-overlay',
+        required=False,
+        action='store_true',
+        help='Generate a diameter overlay image with concentric shapes for each axon. \n'
+            +'Works for myelinated axons with axon_shape="circle" or axon_shape="ellipse". \n'
+            +'Skipped for unmyelinated and nerve modes.'
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -171,6 +180,7 @@ def main(argv=None):
     colorization_flag = args["colorize"]
     unmyelinated_mode = args["unmyelinated"]
     nerve_mode = args["nerve"]
+    diameter_overlay_flag = args["diameter_overlay"]
     if nerve_mode:
         morphometrics_mode = 'nerve'
         target_suffix = nerve_suffix
@@ -337,6 +347,18 @@ def main(argv=None):
                     ads.imwrite(outfile_basename + str(instance_im_suffix), instance_seg_image)
                     instance_map = instance_map.astype(np.uint16)
                     ads.imwrite(outfile_basename + str(instance_suffix), instance_map, use_16bit=True)
+
+                # Generate diameter overlay if requested (myelinated mode only, circle or ellipse axon shape)
+                if diameter_overlay_flag and morphometrics_mode == 'myelinated':
+                    overlay_array = postprocessing.generate_diameter_overlay(
+                        stats_dataframe, 
+                        pred_axon.shape, 
+                        psm,
+                        axon_shape=axon_shape
+                    )
+                    if overlay_array is not None:
+                        overlay_fname = outfile_basename + str(diameter_overlay_suffix)
+                        postprocessing.save_diameter_overlay(overlay_array, overlay_fname)
 
                 logger.info("Morphometrics file: {} has been saved in the {} directory",
                     morph_filename,

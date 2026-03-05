@@ -12,16 +12,7 @@ unmyelinated_index_suffix = Path('_uaxon_index.png')    # Colored unmyelinated a
 nnunet_suffix=Path('_seg-nnunet.png')                   # nnunet raw segmentation suffix
 nerve_suffix=Path('_seg-nerve.png')                     # nerve segmentation suffix
 nerve_index_suffix=Path('_nerve_index.png')             # Colored nerve segmentation + the index image
-
-side_effect_suffixes = tuple(
-    [
-        str(s) for s in [
-            axonmyelin_suffix, axon_suffix, myelin_suffix, index_suffix, 
-            axonmyelin_index_suffix, unmyelinated_suffix, unmyelinated_index_suffix,
-            nnunet_suffix
-        ]
-    ]
-)
+diameter_overlay_suffix = Path('_diameter_overlay.png') # Diameter overlay with concentric circles
 
 # morphometrics file suffix name
 morph_suffix = Path('axon_morphometrics.xlsx')
@@ -30,6 +21,14 @@ unmyelinated_morph_suffix = Path('uaxon_morphometrics.xlsx')
 nerve_morph_suffix = Path('nerve_morphometrics.json')
 instance_im_suffix = Path('_colorized.png')             # Colored instance map of the segmentation
 instance_suffix = Path('_instance-map.png')             # Raw instance map of the segmentation
+
+# All pipeline-generated file suffixes — used by segment_folder() to skip outputs when
+# batch-processing a folder. Built automatically from all module-level Path variables
+# whose names end in '_suffix', so new suffixes are included without manual updates.
+generated_file_suffixes = tuple(
+    str(v) for k, v in list(globals().items())
+    if k.endswith('_suffix') and isinstance(v, Path)
+)
 
 # aggregate morphometrics file suffix name
 agg_dir = Path('morphometrics_agg')
@@ -92,4 +91,8 @@ column_names_ordered = [
     Morphometrics_Column_Name('myelin_thickness','myelin_thickness (um)'),
     Morphometrics_Column_Name('axonmyelin_area','axonmyelin_area (um^2)'),
     Morphometrics_Column_Name('axonmyelin_perimeter','axonmyelin_perimeter (um)'),
+    Morphometrics_Column_Name('eccentricity'),
+    Morphometrics_Column_Name('orientation'),
+    Morphometrics_Column_Name('fiber_eccentricity'),
+    Morphometrics_Column_Name('fiber_orientation'),
 ]

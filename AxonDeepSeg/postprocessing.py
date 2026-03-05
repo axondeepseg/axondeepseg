@@ -4,9 +4,13 @@ Tools for the FSLeyes plugin and other functions for manipulating masks.
 from skimage import measure, morphology, segmentation
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
-from AxonDeepSeg import params
-import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
+import pandas as pd
 from matplotlib import font_manager
+from loguru import logger
+
+from AxonDeepSeg import params
+from AxonDeepSeg.ads_utils import convert_path, imwrite
+import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 
 def get_centroids(mask):
     """
@@ -169,3 +173,199 @@ def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
     axon_array = (im_axon & new_axonmyelin_array).astype(np.uint8)
     myelin_array = (im_myelin & new_axonmyelin_array).astype(np.uint8)
     return axon_array, myelin_array
+
+def generate_rotated_ellipse_points(center_x, center_y, semi_major, semi_minor, orientation, num_points=64):
+    """
+    Generate points along a rotated ellipse perimeter.
+    
+    :param center_x: X coordinate of ellipse center
+    :param center_y: Y coordinate of ellipse center
+    :param semi_major: Semi-major axis length
+    :param semi_minor: Semi-minor axis length
+    :param orientation: Rotation angle in radians (0th axis to major axis)
+    :param num_points: Number of points to sample along the ellipse
+    :return: List of (x, y) tuples representing the ellipse perimeter
+    """
+    points = []
+    orientation = -orientation  # Negate to match image coordinate system
+    for i in range(num_points):
+        t = 2 * np.pi * i / num_points
+        # Unrotated ellipse points
+        x_ellipse = semi_minor * np.cos(t)
+        y_ellipse = semi_major * np.sin(t)
+        
+        # Rotate by orientation angle
+        cos_angle = np.cos(orientation)
+        sin_angle = np.sin(orientation)
+        x_rotated = x_ellipse * cos_angle - y_ellipse * sin_angle
+        y_rotated = x_ellipse * sin_angle + y_ellipse * cos_angle
+        
+        # Translate to center
+        x_final = center_x + x_rotated
+        y_final = center_y + y_rotated
+        points.append((x_final, y_final))
+    
+    return points
+
+def generate_diameter_overlay(stats_dataframe, image_shape, pixel_size, line_width=2, axon_shape='circle'):
+    """
+    Generate an overlay image with concentric circles or ellipses for each axon.
+
+    For circles: each axon has two circles: one with axon_diameter and one with
+    axon_diameter + 2*myelin_thickness.
+
+    For ellipses: the ellipses are NOT fits to the actual mask perimeters. They are
+    reconstructed from second-moment (inertia-tensor) statistics computed by
+    skimage.measure.regionprops (see
+    https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.regionprops).
+
+    For the inner (axon) ellipse:
+      1. regionprops computes minor_axis_length, eccentricity (e), and orientation for the axon
+         mask. These are stored as axon_diam (= minor_axis_length) and eccentricity in the
+         morphometrics dataframe.
+      2. The semi-minor axis b = axon_diam / 2.
+      3. The semi-major axis a is derived via a = b / sqrt(1 - e^2), which follows from
+         skimage's definition e = c/a (focal distance over major axis length) combined with the
+         ellipse identity c^2 = a^2 - b^2.
+      4. The inner ellipse is drawn using b, a, and orientation.
+
+    For the outer (fiber) ellipse:
+      1. regionprops separately computes minor_axis_length, eccentricity, and orientation for
+         the full axonmyelin mask. fiber_eccentricity and fiber_orientation are stored in the
+         morphometrics dataframe. myelin_thickness is derived as
+         (axonmyelin.minor_axis_length - axon.minor_axis_length) / 2.
+      2. NOTE: in ellipse mode, myelin_thickness represents the thickness along the minor axis
+         only — NOT a mean or uniform perimeter thickness. A true uniform myelin sheath on an
+         elliptical axon would not produce an elliptical outer boundary, so the two ellipses are
+         modeled independently from their respective regionprops. For circles, the ring is
+         uniform and this distinction does not apply.
+      3. The outer semi-minor axis = b + myelin_thickness (= axonmyelin.minor_axis_length / 2).
+      4. The outer semi-major axis is derived from fiber_eccentricity using the same formula,
+         and the ellipse is drawn using fiber_orientation.
+
+    :param stats_dataframe: DataFrame containing axon morphometrics with columns:
+        x0, y0, axon_diam, myelin_thickness, eccentricity, orientation,
+        fiber_eccentricity, fiber_orientation
+    :param image_shape: Tuple (height, width) of the image
+    :param pixel_size: Pixel size in micrometers (used to convert diameters back to pixels)
+    :param line_width: Width of the outlines in pixels (default: 2)
+    :param axon_shape: Shape of the axons ('circle' or 'ellipse').
+    :return: numpy array with white circle/ellipse outlines on black background
+    """    
+    
+    overlay = Image.new('L', (image_shape[1], image_shape[0]), color=0)
+    draw = ImageDraw.Draw(overlay)
+    
+    compute_bbox_circle = lambda center_x, center_y, radius: (
+        center_x - radius,
+        center_y - radius,
+        center_x + radius,
+        center_y + radius
+    )
+    
+    # Iterate through each axon in the stats_dataframe
+    for idx, row in stats_dataframe.iterrows():
+        x0 = row['x0']
+        y0 = row['y0']
+        
+        if pd.isna(x0) or pd.isna(y0) or pd.isna(row['axon_diam']):
+            logger.debug(f"Skipping axon {idx}: missing centroid or axon_diam")
+            continue
+        
+        # Convert from micrometers to pixels
+        axon_diam_px = row['axon_diam'] / pixel_size
+        axon_radius_px = axon_diam_px / 2
+        
+        if axon_shape == 'ellipse':
+            # For ellipse mode, axon_diam is the minor axis
+            # Calculate semi-major axis from eccentricity using: a = b / sqrt(1 - e^2)
+            if pd.isna(row['eccentricity']):
+                logger.debug(f"Skipping axon {idx}: missing eccentricity for ellipse mode")
+                continue
+            
+            e = row['eccentricity']
+            # Avoid division by zero and invalid eccentricity values
+            if e >= 1.0 or e < 0.0:
+                logger.debug(f"Skipping axon {idx}: invalid eccentricity value {e}")
+                continue
+            
+            # Get orientation if available, default to 0
+            orientation = row['orientation'] if not pd.isna(row['orientation']) else 0.0
+            
+            semi_minor_axis_px = axon_radius_px  # This is b
+            # Calculate semi-major axis: a = b / sqrt(1 - e**2)
+            semi_major_axis_px = semi_minor_axis_px / np.sqrt(1 - e**2)
+            
+            # Generate and draw inner ellipse (axon)
+            inner_points = generate_rotated_ellipse_points(x0, y0, semi_major_axis_px, semi_minor_axis_px, orientation)
+            draw.polygon(inner_points, outline=255, width=line_width)
+            
+            # Draw outer ellipse (axon + myelin) if myelin_thickness is available
+            if not pd.isna(row['myelin_thickness']):
+                myelin_thickness_px = row['myelin_thickness'] / pixel_size
+                outer_semi_minor_px = semi_minor_axis_px + myelin_thickness_px
+                
+                # Use fiber_eccentricity and fiber_orientation if available
+                if not pd.isna(row['fiber_eccentricity']) and not pd.isna(row['fiber_orientation']):
+                    fiber_e = row['fiber_eccentricity']
+                    # Avoid division by zero and invalid eccentricity values
+                    if 0.0 <= fiber_e < 1.0:
+                        # Calculate semi-major axis from fiber eccentricity and outer minor axis
+                        outer_semi_major_px = outer_semi_minor_px / np.sqrt(1 - fiber_e**2)
+                        fiber_orientation = row['fiber_orientation']
+                    else:
+                        logger.debug(f"Skipping outer ellipse for axon {idx}: invalid fiber_eccentricity value {fiber_e}")
+                        continue
+                else:
+                    logger.debug(f"Skipping outer ellipse for axon {idx}: missing fiber_eccentricity or fiber_orientation")
+                    continue
+                
+                outer_points = generate_rotated_ellipse_points(x0, y0, outer_semi_major_px, outer_semi_minor_px, fiber_orientation)
+                draw.polygon(outer_points, outline=255, width=line_width)
+        elif axon_shape == 'circle':
+            # Draw inner circle (axon diameter)
+            x_min, y_min, x_max, y_max = compute_bbox_circle(x0, y0, axon_radius_px)
+            
+            draw.ellipse(
+                [(x_min, y_min), (x_max, y_max)],
+                outline=255,
+                width=line_width
+            )
+            
+            # Draw outer circle (axon + myelin) if myelin_thickness is available
+            if not pd.isna(row['myelin_thickness']):
+                myelin_thickness_px = row['myelin_thickness'] / pixel_size
+                outer_radius_px = axon_radius_px + myelin_thickness_px
+                
+                x_min_outer, y_min_outer, x_max_outer, y_max_outer = compute_bbox_circle(x0, y0, outer_radius_px)
+                
+                draw.ellipse(
+                    [(x_min_outer, y_min_outer), (x_max_outer, y_max_outer)],
+                    outline=255,
+                    width=line_width
+                )
+    
+    # Convert PIL image to numpy array
+    overlay_array = np.array(overlay, dtype=np.uint8)
+    
+    return overlay_array
+
+def save_diameter_overlay(overlay_array, output_path):
+    """
+    Save the diameter overlay array as an image file.
+    
+    :param overlay_array: numpy array with the diameter overlay
+    :param output_path: Path where the overlay image will be saved
+    :return: None
+    """    
+    if overlay_array is None:
+        logger.debug("Diameter overlay is None, skipping save.")
+        return
+    
+    output_path = convert_path(output_path)
+    
+    try:
+        imwrite(str(output_path), overlay_array)
+        logger.info(f"Diameter overlay saved to {output_path}")
+    except Exception as e:
+        logger.warning(f"Could not save diameter overlay to {output_path}: {e}")

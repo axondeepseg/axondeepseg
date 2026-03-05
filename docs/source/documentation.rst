@@ -374,6 +374,8 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 
 -n                  Computes morphometrics specific to **nerve sections** using the ``-n`` option. This enables analysis of axons **within nerve fascicle boundaries**, based on a segmentation mask with the suffix ``_seg-nerve.png``.
 
+-d                  Generate a diameter overlay image showing concentric circle or ellipse outlines for each myelinated axon (inner ring = axon boundary, outer ring = fiber boundary). Only available in myelinated mode (not compatible with ``-u`` or ``-n``). The axon shape used for the overlay matches the ``-a`` argument. Output is saved with the suffix ``_diameter_overlay.png``.
+
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
@@ -514,6 +516,29 @@ and their respective axon densities, as well as global area and total axon densi
         }
     }
     
+Diameter Overlay
+~~~~~~~~~~~~~~~~
+
+Using the ``-d`` flag generates a grayscale PNG image (``_diameter_overlay.png``) showing two concentric outlines per axon: an inner ring at the axon boundary and an outer ring at the fiber (axon+myelin) boundary. This is available for myelinated axons only and works with both ``-a circle`` and ``-a ellipse``.
+
+.. code-block:: bash
+
+   axondeepseg_morphometrics -i <IMAGE_PATH> -d
+
+.. code-block:: bash
+
+   axondeepseg_morphometrics -i <IMAGE_PATH> -a ellipse -d
+
+**Implementation note:** The outlines are *not* fits to the actual mask perimeters. They are ellipses (or circles) reconstructed from the second-moment (inertia-tensor) statistics of each region, as computed by ``skimage.measure.regionprops`` (centroid, eccentricity, orientation).
+
+For ``-a circle``: the inner radius is ``axon_diam / 2`` and the outer radius is ``axon_diam / 2 + myelin_thickness``. ``myelin_thickness`` is the true uniform ring thickness (difference in equivalent radii).
+
+For ``-a ellipse``: ``axon_diam`` is ``minor_axis_length`` from regionprops. The inner ellipse semi-minor axis is ``b = axon_diam / 2`` and the semi-major axis is derived as ``a = b / sqrt(1 - e²)`` from the axon eccentricity. The outer ellipse is derived independently from the axonmyelin regionprops (``fiber_eccentricity``, ``fiber_orientation``).
+
+.. warning::
+
+   In ellipse mode, ``myelin_thickness`` is defined as the difference in semi-minor axes between the axonmyelin and axon regions: ``(axonmyelin.minor_axis_length - axon.minor_axis_length) / 2``. This is the myelin thickness **along the minor axis only** — it is not a mean or uniform perimeter thickness. A true uniform sheath on an elliptical axon does not produce an elliptical outer boundary, so the inner and outer ellipses are modeled independently from their respective regionprops statistics. For circles (``-a circle``), the ring is uniform and ``myelin_thickness`` has its conventional meaning.
+
 Axon Shape: Circle vs Ellipse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -585,6 +610,10 @@ By default for axon shape, that is, `circle`, the equivalent diameter is used. F
      - Eccentricity of the ellipse that has the same second-moments as the axon region.
    * - orientation
      - Angle between the 0th axis (rows) and the major axis of the ellipse that has the same second moments as the axon region.
+   * - fiber_eccentricity
+     - Eccentricity of the ellipse that has the same second-moments as the axon+myelin (fiber) region.
+   * - fiber_orientation
+     - Angle between the 0th axis (rows) and the major axis of the ellipse that has the same second moments as the axon+myelin (fiber) region.
    * - image_border_touching
      - Flag indicating if the axonmyelin objects touches the image border
    * - bbox_min_y
