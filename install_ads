@@ -643,7 +643,7 @@ fi
 ## (spawn() lost its dry_run kwarg). Conda always has pre-built binaries.
 if [[ "$OS" == "osx" ]] && [[ "$PROCESSOR" == "x86_64" ]]; then
   print info "Pre-installing numba via conda (Intel macOS workaround)..."
-  "$CONDA_DIR"/bin/conda install -y -p "$ADS_DIR/$CONDA_DIR/envs/venv_ads" -c conda-forge numba
+  "$CONDA_DIR"/bin/conda install -y -p "$ADS_DIR/$CONDA_DIR/envs/venv_ads" -c conda-forge "numba" "numpy<2"
 fi
 
 ## Install the axondeepseg into the Conda venv
