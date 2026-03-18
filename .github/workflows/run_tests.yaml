@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - master
+      - mb/macintel
 
   # Trigger current workflow on PR from ANY branch
   pull_request:
@@ -48,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ "ubuntu-latest", "macos-latest", "windows-latest"]
+        os: [ "ubuntu-latest", "macos-latest", "macos-26-intel", "windows-latest"]
         python-version: [ ">=3.11" ]
 
     # Main steps for the test to be reproduced across OS x Python
