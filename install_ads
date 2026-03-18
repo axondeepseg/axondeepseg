@@ -637,6 +637,15 @@ fi
 # Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
 "$CONDA_DIR"/envs/venv_ads/bin/python -m pip install -U "pip!=21.2.*"
 
+## Pre-install numba/llvmlite via conda on Intel macOS only.
+## PyPI has no pre-built llvmlite wheels for x86_64 on newer macOS versions,
+## so pip falls back to a source build that breaks with setuptools>=70.1
+## (spawn() lost its dry_run kwarg). Conda always has pre-built binaries.
+if [[ "$OS" == "osx" ]] && [[ "$PROCESSOR" == "x86_64" ]]; then
+  print info "Pre-installing numba via conda (Intel macOS workaround)..."
+  "$CONDA_DIR"/bin/conda install -y -p "$ADS_DIR/$CONDA_DIR/envs/venv_ads" -c conda-forge numba
+fi
+
 ## Install the axondeepseg into the Conda venv
 print info "Installing Python dependencies..."
 # We use "--ignore-installed" to preserve the version of `certifi` installed into the conda
