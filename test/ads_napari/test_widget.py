@@ -174,7 +174,7 @@ class TestCore(object):
             # Do nothing
     
             # Assert that image_loaded_after_plugin_start state changed
-            with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message", return_value=True):
                 QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
             
             assert wdg.remove_axon_state == False
@@ -204,7 +204,7 @@ class TestCore(object):
             wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
     
             # Assert that image_loaded_after_plugin_start state changed
-            with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message", return_value=True):
                 QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
             
             assert wdg.remove_axon_state == False
@@ -248,7 +248,7 @@ class TestCore(object):
             assert wdg.im_axonmyelin_label is None
     
             ## Simulate Remove Axons button click
-            with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message", return_value=True):
                 # Simulate a button click
                 QTest.mouseClick(wdg.remove_axons_button, Qt.LeftButton)
     
@@ -282,7 +282,7 @@ class TestCore(object):
             wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
     
             # Assert that image_loaded_after_plugin_start state changed
-            with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message", return_value=True):
                 QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
             
             assert wdg.show_axon_metrics_state == False
@@ -327,7 +327,7 @@ class TestCore(object):
             assert wdg.im_axonmyelin_label is None
     
             ## Simulate Show Axon Morphometris button click
-            with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message", return_value=True):
                 with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, True)):
                     with tempfile.NamedTemporaryFile(prefix='Morphometrics', suffix='.csv', delete=False) as temp_file:
                         with patch("PyQt5.QtWidgets.QFileDialog.getSaveFileName", return_value=(temp_file.name, None)):
@@ -379,7 +379,7 @@ class TestCore(object):
             assert wdg.im_axonmyelin_label is None
     
             ## Simulate Show Axon Morphometris button click
-            with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message", return_value=True):
                 with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, False)):
                         # Simulate a button click
                         QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
