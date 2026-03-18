@@ -328,9 +328,9 @@ class TestCore(object):
     
             ## Simulate Show Axon Morphometris button click
             with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message", return_value=True):
-                with patch("PyQt5.QtWidgets.QInputDialog.getDouble", return_value=(0.07, True)):
+                with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.get_pixel_size_with_prompt", return_value=0.07):
                     with tempfile.NamedTemporaryFile(prefix='Morphometrics', suffix='.csv', delete=False) as temp_file:
-                        with patch("PyQt5.QtWidgets.QFileDialog.getSaveFileName", return_value=(temp_file.name, None)):
+                        with patch("AxonDeepSeg.ads_napari._widget.QFileDialog.getSaveFileName", return_value=(temp_file.name, None)):
                             # Simulate a button click
                             QTest.mouseClick(wdg.show_axon_metrics_button, Qt.LeftButton)
 
