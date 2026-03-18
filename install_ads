@@ -637,19 +637,16 @@ fi
 # Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
 "$CONDA_DIR"/envs/venv_ads/bin/python -m pip install -U "pip!=21.2.*"
 
-## Pre-install numba/llvmlite via conda on Intel macOS only.
-## PyPI has no pre-built llvmlite wheels for x86_64 on newer macOS versions,
-## so pip falls back to a source build that breaks with setuptools>=70.1
-## (spawn() lost its dry_run kwarg). Conda always has pre-built binaries.
 ## Pre-install numba/llvmlite via pip on Intel macOS.
 ## llvmlite 0.46+ has no PyPI wheel for x86_64 (last was 0.45.1).
 ## numba 0.62.1 is the last version requiring llvmlite<0.46.
-## Both have x86_64 PyPI wheels and satisfy napari's numba>=0.57.1.
-## We use pip (not conda) so pip's resolver sees them as already installed.
+## We use a constraints file to prevent pip from upgrading them during
+## the main install (napari's numba>=0.57.1 would otherwise pull 0.64.0).
 if [[ "$OS" == "osx" ]] && [[ "$PROCESSOR" == "x86_64" ]]; then
   print info "Pre-installing numba/llvmlite via pip (Intel macOS workaround)..."
   SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install \
     "llvmlite==0.45.1" "numba==0.62.1"
+  printf 'llvmlite==0.45.1\nnumba==0.62.1\n' > /tmp/ads_intel_mac_constraints.txt
 fi
 
 ## Install the axondeepseg into the Conda venv
@@ -659,7 +656,20 @@ print info "Installing Python dependencies..."
 # We use 'SYSTEM_VERSION_COMPAT=0' to tell pip to report macOS 11 instead of macOS 10.16
 # This is necessary in order to install 'macosx_11_0' wheels. See also:
 # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
-SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . --ignore-installed certifi && print info "Installing axondeepseg..." &&  "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . || die "Failed running pip install: $?"
+print info "Installing Python dependencies..."
+if [[ "$OS" == "osx" ]] && [[ "$PROCESSOR" == "x86_64" ]]; then
+  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . \
+    -c /tmp/ads_intel_mac_constraints.txt && \
+    print info "Installing axondeepseg..." && \
+    "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . \
+      -c /tmp/ads_intel_mac_constraints.txt || die "Failed running pip install: $?"
+else
+  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . \
+    --ignore-installed certifi && \
+    print info "Installing axondeepseg..." && \
+    "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . || die "Failed running pip install: $?"
+fi
+
 print info "All requirements installed!"
 
 ## Create launchers for Python scripts
