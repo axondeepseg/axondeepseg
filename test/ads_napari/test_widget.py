@@ -415,7 +415,7 @@ class TestCore(object):
             wdg = ADSplugin(viewer)
             
             ## User loads image
-            with patch("PyQt5.QtWidgets.QMessageBox.exec", return_value=QMessageBox.Ok):
+            with patch("AxonDeepSeg.ads_napari._widget.ADSplugin.show_info_message", return_value=True):
                 viewer.add_image(large_image, rgb=False)
     
             wdg._on_layer_added(ImageLoadedEvent(imread(self.image_path)))
