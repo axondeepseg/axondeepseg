@@ -32,7 +32,6 @@ env:
   # (TravisCI quietly defined this on all their platforms, but we have to give it manually on GithubCI.)
   DEBIAN_FRONTEND: 'noninteractive'
   VISPY_GL_BACKEND: 'osmesa'
-  QT_QPA_PLATFORM: offscreen
 
 jobs:
   ultra_matrix_test:
