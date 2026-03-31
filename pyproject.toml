@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=63,<81", "wheel", "setuptools_scm"]
+requires = ["setuptools>=63", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -44,7 +44,7 @@ dependencies =[
     "jupyter",
     "openpyxl",
     "qtconsole<5.4.2",
-    "napari[all]<0.7.0",
+    "napari[pyqt5,optional-base,bermuda]<0.7.0",
     "acvl_utils!=0.2.1",
     "nnunetv2==2.2.1",
     "loguru",
