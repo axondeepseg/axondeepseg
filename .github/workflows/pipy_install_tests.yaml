@@ -71,7 +71,7 @@ jobs:
 
       # Step 3: Full PyTest
       - name: Test with pytest (Unix)
-        if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest' && matrix.python-version == '3.11') | (matrix.os == 'macos-26-intel' && matrix.python-version == '3.11') }}
+        if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest' && matrix.python-version == '3.11') || (matrix.os == 'macos-26-intel' && matrix.python-version == '3.11') }}
         run: |
 
           git pull --all
