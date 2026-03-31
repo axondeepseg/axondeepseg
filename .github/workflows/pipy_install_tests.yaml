@@ -74,10 +74,6 @@ jobs:
         if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest' && matrix.python-version == '3.11') || (matrix.os == 'macos-26-intel' && matrix.python-version == '3.11') }}
         run: |
 
-          git pull --all
-          
-          git checkout $( git tag | tail -1)
-
           rm -rf ./AxonDeepSeg/
 
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
@@ -95,9 +91,6 @@ jobs:
         if: runner.os == 'Windows'
         shell: cmd
         run: |
-
-          for /f %%i in ('git tag') do set LATEST_TAG=%%i
-          git checkout %LATEST_TAG%
 
           rmdir ./AxonDeepSeg/
 
