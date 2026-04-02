@@ -72,15 +72,31 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
 
     return output_dir
 
+def format_pixel_size(pixel_size) -> str:
+    '''
+    Format pixel size value(s) for display.
+    If a list, show the average and all individual values.
+    If a single value, show it directly.
+    '''
+    if isinstance(pixel_size, list):
+        avg = round(sum(pixel_size) / len(pixel_size), 5)
+        values_str = ', '.join(str(v) for v in pixel_size)
+        return f'{avg} µm/px (avg of: {values_str})'
+    return f'{pixel_size} µm/px'
+
+
 def print_available_models(model_dict: dict):
     '''
     Print all available models for download.
     '''
     logger.info("Printing available models:")
     for model in model_dict:
+        pixel_size = model_dict[model].get('pixel_size')
+        pixel_size_str = format_pixel_size(pixel_size) if pixel_size is not None else 'N/A'
         to_print = [
             ["Model name", model],
             ["Nb of classes", model_dict[model]['n_classes']],
+            ["Pixel size", pixel_size_str],
             ["Model info", model_dict[model]['model-info']],
             ["Training data", model_dict[model]['training-data']],
         ]

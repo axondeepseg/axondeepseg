@@ -2,6 +2,7 @@ generalist:
   full_name: model_seg_generalist
   task: myelinated-axon-segmentation
   n_classes: 2
+  pixel_size: [0.00236, 0.1, 0.225, 0.1, 0.211, 0.226]
   model-info: Multi-domain axon and myelin segmentation model trained on TEM, SEM, BF and CARS data.
   training-data: Training data consists of an aggregation of 6 datasets covering multiple microscopy modalities, species and pathologies. For a detailed description of the 6 datasets used for training, see https://arxiv.org/abs/2409.11552
   weights:
@@ -12,6 +13,7 @@ dedicated-BF:
   full_name: model_seg_generalist_BF
   task: myelinated-axon-segmentation
   n_classes: 2
+  pixel_size: [0.1, 0.211, 0.226]
   model-info: Axon and myelin segmentation model trained on Bright-Field data.
   training-data: 3 different BF datasets were aggregated. For a detailed description of the dataset used for training, see https://arxiv.org/abs/2409.11552.
   weights:
@@ -22,6 +24,7 @@ dedicated-SEM:
   full_name: model_seg_rat_axon-myelin_SEM
   task: myelinated-axon-segmentation
   n_classes: 2
+  pixel_size: 0.13
   model-info: Axon and myelin segmentation model trained on Scanning Electron Microscopy data.
   training-data: 14.8 Mpx of SEM rat spinal cord images with a resolution of 0.13 um/px. The dataset used for this model is publicly available. See https://github.com/axondeepseg/data_axondeepseg_sem.
   weights:
@@ -32,6 +35,7 @@ dedicated-CARS:
   full_name: model_seg_rat_axon-myelin_CARS
   task: myelinated-axon-segmentation
   n_classes: 2
+  pixel_size: 0.225
   model-info: Axon and myelin segmentation model trained on Coherent Anti-Stokes Raman Scattering data.
   training-data: 2.6 Mpx of CARS rat spinal cord images, resolution of 0.225 um/px. The training set is relatively small so the model is not as robust as the generalist model.
   weights:
@@ -42,6 +46,7 @@ unmyelinated-TEM:
   full_name: model_seg_unmyelinated_stanford
   task: unmyelinated-axon-segmentation, myelinated-axon-segmentation
   n_classes: 5
+  pixel_size: 0.00493
   model-info: Segments both myelinated and unmyelinated axons on TEM data. Also segments oligodendrocytes  (nuclei and cytoplasmic processes).
   training-data: Available at https://dandiarchive.org/dandiset/001350?pos=4
   weights:
