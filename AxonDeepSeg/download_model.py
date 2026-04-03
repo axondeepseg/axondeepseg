@@ -75,13 +75,12 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
 def format_pixel_size(pixel_size) -> str:
     '''
     Format pixel size value(s) for display.
-    If a list, show the average and all individual values.
+    If a list, show all individual values.
     If a single value, show it directly.
     '''
     if isinstance(pixel_size, list):
-        avg = round(sum(pixel_size) / len(pixel_size), 5)
         values_str = ', '.join(str(v) for v in pixel_size)
-        return f'{avg} µm/px (avg of: {values_str})'
+        return f'{values_str} µm/px'
     return f'{pixel_size} µm/px'
 
 
