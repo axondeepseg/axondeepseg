@@ -1,5 +1,15 @@
 Changelog
 ===============================================================================
+## v5.5.0 (2026-03-31)
+
+**FEATURE**
+- Diameter approximation overlay [View pull request](https://github.com/axondeepseg/axondeepseg/pull/961)
+
+**INSTALLATION**
+- Pin napari to <0.7.0 [View pull request](https://github.com/axondeepseg/axondeepseg/pull/968)
+
+**TESTING**
+- Napari dependency fix, add Mac x86_64 to test matrix & refactor some QT tests for compatibility [View pull request](https://github.com/axondeepseg/axondeepseg/pull/966)
 
 ## v5.4.0 (2026-02-11)
 
