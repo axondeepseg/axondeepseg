@@ -561,9 +561,8 @@ Ellipse
 
 **Studies using Ellipse as axon shape:**
 
-* Payne et al: https://pubmed.ncbi.nlm.nih.gov/21381867/
-* Payne et al: https://pubmed.ncbi.nlm.nih.gov/22879411/
-* Fehily et al: https://pubmed.ncbi.nlm.nih.gov/30702755/
+* Bartmeyer et al: https://pubmed.ncbi.nlm.nih.gov/33542368/
+* Ruthig et al: https://pubmed.ncbi.nlm.nih.gov/40834043/
 
 
 .. NOTE :: In the literature, both equivalent diameter and ellipse minor axis are used to compute the morphometrics. 
