@@ -2,12 +2,14 @@ from pathlib import Path
 import os
 import numpy as np
 import torch
+from PIL import Image
 from loguru import logger
 from typing import List, Literal, NoReturn
 
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.merge_masks import merge_masks
 from AxonDeepSeg import ads_utils
+from AxonDeepSeg.ads_utils import _LARGE_IMAGE_PIXEL_LIMIT
 from AxonDeepSeg.params import nnunet_suffix, intensity
 
 os.environ['nnUNet_raw'] = 'UNDEFINED'
@@ -118,6 +120,7 @@ def axon_segmentation(
                     model_type: Literal['light', 'ensemble']='light',
                     gpu_id: int=-1,
                     verbosity_level: int=0,
+                    allow_large_images: bool=False,
                     ) -> NoReturn:
     '''
     Segment images by applying a nnU-Net pretrained model.
@@ -136,6 +139,12 @@ def axon_segmentation(
     verbosity_level : int, optional
         Level of verbosity, by default 0.
     '''
+    # Raise PIL's pixel limit before nnUNet spawns its workers so that large images
+    # can be read during preprocessing. On systems using fork-based multiprocessing
+    # (Linux), workers inherit this setting from the parent process.
+    if allow_large_images:
+        Image.MAX_IMAGE_PIXELS = _LARGE_IMAGE_PIXEL_LIMIT
+
     # find all available folds
     folds_avail = find_folds(path_model, model_type)
 
