@@ -140,10 +140,12 @@ def axon_segmentation(
         Level of verbosity, by default 0.
     '''
     # Raise PIL's pixel limit before nnUNet spawns its workers so that large images
-    # can be read during preprocessing. On systems using fork-based multiprocessing
-    # (Linux), workers inherit this setting from the parent process.
+    # can be read during preprocessing. On Linux (fork), workers inherit the parent's
+    # module state. On macOS (spawn), workers start fresh but inherit env vars — the
+    # ads_pil_patch.pth hook in site-packages checks this var at startup.
     if allow_large_images:
         Image.MAX_IMAGE_PIXELS = _LARGE_IMAGE_PIXEL_LIMIT
+        os.environ["ADS_ALLOW_LARGE_IMAGES"] = "1"
 
     # find all available folds
     folds_avail = find_folds(path_model, model_type)
@@ -177,6 +179,9 @@ def axon_segmentation(
         save_probabilities=False,
         overwrite=True,
     )
+
+    # Clean up env var so it doesn't leak to unrelated subprocesses later
+    os.environ.pop("ADS_ALLOW_LARGE_IMAGES", None)
 
     output_structure = predictor.dataset_json['labels']
     output_classes = sorted(list(output_structure.keys()))

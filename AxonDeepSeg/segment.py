@@ -166,6 +166,8 @@ def segment_images(
             logger.error(f"File {path_img} does not exist.")
             sys.exit(2)
     path_images_sanitized = prepare_inputs(path_images, fileformat, n_channels, allow_large_images=allow_large_images)
+    if path_images_sanitized is None:
+        return
 
     axon_segmentation(
         path_inputs=path_images_sanitized,
