@@ -108,7 +108,18 @@ jobs:
           CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads
           pytest.exe ./test/ -v --cov AxonDeepSeg/ --cov-report=lcov
       # Step 4: Submnit to coveralls
+      # The coverallsapp/github-action installs the reporter via Homebrew on macOS,
+      # which is currently broken on macos-26-intel (Crystal 1.20 vs coveralls formula).
+      # For that runner we download the prebuilt darwin binary directly.
+      - name: Submit to coveralls (macOS Intel)
+        if: matrix.os == 'macos-26-intel'
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        run: |
+          curl -sL https://github.com/coverallsapp/coverage-reporter/releases/latest/download/coveralls-darwin.tar.gz | tar -xz
+          ./coveralls report --parallel --flag-name="${{ matrix.os }}" coverage.lcov
       - name: Submit to coveralls
+        if: matrix.os != 'macos-26-intel'
         uses: coverallsapp/github-action@v2
         with:
           flag-name: ${{ matrix.os }}
