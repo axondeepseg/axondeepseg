@@ -13,10 +13,15 @@ from requests.packages.urllib3.util import Retry
 from tqdm import tqdm
 import imageio
 import numpy as np
+from PIL import Image
 from loguru import logger
 
 from AxonDeepSeg.params import valid_extensions
 import re
+
+# Raised pixel limit for large scientific images (e.g. TEM whole-slide acquisitions).
+# PIL's default is ~178M pixels; 1B pixels accommodates most microscopy use cases.
+_LARGE_IMAGE_PIXEL_LIMIT = 1_000_000_000
 
 def download_data(url_data):
     """ Downloads and extracts zip files from the web.
@@ -97,14 +102,14 @@ def convert_path(object_path):
         else:
             raise TypeError('Paths, folder names, and filenames must be either strings or pathlib.Path objects. object_path was type: ' + str(type(object_path)))
 
-def imread(filename, use_16bit=False):
+def imread(filename, use_16bit=False, allow_large_images=False):
     """ Read image and convert it to desired bitdepth without truncation.
     """
 
     # Convert to Path
     filename = Path(filename)
 
-    # Get list of all suffixes in file, join them into a string, and then 
+    # Get list of all suffixes in file, join them into a string, and then
     # lowercase to set the file extention to check against valid extension.
     file_ext = get_file_extension(filename)
 
@@ -113,53 +118,75 @@ def imread(filename, use_16bit=False):
                                f"supported. AxonDeepSeg supports the following "
                                f"file extensions:  '.png', '.tif', '.tiff', '.jpg' and '.jpeg'.")
 
-    props = imageio.v3.improps(filename) # new in v3 - standardized metadata
-    _img = imageio.v3.imread(filename)
+    # Check if the image exceeds PIL's decompression bomb pixel limit.
+    shape = get_imshape(filename)
+    n_pixels = shape[0] * shape[1]
+    if Image.MAX_IMAGE_PIXELS is not None and n_pixels > Image.MAX_IMAGE_PIXELS:
+        if not allow_large_images:
+            raise IOError(
+                f"'{filename.name}' has {n_pixels:,} pixels, which exceeds PIL's decompression "
+                f"bomb limit of {Image.MAX_IMAGE_PIXELS:,} pixels. Re-run with "
+                f"--allow-large-images to process it."
+            )
+        logger.warning(
+            f"'{filename.name}' has {n_pixels:,} pixels, which exceeds PIL's default "
+            f"decompression bomb limit. Processing with a raised limit of "
+            f"{_LARGE_IMAGE_PIXEL_LIMIT:,} pixels."
+        )
 
-    if _img.dtype==np.float32 or _img.dtype==np.float64:
-        if len(_img.shape) > 2:
-            raise IOError(f"Multichannel 32bit and 64bit float images are not supported. Please convert the image to 8bit or 16bit, or make a single channel image.")
+    old_limit = Image.MAX_IMAGE_PIXELS
+    if allow_large_images:
+        Image.MAX_IMAGE_PIXELS = _LARGE_IMAGE_PIXEL_LIMIT
+    try:
+        props = imageio.v3.improps(filename) # new in v3 - standardized metadata
+        _img = imageio.v3.imread(filename)
 
-    # brute force fall back to support backward compatibility 
-    if '.tif' in file_ext:
-        img = np.expand_dims(
-            imageio.v3.imread(filename, plugin='TIFF-PIL'),
-            axis=-1).astype(np.uint8)
-                
-        if len(img.shape) > 3:
+        if _img.dtype==np.float32 or _img.dtype==np.float64:
+            if len(_img.shape) > 2:
+                raise IOError(f"Multichannel 32bit and 64bit float images are not supported. Please convert the image to 8bit or 16bit, or make a single channel image.")
+
+        # brute force fall back to support backward compatibility
+        if '.tif' in file_ext:
             img = np.expand_dims(
-                imageio.v3.imread(filename, plugin='TIFF-PIL', as_gray=True),
+                imageio.v3.imread(filename, plugin='TIFF-PIL'),
                 axis=-1).astype(np.uint8)
 
-    # c.f for more details: https://github.com/ivadomed/ivadomed/pull/1297#discussion_r1267563980 and 
-    # https://github.com/ivadomed/ivadomed/pull/1297#discussion_r1267563980 
-            
-    # TIFF is a "wild" format. A few assumptions greatly simplify the code below:
-    # 1. the image is interleaved/channel-last (not planar)
-    # 2. the colorspace is one of: binary, gray, RGB, RGBA (not aliasing ones like YUV or CMYK)
-    # 3. the image is flat (not a volume or time-series)
-    # Note: All of these are trivially true for JPEG and PNG due to limitations of these formats.
+            if len(img.shape) > 3:
+                img = np.expand_dims(
+                    imageio.v3.imread(filename, plugin='TIFF-PIL', as_gray=True),
+                    axis=-1).astype(np.uint8)
 
-    # make grayscale (treats binary as 1-bit grayscale)
-    colorspace_idx = 2
-    if _img.ndim <= colorspace_idx:  # binary or gray
-        pass  # nothing to do
-    elif _img.shape[colorspace_idx] == 2:  # gray with alpha channel
-        _img = _img[:, :, 0]
-    elif _img.shape[colorspace_idx] == 3:  # RGB
-        _img = np.sum(_img * (.299, .587, .114), axis=-1)
-    else:  # RGBA
-        # discards alpha
-        _img = np.sum(_img * (.299, .587, .114, 0), axis=-1)
-    if len(_img.shape) < 3:
-        _img = np.expand_dims(_img, axis=-1)
+        # c.f for more details: https://github.com/ivadomed/ivadomed/pull/1297#discussion_r1267563980 and
+        # https://github.com/ivadomed/ivadomed/pull/1297#discussion_r1267563980
 
-    bitdepth = 16 if use_16bit else 8
-    img = imageio.core.image_as_uint(_img, bitdepth=bitdepth)
+        # TIFF is a "wild" format. A few assumptions greatly simplify the code below:
+        # 1. the image is interleaved/channel-last (not planar)
+        # 2. the colorspace is one of: binary, gray, RGB, RGBA (not aliasing ones like YUV or CMYK)
+        # 3. the image is flat (not a volume or time-series)
+        # Note: All of these are trivially true for JPEG and PNG due to limitations of these formats.
 
-    # Remove singleton dimension
-    if img.ndim == 3 and img.shape[-1] == 1:
-       img = img[:, :, 0]
+        # make grayscale (treats binary as 1-bit grayscale)
+        colorspace_idx = 2
+        if _img.ndim <= colorspace_idx:  # binary or gray
+            pass  # nothing to do
+        elif _img.shape[colorspace_idx] == 2:  # gray with alpha channel
+            _img = _img[:, :, 0]
+        elif _img.shape[colorspace_idx] == 3:  # RGB
+            _img = np.sum(_img * (.299, .587, .114), axis=-1)
+        else:  # RGBA
+            # discards alpha
+            _img = np.sum(_img * (.299, .587, .114, 0), axis=-1)
+        if len(_img.shape) < 3:
+            _img = np.expand_dims(_img, axis=-1)
+
+        bitdepth = 16 if use_16bit else 8
+        img = imageio.core.image_as_uint(_img, bitdepth=bitdepth)
+
+        # Remove singleton dimension
+        if img.ndim == 3 and img.shape[-1] == 1:
+           img = img[:, :, 0]
+    finally:
+        Image.MAX_IMAGE_PIXELS = old_limit
 
     return img
 

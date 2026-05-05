@@ -2,12 +2,14 @@ from pathlib import Path
 import os
 import numpy as np
 import torch
+from PIL import Image
 from loguru import logger
 from typing import List, Literal, NoReturn
 
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.merge_masks import merge_masks
 from AxonDeepSeg import ads_utils
+from AxonDeepSeg.ads_utils import _LARGE_IMAGE_PIXEL_LIMIT
 from AxonDeepSeg.params import nnunet_suffix, intensity
 
 os.environ['nnUNet_raw'] = 'UNDEFINED'
@@ -118,6 +120,7 @@ def axon_segmentation(
                     model_type: Literal['light', 'ensemble']='light',
                     gpu_id: int=-1,
                     verbosity_level: int=0,
+                    allow_large_images: bool=False,
                     ) -> NoReturn:
     '''
     Segment images by applying a nnU-Net pretrained model.
@@ -136,6 +139,14 @@ def axon_segmentation(
     verbosity_level : int, optional
         Level of verbosity, by default 0.
     '''
+    # Raise PIL's pixel limit before nnUNet spawns its workers so that large images
+    # can be read during preprocessing. On Linux (fork), workers inherit the parent's
+    # module state. On macOS (spawn), workers start fresh but inherit env vars — the
+    # ads_pil_patch.pth hook in site-packages checks this var at startup.
+    if allow_large_images:
+        Image.MAX_IMAGE_PIXELS = _LARGE_IMAGE_PIXEL_LIMIT
+        os.environ["ADS_ALLOW_LARGE_IMAGES"] = "1"
+
     # find all available folds
     folds_avail = find_folds(path_model, model_type)
 
@@ -168,6 +179,9 @@ def axon_segmentation(
         save_probabilities=False,
         overwrite=True,
     )
+
+    # Clean up env var so it doesn't leak to unrelated subprocesses later
+    os.environ.pop("ADS_ALLOW_LARGE_IMAGES", None)
 
     output_structure = predictor.dataset_json['labels']
     output_classes = sorted(list(output_structure.keys()))
