@@ -116,7 +116,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
         run: |
-          curl -sL https://github.com/coverallsapp/coverage-reporter/releases/latest/download/coveralls-darwin.tar.gz | tar -xz
+          curl -sL https://github.com/vtjnash/coveralls-macos-binaries/releases/latest/download/coveralls-macos-x86_64.tar.gz | tar -xz
           ./coveralls report --parallel --flag-name="${{ matrix.os }}" coverage.lcov
       - name: Submit to coveralls
         if: matrix.os != 'macos-26-intel'
