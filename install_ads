@@ -637,6 +637,7 @@ fi
 # Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3593)
 "$CONDA_DIR"/envs/venv_ads/bin/python -m pip install -U "pip!=21.2.*"
 
+
 ## Pre-install numba/llvmlite via pip on Intel macOS.
 ## llvmlite 0.46+ has no PyPI wheel for x86_64 (last was 0.45.1).
 ## numba 0.62.1 is the last version requiring llvmlite<0.46.

@@ -310,6 +310,9 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 
 --gpu-id GPU_ID     Number representing the GPU ID for segmentation if available. Default: None.
 
+--allow-large-images
+                    Allow processing images that exceed PIL's default decompression bomb pixel limit (~89 million pixels). Use this flag when segmenting very large microscopy images that would otherwise be rejected.
+
 .. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
    ::
 
