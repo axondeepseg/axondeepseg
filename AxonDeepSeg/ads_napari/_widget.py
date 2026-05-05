@@ -508,8 +508,30 @@ class ADSplugin(QWidget):
             return
         selected_layer = selected_layers.active
         image_directory = Path(selected_layer.source.path).parents[0]
-    
+
         self.image_path = Path(selected_layer.source.path)
+
+        # Check if the image exceeds PIL's default decompression bomb limit.
+        # If so, ask the user for confirmation before proceeding.
+        from PIL import Image as _PIL_Image
+        _DEFAULT_PIL_LIMIT = 89478485  # PIL's default MAX_IMAGE_PIXELS
+        n_pixels = selected_layer.data.shape[-2] * selected_layer.data.shape[-1]
+        if n_pixels > _DEFAULT_PIL_LIMIT:
+            reply = QMessageBox.question(
+                self,
+                "Large image detected",
+                f"This image has {n_pixels:,} pixels, which exceeds the standard safety limit "
+                f"({_DEFAULT_PIL_LIMIT:,} pixels).\n\n"
+                f"Processing may take a long time and use significant memory.\n\n"
+                f"Do you want to proceed?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply != QMessageBox.Yes:
+                return
+            allow_large_images = True
+        else:
+            allow_large_images = False
 
         self.apply_model_button.setEnabled(False)
         self.apply_model_thread.selected_layer = selected_layer
@@ -519,6 +541,7 @@ class ADSplugin(QWidget):
         )
         self.apply_model_thread.path_model = model_path
         self.apply_model_thread.gpu_id = self.settings.gpu_id
+        self.apply_model_thread.allow_large_images = allow_large_images
         self.show_info_message(
             "Running AI model... This can take a few seconds or minutes. Check the console/terminal for more information."
         )
@@ -1329,6 +1352,7 @@ class ApplyModelThread(QtCore.QThread):
         self.path_model = None
         self.gpu_id = -1
         self.task_finished_successfully = False
+        self.allow_large_images = False
 
     def run(self):
         """Executes the segmentation process in a separate thread on the selected image layer using the AxonDeepSeg
@@ -1344,6 +1368,7 @@ class ApplyModelThread(QtCore.QThread):
                 path_model=self.path_model,
                 gpu_id=self.gpu_id,
                 verbosity_level=3,
+                allow_large_images=self.allow_large_images,
             )
             self.task_finished_successfully = True
         except SystemExit as err:

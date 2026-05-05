@@ -65,7 +65,7 @@ def get_model_input_format(path_model: Path) -> tuple[str, int]:
     return fmt, len(channels)
 
 @logger.catch
-def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int) -> List[Path]:
+def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int, allow_large_images: bool = False) -> List[Path]:
     '''
     Verifies if the input images can be sent to axon_segmentation(). Otherwise, 
     converts and saves in expected format.
@@ -104,7 +104,7 @@ def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int) -> 
             if n_channels != 1:
                 logger.error(f'{str(target)} has {imshape[-1]} channels, expected {n_channels}.')
                 sys.exit(2)
-            im = imread(str(target))
+            im = imread(str(target), allow_large_images=allow_large_images)
             filename = target.stem
             if is_correct_shape == False:
                 logger.warning(f'{filename} will be converted to grayscale.')
@@ -125,6 +125,7 @@ def segment_images(
         path_model: Path,
         gpu_id: int=-1,
         verbosity_level: int=0,
+        allow_large_images: bool=False,
     ) -> NoReturn:
     '''
     Segment the image(s) in path_images.
@@ -164,22 +165,26 @@ def segment_images(
         if not path_img.exists():
             logger.error(f"File {path_img} does not exist.")
             sys.exit(2)
-    path_images_sanitized = prepare_inputs(path_images, fileformat, n_channels)
-    
+    path_images_sanitized = prepare_inputs(path_images, fileformat, n_channels, allow_large_images=allow_large_images)
+    if path_images_sanitized is None:
+        return
+
     axon_segmentation(
-        path_inputs=path_images_sanitized, 
-        path_model=path_model, 
+        path_inputs=path_images_sanitized,
+        path_model=path_model,
         model_type=get_model_type(path_model),
-        gpu_id=gpu_id, 
-        verbosity_level=verbosity_level
+        gpu_id=gpu_id,
+        verbosity_level=verbosity_level,
+        allow_large_images=allow_large_images,
     )
 
 @logger.catch
 def segment_folder(
-        path_folder: Path, 
+        path_folder: Path,
         path_model: Path,
         gpu_id: int=-1,
-        verbosity_level: int=0
+        verbosity_level: int=0,
+        allow_large_images: bool=False,
     ) -> NoReturn:
     '''
     Segments all images in the path_folder directory.
@@ -208,7 +213,7 @@ def segment_folder(
             and not str(file).endswith(generated_file_suffixes)
     ]
 
-    segment_images(img_files, path_model, gpu_id, verbosity_level)
+    segment_images(img_files, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
     logger.info("Folder segmentation done.")
 
 # Main loop
@@ -259,6 +264,15 @@ def main(argv=None):
         help='Number representing the GPU ID for segmentation if available. Default: None (cpu).',
         default=-1,
     )
+    ap.add_argument(
+        "--allow-large-images",
+        dest="allow_large_images",
+        required=False,
+        action='store_true',
+        default=False,
+        help='Allow segmentation of images exceeding PIL\'s default decompression bomb limit '
+             f'(~178 Mpx). Use this for large microscopy acquisitions such as whole-slide TEM images.',
+    )
     ap._action_groups.reverse()
 
     # Processing the arguments
@@ -274,6 +288,7 @@ def main(argv=None):
     verbosity_level = int(args["verbose"])
     path_target_list = [Path(p) for p in args["imgpath"]]
     path_model = Path(args["model"]) if args["model"] else DEFAULT_MODEL_PATH
+    allow_large_images = args["allow_large_images"]
 
     gpu_id = int(args["gpu_id"])
 
@@ -295,10 +310,10 @@ def main(argv=None):
     
     # perform segmentation
     if input_img_list:
-        segment_images(input_img_list, path_model, gpu_id, verbosity_level)
+        segment_images(input_img_list, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
     if input_dir_list:
         for dir_path in input_dir_list:
-            segment_folder(dir_path, path_model, gpu_id, verbosity_level)
+            segment_folder(dir_path, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
 
     sys.exit(0)
 
