@@ -271,7 +271,7 @@ def main(argv=None):
         action='store_true',
         default=False,
         help='Allow segmentation of images exceeding PIL\'s default decompression bomb limit '
-             f'(~178 Mpx). Use this for large microscopy acquisitions such as whole-slide TEM images.',
+             f'(~178 Mpx). \nUse this for large microscopy acquisitions.',
     )
     ap._action_groups.reverse()
 
