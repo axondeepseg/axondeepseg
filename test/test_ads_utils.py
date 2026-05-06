@@ -184,7 +184,10 @@ class TestCore(object):
                 image_1 = image
             else:
                 image_2 = image
-                assert np.allclose(image_1, image_2, atol=2) # In some pixels, rounding differences between float and int conversions lead to an int difference value of 1, which is why this atol was chosen.
+                # In some pixels, rounding differences between float and int 
+                # conversions lead to an int difference value of 1, which is 
+                # why this atol was chosen.
+                assert np.allclose(image_1, image_2, atol=2)
 
     # --------------imwrite tests-------------- #
     @pytest.mark.unit
