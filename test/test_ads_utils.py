@@ -7,6 +7,7 @@ import imageio
 import os
 
 import pytest
+from unittest.mock import patch
 
 import AxonDeepSeg
 from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, imwrite, get_file_extension, check_available_gpus
@@ -188,6 +189,26 @@ class TestCore(object):
                 # conversions lead to an int difference value of 1, which is 
                 # why this atol was chosen.
                 assert np.allclose(image_1, image_2, atol=2)
+
+    @pytest.mark.unit
+    def test_imread_throws_error_for_huge_image(self):
+        filename = 'image_8bit.png'
+        with patch('AxonDeepSeg.ads_utils.get_imshape') as mock_get_imshape:
+            mock_get_imshape.return_value = (10000, 10000, 1)
+
+            with pytest.raises(IOError):
+                imread(self.precision_path / filename)
+
+    @pytest.mark.unit
+    def test_imread_successful_for_huge_image_when_allow_large_images_is_true(self):
+        filename = 'image_8bit.png'
+        with patch('AxonDeepSeg.ads_utils.get_imshape') as mock_get_imshape:
+            mock_get_imshape.return_value = (10000, 10000, 1)
+
+            try:
+                imread(self.precision_path / filename, allow_large_images=True)
+            except IOError:
+                pytest.fail("imread raised IOError unexpectedly when allow_large_images is True.")
 
     # --------------imwrite tests-------------- #
     @pytest.mark.unit
