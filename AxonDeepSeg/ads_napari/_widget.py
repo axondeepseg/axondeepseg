@@ -6,6 +6,7 @@ from qtpy.QtWidgets import QApplication
 import os, sys, json
 from pathlib import Path
 import matplotlib.pyplot as plt
+import imageio.v3 as iio
 
 import AxonDeepSeg
 import AxonDeepSeg.params as config
@@ -284,6 +285,36 @@ class ADSplugin(QWidget):
 
         self.last_message = None
         self.large_image_warning_state = False
+        self._stack_label_cache = {}  # {z: im_axonmyelin_label_2d} for stack layers
+
+    def _parse_click_coords(self, layer, event):
+        """Return (is_3d, z, y, x) from a napari mouse click event.
+
+        For 2D layers, z is None and (y, x) are image pixel coordinates.
+        For 3D (stack) layers, z is the slice index and (y, x) are within-slice coordinates.
+        """
+        data_coordinates = layer.world_to_data(event.position)
+        cords = np.round(data_coordinates).astype(int)
+        if layer.data.ndim == 3:
+            return True, int(cords[0]), int(cords[1]), int(cords[2])
+        else:
+            return False, None, int(cords[0]), int(cords[1])
+
+    def _get_slice_label(self, z, axon_layer, myelin_layer):
+        """Return the watershed label array for slice z, computing and caching it on demand."""
+        if z not in self._stack_label_cache:
+            axon_data = np.array(axon_layer.data[z])
+            myelin_data = np.array(myelin_layer.data[z])
+            im_axon_label = measure.label(axon_data)
+            axon_objects = measure.regionprops(im_axon_label)
+            ind_centroid = (
+                [int(props.centroid[0]) for props in axon_objects],
+                [int(props.centroid[1]) for props in axon_objects],
+            )
+            self._stack_label_cache[z] = compute_morphs.get_watershed_segmentation(
+                axon_data, myelin_data, ind_centroid
+            )
+        return self._stack_label_cache[z]
 
     def _on_layer_added(self, event):
         """Handler for when a layer is added to the viewer.
@@ -322,58 +353,7 @@ class ADSplugin(QWidget):
         if self.remove_axon_state:
             if _CONTROL in event.modifiers:  # Command key on macOS
                 if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
-                    data_coordinates = layer.world_to_data(event.position)
-                    cords = np.round(data_coordinates).astype(int)
-
-                    # Ensure the coordinates are within the bounds of the image
-                    if 0 <= cords[0] < self.im_axonmyelin_label.shape[0] and 0 <= cords[1] < self.im_axonmyelin_label.shape[1]:
-                        # Get the RGB value at the clicked position
-                        index = self.im_axonmyelin_label[cords[0], cords[1]]
-
-                        # Get the indices for each region with the same RGB value
-                        idx = np.where(self.im_axonmyelin_label == index)
-
-                        axon_layer = self.get_axon_layer()
-                        myelin_layer = self.get_myelin_layer()
-
-                        if (axon_layer is None) or (myelin_layer is None):
-                            self.show_info_message("One or more masks missing")
-                            return
-
-                        # Check if background pixel
-                        if axon_layer.data[cords[0], cords[1]] == 0 and myelin_layer.data[cords[0], cords[1]] == 0:
-                            return
-
-                        axon_layer._save_history(
-                            (
-                                idx,
-                                np.array(axon_layer.data[idx], copy=True),
-                                0,
-                            )
-                        )
-                        axon_layer.data[idx] = 0
-                        axon_layer.refresh()
-                        
-                        myelin_layer._save_history(
-                            (
-                                idx,
-                                np.array(myelin_layer.data[idx], copy=True),
-                                0,
-                            )
-                        )
-                        myelin_layer.data[idx] = 0
-                        myelin_layer.refresh()
-
-                    else:
-                        show_info("Clicked pixel is out of bounds of the image.")
-                else:
-                    self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Segment image.")
-
-        if self.show_axon_metrics_state:
-            if _ALT in event.modifiers:
-                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
-                    data_coordinates = layer.world_to_data(event.position)
-                    cords = np.round(data_coordinates).astype(int)
+                    is_3d, z, y, x = self._parse_click_coords(layer, event)
 
                     axon_layer = self.get_axon_layer()
                     myelin_layer = self.get_myelin_layer()
@@ -381,16 +361,78 @@ class ADSplugin(QWidget):
                     if (axon_layer is None) or (myelin_layer is None):
                         self.show_info_message("One or more masks missing")
                         return
-                    
+
+                    if is_3d:
+                        h, w = layer.data.shape[1], layer.data.shape[2]
+                        in_bounds = 0 <= z < layer.data.shape[0] and 0 <= y < h and 0 <= x < w
+                        label_2d = self._get_slice_label(z, axon_layer, myelin_layer)
+                        axon_px = axon_layer.data[z, y, x]
+                        myelin_px = myelin_layer.data[z, y, x]
+                        index = label_2d[y, x]
+                        idx_2d = np.where(label_2d == index)
+                        idx = (np.full(len(idx_2d[0]), z), idx_2d[0], idx_2d[1])
+                    else:
+                        h, w = layer.data.shape[0], layer.data.shape[1]
+                        in_bounds = 0 <= y < h and 0 <= x < w
+                        if self.im_axonmyelin_label is None:
+                            show_info("Enable 'Axon removal toggle' first.")
+                            return
+                        label_2d = self.im_axonmyelin_label
+                        axon_px = axon_layer.data[y, x]
+                        myelin_px = myelin_layer.data[y, x]
+                        index = label_2d[y, x]
+                        idx = np.where(label_2d == index)
+
+                    if not in_bounds:
+                        show_info("Clicked pixel is out of bounds of the image.")
+                        return
+
+                    if axon_px == 0 and myelin_px == 0:
+                        return
+
+                    axon_layer._save_history((idx, np.array(axon_layer.data[idx], copy=True), 0))
+                    axon_layer.data[idx] = 0
+                    axon_layer.refresh()
+
+                    myelin_layer._save_history((idx, np.array(myelin_layer.data[idx], copy=True), 0))
+                    myelin_layer.data[idx] = 0
+                    myelin_layer.refresh()
+
+                else:
+                    self.show_info_message(f"To click-to-remove axons objects, the image layer must be selected and the myelin and axon masks must have been loaded or segmented via Segment image.")
+
+        if self.show_axon_metrics_state:
+            if _ALT in event.modifiers:
+                if "associated_axon_mask_name" in layer.metadata and "associated_myelin_mask_name" in layer.metadata:
+                    is_3d, z, y, x = self._parse_click_coords(layer, event)
+
+                    axon_layer = self.get_axon_layer()
+                    myelin_layer = self.get_myelin_layer()
+
+                    if (axon_layer is None) or (myelin_layer is None):
+                        self.show_info_message("One or more masks missing")
+                        return
+
+                    if is_3d:
+                        axon_px = axon_layer.data[z, y, x]
+                        myelin_px = myelin_layer.data[z, y, x]
+                    else:
+                        axon_px = axon_layer.data[y, x]
+                        myelin_px = myelin_layer.data[y, x]
+
                     # Check if background pixel
-                    if axon_layer.data[cords[0], cords[1]] == 0 and myelin_layer.data[cords[0], cords[1]] == 0:
-                        show_info("Backround pixel - no morphometrics to report")
-                        self.last_message = "Backround pixel - no morphometrics to report"
+                    if axon_px == 0 and myelin_px == 0:
+                        show_info("Background pixel - no morphometrics to report")
+                        self.last_message = "Background pixel - no morphometrics to report"
+                        return
+
+                    if is_3d:
+                        show_info("Per-slice morphometrics not yet supported for stacks. Run Compute morphometrics on a single slice.")
                         return
 
                     # Find the value of self.im_axonmyelin_label at the clicked position
-                    index = self.im_axonmyelin_label[cords[0], cords[1]]
-                    
+                    index = self.im_axonmyelin_label[y, x]
+
                     # Get the indices for each region with the same index value
                     idx = np.where(self.im_axonmyelin_label == index)
 
@@ -487,6 +529,7 @@ class ADSplugin(QWidget):
 
     def _on_apply_model_button_click(self, layer):
         """Apply the selected AxonDeepSeg model to the active layer of the viewer.
+        Supports both single 2D images and 3D TIFF stacks.
 
         Returns:
             None
@@ -494,8 +537,6 @@ class ADSplugin(QWidget):
 
         selected_layers = self.viewer.layers.selection
         selected_model = self.model_selection_combobox.currentText()
-
-
 
         if selected_model not in self.available_models:
             self.show_info_message("No model selected")
@@ -506,10 +547,28 @@ class ADSplugin(QWidget):
         if len(selected_layers) != 1:
             self.show_info_message("No single image selected")
             return
-        selected_layer = selected_layers.active
-        image_directory = Path(selected_layer.source.path).parents[0]
 
-        self.image_path = Path(selected_layer.source.path)
+        selected_layer = selected_layers.active
+        is_stack = selected_layer.data.ndim == 3
+
+        if is_stack:
+            # Save slices to a persistent folder next to the source file so
+            # outputs remain on disk after segmentation.
+            stack_path = Path(selected_layer.source.path)
+            slices_dir = stack_path.parent / (stack_path.stem + "_slices")
+            slices_dir.mkdir(exist_ok=True)
+            n_slices = selected_layer.data.shape[0]
+            slice_paths = []
+            for i in range(n_slices):
+                slice_data = np.array(selected_layer.data[i])  # materialize dask arrays
+                slice_path = slices_dir / f"slice_{i:04d}.png"
+                ads_utils.imwrite(str(slice_path), slice_data)
+                slice_paths.append(slice_path)
+            image_directory = slices_dir
+        else:
+            image_directory = Path(selected_layer.source.path).parents[0]
+            self.image_path = Path(selected_layer.source.path)
+            slice_paths = None
 
         # Check if the image exceeds PIL's default decompression bomb limit.
         # If so, ask the user for confirmation before proceeding.
@@ -536,11 +595,11 @@ class ADSplugin(QWidget):
         self.apply_model_button.setEnabled(False)
         self.apply_model_thread.selected_layer = selected_layer
         self.apply_model_thread.image_directory = image_directory
-        self.apply_model_thread.path_image = Path(
-            selected_layer.source.path
-        )
+        self.apply_model_thread.path_image = Path(selected_layer.source.path) if not is_stack else None
         self.apply_model_thread.path_model = model_path
         self.apply_model_thread.gpu_id = self.settings.gpu_id
+        self.apply_model_thread.is_stack = is_stack
+        self.apply_model_thread.slice_paths = slice_paths
         self.apply_model_thread.allow_large_images = allow_large_images
         self.show_info_message(
             "Running AI model... This can take a few seconds or minutes. Check the console/terminal for more information."
@@ -550,11 +609,9 @@ class ADSplugin(QWidget):
     def _on_model_finished_apply(self):
         """Callback function called when the apply model thread finishes.
 
-        This method gets the results of the apply model thread and updates the viewer and layer
-        metadata with the axon and myelin masks generated by the model. If the thread
-        finished successfully, the method gets the path and name of the axon and myelin masks
-        generated by the model, reads the masks from disk, and adds them to the viewer as separate
-        labels.
+        Handles both 2D single images and 3D stacks. For stacks, reads all per-slice
+        mask PNGs, stacks them into (Z, H, W) arrays, and adds them as 3D Labels layers
+        so napari's slider stays in sync with the image layer.
 
         Returns:
             None
@@ -568,44 +625,82 @@ class ADSplugin(QWidget):
             return
 
         selected_layer = self.apply_model_thread.selected_layer
-        image_directory = self.apply_model_thread.image_directory
         image_name_no_extension = selected_layer.name
-        # check if segment.prepare_inputs changed the target name
-        potential_target_name = image_name_no_extension + "_grayscale.png"
-        if (image_directory / potential_target_name).exists():
-            image_name_no_extension += '_grayscale'
-            # Update the napari layer name to match the converted file
-            selected_layer.name = image_name_no_extension
-        axon_mask_path = image_directory / (
-            image_name_no_extension + str(axon_suffix)
-        )
-        axon_mask_name = image_name_no_extension + axon_suffix.stem
-        myelin_mask_path = image_directory / (
-            image_name_no_extension + str(myelin_suffix)
-        )
-        myelin_mask_name = image_name_no_extension + myelin_suffix.stem
 
         # Reset cached state when new masks are loaded
         self._reset_cached_state()
 
-        axon_data = ads_utils.imread(axon_mask_path).astype(bool)
-        self.viewer.add_labels(
-            axon_data,
-            colormap={None: 'transparent', 1: "blue"},
-            name=axon_mask_name,
-            metadata={"associated_image_name": image_name_no_extension},
-        )
-        myelin_data = ads_utils.imread(myelin_mask_path).astype(bool)
-        self.viewer.add_labels(
-            myelin_data,
-            colormap={None: 'transparent', 1: "red"},
-            name=myelin_mask_name,
-            metadata={"associated_image_name": image_name_no_extension},
-        )
-        selected_layer.metadata["associated_axon_mask_name"] = axon_mask_name
-        selected_layer.metadata[
-            "associated_myelin_mask_name"
-        ] = myelin_mask_name
+        if self.apply_model_thread.is_stack:
+            # Stack all per-slice masks into 3D (Z, H, W) arrays
+            axon_stack = np.stack([
+                ads_utils.imread(str(p)).astype(bool)
+                for p in self.apply_model_thread.stack_axon_paths
+            ])
+            myelin_stack = np.stack([
+                ads_utils.imread(str(p)).astype(bool)
+                for p in self.apply_model_thread.stack_myelin_paths
+            ])
+
+            # Save stacked masks as multi-page TIFFs next to the source stack
+            stack_path = Path(selected_layer.source.path)
+            axon_tif_path = stack_path.parent / (stack_path.stem + str(axon_suffix.with_suffix('.tif')))
+            myelin_tif_path = stack_path.parent / (stack_path.stem + str(myelin_suffix.with_suffix('.tif')))
+            iio.imwrite(axon_tif_path, axon_stack.astype(np.uint8) * 255, plugin="tifffile")
+            iio.imwrite(myelin_tif_path, myelin_stack.astype(np.uint8) * 255, plugin="tifffile")
+            print(f"Saved axon mask stack to {axon_tif_path}")
+            print(f"Saved myelin mask stack to {myelin_tif_path}")
+
+            axon_mask_name = image_name_no_extension + axon_suffix.stem
+            myelin_mask_name = image_name_no_extension + myelin_suffix.stem
+
+            self.viewer.add_labels(
+                axon_stack,
+                colormap={None: 'transparent', 1: "blue"},
+                name=axon_mask_name,
+                metadata={"associated_image_name": image_name_no_extension},
+            )
+            self.viewer.add_labels(
+                myelin_stack,
+                colormap={None: 'transparent', 1: "red"},
+                name=myelin_mask_name,
+                metadata={"associated_image_name": image_name_no_extension},
+            )
+            selected_layer.metadata["associated_axon_mask_name"] = axon_mask_name
+            selected_layer.metadata["associated_myelin_mask_name"] = myelin_mask_name
+
+        else:
+            image_directory = self.apply_model_thread.image_directory
+            # check if segment.prepare_inputs changed the target name
+            potential_target_name = image_name_no_extension + "_grayscale.png"
+            if (image_directory / potential_target_name).exists():
+                image_name_no_extension += '_grayscale'
+                # Update the napari layer name to match the converted file
+                selected_layer.name = image_name_no_extension
+            axon_mask_path = image_directory / (
+                image_name_no_extension + str(axon_suffix)
+            )
+            axon_mask_name = image_name_no_extension + axon_suffix.stem
+            myelin_mask_path = image_directory / (
+                image_name_no_extension + str(myelin_suffix)
+            )
+            myelin_mask_name = image_name_no_extension + myelin_suffix.stem
+
+            axon_data = ads_utils.imread(axon_mask_path).astype(bool)
+            self.viewer.add_labels(
+                axon_data,
+                colormap={None: 'transparent', 1: "blue"},
+                name=axon_mask_name,
+                metadata={"associated_image_name": image_name_no_extension},
+            )
+            myelin_data = ads_utils.imread(myelin_mask_path).astype(bool)
+            self.viewer.add_labels(
+                myelin_data,
+                colormap={None: 'transparent', 1: "red"},
+                name=myelin_mask_name,
+                metadata={"associated_image_name": image_name_no_extension},
+            )
+            selected_layer.metadata["associated_axon_mask_name"] = axon_mask_name
+            selected_layer.metadata["associated_myelin_mask_name"] = myelin_mask_name
 
     def _on_load_mask_button_click(self):
         """Handles the click event of the 'Load Mask' button.
@@ -708,20 +803,25 @@ class ADSplugin(QWidget):
 
             return
         else:
-            if self.im_axonmyelin_label is None:
+            is_3d = axon_layer.data.ndim == 3
+            if is_3d:
+                # For stacks, labels are computed lazily per-slice in _get_slice_label
+                # when the user actually clicks. Nothing to precompute here.
+                pass
+            else:
+                if self.im_axonmyelin_label is None:
+                    axon_data = axon_layer.data
+                    myelin_data = myelin_layer.data
 
-                axon_data = axon_layer.data
-                myelin_data = myelin_layer.data
+                    # Label each axon object
+                    im_axon_label = measure.label(axon_data)
+                    # Measure properties for each axon object
+                    axon_objects = measure.regionprops(im_axon_label)
 
-                # Label each axon object
-                im_axon_label = measure.label(axon_data)
-                # Measure properties for each axon object
-                axon_objects = measure.regionprops(im_axon_label)
+                    ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
+                                    [int(props.centroid[1]) for props in axon_objects])
 
-                ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
-                                [int(props.centroid[1]) for props in axon_objects])
-
-                self.im_axonmyelin_label = compute_morphs.get_watershed_segmentation(axon_data, myelin_data, ind_centroid)
+                    self.im_axonmyelin_label = compute_morphs.get_watershed_segmentation(axon_data, myelin_data, ind_centroid)
 
             self.remove_axon_state = not self.remove_axon_state
 
@@ -929,8 +1029,8 @@ class ADSplugin(QWidget):
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.
 
-        The method fills the holes in the myelin mask and extracts the axons from it. It then sets the
-        corresponding values in the axon layer to 1, effectively updating the axon mask.
+        For 2D images, fills holes across the entire mask.
+        For 3D stacks, fills holes only on the currently displayed slice.
 
         Returns:
             None
@@ -942,9 +1042,19 @@ class ADSplugin(QWidget):
             self.show_info_message("One or more masks missing")
             return
 
-        myelin_array = np.array(myelin_layer.data, copy=True)
-        axon_extracted_array = postprocessing.fill_myelin_holes(myelin_array)
-        axon_array_indexes = np.where(axon_extracted_array > 0)
+        is_3d = axon_layer.data.ndim == 3
+
+        if is_3d:
+            z = int(self.viewer.dims.current_step[0])
+            myelin_array = np.array(myelin_layer.data[z], copy=True)
+            axon_extracted_array = postprocessing.fill_myelin_holes(myelin_array)
+            idx_2d = np.where(axon_extracted_array > 0)
+            axon_array_indexes = (np.full(len(idx_2d[0]), z), idx_2d[0], idx_2d[1])
+        else:
+            myelin_array = np.array(myelin_layer.data, copy=True)
+            axon_extracted_array = postprocessing.fill_myelin_holes(myelin_array)
+            axon_array_indexes = np.where(axon_extracted_array > 0)
+
         axon_layer._save_history(
             (
                 axon_array_indexes,
@@ -958,10 +1068,8 @@ class ADSplugin(QWidget):
     def _on_save_segmentation_button(self):
         """Handles the click event of the 'Save Segmentation' button.
 
-        The method prompts the user to select a directory where the segmentation images will be saved.
-        It then scales the pixel values of the myelin and axon layers to 8-bits and combines them into a single
-        image, which is saved as a PNG file. Additionally, the method saves the myelin and axon masks as
-        separate PNG files in the same directory.
+        For 2D images: saves axon, myelin, and combined masks as PNG files.
+        For 3D stacks: saves axon and myelin masks as multi-page TIFF stacks.
 
         Returns:
             None
@@ -972,34 +1080,41 @@ class ADSplugin(QWidget):
         if (axon_layer is None) or (myelin_layer is None):
             self.show_info_message("One or more masks missing")
             return
+
         save_path = QFileDialog.getExistingDirectory(
             self, "Select where the segmentation should be saved"
         )
+        if not save_path:
+            return
         save_path = Path(save_path)
 
-        # Scale the pixel values of the masks to 255 for image saving
-        myelin_array = myelin_layer.data * params.intensity["binary"]
-        axon_array = axon_layer.data * params.intensity["binary"]
-
-        myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(
-            np.uint8
-        )
-
         microscopy_image_name = axon_layer.metadata["associated_image_name"]
-        axon_image_name = microscopy_image_name + str(config.axon_suffix)
-        myelin_image_name = microscopy_image_name + str(config.myelin_suffix)
-        axonmyelin_image_name = microscopy_image_name + str(
-            config.axonmyelin_suffix
-        )
+        is_3d = axon_layer.data.ndim == 3
 
-        ads_utils.imwrite(
-            filename=save_path / axonmyelin_image_name,
-            img=myelin_and_axon_array,
-        )
-        ads_utils.imwrite(
-            filename=save_path / myelin_image_name, img=myelin_array
-        )
-        ads_utils.imwrite(filename=save_path / axon_image_name, img=axon_array)
+        if is_3d:
+            axon_array = (np.array(axon_layer.data) * params.intensity["binary"]).astype(np.uint8)
+            myelin_array = (np.array(myelin_layer.data) * params.intensity["binary"]).astype(np.uint8)
+            iio.imwrite(
+                save_path / (microscopy_image_name + str(axon_suffix.with_suffix('.tif'))),
+                axon_array, plugin="tifffile",
+            )
+            iio.imwrite(
+                save_path / (microscopy_image_name + str(myelin_suffix.with_suffix('.tif'))),
+                myelin_array, plugin="tifffile",
+            )
+        else:
+            # Scale the pixel values of the masks to 255 for image saving
+            myelin_array = myelin_layer.data * params.intensity["binary"]
+            axon_array = axon_layer.data * params.intensity["binary"]
+            myelin_and_axon_array = (myelin_array // 2 + axon_array).astype(np.uint8)
+
+            axon_image_name = microscopy_image_name + str(config.axon_suffix)
+            myelin_image_name = microscopy_image_name + str(config.myelin_suffix)
+            axonmyelin_image_name = microscopy_image_name + str(config.axonmyelin_suffix)
+
+            ads_utils.imwrite(filename=save_path / axonmyelin_image_name, img=myelin_and_axon_array)
+            ads_utils.imwrite(filename=save_path / myelin_image_name, img=myelin_array)
+            ads_utils.imwrite(filename=save_path / axon_image_name, img=axon_array)
 
     def _on_compute_morphometrics_button(self):
         """Compute and save morphometrics statistics for the axon and myelin layers in the viewer.
@@ -1324,6 +1439,7 @@ class ADSplugin(QWidget):
         self.stats_dataframe = None
         self.index_image_array = None
         self.im_axonmyelin_label = None
+        self._stack_label_cache = {}
 
 class ApplyModelThread(QtCore.QThread):
     """QThread class used to segment an image by applying a model in a separate thread.
@@ -1353,23 +1469,47 @@ class ApplyModelThread(QtCore.QThread):
         self.gpu_id = -1
         self.task_finished_successfully = False
         self.allow_large_images = False
+        # Stack-specific attributes
+        self.is_stack = False
+        self.slice_paths = None       # List[Path] of per-slice temp PNGs
+        self.stack_axon_paths = None  # List[Path] of per-slice axon mask PNGs
+        self.stack_myelin_paths = None  # List[Path] of per-slice myelin mask PNGs
 
     def run(self):
         """Executes the segmentation process in a separate thread on the selected image layer using the AxonDeepSeg
-        model.
+        model. Handles both single 2D images and 3D stacks.
 
         Returns:
             None
         """
         self.task_finished_successfully = False
         try:
-            segment.segment_images(
-                path_images=[self.path_image],
-                path_model=self.path_model,
-                gpu_id=self.gpu_id,
-                verbosity_level=3,
-                allow_large_images=self.allow_large_images,
-            )
+            if self.is_stack:
+                # Segment all slices in one call; segment_images accepts a list of paths
+                segment.segment_images(
+                    path_images=self.slice_paths,
+                    path_model=self.path_model,
+                    gpu_id=self.gpu_id,
+                    verbosity_level=3,
+                    allow_large_images=self.allow_large_images,
+                )
+                # Derive expected output mask paths from the slice input paths
+                self.stack_axon_paths = [
+                    p.parent / (p.stem + str(axon_suffix))
+                    for p in self.slice_paths
+                ]
+                self.stack_myelin_paths = [
+                    p.parent / (p.stem + str(myelin_suffix))
+                    for p in self.slice_paths
+                ]
+            else:
+                segment.segment_images(
+                    path_images=[self.path_image],
+                    path_model=self.path_model,
+                    gpu_id=self.gpu_id,
+                    verbosity_level=3,
+                    allow_large_images=self.allow_large_images,
+                )
             self.task_finished_successfully = True
         except SystemExit as err:
             if err.code == 4:
