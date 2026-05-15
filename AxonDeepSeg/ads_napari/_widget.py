@@ -38,6 +38,7 @@ from AxonDeepSeg.visualization.colorization import colorize_instance_segmentatio
 
 import napari
 from napari.utils.notifications import show_info
+from napari.utils import progress as napari_progress
 from .settings_menu_ui import Ui_Settings_menu_ui
 from vispy.util import keys
 import webbrowser
@@ -198,6 +199,9 @@ class ADSplugin(QWidget):
         self.apply_model_thread = ApplyModelThread()
         self.apply_model_thread.model_applied_signal.connect(
             self._on_model_finished_apply
+        )
+        self.apply_model_thread.progress_update.connect(
+            self._on_segmentation_progress
         )
 
         load_mask_button = QPushButton("Load mask")
@@ -485,6 +489,18 @@ class ADSplugin(QWidget):
         else:
             return False
 
+    def _on_segmentation_progress(self, current, total, desc):
+        """Update the napari Activity dock progress bar from the main thread."""
+        pbr = self.apply_model_thread.progress_bar
+        if pbr is None:
+            return
+        if pbr.total != total:
+            pbr.total = total
+            pbr.reset()
+        pbr.set_description(desc)
+        pbr.n = current
+        pbr.events.value(value=current)
+
     def _on_apply_model_button_click(self, layer):
         """Apply the selected AxonDeepSeg model to the active layer of the viewer.
 
@@ -542,6 +558,15 @@ class ADSplugin(QWidget):
         self.apply_model_thread.path_model = model_path
         self.apply_model_thread.gpu_id = self.settings.gpu_id
         self.apply_model_thread.allow_large_images = allow_large_images
+        self.apply_model_thread.progress_bar = napari_progress(
+            total=0, desc="Segmenting image..."
+        )
+        try:
+            sb = self.viewer.window._qt_window.statusBar()
+            if not self.viewer.window._qt_window._activity_dialog.isVisible():
+                sb._toggle_activity_dock()
+        except Exception:
+            pass
         self.show_info_message(
             "Running AI model... This can take a few seconds or minutes. Check the console/terminal for more information."
         )
@@ -1333,6 +1358,7 @@ class ApplyModelThread(QtCore.QThread):
     """
 
     model_applied_signal = Signal()
+    progress_update = Signal(int, int, str)  # (current, total, description)
 
     def __init__(self):
         """Initializes an instance of the class with default values for attributes.
@@ -1353,6 +1379,7 @@ class ApplyModelThread(QtCore.QThread):
         self.gpu_id = -1
         self.task_finished_successfully = False
         self.allow_large_images = False
+        self.progress_bar = None
 
     def run(self):
         """Executes the segmentation process in a separate thread on the selected image layer using the AxonDeepSeg
@@ -1361,6 +1388,26 @@ class ApplyModelThread(QtCore.QThread):
         Returns:
             None
         """
+        import nnunetv2.inference.predict_from_raw_data as _nnunet_module
+
+        # Monkey-patch nnUNet's tqdm with napari's progress so the sliding
+        # window inference loop renders in the napari Activity dock.
+        _original_tqdm = _nnunet_module.tqdm
+
+        def _napari_tqdm(iterable=None, *args, **kwargs):
+            kwargs.pop("disable", None)
+            if iterable is not None:
+                items = list(iterable)
+                total = len(items)
+                self.progress_update.emit(0, total, "Running inference...")
+                for i, item in enumerate(items):
+                    yield item
+                    self.progress_update.emit(i + 1, total, "Running inference...")
+            else:
+                yield from _original_tqdm(*args, **kwargs)
+
+        _nnunet_module.tqdm = _napari_tqdm
+
         self.task_finished_successfully = False
         try:
             segment.segment_images(
@@ -1378,4 +1425,8 @@ class ApplyModelThread(QtCore.QThread):
                     "for the minimum zoom factor value to use (option available in the Settings menu)."
                 )
             self.task_finished_successfully = False
+        finally:
+            _nnunet_module.tqdm = _original_tqdm
+            if self.progress_bar is not None:
+                self.progress_bar.close()
         self.model_applied_signal.emit()
