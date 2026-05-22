@@ -560,7 +560,7 @@ class ADSplugin(QWidget):
         self.apply_model_thread.gpu_id = self.settings.gpu_id
         self.apply_model_thread.allow_large_images = allow_large_images
         self.apply_model_thread.progress_bar = napari_progress(
-            total=0, desc="Segmenting image..."
+            total=0, desc="Preprocessing the image"
         )
         try:
             sb = self.viewer.window._qt_window.statusBar()
@@ -1398,10 +1398,10 @@ class ApplyModelThread(QtCore.QThread):
             if iterable is not None:
                 items = list(iterable)
                 total = len(items)
-                self.progress_update.emit(0, total, "Running inference...")
+                self.progress_update.emit(0, total, "Running inference")
                 for i, item in enumerate(items):
                     yield item
-                    self.progress_update.emit(i + 1, total, "Running inference...")
+                    self.progress_update.emit(i + 1, total, "Running inference")
             else:
                 yield from _original_tqdm(*args, **kwargs)
 
