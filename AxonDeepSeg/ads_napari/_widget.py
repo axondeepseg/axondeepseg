@@ -35,6 +35,7 @@ from AxonDeepSeg.qa.metrics_qa import MetricsQA
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
+import nnunetv2.inference.predict_from_raw_data as nnunet_predictor
 
 import napari
 from napari.utils.notifications import show_info
@@ -1388,11 +1389,9 @@ class ApplyModelThread(QtCore.QThread):
         Returns:
             None
         """
-        import nnunetv2.inference.predict_from_raw_data as _nnunet_module
-
         # Monkey-patch nnUNet's tqdm with napari's progress so the sliding
         # window inference loop renders in the napari Activity dock.
-        _original_tqdm = _nnunet_module.tqdm
+        _original_tqdm = nnunet_predictor.tqdm
 
         def _napari_tqdm(iterable=None, *args, **kwargs):
             kwargs.pop("disable", None)
@@ -1406,7 +1405,7 @@ class ApplyModelThread(QtCore.QThread):
             else:
                 yield from _original_tqdm(*args, **kwargs)
 
-        _nnunet_module.tqdm = _napari_tqdm
+        nnunet_predictor.tqdm = _napari_tqdm
 
         self.task_finished_successfully = False
         try:
@@ -1426,7 +1425,7 @@ class ApplyModelThread(QtCore.QThread):
                 )
             self.task_finished_successfully = False
         finally:
-            _nnunet_module.tqdm = _original_tqdm
+            nnunet_predictor.tqdm = _original_tqdm
             if self.progress_bar is not None:
                 self.progress_bar.close()
         self.model_applied_signal.emit()
