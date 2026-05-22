@@ -633,6 +633,10 @@ class ADSplugin(QWidget):
             "associated_myelin_mask_name"
         ] = myelin_mask_name
 
+        # Close activity dock if necessary
+        if self.viewer.window._qt_window._activity_dialog.isVisible():
+            self.viewer.window._qt_window.statusBar()._toggle_activity_dock()
+
     def _on_load_mask_button_click(self):
         """Handles the click event of the 'Load Mask' button.
 
