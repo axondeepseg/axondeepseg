@@ -51,4 +51,4 @@ unmyelinated-TEM:
   training-data: Available at https://dandiarchive.org/dandiset/001350?pos=4
   weights:
     ensemble: https://github.com/axondeepseg-pipeline/model_seg_unmyelinated_tem/releases/download/r20240708-stanford/model_seg_unmyelinated_stanford_tem_best.zip
-    single_fold: ~
+    single_fold: https://github.com/axondeepseg-pipeline/model_seg_unmyelinated_tem/releases/download/v2.0.0/model_seg_unmyelinated_tem_light.zip
