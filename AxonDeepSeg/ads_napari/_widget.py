@@ -14,6 +14,7 @@ import qtpy.QtCore
 from qtpy import QtWidgets, QtCore
 from qtpy.QtWidgets import (
     QVBoxLayout,
+    QHBoxLayout,
     QPushButton,
     QWidget,
     QComboBox,
@@ -215,6 +216,10 @@ class ADSplugin(QWidget):
             "QProgressBar::chunk {  background-color: #007acc; }"
         )
 
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.setEnabled(False)
+        self.cancel_button.clicked.connect(self._on_cancel_button_click)
+
         load_mask_button = QPushButton("Load mask")
         load_mask_button.clicked.connect(self._on_load_mask_button_click)
         self.load_mask_button = load_mask_button
@@ -273,8 +278,14 @@ class ADSplugin(QWidget):
         self.layout().addWidget(citation_textbox)
         self.layout().addWidget(demo_label)
         self.layout().addWidget(hyperlink_label)
+        seg_row = QWidget()
+        seg_row_layout = QHBoxLayout(seg_row)
+        seg_row_layout.setContentsMargins(0, 0, 0, 0)
+        seg_row_layout.addWidget(self.apply_model_button)
+        seg_row_layout.addWidget(self.cancel_button)
+
         self.layout().addWidget(self.model_selection_combobox)
-        self.layout().addWidget(self.apply_model_button)
+        self.layout().addWidget(seg_row)
         self.layout().addWidget(self.segmentation_progress)
         self.layout().addWidget(load_mask_button)
         self.layout().addWidget(fill_axons_button)
@@ -570,6 +581,7 @@ class ADSplugin(QWidget):
 
         self.segmentation_progress.setRange(0, 0)
         self.segmentation_progress.setVisible(True)
+        self.cancel_button.setEnabled(True)
 
         self.show_info_message(
             "Running AI model... This can take a few seconds or minutes. Check the console/terminal for more information."
@@ -590,6 +602,12 @@ class ADSplugin(QWidget):
         """
 
         self.apply_model_button.setEnabled(True)
+        self.cancel_button.setEnabled(False)
+        self.segmentation_progress.setVisible(False)
+        self.segmentation_progress.setRange(0, 1)
+        self.segmentation_progress.setValue(0)
+        if self.apply_model_thread.cancelled or self.apply_model_thread.cancel_requested:
+            return
         if not self.apply_model_thread.task_finished_successfully:
             self.show_info_message(
                 "Couldn't apply the ADS model. Please check the console or terminal for more information."
@@ -614,6 +632,12 @@ class ADSplugin(QWidget):
         )
         myelin_mask_name = image_name_no_extension + myelin_suffix.stem
 
+        if not axon_mask_path.exists() or not myelin_mask_path.exists():
+            self.show_info_message(
+                "Segmentation completed but output masks were not found. Please check the console or terminal for more information."
+            )
+            return
+
         # Reset cached state when new masks are loaded
         self._reset_cached_state()
 
@@ -636,9 +660,9 @@ class ADSplugin(QWidget):
             "associated_myelin_mask_name"
         ] = myelin_mask_name
 
-        self.segmentation_progress.setVisible(False)
-        self.segmentation_progress.setRange(0, 1)
-        self.segmentation_progress.setValue(0)
+    def _on_cancel_button_click(self):
+        self.apply_model_thread.cancel_requested = True
+        self.cancel_button.setEnabled(False)
 
     def _on_load_mask_button_click(self):
         """Handles the click event of the 'Load Mask' button.
@@ -1387,6 +1411,8 @@ class ApplyModelThread(QtCore.QThread):
         self.gpu_id = -1
         self.task_finished_successfully = False
         self.allow_large_images = False
+        self.cancel_requested = False
+        self.cancelled = False
 
     def run(self):
         """Executes the segmentation process in a separate thread on the selected image layer using the AxonDeepSeg
@@ -1397,6 +1423,9 @@ class ApplyModelThread(QtCore.QThread):
         """
         # Monkey-patch nnUNet's tqdm with napari's progress so the sliding
         # window inference loop renders in the napari Activity dock.
+        self.cancel_requested = False
+        self.cancelled = False
+
         _original_tqdm = nnunet_predictor.tqdm
 
         def _napari_tqdm(iterable=None, *args, **kwargs):
@@ -1406,6 +1435,8 @@ class ApplyModelThread(QtCore.QThread):
                 total = len(items)
                 self.progress_update.emit(0, total, "Applying model")
                 for i, item in enumerate(items):
+                    if self.cancel_requested:
+                        raise InterruptedError("Segmentation cancelled by user")
                     yield item
                     self.progress_update.emit(i + 1, total, "Applying model")
             else:
@@ -1423,6 +1454,9 @@ class ApplyModelThread(QtCore.QThread):
                 allow_large_images=self.allow_large_images,
             )
             self.task_finished_successfully = True
+        except InterruptedError:
+            self.cancelled = True
+            self.task_finished_successfully = False
         except SystemExit as err:
             if err.code == 4:
                 print(
