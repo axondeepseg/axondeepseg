@@ -22,6 +22,7 @@ from qtpy.QtWidgets import (
     QPlainTextEdit,
     QInputDialog,
     QMessageBox,
+    QProgressBar,
 )
 from qtpy.QtCore import QStringListModel, QObject, Signal
 from qtpy.QtGui import QPixmap
@@ -204,6 +205,15 @@ class ADSplugin(QWidget):
         self.apply_model_thread.progress_update.connect(
             self._on_segmentation_progress
         )
+        
+        self.segmentation_progress = QProgressBar(self)
+        self.segmentation_progress.setVisible(False)
+        self.segmentation_progress.setMinimum(0)
+        self.segmentation_progress.setMaximum(1)
+        self.segmentation_progress.setTextVisible(True)
+        self.segmentation_progress.setStyleSheet(
+            "QProgressBar::chunk {  background-color: #007acc; }"
+        )
 
         load_mask_button = QPushButton("Load mask")
         load_mask_button.clicked.connect(self._on_load_mask_button_click)
@@ -265,6 +275,7 @@ class ADSplugin(QWidget):
         self.layout().addWidget(hyperlink_label)
         self.layout().addWidget(self.model_selection_combobox)
         self.layout().addWidget(self.apply_model_button)
+        self.layout().addWidget(self.segmentation_progress)
         self.layout().addWidget(load_mask_button)
         self.layout().addWidget(fill_axons_button)
         self.layout().addWidget(remove_axons_button)
@@ -491,16 +502,16 @@ class ADSplugin(QWidget):
             return False
 
     def _on_segmentation_progress(self, current, total, desc):
-        """Update the napari Activity dock progress bar from the main thread."""
-        pbr = self.apply_model_thread.progress_bar
-        if pbr is None:
+        """Update the progress bar from the main thread."""
+        pb = getattr(self, "segmentation_progress", None)
+        if pb is None:
             return
-        if pbr.total != total:
-            pbr.total = total
-            pbr.reset()
-        pbr.set_description(desc)
-        pbr.n = current
-        pbr.events.value(value=current)
+        if total and pb.maximum() != total:
+            pb.setMaximum(total)
+        elif total == 0:
+            pb.setRange(0, 0)
+        pb.setFormat(f"{desc} (%v/%m)")
+        pb.setValue(current)
 
     def _on_apply_model_button_click(self, layer):
         """Apply the selected AxonDeepSeg model to the active layer of the viewer.
@@ -511,8 +522,6 @@ class ADSplugin(QWidget):
 
         selected_layers = self.viewer.layers.selection
         selected_model = self.model_selection_combobox.currentText()
-
-
 
         if selected_model not in self.available_models:
             self.show_info_message("No model selected")
@@ -530,7 +539,6 @@ class ADSplugin(QWidget):
 
         # Check if the image exceeds PIL's default decompression bomb limit.
         # If so, ask the user for confirmation before proceeding.
-        from PIL import Image as _PIL_Image
         _DEFAULT_PIL_LIMIT = 89478485  # PIL's default MAX_IMAGE_PIXELS
         n_pixels = selected_layer.data.shape[-2] * selected_layer.data.shape[-1]
         if n_pixels > _DEFAULT_PIL_LIMIT:
@@ -559,15 +567,10 @@ class ADSplugin(QWidget):
         self.apply_model_thread.path_model = model_path
         self.apply_model_thread.gpu_id = self.settings.gpu_id
         self.apply_model_thread.allow_large_images = allow_large_images
-        self.apply_model_thread.progress_bar = napari_progress(
-            total=0, desc="Preprocessing the image"
-        )
-        try:
-            sb = self.viewer.window._qt_window.statusBar()
-            if not self.viewer.window._qt_window._activity_dialog.isVisible():
-                sb._toggle_activity_dock()
-        except Exception:
-            pass
+
+        self.segmentation_progress.setRange(0, 0)
+        self.segmentation_progress.setVisible(True)
+
         self.show_info_message(
             "Running AI model... This can take a few seconds or minutes. Check the console/terminal for more information."
         )
@@ -633,9 +636,9 @@ class ADSplugin(QWidget):
             "associated_myelin_mask_name"
         ] = myelin_mask_name
 
-        # Close activity dock if necessary
-        if self.viewer.window._qt_window._activity_dialog.isVisible():
-            self.viewer.window._qt_window.statusBar()._toggle_activity_dock()
+        self.segmentation_progress.setVisible(False)
+        self.segmentation_progress.setRange(0, 1)
+        self.segmentation_progress.setValue(0)
 
     def _on_load_mask_button_click(self):
         """Handles the click event of the 'Load Mask' button.
@@ -1384,7 +1387,6 @@ class ApplyModelThread(QtCore.QThread):
         self.gpu_id = -1
         self.task_finished_successfully = False
         self.allow_large_images = False
-        self.progress_bar = None
 
     def run(self):
         """Executes the segmentation process in a separate thread on the selected image layer using the AxonDeepSeg
@@ -1402,10 +1404,10 @@ class ApplyModelThread(QtCore.QThread):
             if iterable is not None:
                 items = list(iterable)
                 total = len(items)
-                self.progress_update.emit(0, total, "Running inference")
+                self.progress_update.emit(0, total, "Applying model")
                 for i, item in enumerate(items):
                     yield item
-                    self.progress_update.emit(i + 1, total, "Running inference")
+                    self.progress_update.emit(i + 1, total, "Applying model")
             else:
                 yield from _original_tqdm(*args, **kwargs)
 
@@ -1430,6 +1432,4 @@ class ApplyModelThread(QtCore.QThread):
             self.task_finished_successfully = False
         finally:
             nnunet_predictor.tqdm = _original_tqdm
-            if self.progress_bar is not None:
-                self.progress_bar.close()
         self.model_applied_signal.emit()
