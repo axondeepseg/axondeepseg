@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ADSMainWindow</class>
+ <widget class="QMainWindow" name="ADSMainWindow">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>820</width><height>760</height></rect>
+  </property>
+  <property name="minimumSize">
+   <size><width>760</width><height>700</height></size>
+  </property>
+  <property name="windowTitle">
+   <string>AxonDeepSeg</string>
+  </property>
+
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="mainLayout">
+    <property name="leftMargin"><number>24</number></property>
+    <property name="topMargin"><number>20</number></property>
+    <property name="rightMargin"><number>24</number></property>
+    <property name="bottomMargin"><number>20</number></property>
+    <property name="spacing"><number>14</number></property>
+
+    <!-- ── Header ── -->
+    <item>
+     <layout class="QHBoxLayout" name="headerLayout">
+      <item>
+       <widget class="QLabel" name="titleLabel">
+        <property name="text"><string>AxonDeepSeg</string></property>
+        <property name="font">
+         <font><pointsize>22</pointsize><weight>75</weight><bold>true</bold></font>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="headerSpacer">
+        <property name="orientation"><enum>Qt::Horizontal</enum></property>
+        <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="theme_btn">
+        <property name="text"><string>☀  Light</string></property>
+        <property name="maximumWidth"><number>90</number></property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+
+    <item>
+     <widget class="QLabel" name="subtitleLabel">
+      <property name="text"><string>Automatic axon &amp; myelin segmentation</string></property>
+     </widget>
+    </item>
+
+    <item>
+     <widget class="QFrame" name="divider1">
+      <property name="frameShape"><enum>QFrame::HLine</enum></property>
+      <property name="frameShadow"><enum>QFrame::Sunken</enum></property>
+     </widget>
+    </item>
+
+    <!-- ── Tab widget ── -->
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex"><number>0</number></property>
+
+      <!-- ════════════════════════════════════════
+           TAB 1 — Segment
+           ════════════════════════════════════════ -->
+      <widget class="QWidget" name="tab_segment">
+       <attribute name="title"><string>Segment</string></attribute>
+       <layout class="QVBoxLayout" name="segOuterLayout">
+        <property name="margin"><number>0</number></property>
+        <item>
+         <widget class="QScrollArea" name="segScroll">
+          <property name="widgetResizable"><bool>true</bool></property>
+          <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+          <property name="horizontalScrollBarPolicy"><enum>Qt::ScrollBarAlwaysOff</enum></property>
+          <widget class="QWidget" name="segScrollContents">
+           <layout class="QVBoxLayout" name="segInnerLayout">
+            <property name="margin"><number>20</number></property>
+            <property name="spacing"><number>12</number></property>
+
+            <!-- Input group -->
+            <item>
+             <widget class="QGroupBox" name="inputGroup">
+              <property name="title"><string>Input</string></property>
+              <layout class="QVBoxLayout" name="inputLayout">
+               <property name="margin"><number>12</number></property>
+               <property name="spacing"><number>8</number></property>
+
+               <item>
+                <widget class="QLabel" name="inputHint">
+                 <property name="text"><string>Image file, folder, or multiple paths</string></property>
+                </widget>
+               </item>
+
+               <item>
+                <layout class="QHBoxLayout" name="inputBrowseRow">
+                 <item>
+                  <widget class="QLineEdit" name="input_edit">
+                   <property name="placeholderText"><string>/Users/yolaatar/data/optic_nerve/image_706.png</string></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="inputBrowseBtn">
+                   <property name="text"><string>Browse</string></property>
+                   <property name="maximumWidth"><number>80</number></property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
+                <widget class="QLabel" name="batchQueueLabel">
+                 <property name="text"><string>Batch queue</string></property>
+                </widget>
+               </item>
+
+               <item>
+                <widget class="QListWidget" name="batch_list">
+                 <property name="maximumHeight"><number>66</number></property>
+                 <item><property name="text"><string>/Users/yolaatar/data/optic_nerve/image_706.png</string></property></item>
+                 <item><property name="text"><string>/Users/yolaatar/data/optic_nerve/image_963.png</string></property></item>
+                 <item><property name="text"><string>/Users/yolaatar/data/optic_nerve/image_1812.png</string></property></item>
+                </widget>
+               </item>
+
+               <item>
+                <layout class="QHBoxLayout" name="batchBtnRow">
+                 <item><widget class="QPushButton" name="addFilesBtn"><property name="text"><string>+ Add files</string></property></widget></item>
+                 <item><widget class="QPushButton" name="addFolderBtn"><property name="text"><string>+ Add folder</string></property></widget></item>
+                 <item><widget class="QPushButton" name="removeBtn"><property name="text"><string>✕ Remove</string></property></widget></item>
+                 <item>
+                  <spacer name="batchBtnSpacer">
+                   <property name="orientation"><enum>Qt::Horizontal</enum></property>
+                   <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
+                <widget class="QCheckBox" name="stack_check">
+                 <property name="text"><string>Treat as 3D stack (multi-page TIFF)</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="large_check">
+                 <property name="text"><string>Allow large images  (&gt; 178 Mpx)</string></property>
+                </widget>
+               </item>
+
+              </layout>
+             </widget>
+            </item>
+
+            <!-- Model group -->
+            <item>
+             <widget class="QGroupBox" name="modelGroup">
+              <property name="title"><string>Model</string></property>
+              <layout class="QVBoxLayout" name="modelLayout">
+               <property name="margin"><number>12</number></property>
+               <property name="spacing"><number>8</number></property>
+
+               <item>
+                <layout class="QHBoxLayout" name="modelComboRow">
+                 <item>
+                  <widget class="QLabel" name="modelLabel">
+                   <property name="text"><string>Model</string></property>
+                   <property name="minimumWidth"><number>110</number></property>
+                   <property name="maximumWidth"><number>110</number></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="model_combo">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch><verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <item><property name="text"><string>Generalist (light)  ✓ installed</string></property></item>
+                   <item><property name="text"><string>Generalist (ensemble)</string></property></item>
+                   <item><property name="text"><string>Dedicated — SEM</string></property></item>
+                   <item><property name="text"><string>Dedicated — BF</string></property></item>
+                   <item><property name="text"><string>Dedicated — CARS</string></property></item>
+                   <item><property name="text"><string>Unmyelinated — TEM (Stanford)</string></property></item>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
+                <layout class="QHBoxLayout" name="gpuRow">
+                 <item>
+                  <widget class="QLabel" name="gpuLabel">
+                   <property name="text"><string>GPU</string></property>
+                   <property name="minimumWidth"><number>110</number></property>
+                   <property name="maximumWidth"><number>110</number></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="gpu_combo">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch><verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <item><property name="text"><string>CPU  (gpu-id = -1)</string></property></item>
+                   <item><property name="text"><string>GPU 0</string></property></item>
+                   <item><property name="text"><string>GPU 1</string></property></item>
+                   <item><property name="text"><string>GPU 2</string></property></item>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
+                <layout class="QHBoxLayout" name="customModelRow">
+                 <item>
+                  <widget class="QLabel" name="customModelLabel">
+                   <property name="text"><string>Custom model</string></property>
+                   <property name="minimumWidth"><number>110</number></property>
+                   <property name="maximumWidth"><number>110</number></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="custom_edit">
+                   <property name="placeholderText"><string>Optional: path to custom model folder…</string></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="customBrowseBtn">
+                   <property name="text"><string>Browse</string></property>
+                   <property name="maximumWidth"><number>80</number></property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+              </layout>
+             </widget>
+            </item>
+
+            <!-- Output group -->
+            <item>
+             <widget class="QGroupBox" name="outputGroup">
+              <property name="title"><string>Output</string></property>
+              <layout class="QVBoxLayout" name="outputLayout">
+               <property name="margin"><number>12</number></property>
+               <property name="spacing"><number>8</number></property>
+
+               <item>
+                <layout class="QHBoxLayout" name="saveToRow">
+                 <item>
+                  <widget class="QLabel" name="saveToLabel">
+                   <property name="text"><string>Save to</string></property>
+                   <property name="minimumWidth"><number>110</number></property>
+                   <property name="maximumWidth"><number>110</number></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="out_edit">
+                   <property name="placeholderText"><string>Same folder as input (default)</string></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="outBrowseBtn">
+                   <property name="text"><string>Browse</string></property>
+                   <property name="maximumWidth"><number>80</number></property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
+                <widget class="QCheckBox" name="morpho_after">
+                 <property name="text"><string>Run morphometrics automatically after segmentation</string></property>
+                </widget>
+               </item>
+
+              </layout>
+             </widget>
+            </item>
+
+            <item>
+             <spacer name="segStretch">
+              <property name="orientation"><enum>Qt::Vertical</enum></property>
+              <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+             </spacer>
+            </item>
+
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+
+      <!-- ════════════════════════════════════════
+           TAB 2 — Morphometrics
+           ════════════════════════════════════════ -->
+      <widget class="QWidget" name="tab_morphometrics">
+       <attribute name="title"><string>Morphometrics</string></attribute>
+       <layout class="QVBoxLayout" name="morphOuterLayout">
+        <property name="margin"><number>0</number></property>
+        <item>
+         <widget class="QScrollArea" name="morphScroll">
+          <property name="widgetResizable"><bool>true</bool></property>
+          <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+          <property name="horizontalScrollBarPolicy"><enum>Qt::ScrollBarAlwaysOff</enum></property>
+          <widget class="QWidget" name="morphScrollContents">
+           <layout class="QVBoxLayout" name="morphInnerLayout">
+            <property name="margin"><number>20</number></property>
+            <property name="spacing"><number>12</number></property>
+
+            <!-- Input group -->
+            <item>
+             <widget class="QGroupBox" name="morphInputGroup">
+              <property name="title"><string>Input — segmentation mask or folder</string></property>
+              <layout class="QVBoxLayout" name="morphInputLayout">
+               <property name="margin"><number>12</number></property>
+               <property name="spacing"><number>8</number></property>
+
+               <item>
+                <layout class="QHBoxLayout" name="morphBrowseRow">
+                 <item>
+                  <widget class="QLineEdit" name="morph_input_edit">
+                   <property name="placeholderText"><string>/Users/yolaatar/data/optic_nerve/image_706_seg-axonmyelin.png</string></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="morphBrowseBtn">
+                   <property name="text"><string>Browse</string></property>
+                   <property name="maximumWidth"><number>80</number></property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
+                <widget class="QLabel" name="morphBatchLabel">
+                 <property name="text"><string>Batch queue</string></property>
+                </widget>
+               </item>
+
+               <item>
+                <widget class="QListWidget" name="morph_batch_list">
+                 <property name="maximumHeight"><number>60</number></property>
+                 <item><property name="text"><string>/Users/yolaatar/data/optic_nerve/image_706_seg-axonmyelin.png</string></property></item>
+                 <item><property name="text"><string>/Users/yolaatar/data/optic_nerve/image_963_seg-axonmyelin.png</string></property></item>
+                </widget>
+               </item>
+
+               <item>
+                <layout class="QHBoxLayout" name="morphBatchBtnRow">
+                 <item><widget class="QPushButton" name="morphAddFilesBtn"><property name="text"><string>+ Add files</string></property></widget></item>
+                 <item><widget class="QPushButton" name="morphAddFolderBtn"><property name="text"><string>+ Add folder</string></property></widget></item>
+                 <item><widget class="QPushButton" name="morphRemoveBtn"><property name="text"><string>✕ Remove</string></property></widget></item>
+                 <item>
+                  <spacer name="morphBtnSpacer">
+                   <property name="orientation"><enum>Qt::Horizontal</enum></property>
+                   <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+
+              </layout>
+             </widget>
+            </item>
+
+            <!-- Parameters group -->
+            <item>
+             <widget class="QGroupBox" name="paramsGroup">
+              <property name="title"><string>Parameters</string></property>
+              <layout class="QVBoxLayout" name="paramsLayout">
+               <property name="margin"><number>12</number></property>
+               <property name="spacing"><number>8</number></property>
+
+               <item>
+                <layout class="QHBoxLayout" name="pixelSizeRow">
+                 <item>
+                  <widget class="QLabel" name="pixelSizeLabel">
+                   <property name="text"><string>Pixel size (µm/px)</string></property>
+                   <property name="minimumWidth"><number>110</number></property>
+                   <property name="maximumWidth"><number>110</number></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QDoubleSpinBox" name="px_spin">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch><verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="decimals"><number>5</number></property>
+                   <property name="value"><double>0.004930</double></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="pixelSizeHint">
+                   <property name="text"><string>Leave 0 to auto-read from pixel_size_in_micrometer.txt</string></property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
+                <layout class="QHBoxLayout" name="shapeRow">
+                 <item>
+                  <widget class="QLabel" name="shapeLabel">
+                   <property name="text"><string>Axon shape</string></property>
+                   <property name="minimumWidth"><number>110</number></property>
+                   <property name="maximumWidth"><number>110</number></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="shape_combo">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch><verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <item><property name="text"><string>circle  (equivalent diameter)</string></property></item>
+                   <item><property name="text"><string>ellipse  (minor axis)</string></property></item>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
+                <layout class="QHBoxLayout" name="outNameRow">
+                 <item>
+                  <widget class="QLabel" name="outNameLabel">
+                   <property name="text"><string>Output filename</string></property>
+                   <property name="minimumWidth"><number>110</number></property>
+                   <property name="maximumWidth"><number>110</number></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="out_name">
+                   <property name="text"><string>axon_morphometrics.xlsx</string></property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+              </layout>
+             </widget>
+            </item>
+
+            <!-- Mode group -->
+            <item>
+             <widget class="QGroupBox" name="modeGroup">
+              <property name="title"><string>Mode</string></property>
+              <layout class="QVBoxLayout" name="modeLayout">
+               <property name="margin"><number>12</number></property>
+               <property name="spacing"><number>8</number></property>
+               <item>
+                <widget class="QCheckBox" name="mode_myelin">
+                 <property name="text"><string>Myelinated axons  (default — uses *_seg-axonmyelin.png)</string></property>
+                 <property name="checked"><bool>true</bool></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="mode_unmyelin">
+                 <property name="text"><string>Unmyelinated axons  (uses *_seg-uaxon.png)</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="mode_nerve">
+                 <property name="text"><string>Nerve section  (uses *_seg-nerve.png — outputs axon density per fascicle)</string></property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+
+            <!-- Output options group -->
+            <item>
+             <widget class="QGroupBox" name="outputOptionsGroup">
+              <property name="title"><string>Output options</string></property>
+              <layout class="QVBoxLayout" name="outputOptionsLayout">
+               <property name="margin"><number>12</number></property>
+               <property name="spacing"><number>8</number></property>
+               <item>
+                <widget class="QCheckBox" name="opt_colorize">
+                 <property name="text"><string>Save colorized instance segmentation image  (*_colorized.png)</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="opt_diameter">
+                 <property name="text"><string>Save diameter overlay  (*_diameter_overlay.png)</string></property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+
+            <item>
+             <spacer name="morphStretch">
+              <property name="orientation"><enum>Qt::Vertical</enum></property>
+              <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+             </spacer>
+            </item>
+
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+
+      <!-- ════════════════════════════════════════
+           TAB 3 — Models
+           ════════════════════════════════════════ -->
+      <widget class="QWidget" name="tab_models">
+       <attribute name="title"><string>Models</string></attribute>
+       <layout class="QHBoxLayout" name="modelsLayout">
+        <property name="margin"><number>20</number></property>
+        <property name="spacing"><number>16</number></property>
+
+        <!-- Left: list -->
+        <item>
+         <layout class="QVBoxLayout" name="modelsLeftLayout">
+          <item>
+           <widget class="QLabel" name="modelsListLabel">
+            <property name="text"><string>Available models</string></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListWidget" name="model_list">
+            <property name="minimumWidth"><number>230</number></property>
+            <property name="maximumWidth"><number>280</number></property>
+            <item><property name="text"><string>Generalist (light)  ✓ installed</string></property></item>
+            <item><property name="text"><string>Generalist (ensemble)</string></property></item>
+            <item><property name="text"><string>Dedicated — SEM</string></property></item>
+            <item><property name="text"><string>Dedicated — BF</string></property></item>
+            <item><property name="text"><string>Dedicated — CARS</string></property></item>
+            <item><property name="text"><string>Unmyelinated — TEM (Stanford)</string></property></item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+
+        <!-- Right: detail -->
+        <item>
+         <layout class="QVBoxLayout" name="modelsDetailLayout">
+          <item>
+           <widget class="QLabel" name="model_name">
+            <property name="text"><string>Generalist (light)  ✓ installed</string></property>
+            <property name="font">
+             <font><pointsize>15</pointsize><weight>75</weight><bold>true</bold></font>
+            </property>
+            <property name="wordWrap"><bool>true</bool></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="model_id">
+            <property name="text"><string>ID: model_seg_generalist_light</string></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="modelDivider">
+            <property name="frameShape"><enum>QFrame::HLine</enum></property>
+            <property name="frameShadow"><enum>QFrame::Sunken</enum></property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="modelMetaLayout">
+            <item>
+             <layout class="QVBoxLayout">
+              <item><widget class="QLabel" name="modalitiesHeader"><property name="text"><string>Modalities</string></property></widget></item>
+              <item><widget class="QLabel" name="mod_label"><property name="text"><string>TEM · SEM · BF · CARS</string></property></widget></item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QVBoxLayout">
+              <item><widget class="QLabel" name="pixelSizeHeader"><property name="text"><string>Pixel size</string></property></widget></item>
+              <item><widget class="QLabel" name="px_label"><property name="text"><string>0.00236 – 0.226 µm/px</string></property></widget></item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="metaSpacer">
+              <property name="orientation"><enum>Qt::Horizontal</enum></property>
+              <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QTextEdit" name="desc_box">
+            <property name="readOnly"><bool>true</bool></property>
+            <property name="minimumHeight"><number>120</number></property>
+            <property name="plainText">
+             <string>Multi-domain model trained on TEM, SEM, Bright-Field and CARS images. Ships with the installation. Light version uses a single fold — faster and ~5x smaller than the ensemble. Recommended starting point for most datasets.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="status_badge">
+            <property name="text"><string>✓  Installed</string></property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="dlBtnRow">
+            <item>
+             <widget class="QPushButton" name="dl_btn">
+              <property name="text"><string>Download</string></property>
+              <property name="maximumWidth"><number>130</number></property>
+              <property name="enabled"><bool>false</bool></property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="dlBtnSpacer">
+              <property name="orientation"><enum>Qt::Horizontal</enum></property>
+              <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="detailStretch">
+            <property name="orientation"><enum>Qt::Vertical</enum></property>
+            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+
+       </layout>
+      </widget>
+
+     </widget>
+    </item>
+
+    <!-- ── Divider ── -->
+    <item>
+     <widget class="QFrame" name="divider2">
+      <property name="frameShape"><enum>QFrame::HLine</enum></property>
+      <property name="frameShadow"><enum>QFrame::Sunken</enum></property>
+     </widget>
+    </item>
+
+    <!-- ── Run row ── -->
+    <item>
+     <layout class="QHBoxLayout" name="runLayout">
+      <item>
+       <widget class="QPushButton" name="run_btn">
+        <property name="text"><string>Run</string></property>
+        <property name="minimumHeight"><number>42</number></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="stop_btn">
+        <property name="text"><string>Stop</string></property>
+        <property name="maximumWidth"><number>90</number></property>
+        <property name="minimumHeight"><number>42</number></property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+
+    <!-- ── Progress bar ── -->
+    <item>
+     <widget class="QProgressBar" name="progress">
+      <property name="value"><number>42</number></property>
+      <property name="textVisible"><bool>false</bool></property>
+      <property name="maximumHeight"><number>6</number></property>
+     </widget>
+    </item>
+
+    <!-- ── Progress label ── -->
+    <item>
+     <widget class="QLabel" name="progress_label">
+      <property name="text"><string>Running inference…  patch 18 / 43</string></property>
+     </widget>
+    </item>
+
+    <!-- ── Log ── -->
+    <item>
+     <widget class="QTextEdit" name="log">
+      <property name="readOnly"><bool>true</bool></property>
+      <property name="maximumHeight"><number>90</number></property>
+      <property name="plainText">
+       <string>AxonDeepSeg ready.
+Model loaded: model_seg_generalist_light
+Input: /Users/yolaatar/data/optic_nerve/image_706.png
+Running nnUNet inference on 43 patches…</string>
+      </property>
+     </widget>
+    </item>
+
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
