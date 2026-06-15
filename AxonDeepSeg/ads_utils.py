@@ -119,7 +119,7 @@ def imread(filename, use_16bit=False, allow_large_images=False):
                                f"file extensions:  '.png', '.tif', '.tiff', '.jpg' and '.jpeg'.")
 
     # Check if the image exceeds PIL's decompression bomb pixel limit.
-    shape = get_imshape(filename)
+    shape = get_imshape(filename, allow_large_images=allow_large_images)
     n_pixels = shape[0] * shape[1]
     if Image.MAX_IMAGE_PIXELS is not None and n_pixels > Image.MAX_IMAGE_PIXELS:
         if not allow_large_images:
@@ -249,10 +249,16 @@ def get_file_extension(filename):
     extension = next((ext for ext in valid_extensions if str(filename).lower().endswith(ext)), None)
     return extension
 
-def get_imshape(filename: str):
+def get_imshape(filename: str, allow_large_images: bool = False):
     """Get the shape of an image (HWC format) without reading its data.
     """
-    shape = imageio.v3.improps(filename).shape
+    old_limit = Image.MAX_IMAGE_PIXELS
+    if allow_large_images:
+        Image.MAX_IMAGE_PIXELS = _LARGE_IMAGE_PIXEL_LIMIT
+    try:
+        shape = imageio.v3.improps(filename).shape
+    finally:
+        Image.MAX_IMAGE_PIXELS = old_limit
     if len(shape) == 2:
         shape = (shape[0], shape[1], 1)
     return shape

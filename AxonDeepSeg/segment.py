@@ -95,7 +95,7 @@ def prepare_inputs(path_imgs: List[Path], file_format: str, n_channels: int, all
     for im_path in path_imgs:
         target = im_path
 
-        imshape = get_imshape(str(target)) # HWC format
+        imshape = get_imshape(str(target), allow_large_images=allow_large_images)
         is_correct_shape = (imshape[-1] == n_channels)
         is_correct_format = (target.suffix == file_format)
         needs_conversion = (is_correct_shape == False) or (is_correct_format == False)
