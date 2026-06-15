@@ -14,6 +14,7 @@ MODEL_NOT_FOUND_CODE = 1
 DOWNLOAD_ERROR_CODE = 2
 
 MODEL_CARDS_PATH = Path(__file__).parent / 'model_cards.yaml'
+MODEL_VERSION_FILENAME = 'model_version.txt'
 
 def download_model(model_name='generalist', destination=None, overwrite=True):
     '''
@@ -70,6 +71,10 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
 
     shutil.move(folder_name, str(model_destination))
 
+    version = models[model_name].get('version')
+    if version:
+        (model_destination / MODEL_VERSION_FILENAME).write_text(version)
+
     return output_dir
 
 def format_pixel_size(pixel_size) -> str:
@@ -84,6 +89,45 @@ def format_pixel_size(pixel_size) -> str:
     return f'{pixel_size} µm/px'
 
 
+def get_local_model_version(model_name: str, model_dict: dict) -> tuple[bool, str | None]:
+    '''
+    Check if a model is installed locally and return its version.
+
+    Returns
+    -------
+    (is_installed, local_version) : tuple[bool, str | None]
+        is_installed: True if the model folder exists
+        local_version: version string from model_version.txt, or None if missing/unversioned
+    '''
+    package_dir = Path(AxonDeepSeg.__file__).parent
+    info = model_dict[model_name]
+    suffix = 'light' if info['weights']['single_fold'] is not None else 'ensemble'
+    model_folder = package_dir / 'models' / f'{info["full_name"]}_{suffix}'
+
+    if not model_folder.exists():
+        return False, None
+
+    version_file = model_folder / MODEL_VERSION_FILENAME
+    local_version = version_file.read_text().strip() if version_file.exists() else None
+    return True, local_version
+
+
+def format_install_status(model_name: str, model_dict: dict) -> str:
+    '''
+    Build a human-readable install status string for a model.
+    '''
+    is_installed, local_version = get_local_model_version(model_name, model_dict)
+    remote_version = model_dict[model_name].get('version')
+
+    if not is_installed:
+        return 'Not installed'
+    if local_version is None:
+        return 'Installed (version unknown)'
+    if remote_version and local_version != remote_version:
+        return f'Installed {local_version} — update available ({remote_version}), run: download_model -m {model_name}'
+    return f'Installed {local_version}'
+
+
 def print_available_models(model_dict: dict):
     '''
     Print all available models for download.
@@ -94,14 +138,17 @@ def print_available_models(model_dict: dict):
         pixel_size_str = format_pixel_size(pixel_size) if pixel_size is not None else 'N/A'
         to_print = [
             ["Model name", model],
+            ["Status", format_install_status(model, model_dict)],
             ["Nb of classes", model_dict[model]['n_classes']],
             ["Pixel size", pixel_size_str],
             ["Model info", model_dict[model]['model-info']],
             ["Training data", model_dict[model]['training-data']],
         ]
         print("\n")
+        col = 15
         for label, content in to_print:
-            print(label, '\t', textwrap.fill(str(content), width=90).replace('\n', '\n\t\t '))
+            filled = textwrap.fill(str(content), width=90).replace('\n', '\n' + ' ' * (col + 1))
+            print(f"{label:<{col}} {filled}")
             
 def get_model_cards(model_list_path=MODEL_CARDS_PATH) -> dict:
     '''
