@@ -7,7 +7,6 @@ import imageio
 import os
 
 import pytest
-from unittest.mock import patch
 
 import AxonDeepSeg
 from AxonDeepSeg.ads_utils import download_data, convert_path, get_existing_models_list, extract_axon_and_myelin_masks_from_image_data, imread, imwrite, get_file_extension, check_available_gpus
@@ -192,23 +191,24 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_imread_throws_error_for_huge_image(self):
-        filename = 'image_8bit.png'
-        with patch('AxonDeepSeg.ads_utils.get_imshape') as mock_get_imshape:
-            mock_get_imshape.return_value = (10000, 10000, 1)
+        large_image_path = self.tmp_folder / 'image_10000x10000.png'
+        imageio.imwrite(large_image_path, np.zeros((10000, 10000), dtype=np.uint8))
 
+        try:
             with pytest.raises(IOError):
-                imread(self.precision_path / filename)
+                imread(large_image_path)
+        finally:
+            large_image_path.unlink()
 
     @pytest.mark.unit
     def test_imread_successful_for_huge_image_when_allow_large_images_is_true(self):
-        filename = 'image_8bit.png'
-        with patch('AxonDeepSeg.ads_utils.get_imshape') as mock_get_imshape:
-            mock_get_imshape.return_value = (10000, 10000, 1)
+        large_image_path = self.tmp_folder / 'image_10000x10000.png'
+        imageio.imwrite(large_image_path, np.zeros((10000, 10000), dtype=np.uint8))
 
-            try:
-                imread(self.precision_path / filename, allow_large_images=True)
-            except IOError:
-                pytest.fail("imread raised IOError unexpectedly when allow_large_images is True.")
+        try:
+            imread(large_image_path, allow_large_images=True)
+        finally:
+            large_image_path.unlink()
 
     # --------------imwrite tests-------------- #
     @pytest.mark.unit
