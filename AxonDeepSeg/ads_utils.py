@@ -19,7 +19,7 @@ from loguru import logger
 from AxonDeepSeg.params import valid_extensions
 import re
 
-# Raised pixel limit for large scientific images (e.g. TEM whole-slide acquisitions).
+# Raised pixel limit for large scientific images.
 # PIL's default is ~178M pixels; 1B pixels accommodates most microscopy use cases.
 _LARGE_IMAGE_PIXEL_LIMIT = 1_000_000_000
 
