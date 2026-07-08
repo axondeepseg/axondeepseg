@@ -144,11 +144,6 @@
                </item>
 
                <item>
-                <widget class="QCheckBox" name="stack_check">
-                 <property name="text"><string>Treat as 3D stack (multi-page TIFF)</string></property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QCheckBox" name="large_check">
                  <property name="text"><string>Allow large images  (&gt; 178 Mpx)</string></property>
                 </widget>
@@ -188,31 +183,6 @@
                    <item><property name="text"><string>Dedicated — BF</string></property></item>
                    <item><property name="text"><string>Dedicated — CARS</string></property></item>
                    <item><property name="text"><string>Unmyelinated — TEM (Stanford)</string></property></item>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-
-               <item>
-                <layout class="QHBoxLayout" name="gpuRow">
-                 <item>
-                  <widget class="QLabel" name="gpuLabel">
-                   <property name="text"><string>GPU</string></property>
-                   <property name="minimumWidth"><number>110</number></property>
-                   <property name="maximumWidth"><number>110</number></property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="gpu_combo">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch><verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <item><property name="text"><string>CPU  (gpu-id = -1)</string></property></item>
-                   <item><property name="text"><string>GPU 0</string></property></item>
-                   <item><property name="text"><string>GPU 1</string></property></item>
-                   <item><property name="text"><string>GPU 2</string></property></item>
                   </widget>
                  </item>
                 </layout>
@@ -264,13 +234,17 @@
                  </item>
                  <item>
                   <widget class="QLineEdit" name="out_edit">
-                   <property name="placeholderText"><string>Same folder as input (default)</string></property>
+                   <property name="enabled"><bool>false</bool></property>
+                   <property name="placeholderText"><string>Same folder as input (not configurable yet)</string></property>
+                   <property name="toolTip"><string>Outputs are always saved next to the input images for now.</string></property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QPushButton" name="outBrowseBtn">
+                   <property name="enabled"><bool>false</bool></property>
                    <property name="text"><string>Browse</string></property>
                    <property name="maximumWidth"><number>80</number></property>
+                   <property name="toolTip"><string>Outputs are always saved next to the input images for now.</string></property>
                   </widget>
                  </item>
                 </layout>

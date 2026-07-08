@@ -9,22 +9,11 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5 import uic
 
+from AxonDeepSeg.ads_gui.backend import SegmentThread, MorphometricsThread, DownloadThread
+
 UI_FILE = Path(__file__).parent / "ads_gui.ui"
 MODEL_CARDS_FILE = Path(__file__).parent.parent / "model_cards.yaml"
 MODELS_DIR = Path(__file__).parent.parent / "models"
-
-# Mock version/release info per model key (key = "<card_key>__<variant>")
-MODEL_VERSIONS = {
-    "generalist__light":          {"version": "r20240416", "date": "Apr 16, 2024", "up_to_date": True},
-    "generalist__ensemble":       {"version": "r20240224", "date": "Feb 24, 2024", "up_to_date": False, "latest": "r20240416"},
-    "dedicated-BF__light":        {"version": "r20240416", "date": "Apr 16, 2024", "up_to_date": True},
-    "dedicated-SEM__light":       {"version": "r20240403", "date": "Apr 3, 2024",  "up_to_date": True},
-    "dedicated-SEM__ensemble":    {"version": "r20240403", "date": "Apr 3, 2024",  "up_to_date": True},
-    "dedicated-CARS__light":      {"version": "r20240403", "date": "Apr 3, 2024",  "up_to_date": True},
-    "dedicated-CARS__ensemble":   {"version": "r20240403", "date": "Apr 3, 2024",  "up_to_date": True},
-    "unmyelinated-TEM__light":    {"version": "v2.0.0",    "date": "Jul 8, 2024",  "up_to_date": True},
-    "unmyelinated-TEM__ensemble": {"version": "r20240708", "date": "Jul 8, 2024",  "up_to_date": True},
-}
 
 # ──────────────────────────────────────────────────────────────────
 # Model catalogue
@@ -41,7 +30,7 @@ def _load_catalogue():
         has_ensemble = card["weights"].get("ensemble") is not None
 
         entries = [{
-            "key": f"{key}__light",
+            "card_key": key,
             "full_name": f"{card['full_name']}_light",
             "variant": "light",
             "installed": installed_light,
@@ -50,7 +39,7 @@ def _load_catalogue():
         }]
         if has_ensemble:
             entries.append({
-                "key": f"{key}__ensemble",
+                "card_key": key,
                 "full_name": card["full_name"],
                 "variant": "ensemble",
                 "installed": installed_ensemble,
@@ -137,6 +126,7 @@ class ADSWindow(QMainWindow):
 
         self._dark = True
         self._catalogue = _load_catalogue()
+        self._active_thread = None
 
         self._setup_segment_tab()
         self._setup_morphometrics_tab()
@@ -144,10 +134,13 @@ class ADSWindow(QMainWindow):
 
         self.run_btn.clicked.connect(self._on_run)
         self.stop_btn.setEnabled(False)
+        self.stop_btn.clicked.connect(self._on_stop)
         self.tabWidget.currentChanged.connect(self._on_tab_changed)
 
         self.theme_btn.clicked.connect(self._toggle_theme)
         self.napari_btn.clicked.connect(self._open_napari)
+
+        self.progress.setTextVisible(False)
 
         self._apply_theme()
 
@@ -155,21 +148,26 @@ class ADSWindow(QMainWindow):
 
     def _setup_segment_tab(self):
         self.batch_list.clear()
-
-        self.model_combo.clear()
-        self._seg_model_entries = []
-        for group in self._catalogue.values():
-            for entry in group["entries"]:
-                tag = "  ✓" if entry["installed"] else ""
-                self.model_combo.addItem(f"{group['display_name']} ({entry['variant']}){tag}")
-                self._seg_model_entries.append(entry)
+        self._populate_segment_model_combo()
 
         self.inputBrowseBtn.clicked.connect(self._seg_browse_file)
         self.addFilesBtn.clicked.connect(self._seg_add_files)
         self.addFolderBtn.clicked.connect(self._seg_add_folder)
         self.removeBtn.clicked.connect(self._seg_remove)
         self.customBrowseBtn.clicked.connect(self._seg_browse_custom)
-        self.outBrowseBtn.clicked.connect(self._seg_browse_output)
+
+    def _populate_segment_model_combo(self):
+        current_text = self.model_combo.currentText().split("  ✓")[0] if self.model_combo.count() else None
+        self.model_combo.clear()
+        self._seg_model_entries = []
+        for group in self._catalogue.values():
+            for entry in group["entries"]:
+                tag = "  ✓" if entry["installed"] else ""
+                label = f"{group['display_name']} ({entry['variant']})"
+                self.model_combo.addItem(f"{label}{tag}")
+                self._seg_model_entries.append(entry)
+                if current_text == label:
+                    self.model_combo.setCurrentIndex(self.model_combo.count() - 1)
 
     def _seg_browse_file(self):
         paths, _ = QFileDialog.getOpenFileNames(
@@ -206,10 +204,44 @@ class ADSWindow(QMainWindow):
         if folder:
             self.custom_edit.setText(folder)
 
-    def _seg_browse_output(self):
-        folder = QFileDialog.getExistingDirectory(self, "Select output folder")
-        if folder:
-            self.out_edit.setText(folder)
+    def _seg_collect_paths(self):
+        paths = [self.batch_list.item(i).text() for i in range(self.batch_list.count())]
+        if not paths and self.input_edit.text().strip():
+            paths = [self.input_edit.text().strip()]
+        return paths
+
+    def _seg_resolve_model_path(self):
+        custom = self.custom_edit.text().strip()
+        if custom:
+            return Path(custom)
+
+        row = self.model_combo.currentIndex()
+        if row < 0 or row >= len(self._seg_model_entries):
+            return None
+        entry = self._seg_model_entries[row]
+        if not entry["installed"]:
+            self._log(
+                f"{entry['full_name']} is not installed. "
+                "Go to the Models tab and download it first."
+            )
+            return None
+        return MODELS_DIR / entry["full_name"]
+
+    def _run_segmentation(self):
+        paths = self._seg_collect_paths()
+        if not paths:
+            self._log("Add an image, a folder, or a batch queue before running.")
+            return
+        path_model = self._seg_resolve_model_path()
+        if path_model is None:
+            return
+
+        thread = SegmentThread()
+        thread.paths = paths
+        thread.path_model = path_model
+        thread.allow_large_images = self.large_check.isChecked()
+        thread.run_morph_after = self.morpho_after.isChecked()
+        self._start_thread(thread)
 
     # ── Morphometrics tab ─────────────────────────────────────────
 
@@ -219,6 +251,34 @@ class ADSWindow(QMainWindow):
         self.morphAddFilesBtn.clicked.connect(self._morph_add_files)
         self.morphAddFolderBtn.clicked.connect(self._morph_add_folder)
         self.morphRemoveBtn.clicked.connect(self._morph_remove)
+
+        # Mode checkboxes are mutually exclusive — the backend only supports one at a time.
+        self._mode_checks = {
+            "myelinated": self.mode_myelin,
+            "unmyelinated": self.mode_unmyelin,
+            "nerve": self.mode_nerve,
+        }
+        for mode, box in self._mode_checks.items():
+            box.clicked.connect(lambda checked, m=mode: self._on_mode_checked(m, checked))
+        self._on_mode_checked("myelinated", True)
+
+    def _on_mode_checked(self, mode, checked):
+        if not checked:
+            # keep at least one mode selected
+            self._mode_checks[mode].setChecked(True)
+            return
+        for m, box in self._mode_checks.items():
+            box.setChecked(m == mode)
+        # colorize/diameter overlay only apply to the myelinated mode
+        is_myelin = mode == "myelinated"
+        self.opt_colorize.setEnabled(is_myelin)
+        self.opt_diameter.setEnabled(is_myelin)
+
+    def _morph_current_mode(self):
+        for mode, box in self._mode_checks.items():
+            if box.isChecked():
+                return mode
+        return "myelinated"
 
     def _morph_browse(self):
         paths, _ = QFileDialog.getOpenFileNames(
@@ -250,9 +310,35 @@ class ADSWindow(QMainWindow):
         for item in self.morph_batch_list.selectedItems():
             self.morph_batch_list.takeItem(self.morph_batch_list.row(item))
 
+    def _morph_collect_paths(self):
+        paths = [self.morph_batch_list.item(i).text() for i in range(self.morph_batch_list.count())]
+        if not paths and self.morph_input_edit.text().strip():
+            paths = [self.morph_input_edit.text().strip()]
+        return paths
+
+    def _run_morphometrics(self):
+        paths = self._morph_collect_paths()
+        if not paths:
+            self._log("Add a mask, a folder, or a batch queue before running.")
+            return
+
+        thread = MorphometricsThread()
+        thread.paths = paths
+        thread.mode = self._morph_current_mode()
+        thread.axon_shape = "ellipse" if self.shape_combo.currentText().startswith("ellipse") else "circle"
+        thread.pixel_size = self.px_spin.value() or None
+        thread.out_name = self.out_name.text().strip() or "axon_morphometrics.xlsx"
+        thread.colorize = self.opt_colorize.isChecked()
+        thread.diameter_overlay = self.opt_diameter.isChecked()
+        self._start_thread(thread)
+
     # ── Models tab ────────────────────────────────────────────────
 
     def _setup_models_tab(self):
+        self.model_list.currentRowChanged.connect(self._on_model_selected)
+        self._populate_models_list()
+
+    def _populate_models_list(self):
         self.model_list.clear()
         self._model_tab_entries = []
 
@@ -261,8 +347,6 @@ class ADSWindow(QMainWindow):
                 tag = "  ✓" if entry["installed"] else ""
                 self.model_list.addItem(f"{group['display_name']} ({entry['variant']}){tag}")
                 self._model_tab_entries.append((group, entry))
-
-        self.model_list.currentRowChanged.connect(self._on_model_selected)
 
         if self.model_list.count() > 0:
             self.model_list.setCurrentRow(0)
@@ -275,41 +359,87 @@ class ADSWindow(QMainWindow):
         self.model_id.setText(f"ID: {entry['full_name']}")
         self.desc_box.setPlainText(entry["info"])
         self.px_label.setText(_px_display(entry["pixel_size"]))
+        self.version_label.setText("")
 
         if entry["installed"]:
             self.status_badge.setText("✓  Installed")
         else:
             self.status_badge.setText("Not installed")
 
-        ver = MODEL_VERSIONS.get(entry["key"], {})
-        if ver:
-            date = ver["date"]
-            version = ver["version"]
-            if ver["up_to_date"]:
-                self.version_label.setText(f"{version}  ·  {date}  ·  Up to date")
-            else:
-                latest = ver.get("latest", "")
-                self.version_label.setText(f"{version}  ·  {date}  ·  Update available ({latest})")
-        else:
-            self.version_label.setText("")
+    def _refresh_catalogue(self):
+        """Reload install status from disk and repopulate the Segment/Models dropdowns
+        without touching the batch queues or re-registering any signal connections."""
+        self._catalogue = _load_catalogue()
+        current_model_row = self.model_list.currentRow()
+        self._populate_segment_model_combo()
+        self._populate_models_list()
+        if 0 <= current_model_row < self.model_list.count():
+            self.model_list.setCurrentRow(current_model_row)
 
-    def _on_download(self):
+    def _run_download(self):
         row = self.model_list.currentRow()
         if row < 0:
             return
-        group, entry = self._model_tab_entries[row]
-        self._log(f"Download not yet wired — would download {group['display_name']} ({entry['variant']})")
+        _, entry = self._model_tab_entries[row]
+        if entry["installed"]:
+            self._log(f"{entry['full_name']} is already installed.")
+            return
 
-    # ── Run / Download ────────────────────────────────────────────
+        thread = DownloadThread()
+        thread.model_key = entry["card_key"]
+        thread.variant = entry["variant"]
+        self._start_thread(thread)
+
+    # ── Run / Stop dispatch ──────────────────────────────────────
 
     def _on_tab_changed(self, index):
         self.run_btn.setText("Download" if index == 2 else "Run")
 
     def _on_run(self):
-        if self.tabWidget.currentIndex() == 2:
-            self._on_download()
+        index = self.tabWidget.currentIndex()
+        if index == 0:
+            self._run_segmentation()
+        elif index == 1:
+            self._run_morphometrics()
         else:
-            self._log("Segmentation backend not yet wired.")
+            self._run_download()
+
+    def _on_stop(self):
+        if self._active_thread is not None:
+            self._active_thread.cancel_requested = True
+            self.stop_btn.setEnabled(False)
+
+    def _start_thread(self, thread):
+        self._active_thread = thread
+        thread.log.connect(self._log)
+        if hasattr(thread, "progress"):
+            thread.progress.connect(self._on_progress)
+        thread.finished_ok.connect(self._on_thread_finished)
+
+        self.run_btn.setEnabled(False)
+        self.stop_btn.setEnabled(hasattr(thread, "cancel_requested"))
+        self.progress.setRange(0, 0)
+        self.progress_label.setText("Running…")
+
+        thread.start()
+
+    def _on_progress(self, current, total, desc):
+        if total:
+            self.progress.setRange(0, total)
+            self.progress.setValue(current)
+        else:
+            self.progress.setRange(0, 0)
+        self.progress_label.setText(f"{desc} ({current}/{total})" if total else desc)
+
+    def _on_thread_finished(self, success):
+        self.run_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        self.progress.setRange(0, 1)
+        self.progress.setValue(1 if success else 0)
+        self.progress_label.setText("Done." if success else "Finished with errors — see log.")
+        self._active_thread = None
+        # Models/installed status may have changed (download, or a model auto-installed).
+        self._refresh_catalogue()
 
     # ── Helpers ───────────────────────────────────────────────────
 
