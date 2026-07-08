@@ -8,6 +8,7 @@ Qt signals so the main window can update itself from the GUI thread.
 from pathlib import Path
 from typing import List, Optional
 
+import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from AxonDeepSeg import ads_utils as ads
@@ -24,6 +25,66 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import (
     save_nerve_morphometrics_to_json, remove_outside_nerve, compute_axon_density,
 )
 from AxonDeepSeg.download_model import download_model
+
+
+def resolve_segmented_image_path(img_path: Path) -> Path:
+    """Follow AxonDeepSeg/segment.py:prepare_inputs's file rename.
+
+    Segmentation converts the input to a '<stem>_grayscale.png' copy when it doesn't
+    already match the model's expected channel count/format, and writes its output
+    masks against that copy's name instead of the original file's. Downstream code
+    (morphometrics) needs to resolve to whichever one the masks actually live next to.
+    """
+    grayscale_candidate = img_path.parent / (img_path.stem + "_grayscale.png")
+    return grayscale_candidate if grayscale_candidate.exists() else img_path
+
+
+def find_result_masks(img_path: Path) -> dict:
+    """Locate whichever segmentation masks exist next to img_path.
+
+    Models can output myelinated axons (axon + myelin), unmyelinated axons
+    (uaxon), or both at once (e.g. the Stanford model) — so these are checked
+    independently rather than as an either/or.
+    """
+    def _existing(suffix):
+        p = img_path.parent / (img_path.stem + str(suffix))
+        return p if p.exists() else None
+
+    return {
+        "axon": _existing(axon_suffix),
+        "myelin": _existing(myelin_suffix),
+        "uaxon": _existing(unmyelinated_suffix),
+    }
+
+
+# Matches the napari plugin's mask colors (AxonDeepSeg/ads_napari/_widget.py) for
+# axon/myelin; unmyelinated axons get green since they're a distinct class.
+_AXON_COLOR = np.array([0, 0, 255], dtype=np.float32)
+_MYELIN_COLOR = np.array([255, 0, 0], dtype=np.float32)
+_UAXON_COLOR = np.array([0, 255, 0], dtype=np.float32)
+
+
+def compose_overlay(image: np.ndarray, axon: Optional[np.ndarray] = None,
+                     myelin: Optional[np.ndarray] = None, uaxon: Optional[np.ndarray] = None,
+                     alpha: float = 0.45) -> np.ndarray:
+    """Alpha-blend segmentation masks over a grayscale image for a quick visual check.
+
+    Returns an (H, W, 3) uint8 RGB array. Axon is blue, myelin is red,
+    unmyelinated axon is green.
+    """
+    if image.ndim == 3:
+        image = image[..., 0]
+    base = np.stack([image.astype(np.float32)] * 3, axis=-1)
+
+    out = base.copy()
+    for mask, color in ((myelin, _MYELIN_COLOR), (axon, _AXON_COLOR), (uaxon, _UAXON_COLOR)):
+        if mask is None:
+            continue
+        thresh = mask.max() / 2 if mask.max() > 0 else 127
+        m = mask > thresh
+        out[m] = out[m] * (1 - alpha) + color * alpha
+
+    return np.clip(out, 0, 255).astype(np.uint8)
 
 
 def expand_to_image_files(paths: List[str]) -> List[Path]:
@@ -62,6 +123,18 @@ class SegmentThread(QThread):
         self.allow_large_images = False
         self.run_morph_after = False
         self.cancel_requested = False
+        # Populated on success with one entry per segmented image that has at least
+        # one output mask: {"image": Path, "axon": Path|None, "myelin": Path|None}.
+        self.segmented_results: List[dict] = []
+
+    @staticmethod
+    def _pick_gpu() -> int:
+        """Auto-detect a usable GPU. No UI toggle: use GPU 0 if available, else CPU."""
+        try:
+            n_gpus = ads.check_available_gpus(None)
+        except Exception:
+            return -1
+        return 0 if n_gpus > 0 else -1
 
     def run(self):
         import nnunetv2.inference.predict_from_raw_data as nnunet_predictor
@@ -90,18 +163,27 @@ class SegmentThread(QThread):
             if not image_files:
                 self.log.emit("No images found in the selected input(s).")
                 return
-            self.log.emit(f"Segmenting {len(image_files)} image(s) with {self.path_model.name} (CPU)...")
+            gpu_id = self._pick_gpu()
+            device_desc = f"GPU {gpu_id}" if gpu_id >= 0 else "CPU"
+            self.log.emit(f"Segmenting {len(image_files)} image(s) with {self.path_model.name} ({device_desc})...")
             segment.segment_images(
                 path_images=image_files,
                 path_model=self.path_model,
-                gpu_id=-1,
+                gpu_id=gpu_id,
                 verbosity_level=0,
                 allow_large_images=self.allow_large_images,
             )
+            # Belt and suspenders: some nnU-Net internals swallow the InterruptedError
+            # raised from _gui_tqdm and return normally, so re-check the flag here
+            # instead of only relying on the exception below.
+            if self.cancel_requested:
+                self.log.emit("Segmentation cancelled.")
+                return
             success = True
             self.log.emit("Segmentation done.")
+            self.segmented_results = self._collect_results(image_files)
 
-            if self.run_morph_after and not self.cancel_requested:
+            if self.run_morph_after:
                 self._run_morphometrics_after(image_files)
         except InterruptedError:
             self.log.emit("Segmentation cancelled.")
@@ -111,16 +193,26 @@ class SegmentThread(QThread):
             nnunet_predictor.tqdm = _original_tqdm
         self.finished_ok.emit(success)
 
+    def _collect_results(self, image_files: List[Path]) -> List[dict]:
+        results = []
+        for img_path in image_files:
+            resolved = resolve_segmented_image_path(img_path)
+            masks = find_result_masks(resolved)
+            if masks["axon"] is not None or masks["uaxon"] is not None:
+                results.append({"image": resolved, **masks})
+        return results
+
     def _run_morphometrics_after(self, image_files: List[Path]):
         from AxonDeepSeg.morphometrics.launch_morphometrics_computation import (
             launch_morphometrics_computation,
         )
         for img_path in image_files:
-            matches = sorted(img_path.parent.glob(img_path.stem + "*" + str(axonmyelin_suffix)))
-            if not matches:
+            resolved = resolve_segmented_image_path(img_path)
+            mask_path = resolved.parent / (resolved.stem + str(axonmyelin_suffix))
+            if not mask_path.exists():
                 continue
             try:
-                launch_morphometrics_computation(img_path, matches[0], axon_shape="circle")
+                launch_morphometrics_computation(resolved, mask_path, axon_shape="circle")
                 self.log.emit(f"Morphometrics computed for {img_path.name}.")
             except Exception as e:
                 self.log.emit(f"Morphometrics failed for {img_path.name}: {e}")
@@ -195,11 +287,12 @@ class MorphometricsThread(QThread):
             for f in candidates:
                 if f.suffix.lower() not in valid_extensions or str(f).endswith(generated_file_suffixes):
                     continue
-                if not (f.parent / (f.stem + str(target_suffix))).exists():
+                resolved = resolve_segmented_image_path(f)
+                if not (resolved.parent / (resolved.stem + str(target_suffix))).exists():
                     continue
-                if f not in seen:
-                    targets.append(f)
-                    seen.add(f)
+                if resolved not in seen:
+                    targets.append(resolved)
+                    seen.add(resolved)
         return targets
 
     def _resolve_pixel_size(self, img_path: Path) -> float:

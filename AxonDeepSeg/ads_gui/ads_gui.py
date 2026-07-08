@@ -4,16 +4,27 @@ import sys
 from pathlib import Path
 
 import yaml
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QFileDialog, QMessageBox
 )
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5 import uic
 
 from AxonDeepSeg.ads_gui.backend import SegmentThread, MorphometricsThread, DownloadThread
+from AxonDeepSeg.ads_gui.preview import PreviewDialog
 
 UI_FILE = Path(__file__).parent / "ads_gui.ui"
 MODEL_CARDS_FILE = Path(__file__).parent.parent / "model_cards.yaml"
 MODELS_DIR = Path(__file__).parent.parent / "models"
+# Circles-only mark (background-removed) for the window/taskbar icon — the full
+# wordmark logo below has a white background box that looks bad at icon size.
+APP_ICON_FILE = Path(__file__).parent / "app_icon.png"
+# Full "AxonDeepSeg" wordmark, already used elsewhere in the app (ads_napari plugin
+# panel) — shown in the main window header instead of a plain text title. Dark text
+# on dark theme is unreadable, so there's a white-text variant for that case.
+HEADER_LOGO_FILE_DARK_THEME = Path(__file__).parent.parent / "logo_ads-alpha_white.png"
+HEADER_LOGO_FILE_LIGHT_THEME = Path(__file__).parent.parent / "logo_ads-alpha.png"
 
 # ──────────────────────────────────────────────────────────────────
 # Model catalogue
@@ -25,8 +36,10 @@ def _load_catalogue():
 
     catalogue = {}
     for key, card in raw.items():
+        # download_model() always names the installed folder "<full_name>_<variant>"
+        # (see AxonDeepSeg/download_model.py) — both variants need the suffix here too.
         installed_light = (MODELS_DIR / f"{card['full_name']}_light").exists()
-        installed_ensemble = (MODELS_DIR / card["full_name"]).exists()
+        installed_ensemble = (MODELS_DIR / f"{card['full_name']}_ensemble").exists()
         has_ensemble = card["weights"].get("ensemble") is not None
 
         entries = [{
@@ -40,7 +53,7 @@ def _load_catalogue():
         if has_ensemble:
             entries.append({
                 "card_key": key,
-                "full_name": card["full_name"],
+                "full_name": f"{card['full_name']}_ensemble",
                 "variant": "ensemble",
                 "installed": installed_ensemble,
                 "info": card.get("model-info", ""),
@@ -124,9 +137,13 @@ class ADSWindow(QMainWindow):
         super().__init__()
         uic.loadUi(UI_FILE, self)
 
+        if APP_ICON_FILE.exists():
+            self.setWindowIcon(QIcon(str(APP_ICON_FILE)))
+
         self._dark = True
         self._catalogue = _load_catalogue()
         self._active_thread = None
+        self._preview_dialog = None
 
         self._setup_segment_tab()
         self._setup_morphometrics_tab()
@@ -135,6 +152,9 @@ class ADSWindow(QMainWindow):
         self.run_btn.clicked.connect(self._on_run)
         self.stop_btn.setEnabled(False)
         self.stop_btn.clicked.connect(self._on_stop)
+        self.visualize_btn.clicked.connect(self._on_visualize_clicked)
+        self.run_another_btn.clicked.connect(self._on_run_another_clicked)
+        self._last_segment_results = []
         self.tabWidget.currentChanged.connect(self._on_tab_changed)
 
         self.theme_btn.clicked.connect(self._toggle_theme)
@@ -148,6 +168,7 @@ class ADSWindow(QMainWindow):
 
     def _setup_segment_tab(self):
         self.batch_list.clear()
+        self.model_hint.linkActivated.connect(lambda _: self.tabWidget.setCurrentIndex(2))
         self._populate_segment_model_combo()
 
         self.inputBrowseBtn.clicked.connect(self._seg_browse_file)
@@ -157,17 +178,32 @@ class ADSWindow(QMainWindow):
         self.customBrowseBtn.clicked.connect(self._seg_browse_custom)
 
     def _populate_segment_model_combo(self):
-        current_text = self.model_combo.currentText().split("  ✓")[0] if self.model_combo.count() else None
+        current_text = self.model_combo.currentText() if self.model_combo.count() else None
         self.model_combo.clear()
         self._seg_model_entries = []
+        n_missing = 0
         for group in self._catalogue.values():
             for entry in group["entries"]:
-                tag = "  ✓" if entry["installed"] else ""
                 label = f"{group['display_name']} ({entry['variant']})"
-                self.model_combo.addItem(f"{label}{tag}")
+                if not entry["installed"]:
+                    n_missing += 1
+                    continue
+                self.model_combo.addItem(label)
                 self._seg_model_entries.append(entry)
                 if current_text == label:
                     self.model_combo.setCurrentIndex(self.model_combo.count() - 1)
+
+        if self.model_combo.count() == 0:
+            self.model_hint.setText(
+                '<a href="models">No models installed — go to the Models tab to download one</a>'
+            )
+        elif n_missing > 0:
+            plural = "s" if n_missing > 1 else ""
+            self.model_hint.setText(
+                f'<a href="models">{n_missing} more model{plural} available — see Models tab</a>'
+            )
+        else:
+            self.model_hint.setText("")
 
     def _seg_browse_file(self):
         paths, _ = QFileDialog.getOpenFileNames(
@@ -217,15 +253,10 @@ class ADSWindow(QMainWindow):
 
         row = self.model_combo.currentIndex()
         if row < 0 or row >= len(self._seg_model_entries):
+            self._log("No model installed. Go to the Models tab to download one.")
             return None
-        entry = self._seg_model_entries[row]
-        if not entry["installed"]:
-            self._log(
-                f"{entry['full_name']} is not installed. "
-                "Go to the Models tab and download it first."
-            )
-            return None
-        return MODELS_DIR / entry["full_name"]
+        # Every entry in this dropdown is guaranteed installed — see _populate_segment_model_combo.
+        return MODELS_DIR / self._seg_model_entries[row]["full_name"]
 
     def _run_segmentation(self):
         paths = self._seg_collect_paths()
@@ -396,6 +427,10 @@ class ADSWindow(QMainWindow):
         self.run_btn.setText("Download" if index == 2 else "Run")
 
     def _on_run(self):
+        if self._active_thread is not None:
+            # Belt and suspenders: run_btn is disabled while a job is active, so this
+            # shouldn't be reachable, but never let two jobs run concurrently regardless.
+            return
         index = self.tabWidget.currentIndex()
         if index == 0:
             self._run_segmentation()
@@ -410,6 +445,7 @@ class ADSWindow(QMainWindow):
             self.stop_btn.setEnabled(False)
 
     def _start_thread(self, thread):
+        self._exit_post_segment_state()
         self._active_thread = thread
         thread.log.connect(self._log)
         if hasattr(thread, "progress"):
@@ -418,6 +454,11 @@ class ADSWindow(QMainWindow):
 
         self.run_btn.setEnabled(False)
         self.stop_btn.setEnabled(hasattr(thread, "cancel_requested"))
+        # Lock the tabs (inputs, model pickers, batch queues, mode toggles, ...) while
+        # a job runs — the running thread already has its own copy of every parameter,
+        # so this is about avoiding a confusing "did that change anything?" mid-run,
+        # not correctness.
+        self.tabWidget.setEnabled(False)
         self.progress.setRange(0, 0)
         self.progress_label.setText("Running…")
 
@@ -432,14 +473,55 @@ class ADSWindow(QMainWindow):
         self.progress_label.setText(f"{desc} ({current}/{total})" if total else desc)
 
     def _on_thread_finished(self, success):
-        self.run_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
+        self.tabWidget.setEnabled(True)
         self.progress.setRange(0, 1)
         self.progress.setValue(1 if success else 0)
         self.progress_label.setText("Done." if success else "Finished with errors — see log.")
+
+        has_results = (
+            success and isinstance(self._active_thread, SegmentThread)
+            and self._active_thread.segmented_results
+        )
+        if has_results:
+            self._last_segment_results = self._active_thread.segmented_results
+            if self.preview_check.isChecked():
+                self._open_preview(self._last_segment_results)
+            self._enter_post_segment_state()
+        else:
+            self.run_btn.setEnabled(True)
+
         self._active_thread = None
         # Models/installed status may have changed (download, or a model auto-installed).
         self._refresh_catalogue()
+
+    def _enter_post_segment_state(self):
+        """After a segmentation run with results, swap Run/Stop for a more visible
+        way to see the results than the easy-to-miss 'Preview results' checkbox."""
+        self.run_btn.setVisible(False)
+        self.stop_btn.setVisible(False)
+        self.visualize_btn.setVisible(True)
+        self.run_another_btn.setVisible(True)
+
+    def _exit_post_segment_state(self):
+        self.visualize_btn.setVisible(False)
+        self.run_another_btn.setVisible(False)
+        self.run_btn.setVisible(True)
+        self.stop_btn.setVisible(True)
+        self.run_btn.setEnabled(True)
+
+    def _on_visualize_clicked(self):
+        self._open_preview(self._last_segment_results)
+
+    def _on_run_another_clicked(self):
+        self._exit_post_segment_state()
+
+    def _open_preview(self, results):
+        if not results:
+            self._log("Nothing to preview — no output masks were found.")
+            return
+        self._preview_dialog = PreviewDialog(results, parent=self)
+        self._preview_dialog.show()
 
     # ── Helpers ───────────────────────────────────────────────────
 
@@ -456,6 +538,13 @@ class ADSWindow(QMainWindow):
         else:
             self.setStyleSheet(LIGHT)
             self.theme_btn.setText("🌙  Dark")
+        self._apply_header_logo()
+
+    def _apply_header_logo(self):
+        logo_file = HEADER_LOGO_FILE_DARK_THEME if self._dark else HEADER_LOGO_FILE_LIGHT_THEME
+        if logo_file.exists():
+            pix = QPixmap(str(logo_file))
+            self.titleLabel.setPixmap(pix.scaledToHeight(64, Qt.SmoothTransformation))
 
     def _toggle_theme(self):
         self._dark = not self._dark
@@ -465,8 +554,8 @@ class ADSWindow(QMainWindow):
 
     def _open_napari(self):
         try:
-            import napari
-            napari.Viewer()
+            from AxonDeepSeg.ads_gui.napari_bridge import get_viewer
+            get_viewer()
             self._log("Opened napari viewer.")
         except ImportError:
             QMessageBox.warning(
@@ -476,7 +565,18 @@ class ADSWindow(QMainWindow):
 
 
 def main():
+    if sys.platform == "win32":
+        # Without this, Windows groups the app under python.exe's own icon in the
+        # taskbar instead of using the window icon set below.
+        import ctypes
+        try:
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("AxonDeepSeg.ADS.StandaloneGUI")
+        except Exception:
+            pass
+
     app = QApplication(sys.argv)
+    if APP_ICON_FILE.exists():
+        app.setWindowIcon(QIcon(str(APP_ICON_FILE)))
     win = ADSWindow()
     win.show()
     sys.exit(app.exec_())
