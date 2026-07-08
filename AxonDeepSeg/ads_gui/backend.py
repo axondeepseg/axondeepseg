@@ -102,6 +102,7 @@ def expand_to_image_files(paths: List[str]) -> List[Path]:
             if (
                 f.suffix.lower() in valid_extensions
                 and not str(f).endswith(generated_file_suffixes)
+                and not str(f).endswith("_grayscale.png")
                 and f not in seen
             ):
                 files.append(f)
@@ -138,8 +139,20 @@ class SegmentThread(QThread):
 
     def run(self):
         import nnunetv2.inference.predict_from_raw_data as nnunet_predictor
+        from loguru import logger
 
         _original_tqdm = nnunet_predictor.tqdm
+
+        # segment_images is decorated with @logger.catch(reraise=False), which silently
+        # swallows all exceptions and returns None. To surface those errors in the GUI we
+        # add a temporary loguru sink that forwards ERROR-level records to the log signal.
+        _caught_error: List[str] = []
+
+        def _error_sink(msg):
+            _caught_error.append(msg.record["message"])
+            self.log.emit(f"Segmentation error: {msg.record['message']}")
+
+        _sink_id = logger.add(_error_sink, level="ERROR", format="{message}")
 
         def _gui_tqdm(iterable=None, *args, **kwargs):
             kwargs.pop("disable", None)
@@ -173,6 +186,9 @@ class SegmentThread(QThread):
                 verbosity_level=0,
                 allow_large_images=self.allow_large_images,
             )
+            if _caught_error:
+                # @logger.catch swallowed an exception; error already forwarded to the log.
+                return
             # Belt and suspenders: some nnU-Net internals swallow the InterruptedError
             # raised from _gui_tqdm and return normally, so re-check the flag here
             # instead of only relying on the exception below.
@@ -191,6 +207,7 @@ class SegmentThread(QThread):
             self.log.emit(f"Segmentation failed: {e}")
         finally:
             nnunet_predictor.tqdm = _original_tqdm
+            logger.remove(_sink_id)
         self.finished_ok.emit(success)
 
     def _collect_results(self, image_files: List[Path]) -> List[dict]:

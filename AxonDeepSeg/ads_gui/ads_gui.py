@@ -193,17 +193,21 @@ class ADSWindow(QMainWindow):
                 if current_text == label:
                     self.model_combo.setCurrentIndex(self.model_combo.count() - 1)
 
-        if self.model_combo.count() == 0:
+        installed = self.model_combo.count()
+        if installed == 0:
             self.model_hint.setText(
                 '<a href="models">No models installed — go to the Models tab to download one</a>'
             )
-        elif n_missing > 0:
+            self.model_hint.setVisible(True)
+        elif installed == 1 and n_missing > 0:
             plural = "s" if n_missing > 1 else ""
             self.model_hint.setText(
                 f'<a href="models">{n_missing} more model{plural} available — see Models tab</a>'
             )
+            self.model_hint.setVisible(True)
         else:
             self.model_hint.setText("")
+            self.model_hint.setVisible(False)
 
     def _seg_browse_file(self):
         paths, _ = QFileDialog.getOpenFileNames(
