@@ -69,6 +69,7 @@ AxonDeepSeg = "AxonDeepSeg.ads_napari:napari.yaml"
 "User Support" = "https://github.com/axondeepseg/axondeepseg/issues"
 
 [project.scripts]
+ads_gui = "AxonDeepSeg.ads_gui.ads_gui:main"
 download_model = "AxonDeepSeg.download_model:main"
 download_tests = "AxonDeepSeg.download_tests:main"
 axondeepseg = "AxonDeepSeg.segment:main"
