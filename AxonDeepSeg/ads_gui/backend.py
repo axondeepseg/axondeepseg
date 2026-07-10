@@ -149,6 +149,8 @@ class SegmentThread(QThread):
         _caught_error: List[str] = []
 
         def _error_sink(msg):
+            if self.cancel_requested:
+                return
             _caught_error.append(msg.record["message"])
             self.log.emit(f"Segmentation error: {msg.record['message']}")
 
@@ -208,7 +210,7 @@ class SegmentThread(QThread):
         finally:
             nnunet_predictor.tqdm = _original_tqdm
             logger.remove(_sink_id)
-        self.finished_ok.emit(success)
+            self.finished_ok.emit(success)
 
     def _collect_results(self, image_files: List[Path]) -> List[dict]:
         results = []
