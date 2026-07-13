@@ -1,0 +1,30 @@
+# Keep the build context small. Without this, the local conda env alone (~2.2 GB)
+# would be uploaded to the Docker daemon on every build.
+
+# Local install / dev environments
+ads_conda/
+bin/
+install_ads_log.txt
+*.egg-info/
+.venv/
+
+# Downloaded at build time inside the image, not copied from the host
+AxonDeepSeg/models/
+test/__test_files__/
+
+# Not needed to build or run the service
+.git/
+.github/
+docs/
+notebooks/
+test/
+*.log
+
+# Python cruft
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# OS cruft
+.DS_Store

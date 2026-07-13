@@ -14,6 +14,7 @@ or masks persisted to object storage.
 import asyncio
 import base64
 import io
+import os
 import tempfile
 import threading
 import uuid
@@ -23,6 +24,7 @@ from typing import Dict, Optional
 
 import imageio
 import numpy as np
+import torch
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from loguru import logger
@@ -56,6 +58,22 @@ _JOBS: Dict[str, "Job"] = {}
 _JOBS_LOCK = threading.Lock()
 
 
+def resolve_gpu_id() -> int:
+    """
+    Which GPU to run inference on; -1 means CPU.
+
+    Defaults to the first GPU whenever CUDA is available, so that a container
+    scheduled onto a GPU instance actually uses it — the ADS default is -1 (CPU),
+    which would otherwise mean paying for a GPU and never touching it.
+    Set ADS_GPU_ID to pin a specific device, or to -1 to force CPU.
+    """
+    configured = os.environ.get('ADS_GPU_ID')
+    if configured is not None:
+        return int(configured)
+
+    return 0 if torch.cuda.is_available() else -1
+
+
 @dataclass
 class Job:
     id: str
@@ -69,7 +87,7 @@ def run_segmentation(
     image_bytes: bytes,
     suffix: str = '.png',
     model_path: Optional[Path] = None,
-    gpu_id: int = -1,
+    gpu_id: Optional[int] = None,
 ) -> Dict[str, np.ndarray]:
     """
     Segment a single in-memory image.
@@ -93,6 +111,9 @@ def run_segmentation(
     model_path = Path(model_path) if model_path is not None else MODEL_PATH
     if not model_path.exists():
         raise FileNotFoundError(f'Model not found at {model_path}.')
+
+    if gpu_id is None:
+        gpu_id = resolve_gpu_id()
 
     file_format, n_channels = get_model_input_format(model_path)
     if n_channels != 1:
@@ -143,9 +164,13 @@ async def _run_job(job_id: str, image_bytes: bytes, suffix: str) -> None:
     with _JOBS_LOCK:
         _JOBS[job_id].status = 'running'
 
+    gpu_id = resolve_gpu_id()
+
     try:
         # Inference blocks (torch); keep it off the event loop.
-        masks = await asyncio.to_thread(run_segmentation, image_bytes, suffix)
+        masks = await asyncio.to_thread(
+            run_segmentation, image_bytes, suffix, gpu_id=gpu_id
+        )
     except (Exception, SystemExit) as exc:
         # SystemExit is caught on purpose: several functions down the ADS call chain
         # exit the process on bad input, which must fail this job rather than take
@@ -193,7 +218,15 @@ def ready():
             status_code=503,
             content={'model_available': False, 'model': str(MODEL_PATH)},
         )
-    return {'model_available': True, 'model': MODEL_PATH.name}
+
+    gpu_id = resolve_gpu_id()
+
+    return {
+        'model_available': True,
+        'model': MODEL_PATH.name,
+        # Surfaced so a GPU deployment can be spotted running on CPU by mistake.
+        'device': 'cpu' if gpu_id < 0 else f'cuda:{gpu_id}',
+    }
 
 
 @app.post('/segment', status_code=202)

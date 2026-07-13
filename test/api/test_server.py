@@ -2,6 +2,7 @@
 
 import base64
 import io
+import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -12,7 +13,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-from AxonDeepSeg.api.server import app, _JOBS
+from AxonDeepSeg.api.server import app, resolve_gpu_id, _JOBS
 from AxonDeepSeg.params import intensity
 
 
@@ -229,6 +230,40 @@ class TestCore(object):
 
         assert body['status'] == 'done'
         assert 'axon1' not in str(mock_run.call_args)
+
+    # --------------gpu selection tests-------------- #
+    @pytest.mark.unit
+    def test_gpu_id_is_cpu_when_no_cuda_is_available(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with patch('torch.cuda.is_available', return_value=False):
+                assert resolve_gpu_id() == -1
+
+    @pytest.mark.unit
+    def test_gpu_id_defaults_to_first_gpu_when_cuda_is_available(self):
+        # Without this, a container on a GPU instance would silently run on CPU.
+        with patch.dict(os.environ, {}, clear=True):
+            with patch('torch.cuda.is_available', return_value=True):
+                assert resolve_gpu_id() == 0
+
+    @pytest.mark.unit
+    def test_gpu_id_env_var_overrides_autodetection(self):
+        with patch.dict(os.environ, {'ADS_GPU_ID': '1'}, clear=True):
+            with patch('torch.cuda.is_available', return_value=True):
+                assert resolve_gpu_id() == 1
+
+    @pytest.mark.unit
+    def test_segmentation_runs_on_the_resolved_gpu(self):
+        with patch.dict(os.environ, {'ADS_GPU_ID': '0'}, clear=True):
+            with patch(
+                'AxonDeepSeg.api.server.run_segmentation',
+                return_value=_fake_masks(),
+            ) as mock_run:
+                self.client.post(
+                    '/segment',
+                    files={'file': ('image.png', self.uploadBytes, 'image/png')},
+                )
+
+        assert mock_run.call_args.kwargs['gpu_id'] == 0
 
     # --------------end-to-end test-------------- #
     @pytest.mark.integration

@@ -95,12 +95,23 @@ axondeepseg_aggregate = "AxonDeepSeg.morphometrics.aggregate:main"
 ads_server = "AxonDeepSeg.api.server:main"
 
 [tool.setuptools]
-packages = ["AxonDeepSeg", "AxonDeepSeg.api"]
-package-dir = {AxonDeepSeg = "AxonDeepSeg"}
 include-package-data = true
 
+# Discover subpackages (visualization, morphometrics, qa, testing, api, ads_napari)
+# explicitly. They previously reached the wheel only because setuptools_scm sweeps in
+# git-tracked files, so building from a source tree with no .git -- a Docker build
+# context, for instance -- silently dropped them and produced a package where
+# `import AxonDeepSeg.apply_model` fails on AxonDeepSeg.visualization.
+[tool.setuptools.packages.find]
+include = ["AxonDeepSeg*"]
+namespaces = false
+
 [tool.setuptools.package-data]
-"*" = ["*.yaml"]
+# version.txt is read by AxonDeepSeg/__init__.py at import time. It must be declared
+# here: it otherwise only lands in the wheel because setuptools_scm sweeps in
+# git-tracked files, so building from a source tree with no .git (e.g. a Docker build
+# context) produces a package that cannot be imported.
+"*" = ["*.yaml", "version.txt"]
 "AxonDeepSeg.api" = ["static/*.html"]
 
 [tool.setuptools.dynamic]
