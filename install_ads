@@ -658,17 +658,21 @@ print info "Installing Python dependencies..."
 # This is necessary in order to install 'macosx_11_0' wheels. See also:
 # https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/4352
 print info "Installing Python dependencies..."
+# The [gui] extra pulls in napari and its Qt stack. It is an extra rather than a base
+# dependency so that AxonDeepSeg can also be installed headless (see pyproject.toml),
+# but a desktop install wants it: it is what provides the napari plugin.
+# [test] adds playwright, used by the browser tests for the HTTP API.
 if [[ "$OS" == "osx" ]] && [[ "$PROCESSOR" == "x86_64" ]]; then
-  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . \
+  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e ".[gui,test]" \
     -c /tmp/ads_intel_mac_constraints.txt && \
     print info "Installing axondeepseg..." && \
-    "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . \
+    "$CONDA_DIR"/envs/venv_ads/bin/pip install -e ".[gui,test]" \
       -c /tmp/ads_intel_mac_constraints.txt || die "Failed running pip install: $?"
 else
-  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . \
+  SYSTEM_VERSION_COMPAT=0 "$CONDA_DIR"/envs/venv_ads/bin/pip install -e ".[gui,test]" \
     --ignore-installed certifi && \
     print info "Installing axondeepseg..." && \
-    "$CONDA_DIR"/envs/venv_ads/bin/pip install -e . || die "Failed running pip install: $?"
+    "$CONDA_DIR"/envs/venv_ads/bin/pip install -e ".[gui,test]" || die "Failed running pip install: $?"
 fi
 
 print info "All requirements installed!"

@@ -24,7 +24,7 @@ from typing import Dict, Optional
 import imageio
 import numpy as np
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from loguru import logger
 
 from AxonDeepSeg.apply_model import axon_segmentation
@@ -37,6 +37,9 @@ from AxonDeepSeg.segment import (
 )
 
 MODEL_PATH = DEFAULT_MODEL_PATH
+
+# Reference frontend, served same-origin so the browser needs no CORS config.
+DEMO_PAGE_PATH = Path(__file__).parent / 'static' / 'index.html'
 
 MASK_SUFFIXES = {
     'axon': axon_suffix,
@@ -167,6 +170,12 @@ app = FastAPI(
     title='AxonDeepSeg',
     description='Axon and myelin segmentation from microscopy images.',
 )
+
+
+@app.get('/', include_in_schema=False)
+def demo_page():
+    """A minimal browser client for the segmentation API."""
+    return FileResponse(DEMO_PAGE_PATH, media_type='text/html')
 
 
 @app.get('/health')

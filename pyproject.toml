@@ -41,23 +41,36 @@ dependencies =[
     "pytest",
     "pytest-cov",
     "prettytable",
-    "jupyter",
     "openpyxl",
-    "qtconsole<5.4.2",
-    "napari[pyqt5,optional-base,bermuda]<0.7.0",
     "acvl_utils!=0.2.1",
     "nnunetv2==2.2.1",
     "loguru",
     "torch<2.4.0",
     "pydicom<3",
-    "pytest-qt",
-    "magicgui",
-    "qtpy",
     "jinja2",
     "fastapi",
     "uvicorn[standard]",
     "python-multipart",
     "httpx",
+]
+
+# The napari plugin and its Qt stack are kept out of the base install so that
+# AxonDeepSeg can be installed headless — in a server or inference container,
+# where a desktop GUI toolkit is dead weight. PyQt5 also publishes no linux-aarch64
+# wheel, so a base install that required it could not build on ARM (e.g. Graviton).
+# Qt/napari imports are confined to AxonDeepSeg/ads_napari/.
+[project.optional-dependencies]
+gui = [
+    "napari[pyqt5,optional-base,bermuda]<0.7.0",
+    "magicgui",
+    "qtpy",
+    "qtconsole<5.4.2",
+    "pytest-qt",
+    "jupyter",
+]
+# Browser-driven tests for the HTTP API (test/api/test_server_integration.py).
+test = [
+    "playwright",
 ]
 
 keywords = ["axon", "myelin", "segmentation", "microscopy"]
@@ -82,12 +95,13 @@ axondeepseg_aggregate = "AxonDeepSeg.morphometrics.aggregate:main"
 ads_server = "AxonDeepSeg.api.server:main"
 
 [tool.setuptools]
-packages = ["AxonDeepSeg"]
+packages = ["AxonDeepSeg", "AxonDeepSeg.api"]
 package-dir = {AxonDeepSeg = "AxonDeepSeg"}
 include-package-data = true
 
 [tool.setuptools.package-data]
 "*" = ["*.yaml"]
+"AxonDeepSeg.api" = ["static/*.html"]
 
 [tool.setuptools.dynamic]
 version = {attr = "AxonDeepSeg.__init__.__version__"}

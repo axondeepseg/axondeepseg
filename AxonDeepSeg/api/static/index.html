@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AxonDeepSeg</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 60rem;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      line-height: 1.5;
+    }
+    h1 { margin-bottom: 0.25rem; }
+    .subtitle { opacity: 0.7; margin-top: 0; }
+    .controls { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin: 1.5rem 0; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.5; }
+    #status { font-variant-numeric: tabular-nums; }
+    #status[data-status="failed"] { color: #c0392b; }
+    #error { color: #c0392b; white-space: pre-wrap; }
+    .masks { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
+    figure { margin: 0; }
+    figcaption { font-size: 0.875rem; opacity: 0.7; margin-bottom: 0.35rem; }
+    img { width: 100%; border: 1px solid rgba(128, 128, 128, 0.4); background: #fff; }
+    img:not([src]) { display: none; }
+  </style>
+</head>
+<body>
+  <h1>AxonDeepSeg</h1>
+  <p class="subtitle">Axon and myelin segmentation from microscopy images.</p>
+
+  <div class="controls">
+    <input type="file" id="file-input" accept=".png,.tif,.tiff,.jpg,.jpeg">
+    <button id="segment-button">Segment</button>
+    <span id="status" data-status="idle">Idle</span>
+  </div>
+
+  <p id="error"></p>
+
+  <div class="masks">
+    <figure>
+      <figcaption>Axon</figcaption>
+      <img id="axon" alt="Axon mask">
+    </figure>
+    <figure>
+      <figcaption>Myelin</figcaption>
+      <img id="myelin" alt="Myelin mask">
+    </figure>
+    <figure>
+      <figcaption>Axon + myelin</figcaption>
+      <img id="axonmyelin" alt="Combined axon and myelin mask">
+    </figure>
+  </div>
+
+  <script>
+    const POLL_INTERVAL_MS = 1000;
+    const MASKS = ['axon', 'myelin', 'axonmyelin'];
+
+    const fileInput = document.getElementById('file-input');
+    const segmentButton = document.getElementById('segment-button');
+    const statusEl = document.getElementById('status');
+    const errorEl = document.getElementById('error');
+
+    function setStatus(status, message) {
+      statusEl.dataset.status = status;
+      statusEl.textContent = message ?? status;
+    }
+
+    function reset() {
+      errorEl.textContent = '';
+      MASKS.forEach((name) => document.getElementById(name).removeAttribute('src'));
+    }
+
+    async function poll(jobId) {
+      const response = await fetch(`/segment/${jobId}`);
+      if (!response.ok) throw new Error(`Polling failed: HTTP ${response.status}`);
+      const job = await response.json();
+
+      if (job.status === 'failed') {
+        errorEl.textContent = job.error;
+        setStatus('failed', 'failed');
+        return;
+      }
+
+      if (job.status !== 'done') {
+        setStatus(job.status, job.status);
+        setTimeout(() => poll(jobId), POLL_INTERVAL_MS);
+        return;
+      }
+
+      MASKS.forEach((name) => {
+        document.getElementById(name).src = `data:image/png;base64,${job[name]}`;
+      });
+      // The test waits on this attribute, so set it only once the masks are attached.
+      setStatus('done', `done — ${job.meta.shape.join(' × ')} px, ${job.meta.model}`);
+    }
+
+    segmentButton.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        setStatus('idle', 'Choose an image first.');
+        return;
+      }
+
+      reset();
+      segmentButton.disabled = true;
+
+      try {
+        const body = new FormData();
+        body.append('file', file);
+
+        const response = await fetch('/segment', { method: 'POST', body });
+        if (!response.ok) {
+          const detail = await response.json().catch(() => ({}));
+          throw new Error(detail.detail ?? `HTTP ${response.status}`);
+        }
+
+        const job = await response.json();
+        setStatus(job.status, job.status);
+        await poll(job.job_id);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        setStatus('failed', 'failed');
+      } finally {
+        segmentButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+# Runs the HTTP API test suite: the in-process tests, plus the end-to-end tests that
+# launch a real uvicorn server and drive the demo page in a real browser.
+#
+# This deliberately installs AxonDeepSeg *headless* -- plain pip, no conda, and without
+# the [gui] extra -- rather than going through install_ads. Two reasons:
+#
+#   1. It is the install a server or inference container actually uses, so this workflow
+#      is what stops the API from silently growing a dependency on the napari/Qt stack.
+#   2. It is fast, and it works on ARM. PyQt5 has no linux-aarch64 wheel, so a [gui]
+#      install cannot even build there.
+#
+# These tests live in their own workflow because they need a browser and run several
+# full segmentations; run_tests.yaml skips test_server_integration.py for that reason.
+
+name: Run API tests
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - '**'
+
+  schedule:
+    # Daily, same as the main suite.
+    - cron: '33 4 * * *'
+
+env:
+  DEBIAN_FRONTEND: 'noninteractive'
+
+jobs:
+  api_tests:
+    name: API tests on ubuntu-latest
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # No [gui] extra: if anything in the API path ever imports napari or Qt, this
+      # step is where it breaks, which is exactly what we want to catch.
+      - name: Install AxonDeepSeg (headless)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
+      - name: Set MKL_THREADING_LAYER
+        run: echo "MKL_THREADING_LAYER=GNU" >> $GITHUB_ENV
+
+      - name: Download the default model and test fixtures
+        run: |
+          download_model
+          download_tests
+
+      # The browser test skips itself when chromium is missing, so this step is what
+      # makes it actually run. --with-deps pulls the system libs chromium needs.
+      - name: Install chromium for Playwright
+        run: playwright install --with-deps chromium
+
+      - name: Test the API with pytest
+        run: pytest ./test/api/ -v
