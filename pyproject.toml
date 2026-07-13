@@ -54,6 +54,10 @@ dependencies =[
     "magicgui",
     "qtpy",
     "jinja2",
+    "fastapi",
+    "uvicorn[standard]",
+    "python-multipart",
+    "httpx",
 ]
 
 keywords = ["axon", "myelin", "segmentation", "microscopy"]
@@ -75,6 +79,7 @@ axondeepseg = "AxonDeepSeg.segment:main"
 axondeepseg_test = "AxonDeepSeg.integrity_test:main"
 axondeepseg_morphometrics = "AxonDeepSeg.morphometrics.launch_morphometrics_computation:main"
 axondeepseg_aggregate = "AxonDeepSeg.morphometrics.aggregate:main"
+ads_server = "AxonDeepSeg.api.server:main"
 
 [tool.setuptools]
 packages = ["AxonDeepSeg"]
