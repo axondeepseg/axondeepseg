@@ -12,6 +12,7 @@ import imageio
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+from skimage import draw
 
 from AxonDeepSeg.api.server import app, resolve_gpu_id
 from AxonDeepSeg.apply_model import clear_predictor_cache
@@ -24,6 +25,27 @@ def _fake_masks(shape=(16, 16)):
     myelin = np.zeros(shape, dtype=np.uint8)
     axon[2:6, 2:6] = intensity['axon']
     myelin[8:12, 8:12] = intensity['myelin']
+    axonmyelin = np.maximum(axon, myelin)
+
+    return {'axon': axon, 'myelin': myelin, 'axonmyelin': axonmyelin}
+
+
+def _fake_myelinated_axon(shape=(64, 64), centre=(32, 32), axon_r=8, myelin_r=13):
+    """A single myelinated axon: a filled disk ringed by an annulus of myelin.
+
+    Real morphometrics needs a real axon shape -- _fake_masks' squares have no
+    myelin wrapped around them, so no g-ratio can be computed.
+    """
+    axon = np.zeros(shape, dtype=np.uint8)
+    myelin = np.zeros(shape, dtype=np.uint8)
+
+    rr, cc = draw.disk(centre, axon_r, shape=shape)
+    axon[rr, cc] = intensity['axon']
+
+    rr, cc = draw.disk(centre, myelin_r, shape=shape)
+    myelin[rr, cc] = intensity['myelin']
+    myelin[axon > 0] = 0  # annulus only
+
     axonmyelin = np.maximum(axon, myelin)
 
     return {'axon': axon, 'myelin': myelin, 'axonmyelin': axonmyelin}
@@ -254,7 +276,110 @@ class TestCore(object):
 
         assert mock_run.call_args.kwargs['gpu_id'] == 0
 
-    # --------------end-to-end test-------------- #
+    # --------------POST /morphometrics tests-------------- #
+    def _post_morphometrics(self, pixel_size='0.07', axon_shape=None):
+        data = {'pixel_size': pixel_size}
+        if axon_shape is not None:
+            data['axon_shape'] = axon_shape
+
+        return self.client.post(
+            '/morphometrics',
+            files={'file': ('image.png', self.uploadBytes, 'image/png')},
+            data=data,
+        )
+
+    @pytest.mark.unit
+    def test_morphometrics_without_pixel_size_returns_422(self):
+        # Diameters and g-ratios are meaningless without it, so it is not optional.
+        response = self.client.post(
+            '/morphometrics',
+            files={'file': ('image.png', self.uploadBytes, 'image/png')},
+        )
+
+        assert response.status_code == 422
+
+    @pytest.mark.unit
+    def test_morphometrics_with_bad_axon_shape_returns_400(self):
+        with patch(
+            'AxonDeepSeg.api.server.run_segmentation',
+            return_value=_fake_myelinated_axon(),
+        ):
+            response = self._post_morphometrics(axon_shape='hexagon')
+
+        assert response.status_code == 400
+
+    @pytest.mark.unit
+    def test_morphometrics_returns_one_row_per_axon(self):
+        with patch(
+            'AxonDeepSeg.api.server.run_segmentation',
+            return_value=_fake_myelinated_axon(),
+        ):
+            response = self._post_morphometrics()
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body['meta']['n_axons'] == 1
+        assert len(body['morphometrics']) == 1
+
+        axon = body['morphometrics'][0]
+        assert axon['gratio'] > 0
+        assert axon['axon_diam (um)'] > 0
+
+    @pytest.mark.unit
+    def test_morphometrics_scales_with_pixel_size(self):
+        # The pixel size is the only thing turning pixels into micrometres, so
+        # doubling it must double the reported diameters.
+        with patch(
+            'AxonDeepSeg.api.server.run_segmentation',
+            return_value=_fake_myelinated_axon(),
+        ):
+            small = self._post_morphometrics(pixel_size='0.1').json()
+            large = self._post_morphometrics(pixel_size='0.2').json()
+
+        small_diam = small['morphometrics'][0]['axon_diam (um)']
+        large_diam = large['morphometrics'][0]['axon_diam (um)']
+
+        assert large_diam == pytest.approx(2 * small_diam, rel=1e-6)
+
+    @pytest.mark.unit
+    def test_morphometrics_also_returns_the_masks(self):
+        # One inference, everything the caller needs: no reason to make them POST
+        # the same image to /segment as well.
+        with patch(
+            'AxonDeepSeg.api.server.run_segmentation',
+            return_value=_fake_myelinated_axon(),
+        ):
+            body = self._post_morphometrics().json()
+
+        for mask_name in ['axon', 'myelin', 'axonmyelin']:
+            assert imageio.imread(base64.b64decode(body[mask_name])).shape == (64, 64)
+
+    # --------------end-to-end tests-------------- #
+    @pytest.mark.integration
+    def test_end_to_end_morphometrics_real_image(self):
+        response = self.client.post(
+            '/morphometrics',
+            files={
+                'file': (
+                    'image.png',
+                    self.demoImagePath.read_bytes(),
+                    'image/png',
+                )
+            },
+            data={'pixel_size': '0.07', 'axon_shape': 'circle'},
+        )
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+
+        # The demo image is dense with axons; a real run must find many.
+        assert body['meta']['n_axons'] > 10
+        assert len(body['morphometrics']) == body['meta']['n_axons']
+
+        first = body['morphometrics'][0]
+        for column in ['x0 (px)', 'y0 (px)', 'gratio', 'axon_diam (um)']:
+            assert column in first
+
     @pytest.mark.integration
     def test_end_to_end_segment_real_image(self):
         expected_shape = list(imageio.imread(self.demoImagePath).shape[:2])

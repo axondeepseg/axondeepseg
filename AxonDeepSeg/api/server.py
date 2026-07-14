@@ -17,6 +17,7 @@ queue rather than run in parallel. To serve more concurrency, run more replicas.
 import asyncio
 import base64
 import io
+import json
 import os
 import tempfile
 import threading
@@ -28,7 +29,7 @@ from typing import Dict, Optional
 import imageio
 import numpy as np
 import torch
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from loguru import logger
 
@@ -38,11 +39,17 @@ from AxonDeepSeg.apply_model import (
     segment_image_array,
 )
 from AxonDeepSeg.ads_utils import get_file_extension, imread
+from AxonDeepSeg.morphometrics.compute_morphometrics import (
+    get_axon_morphometrics,
+    rearrange_column_names_for_saving,
+)
 from AxonDeepSeg.segment import (
     DEFAULT_MODEL_PATH,
     get_model_input_format,
     get_model_type,
 )
+
+AXON_SHAPES = ('circle', 'ellipse')
 
 MODEL_PATH = DEFAULT_MODEL_PATH
 
@@ -158,6 +165,56 @@ def _encode_png(array: np.ndarray) -> str:
     return base64.b64encode(buffer.getvalue()).decode('ascii')
 
 
+def _validate_upload(filename: Optional[str]) -> str:
+    """Return the upload's extension, or reject it."""
+    suffix = get_file_extension(filename or '')
+    if suffix is None or 'ome' in suffix:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Unsupported file type '{filename}'. Supported extensions: "
+                "'.png', '.tif', '.tiff', '.jpg', '.jpeg'."
+            ),
+        )
+
+    return suffix
+
+
+async def _segment_upload(file: UploadFile, suffix: str) -> Dict[str, np.ndarray]:
+    """Run inference on an upload, turning any failure into a 500."""
+    image_bytes = await file.read()
+    gpu_id = resolve_gpu_id()
+
+    try:
+        # Inference blocks (torch); keep it off the event loop.
+        return await asyncio.to_thread(
+            run_segmentation, image_bytes, suffix, gpu_id=gpu_id
+        )
+    except (Exception, SystemExit) as exc:
+        # SystemExit is caught on purpose: several functions down the ADS call chain
+        # exit the process on bad input, which must fail this request rather than take
+        # the whole server down with it.
+        logger.exception('Segmentation failed.')
+        raise HTTPException(
+            status_code=500,
+            detail=f'{type(exc).__name__}: {exc}',
+        ) from None
+
+
+def _masks_payload(masks: Dict[str, np.ndarray]) -> dict:
+    """The mask half of a response: base64 PNGs plus the image's shape."""
+    body = {
+        'meta': {
+            'model': MODEL_PATH.name,
+            'shape': list(masks['axonmyelin'].shape[:2]),
+        }
+    }
+    for name, mask in masks.items():
+        body[name] = _encode_png(mask)
+
+    return body
+
+
 app = FastAPI(
     title='AxonDeepSeg',
     description='Axon and myelin segmentation from microscopy images.',
@@ -227,42 +284,65 @@ async def warmup() -> dict:
 @app.post('/segment')
 async def segment(file: UploadFile = File(...)) -> dict:
     """Segment an image and return the masks as base64-encoded PNGs."""
-    suffix = get_file_extension(file.filename or '')
-    if suffix is None or 'ome' in suffix:
+    suffix = _validate_upload(file.filename)
+    masks = await _segment_upload(file, suffix)
+
+    return _masks_payload(masks)
+
+
+@app.post('/morphometrics')
+async def morphometrics(
+    file: UploadFile = File(...),
+    pixel_size: float = Form(..., description='Pixel size in micrometres.'),
+    axon_shape: str = Form('circle'),
+) -> dict:
+    """
+    Segment an image and measure every axon in it.
+
+    Returns one row per axon (diameter, g-ratio, myelin thickness, ...) alongside the
+    masks, so a caller that wants both does not have to pay for inference twice.
+
+    pixel_size is required and has no default: it is the only thing turning pixels into
+    micrometres, and a wrong one silently scales every diameter and thickness in the
+    result. The CLI reads it from a pixel_size_in_micrometer.txt beside the image;
+    over HTTP there is no such file, so the caller must say.
+    """
+    if axon_shape not in AXON_SHAPES:
         raise HTTPException(
             status_code=400,
-            detail=(
-                f"Unsupported file type '{file.filename}'. Supported extensions: "
-                "'.png', '.tif', '.tiff', '.jpg', '.jpeg'."
-            ),
+            detail=f"axon_shape must be one of {AXON_SHAPES}, got '{axon_shape}'.",
         )
 
-    image_bytes = await file.read()
-    gpu_id = resolve_gpu_id()
+    suffix = _validate_upload(file.filename)
+    masks = await _segment_upload(file, suffix)
 
     try:
-        # Inference blocks (torch); keep it off the event loop.
-        masks = await asyncio.to_thread(
-            run_segmentation, image_bytes, suffix, gpu_id=gpu_id
+        stats = await asyncio.to_thread(
+            get_axon_morphometrics,
+            masks['axon'],
+            None,
+            masks['myelin'],
+            pixel_size,
+            axon_shape,
         )
     except (Exception, SystemExit) as exc:
-        # SystemExit is caught on purpose: several functions down the ADS call chain
-        # exit the process on bad input, which must fail this request rather than take
-        # the whole server down with it.
-        logger.exception('Segmentation failed.')
+        logger.exception('Morphometrics failed.')
         raise HTTPException(
             status_code=500,
             detail=f'{type(exc).__name__}: {exc}',
         ) from None
 
-    body = {
-        'meta': {
-            'model': MODEL_PATH.name,
-            'shape': list(masks['axonmyelin'].shape[:2]),
-        }
-    }
-    for name, mask in masks.items():
-        body[name] = _encode_png(mask)
+    # Same column order and unit-bearing display names the xlsx/csv files use.
+    stats = rearrange_column_names_for_saving(stats)
+
+    body = _masks_payload(masks)
+    body['meta'].update({
+        'pixel_size': pixel_size,
+        'axon_shape': axon_shape,
+        'n_axons': len(stats),
+    })
+    # to_json handles NaN (-> null) and numpy scalars, which json.dumps chokes on.
+    body['morphometrics'] = json.loads(stats.to_json(orient='records'))
 
     return body
 
