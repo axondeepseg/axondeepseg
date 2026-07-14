@@ -56,7 +56,6 @@
   </div>
 
   <script>
-    const POLL_INTERVAL_MS = 1000;
     const WARMUP_DEBOUNCE_MS = 30000;
     const MASKS = ['axon', 'myelin', 'axonmyelin'];
 
@@ -88,30 +87,6 @@
       fetch('/warmup', { method: 'POST' }).catch(() => {});
     });
 
-    async function poll(jobId) {
-      const response = await fetch(`/segment/${jobId}`);
-      if (!response.ok) throw new Error(`Polling failed: HTTP ${response.status}`);
-      const job = await response.json();
-
-      if (job.status === 'failed') {
-        errorEl.textContent = job.error;
-        setStatus('failed', 'failed');
-        return;
-      }
-
-      if (job.status !== 'done') {
-        setStatus(job.status, job.status);
-        setTimeout(() => poll(jobId), POLL_INTERVAL_MS);
-        return;
-      }
-
-      MASKS.forEach((name) => {
-        document.getElementById(name).src = `data:image/png;base64,${job[name]}`;
-      });
-      // The test waits on this attribute, so set it only once the masks are attached.
-      setStatus('done', `done — ${job.meta.shape.join(' × ')} px, ${job.meta.model}`);
-    }
-
     segmentButton.addEventListener('click', async () => {
       const file = fileInput.files[0];
       if (!file) {
@@ -121,20 +96,26 @@
 
       reset();
       segmentButton.disabled = true;
+      setStatus('running', 'segmenting…');
 
       try {
         const body = new FormData();
         body.append('file', file);
 
+        // Synchronous: the masks come back in this response. No job id, no polling --
+        // a segmentation is ~2s on a GPU.
         const response = await fetch('/segment', { method: 'POST', body });
         if (!response.ok) {
           const detail = await response.json().catch(() => ({}));
           throw new Error(detail.detail ?? `HTTP ${response.status}`);
         }
 
-        const job = await response.json();
-        setStatus(job.status, job.status);
-        await poll(job.job_id);
+        const result = await response.json();
+        MASKS.forEach((name) => {
+          document.getElementById(name).src = `data:image/png;base64,${result[name]}`;
+        });
+        // The test waits on this attribute, so set it only once the masks are attached.
+        setStatus('done', `done — ${result.meta.shape.join(' × ')} px, ${result.meta.model}`);
       } catch (err) {
         errorEl.textContent = err.message;
         setStatus('failed', 'failed');

@@ -2,13 +2,16 @@
 HTTP service wrapping the AxonDeepSeg segmentation API.
 
 POST /segment accepts an image, runs nnU-Net inference, and returns the axon and
-myelin masks as base64-encoded PNGs. Work is done asynchronously: the POST returns
-202 with a job id, and the client polls GET /segment/{job_id} for the result.
+myelin masks as base64-encoded PNGs in the response.
 
-Deployment note: jobs are held in memory, so this serves correctly only as a single
-replica. Behind a round-robin load balancer a client that POSTs to one pod and polls
-another gets a 404. Multi-replica deployment needs a shared job store (e.g. Redis)
-or masks persisted to object storage.
+It is synchronous. An earlier version returned a job id for the client to poll,
+because a segmentation took ~50s. On a GPU, with the predictor cached and nnU-Net's
+per-call worker pool bypassed, it takes ~1.8s -- so there is nothing to poll for, and
+holding no job state means the service scales horizontally: any replica can answer any
+request.
+
+Inference is serialized within a process (see _INFERENCE_LOCK), so concurrent requests
+queue rather than run in parallel. To serve more concurrency, run more replicas.
 """
 
 import asyncio
@@ -18,16 +21,14 @@ import os
 import tempfile
 import threading
 import time
-import uuid
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Optional
 
 import imageio
 import numpy as np
 import torch
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from loguru import logger
 
@@ -55,9 +56,6 @@ DEMO_PAGE_PATH = Path(__file__).parent / 'static' / 'index.html'
 # silently wrong segmentations. nnU-Net also mutates process-global state (os.environ,
 # PIL's pixel limit) and writes into the input's directory.
 _INFERENCE_LOCK = threading.Lock()
-
-_JOBS: Dict[str, "Job"] = {}
-_JOBS_LOCK = threading.Lock()
 
 
 def resolve_gpu_id() -> int:
@@ -97,15 +95,6 @@ async def lifespan(app: FastAPI):
     if MODEL_PATH.exists():
         asyncio.create_task(asyncio.to_thread(warm_up))
     yield
-
-
-@dataclass
-class Job:
-    id: str
-    status: str = 'pending'  # pending | running | done | failed
-    masks: Optional[dict] = None
-    error: Optional[str] = None
-    meta: dict = field(default_factory=dict)
 
 
 def run_segmentation(
@@ -167,37 +156,6 @@ def _encode_png(array: np.ndarray) -> str:
     buffer = io.BytesIO()
     imageio.imwrite(buffer, array, format='png')
     return base64.b64encode(buffer.getvalue()).decode('ascii')
-
-
-async def _run_job(job_id: str, image_bytes: bytes, suffix: str) -> None:
-    with _JOBS_LOCK:
-        _JOBS[job_id].status = 'running'
-
-    gpu_id = resolve_gpu_id()
-
-    try:
-        # Inference blocks (torch); keep it off the event loop.
-        masks = await asyncio.to_thread(
-            run_segmentation, image_bytes, suffix, gpu_id=gpu_id
-        )
-    except (Exception, SystemExit) as exc:
-        # SystemExit is caught on purpose: several functions down the ADS call chain
-        # exit the process on bad input, which must fail this job rather than take
-        # the whole server down with it.
-        logger.exception(f'Segmentation job {job_id} failed.')
-        with _JOBS_LOCK:
-            _JOBS[job_id].status = 'failed'
-            _JOBS[job_id].error = f'{type(exc).__name__}: {exc}'
-        return
-
-    with _JOBS_LOCK:
-        job = _JOBS[job_id]
-        job.masks = masks
-        job.meta = {
-            'model': MODEL_PATH.name,
-            'shape': list(masks['axonmyelin'].shape[:2]),
-        }
-        job.status = 'done'
 
 
 app = FastAPI(
@@ -266,12 +224,9 @@ async def warmup() -> dict:
     }
 
 
-@app.post('/segment', status_code=202)
-async def segment(
-    background_tasks: BackgroundTasks,
-    file: UploadFile = File(...),
-) -> dict:
-    """Queue a segmentation. Returns a job id to poll."""
+@app.post('/segment')
+async def segment(file: UploadFile = File(...)) -> dict:
+    """Segment an image and return the masks as base64-encoded PNGs."""
     suffix = get_file_extension(file.filename or '')
     if suffix is None or 'ome' in suffix:
         raise HTTPException(
@@ -283,33 +238,31 @@ async def segment(
         )
 
     image_bytes = await file.read()
+    gpu_id = resolve_gpu_id()
 
-    job = Job(id=str(uuid.uuid4()))
-    with _JOBS_LOCK:
-        _JOBS[job.id] = job
+    try:
+        # Inference blocks (torch); keep it off the event loop.
+        masks = await asyncio.to_thread(
+            run_segmentation, image_bytes, suffix, gpu_id=gpu_id
+        )
+    except (Exception, SystemExit) as exc:
+        # SystemExit is caught on purpose: several functions down the ADS call chain
+        # exit the process on bad input, which must fail this request rather than take
+        # the whole server down with it.
+        logger.exception('Segmentation failed.')
+        raise HTTPException(
+            status_code=500,
+            detail=f'{type(exc).__name__}: {exc}',
+        ) from None
 
-    background_tasks.add_task(_run_job, job.id, image_bytes, suffix)
-
-    return {'job_id': job.id, 'status': job.status}
-
-
-@app.get('/segment/{job_id}')
-def get_segmentation(job_id: str) -> dict:
-    """Poll a segmentation job; returns the masks once it is done."""
-    with _JOBS_LOCK:
-        job = _JOBS.get(job_id)
-
-    if job is None:
-        raise HTTPException(status_code=404, detail=f'Unknown job {job_id}.')
-
-    body = {'job_id': job.id, 'status': job.status}
-
-    if job.status == 'failed':
-        body['error'] = job.error
-    elif job.status == 'done':
-        body['meta'] = job.meta
-        for name, mask in job.masks.items():
-            body[name] = _encode_png(mask)
+    body = {
+        'meta': {
+            'model': MODEL_PATH.name,
+            'shape': list(masks['axonmyelin'].shape[:2]),
+        }
+    }
+    for name, mask in masks.items():
+        body[name] = _encode_png(mask)
 
     return body
 

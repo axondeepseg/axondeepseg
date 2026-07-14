@@ -3,12 +3,10 @@
 """
 End-to-end tests against a *real* uvicorn process.
 
-test_server.py drives the app in-process with FastAPI's TestClient, which never
-opens a socket and runs background tasks to completion before the response is
-returned. That hides the behaviour that matters most here: whether POST /segment
-really does return 202 immediately and finish the work afterwards. These tests
-launch the server as a subprocess and talk to it over HTTP, and drive the demo
-page in a real browser.
+test_server.py drives the app in-process with FastAPI's TestClient, which never opens
+a socket. These tests launch the server as a subprocess, talk to it over real HTTP, and
+drive the demo page in a real browser -- so they exercise the multipart upload, the
+JSON response, and the page's own JavaScript the way a browser actually would.
 """
 
 import base64
@@ -117,16 +115,6 @@ class TestCore(object):
 
         raise RuntimeError('Server did not become healthy in time.')
 
-    def _poll_until_finished(self, job_id):
-        deadline = time.time() + SEGMENTATION_TIMEOUT_S
-        while time.time() < deadline:
-            body = requests.get(f'{self.baseUrl}/segment/{job_id}', timeout=10).json()
-            if body['status'] in ('done', 'failed'):
-                return body
-            time.sleep(1)
-
-        raise AssertionError(f'Job {job_id} did not finish in time.')
-
     # --------------live HTTP tests-------------- #
     @pytest.mark.integration
     def test_live_server_is_ready(self):
@@ -136,39 +124,18 @@ class TestCore(object):
         assert response.json()['model_available'] is True
 
     @pytest.mark.integration
-    def test_post_returns_202_without_waiting_for_inference(self):
-        # The whole point of the job API: the POST must come back immediately,
-        # long before the ~30s segmentation has finished.
-        start = time.time()
-        with open(self.imagePath, 'rb') as image:
-            response = requests.post(
-                f'{self.baseUrl}/segment',
-                files={'file': ('image.png', image, 'image/png')},
-                timeout=30,
-            )
-        elapsed = time.time() - start
-
-        assert response.status_code == 202
-        assert response.json()['status'] == 'pending'
-        assert elapsed < 10
-
-        # And the job does finish afterwards.
-        assert self._poll_until_finished(response.json()['job_id'])['status'] == 'done'
-
-    @pytest.mark.integration
     def test_live_server_segments_over_http(self):
         expected_shape = list(imageio.imread(self.imagePath).shape[:2])
 
         with open(self.imagePath, 'rb') as image:
-            job_id = requests.post(
+            response = requests.post(
                 f'{self.baseUrl}/segment',
                 files={'file': ('image.png', image, 'image/png')},
-                timeout=30,
-            ).json()['job_id']
+                timeout=SEGMENTATION_TIMEOUT_S,
+            )
 
-        body = self._poll_until_finished(job_id)
-
-        assert body['status'] == 'done', body.get('error')
+        assert response.status_code == 200, response.text
+        body = response.json()
         assert body['meta']['shape'] == expected_shape
 
         axon = _decode_mask(body['axon'])
@@ -179,17 +146,15 @@ class TestCore(object):
         assert np.any(axonmyelin == intensity['myelin'])
 
     @pytest.mark.integration
-    def test_live_server_survives_a_failed_job(self):
+    def test_live_server_survives_a_failed_segmentation(self):
         response = requests.post(
             f'{self.baseUrl}/segment',
             files={'file': ('image.png', b'not a real png', 'image/png')},
-            timeout=30,
+            timeout=SEGMENTATION_TIMEOUT_S,
         )
 
-        body = self._poll_until_finished(response.json()['job_id'])
-
-        assert body['status'] == 'failed'
-        assert body['error']
+        assert response.status_code == 500
+        assert response.json()['detail']
         # A crashed worker would fail this: the process must still be serving.
         assert requests.get(f'{self.baseUrl}/health', timeout=10).ok
 

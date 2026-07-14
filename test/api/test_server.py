@@ -13,16 +13,9 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-from AxonDeepSeg.api.server import app, resolve_gpu_id, _JOBS
+from AxonDeepSeg.api.server import app, resolve_gpu_id
 from AxonDeepSeg.apply_model import clear_predictor_cache
 from AxonDeepSeg.params import intensity
-
-
-def _png_bytes(array):
-    """Encode a numpy array as PNG bytes."""
-    buffer = io.BytesIO()
-    imageio.imwrite(buffer, array, format='png')
-    return buffer.getvalue()
 
 
 def _fake_masks(shape=(16, 16)):
@@ -68,51 +61,15 @@ class TestCore(object):
         self.uploadBytes = self.uploadPath.read_bytes()
 
     def teardown_method(self):
-        _JOBS.clear()
         clear_predictor_cache()
         if self.tmpDir.exists():
             shutil.rmtree(self.tmpDir)
 
-    # --------------warmup tests-------------- #
-    @pytest.mark.unit
-    def test_warmup_loads_the_predictor_and_reports_warm(self):
-        with patch('AxonDeepSeg.api.server.get_predictor') as mock_get:
-            response = self.client.post('/warmup')
-
-        assert response.status_code == 200
-        body = response.json()
-        assert body['warm'] is True
-        assert 'load_seconds' in body
-        mock_get.assert_called_once()
-
-    @pytest.mark.unit
-    def test_warmup_is_safe_to_call_repeatedly(self):
-        # The front-end fires this on every file-dialog open, so it must be idempotent.
-        with patch('AxonDeepSeg.api.server.get_predictor'):
-            first = self.client.post('/warmup')
-            second = self.client.post('/warmup')
-
-        assert first.status_code == 200
-        assert second.status_code == 200
-        assert second.json()['warm'] is True
-
-    @pytest.mark.unit
-    def test_ready_reports_a_cold_predictor_as_not_warm(self):
-        with patch('AxonDeepSeg.api.server.MODEL_PATH', self.tmpDir):
-            body = self.client.get('/ready').json()
-
-        assert body['warm'] is False
-
-    @pytest.mark.unit
-    def test_ready_reports_a_loaded_predictor_as_warm(self):
-        with patch('AxonDeepSeg.api.server.MODEL_PATH', self.tmpDir):
-            with patch(
-                'AxonDeepSeg.api.server.is_predictor_cached',
-                return_value=True,
-            ):
-                body = self.client.get('/ready').json()
-
-        assert body['warm'] is True
+    def _post(self, filename='image.png'):
+        return self.client.post(
+            '/segment',
+            files={'file': (filename, self.uploadBytes, 'image/png')},
+        )
 
     # --------------health/readiness tests-------------- #
     @pytest.mark.unit
@@ -137,6 +94,46 @@ class TestCore(object):
 
         assert response.status_code == 503
 
+    @pytest.mark.unit
+    def test_ready_reports_a_cold_predictor_as_not_warm(self):
+        with patch('AxonDeepSeg.api.server.MODEL_PATH', self.tmpDir):
+            body = self.client.get('/ready').json()
+
+        assert body['warm'] is False
+
+    @pytest.mark.unit
+    def test_ready_reports_a_loaded_predictor_as_warm(self):
+        with patch('AxonDeepSeg.api.server.MODEL_PATH', self.tmpDir):
+            with patch(
+                'AxonDeepSeg.api.server.is_predictor_cached',
+                return_value=True,
+            ):
+                body = self.client.get('/ready').json()
+
+        assert body['warm'] is True
+
+    # --------------warmup tests-------------- #
+    @pytest.mark.unit
+    def test_warmup_loads_the_predictor_and_reports_warm(self):
+        with patch('AxonDeepSeg.api.server.get_predictor') as mock_get:
+            response = self.client.post('/warmup')
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body['warm'] is True
+        assert 'load_seconds' in body
+        mock_get.assert_called_once()
+
+    @pytest.mark.unit
+    def test_warmup_is_safe_to_call_repeatedly(self):
+        # The demo page fires this on every file-dialog open.
+        with patch('AxonDeepSeg.api.server.get_predictor'):
+            first = self.client.post('/warmup')
+            second = self.client.post('/warmup')
+
+        assert first.status_code == 200
+        assert second.json()['warm'] is True
+
     # --------------POST /segment tests-------------- #
     @pytest.mark.unit
     def test_segment_without_file_returns_422(self):
@@ -154,44 +151,17 @@ class TestCore(object):
         assert response.status_code == 400
 
     @pytest.mark.unit
-    def test_segment_returns_202_with_job_id(self):
+    def test_segment_returns_the_masks_directly(self):
+        # Synchronous: inference is ~2s on a GPU, so there is no reason to make the
+        # client poll a job. No job store also means no single-replica constraint.
         with patch(
             'AxonDeepSeg.api.server.run_segmentation',
             return_value=_fake_masks(),
         ):
-            response = self.client.post(
-                '/segment',
-                files={'file': ('image.png', self.uploadBytes, 'image/png')},
-            )
-
-        assert response.status_code == 202
-        body = response.json()
-        assert body['job_id']
-        assert body['status'] == 'pending'
-
-    # --------------GET /segment/{job_id} tests-------------- #
-    @pytest.mark.unit
-    def test_get_unknown_job_returns_404(self):
-        response = self.client.get('/segment/does-not-exist')
-
-        assert response.status_code == 404
-
-    @pytest.mark.unit
-    def test_job_reaches_done_and_returns_three_masks(self):
-        with patch(
-            'AxonDeepSeg.api.server.run_segmentation',
-            return_value=_fake_masks(),
-        ):
-            job_id = self.client.post(
-                '/segment',
-                files={'file': ('image.png', self.uploadBytes, 'image/png')},
-            ).json()['job_id']
-
-            response = self.client.get(f'/segment/{job_id}')
+            response = self._post()
 
         assert response.status_code == 200
         body = response.json()
-        assert body['status'] == 'done'
         assert body['meta']['shape'] == [16, 16]
         for mask_name in ['axon', 'myelin', 'axonmyelin']:
             assert body[mask_name]
@@ -202,12 +172,7 @@ class TestCore(object):
             'AxonDeepSeg.api.server.run_segmentation',
             return_value=_fake_masks(),
         ):
-            job_id = self.client.post(
-                '/segment',
-                files={'file': ('image.png', self.uploadBytes, 'image/png')},
-            ).json()['job_id']
-
-            body = self.client.get(f'/segment/{job_id}').json()
+            body = self._post().json()
 
         for mask_name in ['axon', 'myelin', 'axonmyelin']:
             decoded = imageio.imread(base64.b64decode(body[mask_name]))
@@ -219,12 +184,7 @@ class TestCore(object):
             'AxonDeepSeg.api.server.run_segmentation',
             return_value=_fake_masks(),
         ):
-            job_id = self.client.post(
-                '/segment',
-                files={'file': ('image.png', self.uploadBytes, 'image/png')},
-            ).json()['job_id']
-
-            body = self.client.get(f'/segment/{job_id}').json()
+            body = self._post().json()
 
         axonmyelin = imageio.imread(base64.b64decode(body['axonmyelin']))
         expected = {
@@ -237,22 +197,16 @@ class TestCore(object):
 
     # --------------failure handling tests-------------- #
     @pytest.mark.unit
-    def test_inference_exception_marks_job_failed_and_server_survives(self):
+    def test_inference_failure_returns_500_and_server_survives(self):
         with patch(
             'AxonDeepSeg.api.server.run_segmentation',
             side_effect=RuntimeError('boom'),
         ):
-            job_id = self.client.post(
-                '/segment',
-                files={'file': ('image.png', self.uploadBytes, 'image/png')},
-            ).json()['job_id']
+            response = self._post()
 
-            body = self.client.get(f'/segment/{job_id}').json()
-
-        assert body['status'] == 'failed'
-        assert 'boom' in body['error']
+        assert response.status_code == 500
         # The process must still be serving: segment_images()'s sys.exit(2) would
-        # have torn the worker down instead of failing this one job.
+        # have torn the worker down instead of failing this one request.
         assert self.client.get('/health').status_code == 200
 
     @pytest.mark.unit
@@ -264,14 +218,9 @@ class TestCore(object):
             'AxonDeepSeg.api.server.run_segmentation',
             return_value=_fake_masks(),
         ) as mock_run:
-            job_id = self.client.post(
-                '/segment',
-                files={'file': ('axon1.png', self.uploadBytes, 'image/png')},
-            ).json()['job_id']
+            response = self._post(filename='axon1.png')
 
-            body = self.client.get(f'/segment/{job_id}').json()
-
-        assert body['status'] == 'done'
+        assert response.status_code == 200
         assert 'axon1' not in str(mock_run.call_args)
 
     # --------------gpu selection tests-------------- #
@@ -301,10 +250,7 @@ class TestCore(object):
                 'AxonDeepSeg.api.server.run_segmentation',
                 return_value=_fake_masks(),
             ) as mock_run:
-                self.client.post(
-                    '/segment',
-                    files={'file': ('image.png', self.uploadBytes, 'image/png')},
-                )
+                self._post()
 
         assert mock_run.call_args.kwargs['gpu_id'] == 0
 
@@ -323,11 +269,9 @@ class TestCore(object):
                 )
             },
         )
-        assert response.status_code == 202
-        job_id = response.json()['job_id']
 
-        body = self.client.get(f'/segment/{job_id}').json()
-        assert body['status'] == 'done', body.get('error')
+        assert response.status_code == 200
+        body = response.json()
         assert body['meta']['shape'] == expected_shape
 
         axon = imageio.imread(base64.b64decode(body['axon']))
