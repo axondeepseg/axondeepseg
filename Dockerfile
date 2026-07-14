@@ -45,8 +45,10 @@ RUN pip install --no-cache-dir .
 # 256 MB, and download_model() is unsafe at runtime anyway -- it sys.exit()s on
 # failure and unzips into the current working directory.
 #
-# To serve a different or additional model, add: RUN download_model -m dedicated-SEM
-RUN download_model
+RUN download_model -m generalist
+RUN download_model -m dedicated-BF
+RUN download_model -m dedicated-SEM
+RUN download_model -m unmyelinated-TEM
 
 # Drop privileges. Done after the installs so the model lands in root-owned
 # site-packages and the service only ever reads it.
