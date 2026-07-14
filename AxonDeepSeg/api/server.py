@@ -17,7 +17,9 @@ import io
 import os
 import tempfile
 import threading
+import time
 import uuid
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Optional
@@ -29,7 +31,11 @@ from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from loguru import logger
 
-from AxonDeepSeg.apply_model import axon_segmentation
+from AxonDeepSeg.apply_model import (
+    axon_segmentation,
+    get_predictor,
+    is_predictor_cached,
+)
 from AxonDeepSeg.ads_utils import get_file_extension, imread, imwrite
 from AxonDeepSeg.params import axon_suffix, axonmyelin_suffix, myelin_suffix
 from AxonDeepSeg.segment import (
@@ -49,9 +55,12 @@ MASK_SUFFIXES = {
     'axonmyelin': axonmyelin_suffix,
 }
 
-# nnU-Net's predictor writes into the input's directory and mutates process-global
-# state (os.environ, PIL's pixel limit), and spawns its own worker pool. Concurrent
-# segmentations would race, so inference is serialized.
+# Inference is serialized, and this is REQUIRED FOR CORRECTNESS -- do not remove it to
+# get concurrency. The predictor is now cached and shared across requests, and nnU-Net
+# mutates its network in place (network.load_state_dict is called per image) while the
+# forward pass releases the GIL. Two requests predicting at once would race and produce
+# silently wrong segmentations. nnU-Net also mutates process-global state (os.environ,
+# PIL's pixel limit) and writes into the input's directory.
 _INFERENCE_LOCK = threading.Lock()
 
 _JOBS: Dict[str, "Job"] = {}
@@ -72,6 +81,29 @@ def resolve_gpu_id() -> int:
         return int(configured)
 
     return 0 if torch.cuda.is_available() else -1
+
+
+def warm_up() -> float:
+    """
+    Load the model into memory. Blocking, idempotent, returns seconds spent.
+
+    A container that has not done this pays the checkpoint load on the user's first
+    request. Calling it while the user is still picking a file in their browser hides
+    that cost behind their own browse time.
+    """
+    started = time.perf_counter()
+    get_predictor(MODEL_PATH, get_model_type(MODEL_PATH), resolve_gpu_id())
+
+    return time.perf_counter() - started
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start loading the model as soon as the container boots, rather than waiting for
+    # a request. On a thread, so /health answers immediately while it loads.
+    if MODEL_PATH.exists():
+        asyncio.create_task(asyncio.to_thread(warm_up))
+    yield
 
 
 @dataclass
@@ -194,6 +226,7 @@ async def _run_job(job_id: str, image_bytes: bytes, suffix: str) -> None:
 app = FastAPI(
     title='AxonDeepSeg',
     description='Axon and myelin segmentation from microscopy images.',
+    lifespan=lifespan,
 )
 
 
@@ -226,6 +259,33 @@ def ready():
         'model': MODEL_PATH.name,
         # Surfaced so a GPU deployment can be spotted running on CPU by mistake.
         'device': 'cpu' if gpu_id < 0 else f'cuda:{gpu_id}',
+        # False means the next segmentation pays the checkpoint load first.
+        'warm': is_predictor_cached(MODEL_PATH, gpu_id),
+    }
+
+
+@app.post('/warmup')
+async def warmup() -> dict:
+    """
+    Load the model, so the next segmentation doesn't have to.
+
+    Idempotent and cheap once warm. The demo page fires this when the file dialog
+    opens, which spends the user's browse time on the checkpoint load instead of
+    making them wait for it after they hit Segment.
+    """
+    if not MODEL_PATH.exists():
+        raise HTTPException(
+            status_code=503,
+            detail=f'Model not found at {MODEL_PATH}.',
+        )
+
+    gpu_id = resolve_gpu_id()
+    load_seconds = await asyncio.to_thread(warm_up)
+
+    return {
+        'warm': True,
+        'device': 'cpu' if gpu_id < 0 else f'cuda:{gpu_id}',
+        'load_seconds': round(load_seconds, 2),
     }
 
 

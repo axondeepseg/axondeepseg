@@ -57,6 +57,7 @@
 
   <script>
     const POLL_INTERVAL_MS = 1000;
+    const WARMUP_DEBOUNCE_MS = 30000;
     const MASKS = ['axon', 'myelin', 'axonmyelin'];
 
     const fileInput = document.getElementById('file-input');
@@ -73,6 +74,19 @@
       errorEl.textContent = '';
       MASKS.forEach((name) => document.getElementById(name).removeAttribute('src'));
     }
+
+    // Pre-warm. Opening the file dialog is the earliest strong signal that a
+    // segmentation is coming, and the user then spends several seconds finding their
+    // image -- so spend that time loading the model instead of making them wait for it
+    // after they hit Segment. Fire-and-forget: /warmup is idempotent, and if it fails
+    // the segment request loads the model itself anyway.
+    let lastWarmup = 0;
+    fileInput.addEventListener('click', () => {
+      const now = Date.now();
+      if (now - lastWarmup < WARMUP_DEBOUNCE_MS) return;
+      lastWarmup = now;
+      fetch('/warmup', { method: 'POST' }).catch(() => {});
+    });
 
     async function poll(jobId) {
       const response = await fetch(`/segment/${jobId}`);

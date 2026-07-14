@@ -1,10 +1,11 @@
 from pathlib import Path
 import os
+import threading
 import numpy as np
 import torch
 from PIL import Image
 from loguru import logger
-from typing import List, Literal, NoReturn
+from typing import Dict, List, Literal, NoReturn, Tuple
 
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.merge_masks import merge_masks
@@ -114,6 +115,98 @@ def find_folds(
 
     return folds_avail
 
+# Initialized predictors, keyed by (model path, gpu_id). Loading a model means reading
+# a ~256 MB checkpoint off disk, deserializing it and building the network, which used
+# to happen on every single call — so a long-lived process (the HTTP service, or napari
+# segmenting several images in a session) paid it over and over.
+#
+# Reuse across calls is nnU-Net's own documented pattern (see nnunetv2/inference/
+# examples.py): the fold weights are re-loaded from an unmutated list_of_parameters
+# before every image, so a prediction cannot inherit dirty state from the previous one.
+_PREDICTOR_CACHE: Dict[Tuple[str, int], nnUNetPredictor] = {}
+_PREDICTOR_CACHE_LOCK = threading.Lock()
+
+
+def get_predictor(
+                path_model: Path,
+                model_type: Literal['light', 'ensemble']='light',
+                gpu_id: int=-1,
+                ) -> nnUNetPredictor:
+    '''
+    Return an initialized nnUNetPredictor, loading the checkpoint at most once per
+    (model, device).
+
+    NOT safe to predict with concurrently. nnU-Net mutates the network in place
+    (network.load_state_dict is called per image) and the forward pass releases the
+    GIL, so two threads sharing a predictor race and silently produce wrong
+    segmentations. Callers must serialize their predict calls.
+
+    Parameters
+    ----------
+    path_model : pathlib.Path
+        Path to the folder of the nnU-Net pretrained model.
+    model_type : Literal['light', 'ensemble'], optional
+        Type of model, by default 'light'.
+    gpu_id : int, optional
+        GPU ID to use for cuda acceleration. -1 to use CPU, by default -1.
+
+    Returns
+    -------
+    nnUNetPredictor
+        A predictor with the checkpoint already loaded.
+    '''
+    key = (str(Path(path_model).resolve()), gpu_id)
+
+    # Only the load is serialized, not the prediction: holding this across a slow
+    # checkpoint read would block unrelated callers.
+    with _PREDICTOR_CACHE_LOCK:
+        predictor = _PREDICTOR_CACHE.get(key)
+        if predictor is not None:
+            logger.info('Reusing cached model for device: {}'.format(predictor.device))
+            return predictor
+
+        folds_avail = find_folds(path_model, model_type)
+
+        predictor = nnUNetPredictor(
+            perform_everything_on_gpu=True if gpu_id >= 0 else False,
+            device=torch.device('cuda', gpu_id) if gpu_id >= 0 else torch.device('cpu'),
+        )
+        logger.info('Running inference on device: {}'.format(predictor.device))
+
+        # find checkpoint name (identical for all folds)
+        chkpt_name = get_checkpoint_name(path_model / f'fold_{folds_avail[0]}')
+        # init network architecture and load checkpoint
+        predictor.initialize_from_trained_model_folder(
+            str(path_model),
+            use_folds=folds_avail,
+            checkpoint_name=chkpt_name,
+        )
+        logger.info('Model successfully loaded.')
+
+        _PREDICTOR_CACHE[key] = predictor
+
+    return predictor
+
+
+def is_predictor_cached(path_model: Path, gpu_id: int=-1) -> bool:
+    '''
+    Whether the model is already loaded, i.e. whether a segmentation would skip the
+    checkpoint load. Lets a server report whether it is warm without loading anything.
+    '''
+    key = (str(Path(path_model).resolve()), gpu_id)
+
+    with _PREDICTOR_CACHE_LOCK:
+        return key in _PREDICTOR_CACHE
+
+
+def clear_predictor_cache() -> NoReturn:
+    '''
+    Drop every cached predictor, releasing the model from (GPU) memory.
+    '''
+    with _PREDICTOR_CACHE_LOCK:
+        _PREDICTOR_CACHE.clear()
+
+
 def axon_segmentation(
                     path_inputs: List[Path],
                     path_model: Path,
@@ -147,25 +240,8 @@ def axon_segmentation(
         Image.MAX_IMAGE_PIXELS = _LARGE_IMAGE_PIXEL_LIMIT
         os.environ["ADS_ALLOW_LARGE_IMAGES"] = "1"
 
-    # find all available folds
-    folds_avail = find_folds(path_model, model_type)
-
-    # instantiate predictor
-    predictor = nnUNetPredictor(
-        perform_everything_on_gpu=True if gpu_id >= 0 else False,
-        device=torch.device('cuda', gpu_id) if gpu_id >= 0 else torch.device('cpu'),
-    )
-    logger.info('Running inference on device: {}'.format(predictor.device))
-
-    # find checkpoint name (identical for all folds)
-    chkpt_name = get_checkpoint_name(path_model / f'fold_{folds_avail[0]}')
-    # init network architecture and load checkpoint
-    predictor.initialize_from_trained_model_folder(
-        str(path_model),
-        use_folds=folds_avail,
-        checkpoint_name=chkpt_name,
-    )
-    logger.info('Model successfully loaded.')
+    # Loaded once per (model, device) and reused: see get_predictor().
+    predictor = get_predictor(path_model, model_type, gpu_id)
 
     # create input list
     input_list = [ [str(p)] for p in path_inputs]

@@ -1,12 +1,15 @@
 # coding: utf-8
 
 from pathlib import Path
+from unittest.mock import patch
 import pytest
 
 from AxonDeepSeg.apply_model import (
-    get_checkpoint_name, 
+    get_checkpoint_name,
     extract_from_nnunet_prediction,
-    find_folds
+    find_folds,
+    get_predictor,
+    clear_predictor_cache
 )
 
 from AxonDeepSeg import ads_utils
@@ -57,10 +60,13 @@ class TestCore(object):
 
 
         self.temp_files = []
+        clear_predictor_cache()
 
     def teardown_method(self):
         for files in self.temp_files:
             files.unlink()
+        # A predictor left in the cache would leak into the next test.
+        clear_predictor_cache()
 
     # --------------get_checkpoint_name tests-------------- #
     @pytest.mark.unit
@@ -154,3 +160,42 @@ class TestCore(object):
         expected_folds_avail = ['0', '1', '2', '3', '4']
 
         assert folds_avail == expected_folds_avail
+
+    # --------------get_predictor tests-------------- #
+    @pytest.mark.unit
+    def test_get_predictor_loads_the_checkpoint_only_once(self):
+        # The checkpoint is ~256 MB. Reloading it per call is what made a warm
+        # container exactly as slow as a cold one.
+        with patch('AxonDeepSeg.apply_model.nnUNetPredictor') as mock_predictor:
+            get_predictor(self.nnunetModelLight, 'light', -1)
+            get_predictor(self.nnunetModelLight, 'light', -1)
+
+        instance = mock_predictor.return_value
+        assert instance.initialize_from_trained_model_folder.call_count == 1
+
+    @pytest.mark.unit
+    def test_get_predictor_returns_the_same_instance(self):
+        with patch('AxonDeepSeg.apply_model.nnUNetPredictor'):
+            first = get_predictor(self.nnunetModelLight, 'light', -1)
+            second = get_predictor(self.nnunetModelLight, 'light', -1)
+
+        assert first is second
+
+    @pytest.mark.unit
+    def test_get_predictor_reloads_for_a_different_device(self):
+        # The device is fixed at nnUNetPredictor construction, so a different
+        # gpu_id must not reuse the CPU predictor.
+        with patch('AxonDeepSeg.apply_model.nnUNetPredictor') as mock_predictor:
+            get_predictor(self.nnunetModelLight, 'light', -1)
+            get_predictor(self.nnunetModelLight, 'light', 0)
+
+        assert mock_predictor.call_count == 2
+
+    @pytest.mark.unit
+    def test_clear_predictor_cache_forces_a_reload(self):
+        with patch('AxonDeepSeg.apply_model.nnUNetPredictor') as mock_predictor:
+            get_predictor(self.nnunetModelLight, 'light', -1)
+            clear_predictor_cache()
+            get_predictor(self.nnunetModelLight, 'light', -1)
+
+        assert mock_predictor.call_count == 2

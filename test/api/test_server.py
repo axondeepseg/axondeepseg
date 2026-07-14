@@ -14,6 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from AxonDeepSeg.api.server import app, resolve_gpu_id, _JOBS
+from AxonDeepSeg.apply_model import clear_predictor_cache
 from AxonDeepSeg.params import intensity
 
 
@@ -68,8 +69,50 @@ class TestCore(object):
 
     def teardown_method(self):
         _JOBS.clear()
+        clear_predictor_cache()
         if self.tmpDir.exists():
             shutil.rmtree(self.tmpDir)
+
+    # --------------warmup tests-------------- #
+    @pytest.mark.unit
+    def test_warmup_loads_the_predictor_and_reports_warm(self):
+        with patch('AxonDeepSeg.api.server.get_predictor') as mock_get:
+            response = self.client.post('/warmup')
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body['warm'] is True
+        assert 'load_seconds' in body
+        mock_get.assert_called_once()
+
+    @pytest.mark.unit
+    def test_warmup_is_safe_to_call_repeatedly(self):
+        # The front-end fires this on every file-dialog open, so it must be idempotent.
+        with patch('AxonDeepSeg.api.server.get_predictor'):
+            first = self.client.post('/warmup')
+            second = self.client.post('/warmup')
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert second.json()['warm'] is True
+
+    @pytest.mark.unit
+    def test_ready_reports_a_cold_predictor_as_not_warm(self):
+        with patch('AxonDeepSeg.api.server.MODEL_PATH', self.tmpDir):
+            body = self.client.get('/ready').json()
+
+        assert body['warm'] is False
+
+    @pytest.mark.unit
+    def test_ready_reports_a_loaded_predictor_as_warm(self):
+        with patch('AxonDeepSeg.api.server.MODEL_PATH', self.tmpDir):
+            with patch(
+                'AxonDeepSeg.api.server.is_predictor_cached',
+                return_value=True,
+            ):
+                body = self.client.get('/ready').json()
+
+        assert body['warm'] is True
 
     # --------------health/readiness tests-------------- #
     @pytest.mark.unit
