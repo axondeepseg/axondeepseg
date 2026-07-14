@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import shutil
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 import pytest
@@ -9,11 +11,13 @@ from AxonDeepSeg.apply_model import (
     extract_from_nnunet_prediction,
     find_folds,
     get_predictor,
-    clear_predictor_cache
+    clear_predictor_cache,
+    axon_segmentation,
+    segment_image_array
 )
 
 from AxonDeepSeg import ads_utils
-from AxonDeepSeg.params import nnunet_suffix
+from AxonDeepSeg.params import nnunet_suffix, axon_suffix, myelin_suffix, axonmyelin_suffix
 
 import numpy as np
 
@@ -199,3 +203,44 @@ class TestCore(object):
             get_predictor(self.nnunetModelLight, 'light', -1)
 
         assert mock_predictor.call_count == 2
+
+    # --------------segment_image_array tests-------------- #
+    @pytest.mark.integration
+    def test_segment_image_array_matches_the_file_based_path(self):
+        # The in-memory path skips nnU-Net's per-call worker pool (~80% of a GPU
+        # request) by calling predict_single_npy_array instead of predict_from_files.
+        # It must produce exactly what the file-based path produces.
+        demo_image = (
+            self.projectPath /
+            'test' /
+            '__test_files__' /
+            '__test_demo_files__' /
+            'image.png'
+        )
+
+        tmp_dir = Path(tempfile.mkdtemp())
+        try:
+            staged = tmp_dir / 'input.png'
+            shutil.copy(demo_image, staged)
+
+            axon_segmentation(
+                path_inputs=[staged],
+                path_model=self.nnunetModelLight,
+                model_type='light',
+            )
+            from_files = {
+                'axon': ads_utils.imread(tmp_dir / ('input' + str(axon_suffix))),
+                'myelin': ads_utils.imread(tmp_dir / ('input' + str(myelin_suffix))),
+                'axonmyelin': ads_utils.imread(tmp_dir / ('input' + str(axonmyelin_suffix))),
+            }
+
+            in_memory = segment_image_array(
+                ads_utils.imread(demo_image),
+                self.nnunetModelLight,
+                model_type='light',
+            )
+        finally:
+            shutil.rmtree(tmp_dir)
+
+        for mask_name, expected in from_files.items():
+            assert np.array_equal(in_memory[mask_name], expected), mask_name

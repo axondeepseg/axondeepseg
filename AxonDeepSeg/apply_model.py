@@ -207,6 +207,75 @@ def clear_predictor_cache() -> NoReturn:
         _PREDICTOR_CACHE.clear()
 
 
+def segment_image_array(
+                    image: np.ndarray,
+                    path_model: Path,
+                    model_type: Literal['light', 'ensemble']='light',
+                    gpu_id: int=-1,
+                    ) -> Dict[str, np.ndarray]:
+    '''
+    Segment a single in-memory image and return the class masks, touching no disk.
+
+    axon_segmentation() goes through nnU-Net's predict_from_files(), which spawns a
+    fresh pool of ~8 worker processes on every call (each re-importing torch), writes
+    three JSON files, and round-trips the prediction through disk. Measured on a GPU,
+    that overhead is ~7.2s of a ~8.9s call -- the actual inference is ~1.7s. This path
+    calls predict_single_npy_array() on the cached predictor instead: no
+    multiprocessing, no temp files, no JSON.
+
+    Produces exactly what axon_segmentation() writes to disk. The input array is shaped
+    to match nnU-Net's own NaturalImage2DIO reader, which does
+    `skimage.io.imread(f)[None, None].astype(np.float32)` with spacing (999, 1, 1).
+
+    Parameters
+    ----------
+    image : np.ndarray
+        2D grayscale image, as returned by ads_utils.imread().
+    path_model : pathlib.Path
+        Path to the folder of the nnU-Net pretrained model.
+    model_type : Literal['light', 'ensemble'], optional
+        Type of model, by default 'light'.
+    gpu_id : int, optional
+        GPU ID to use for cuda acceleration. -1 to use CPU, by default -1.
+
+    Returns
+    -------
+    Dict[str, np.ndarray]
+        One mask per class, e.g. {'axon': ..., 'myelin': ..., 'axonmyelin': ...}, using
+        the ADS intensity encoding (axon=255, myelin=127, background=0).
+    '''
+    predictor = get_predictor(path_model, model_type, gpu_id)
+
+    prediction = predictor.predict_single_npy_array(
+        image[None, None].astype(np.float32),
+        {'spacing': (999, 1, 1)},
+        None,
+        None,
+        False,
+    )
+    prediction = np.squeeze(prediction)
+
+    output_structure = predictor.dataset_json['labels']
+    output_classes = sorted(list(output_structure.keys()))
+    output_classes.remove('background')
+
+    masks = {}
+    for c in output_classes:
+        mask = np.zeros_like(prediction, dtype=np.uint8)
+        mask[prediction == output_structure[c]] = intensity['binary']
+        masks[c] = mask
+    logger.info(f'Successfully segmented classes: {output_classes}.')
+
+    # Same merge as visualization.merge_masks(), in memory: axon=255, myelin=127.
+    if ['axon', 'myelin'] == output_classes:
+        masks['axonmyelin'] = (
+            (masks['axon'] / intensity['binary']) * intensity['axon']
+            + (masks['myelin'] / intensity['binary']) * intensity['myelin']
+        ).astype(np.uint8)
+
+    return masks
+
+
 def axon_segmentation(
                     path_inputs: List[Path],
                     path_model: Path,

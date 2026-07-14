@@ -32,12 +32,11 @@ from fastapi.responses import FileResponse, JSONResponse
 from loguru import logger
 
 from AxonDeepSeg.apply_model import (
-    axon_segmentation,
     get_predictor,
     is_predictor_cached,
+    segment_image_array,
 )
-from AxonDeepSeg.ads_utils import get_file_extension, imread, imwrite
-from AxonDeepSeg.params import axon_suffix, axonmyelin_suffix, myelin_suffix
+from AxonDeepSeg.ads_utils import get_file_extension, imread
 from AxonDeepSeg.segment import (
     DEFAULT_MODEL_PATH,
     get_model_input_format,
@@ -48,12 +47,6 @@ MODEL_PATH = DEFAULT_MODEL_PATH
 
 # Reference frontend, served same-origin so the browser needs no CORS config.
 DEMO_PAGE_PATH = Path(__file__).parent / 'static' / 'index.html'
-
-MASK_SUFFIXES = {
-    'axon': axon_suffix,
-    'myelin': myelin_suffix,
-    'axonmyelin': axonmyelin_suffix,
-}
 
 # Inference is serialized, and this is REQUIRED FOR CORRECTNESS -- do not remove it to
 # get concurrency. The predictor is now cached and shared across requests, and nnU-Net
@@ -124,15 +117,14 @@ def run_segmentation(
     """
     Segment a single in-memory image.
 
-    Only the file *extension* of the upload is taken from the client, never its
-    name: merge_masks() derives the merged mask's name via
-    name.replace('axon', 'axonmyelin'), so an upload called 'axon1.png' would
-    produce a mangled output. The image is staged under a neutral stem instead.
+    Uses apply_model.segment_image_array(), not axon_segmentation(): the file-based
+    path spawns ~8 worker processes per call, which measured as ~7.2s of an ~8.9s GPU
+    request against ~1.7s of actual inference. Nothing here touches disk except
+    decoding the upload.
 
-    Note this deliberately bypasses segment.segment_images(), which calls
-    sys.exit(2) on bad input and is wrapped in @logger.catch (reraise=False), so it
-    swallows failures and returns None either way. axon_segmentation() lets
-    exceptions propagate, which is what a server needs.
+    Also deliberately avoids segment.segment_images(), which calls sys.exit(2) on bad
+    input and is wrapped in @logger.catch (reraise=False), so it swallows failures and
+    returns None either way.
 
     Returns
     -------
@@ -147,42 +139,27 @@ def run_segmentation(
     if gpu_id is None:
         gpu_id = resolve_gpu_id()
 
-    file_format, n_channels = get_model_input_format(model_path)
+    _, n_channels = get_model_input_format(model_path)
     if n_channels != 1:
         raise ValueError(
             f'Model expects {n_channels}-channel input; only grayscale is supported.'
         )
 
+    # ads_utils.imread() needs a filename (it validates the extension and picks a
+    # plugin), so the upload is staged briefly. Only the *extension* comes from the
+    # client, never the filename.
+    with tempfile.TemporaryDirectory() as tmpdir:
+        upload_path = Path(tmpdir) / f'upload{suffix}'
+        upload_path.write_bytes(image_bytes)
+        image = imread(str(upload_path))
+
     with _INFERENCE_LOCK:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmp = Path(tmpdir)
-
-            upload_path = tmp / f'upload{suffix}'
-            upload_path.write_bytes(image_bytes)
-
-            # imread() grayscales and normalizes bitdepth; imwrite() puts the image
-            # in the format the model's dataset.json asks for.
-            image = imread(str(upload_path))
-            input_path = tmp / f'input{file_format}'
-            imwrite(str(input_path), image, file_format)
-
-            axon_segmentation(
-                path_inputs=[input_path],
-                path_model=model_path,
-                model_type=get_model_type(model_path),
-                gpu_id=gpu_id,
-            )
-
-            masks = {}
-            for name, mask_suffix in MASK_SUFFIXES.items():
-                mask_path = tmp / (input_path.stem + str(mask_suffix))
-                if not mask_path.exists():
-                    raise RuntimeError(
-                        f'Segmentation did not produce a {name} mask.'
-                    )
-                masks[name] = imread(str(mask_path))
-
-    return masks
+        return segment_image_array(
+            image,
+            model_path,
+            model_type=get_model_type(model_path),
+            gpu_id=gpu_id,
+        )
 
 
 def _encode_png(array: np.ndarray) -> str:
