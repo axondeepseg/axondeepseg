@@ -167,6 +167,63 @@ class TestCore(object):
         assert 'text/html' in response.headers['content-type']
 
     @pytest.mark.integration
+    def test_demo_page_measures_axons_in_browser(self):
+        if not _chromium_available():
+            pytest.skip("Chromium missing; run 'playwright install chromium'.")
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = browser.new_page()
+            try:
+                page.goto(self.baseUrl)
+
+                page.set_input_files('#file-input', str(self.imagePath))
+                page.fill('#pixel-size', '0.07')
+                page.select_option('#axon-shape', 'circle')
+                page.click('#morphometrics-button')
+
+                page.wait_for_selector(
+                    '#status[data-status="done"]',
+                    timeout=SEGMENTATION_TIMEOUT_S * 1000,
+                )
+
+                # The page must have rendered a real table, one row per axon.
+                rows = page.eval_on_selector_all('#morph-table tbody tr', 'els => els.length')
+                assert rows > 10
+
+                headers = page.eval_on_selector_all(
+                    '#morph-table thead th', 'els => els.map(e => e.textContent)'
+                )
+                assert 'gratio' in headers
+                assert 'axon_diam (um)' in headers
+
+                # And the summary stats, which is what a user actually reads.
+                assert page.text_content('#stat-count').strip() == str(rows)
+            finally:
+                browser.close()
+
+    @pytest.mark.integration
+    def test_demo_page_requires_a_pixel_size_before_measuring(self):
+        if not _chromium_available():
+            pytest.skip("Chromium missing; run 'playwright install chromium'.")
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = browser.new_page()
+            try:
+                page.goto(self.baseUrl)
+
+                page.set_input_files('#file-input', str(self.imagePath))
+                # No pixel size entered: measuring must not proceed, because every
+                # diameter would be silently wrong.
+                page.click('#morphometrics-button')
+
+                page.wait_for_selector('#status[data-status="idle"]', timeout=10000)
+                assert 'pixel size' in page.text_content('#status').lower()
+            finally:
+                browser.close()
+
+    @pytest.mark.integration
     def test_demo_page_segments_image_in_browser(self):
         if not _chromium_available():
             pytest.skip("Chromium missing; run 'playwright install chromium'.")

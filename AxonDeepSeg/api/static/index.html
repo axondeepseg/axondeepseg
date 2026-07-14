@@ -26,6 +26,20 @@
     figcaption { font-size: 0.875rem; opacity: 0.7; margin-bottom: 0.35rem; }
     img { width: 100%; border: 1px solid rgba(128, 128, 128, 0.4); background: #fff; }
     img:not([src]) { display: none; }
+    input[type="number"] { width: 6.5rem; padding: 0.4rem; font-size: 1rem; }
+    label { font-size: 0.875rem; opacity: 0.7; }
+    select { padding: 0.4rem; font-size: 1rem; }
+
+    #morphometrics:not([hidden]) { margin-top: 2rem; }
+    .summary { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .stat-label { display: block; font-size: 0.8rem; opacity: 0.7; }
+    .stat-value { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+    .table-scroll { overflow-x: auto; max-height: 24rem; overflow-y: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.875rem; }
+    th, td { text-align: right; padding: 0.35rem 0.6rem; white-space: nowrap; }
+    th { position: sticky; top: 0; background: Canvas; border-bottom: 2px solid rgba(128,128,128,0.4); }
+    tbody tr:nth-child(even) { background: rgba(128, 128, 128, 0.08); }
+    td { font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body>
@@ -35,7 +49,20 @@
   <div class="controls">
     <input type="file" id="file-input" accept=".png,.tif,.tiff,.jpg,.jpeg">
     <button id="segment-button">Segment</button>
+    <button id="morphometrics-button">Segment &amp; measure</button>
     <span id="status" data-status="idle">Idle</span>
+  </div>
+
+  <div class="controls">
+    <label for="pixel-size">Pixel size (µm)
+      <input type="number" id="pixel-size" step="0.001" min="0" placeholder="0.07">
+    </label>
+    <label for="axon-shape">Axon shape
+      <select id="axon-shape">
+        <option value="circle">circle</option>
+        <option value="ellipse">ellipse</option>
+      </select>
+    </label>
   </div>
 
   <p id="error"></p>
@@ -55,14 +82,46 @@
     </figure>
   </div>
 
+  <section id="morphometrics" hidden>
+    <div class="summary">
+      <div>
+        <span class="stat-label">Axons</span>
+        <span class="stat-value" id="stat-count">–</span>
+      </div>
+      <div>
+        <span class="stat-label">Mean axon diameter</span>
+        <span class="stat-value" id="stat-diam">–</span>
+      </div>
+      <div>
+        <span class="stat-label">Mean g-ratio</span>
+        <span class="stat-value" id="stat-gratio">–</span>
+      </div>
+      <div>
+        <span class="stat-label">Mean myelin thickness</span>
+        <span class="stat-value" id="stat-thickness">–</span>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table id="morph-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
   <script>
     const WARMUP_DEBOUNCE_MS = 30000;
     const MASKS = ['axon', 'myelin', 'axonmyelin'];
 
     const fileInput = document.getElementById('file-input');
     const segmentButton = document.getElementById('segment-button');
+    const morphometricsButton = document.getElementById('morphometrics-button');
+    const pixelSizeInput = document.getElementById('pixel-size');
+    const axonShapeSelect = document.getElementById('axon-shape');
     const statusEl = document.getElementById('status');
     const errorEl = document.getElementById('error');
+    const morphometricsEl = document.getElementById('morphometrics');
+    const tableEl = document.getElementById('morph-table');
 
     function setStatus(status, message) {
       statusEl.dataset.status = status;
@@ -72,6 +131,47 @@
     function reset() {
       errorEl.textContent = '';
       MASKS.forEach((name) => document.getElementById(name).removeAttribute('src'));
+      morphometricsEl.hidden = true;
+      tableEl.querySelector('thead').innerHTML = '';
+      tableEl.querySelector('tbody').innerHTML = '';
+    }
+
+    function showMasks(result) {
+      MASKS.forEach((name) => {
+        document.getElementById(name).src = `data:image/png;base64,${result[name]}`;
+      });
+    }
+
+    const mean = (rows, column) => {
+      const values = rows.map((r) => r[column]).filter((v) => typeof v === 'number');
+      return values.length ? values.reduce((a, b) => a + b, 0) / values.length : NaN;
+    };
+
+    const format = (value, digits) => (Number.isFinite(value) ? value.toFixed(digits) : '–');
+
+    function showMorphometrics(result) {
+      const rows = result.morphometrics;
+
+      document.getElementById('stat-count').textContent = result.meta.n_axons;
+      document.getElementById('stat-diam').textContent =
+        `${format(mean(rows, 'axon_diam (um)'), 2)} µm`;
+      document.getElementById('stat-gratio').textContent =
+        format(mean(rows, 'gratio'), 3);
+      document.getElementById('stat-thickness').textContent =
+        `${format(mean(rows, 'myelin_thickness (um)'), 2)} µm`;
+
+      // One column per field the API returned, in the order it returned them --
+      // which is the same order (and the same unit-bearing names) as the xlsx.
+      const columns = Object.keys(rows[0] ?? {});
+      tableEl.querySelector('thead').innerHTML =
+        `<tr>${columns.map((c) => `<th>${c}</th>`).join('')}</tr>`;
+      tableEl.querySelector('tbody').innerHTML = rows
+        .map((row) => `<tr>${columns
+          .map((c) => `<td>${typeof row[c] === 'number' ? row[c].toFixed(3) : (row[c] ?? '–')}</td>`)
+          .join('')}</tr>`)
+        .join('');
+
+      morphometricsEl.hidden = false;
     }
 
     // Pre-warm. Opening the file dialog is the earliest strong signal that a
@@ -87,42 +187,66 @@
       fetch('/warmup', { method: 'POST' }).catch(() => {});
     });
 
-    segmentButton.addEventListener('click', async () => {
+    // Both buttons do the same thing: POST the image, render what comes back. The only
+    // difference is the endpoint and whether a pixel size is needed.
+    async function run({ endpoint, withMorphometrics }) {
       const file = fileInput.files[0];
       if (!file) {
         setStatus('idle', 'Choose an image first.');
         return;
       }
 
+      const pixelSize = pixelSizeInput.value;
+      if (withMorphometrics && !pixelSize) {
+        // Without it every diameter and g-ratio would be silently wrong, so the
+        // endpoint requires it too -- fail here rather than send a bad request.
+        setStatus('idle', 'Enter the pixel size first.');
+        pixelSizeInput.focus();
+        return;
+      }
+
       reset();
       segmentButton.disabled = true;
-      setStatus('running', 'segmenting…');
+      morphometricsButton.disabled = true;
+      setStatus('running', withMorphometrics ? 'segmenting & measuring…' : 'segmenting…');
 
       try {
         const body = new FormData();
         body.append('file', file);
+        if (withMorphometrics) {
+          body.append('pixel_size', pixelSize);
+          body.append('axon_shape', axonShapeSelect.value);
+        }
 
-        // Synchronous: the masks come back in this response. No job id, no polling --
+        // Synchronous: the result comes back in this response. No job id, no polling --
         // a segmentation is ~2s on a GPU.
-        const response = await fetch('/segment', { method: 'POST', body });
+        const response = await fetch(endpoint, { method: 'POST', body });
         if (!response.ok) {
           const detail = await response.json().catch(() => ({}));
           throw new Error(detail.detail ?? `HTTP ${response.status}`);
         }
 
         const result = await response.json();
-        MASKS.forEach((name) => {
-          document.getElementById(name).src = `data:image/png;base64,${result[name]}`;
-        });
-        // The test waits on this attribute, so set it only once the masks are attached.
-        setStatus('done', `done — ${result.meta.shape.join(' × ')} px, ${result.meta.model}`);
+        showMasks(result);
+        if (withMorphometrics) showMorphometrics(result);
+
+        // The tests wait on this attribute, so set it only once everything is rendered.
+        const summary = withMorphometrics ? `, ${result.meta.n_axons} axons` : '';
+        setStatus('done', `done — ${result.meta.shape.join(' × ')} px, ${result.meta.model}${summary}`);
       } catch (err) {
         errorEl.textContent = err.message;
         setStatus('failed', 'failed');
       } finally {
         segmentButton.disabled = false;
+        morphometricsButton.disabled = false;
       }
-    });
+    }
+
+    segmentButton.addEventListener('click', () =>
+      run({ endpoint: '/segment', withMorphometrics: false }));
+
+    morphometricsButton.addEventListener('click', () =>
+      run({ endpoint: '/morphometrics', withMorphometrics: true }));
   </script>
 </body>
 </html>
