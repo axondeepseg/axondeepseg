@@ -14,8 +14,12 @@ import pytest
 from fastapi.testclient import TestClient
 from skimage import draw
 
+from fastapi import HTTPException
+
+from AxonDeepSeg.api import server
 from AxonDeepSeg.api.server import app, resolve_gpu_id
 from AxonDeepSeg.apply_model import clear_predictor_cache
+from AxonDeepSeg.download_model import get_model_dir_name
 from AxonDeepSeg.params import intensity
 
 
@@ -353,6 +357,201 @@ class TestCore(object):
 
         for mask_name in ['axon', 'myelin', 'axonmyelin']:
             assert imageio.imread(base64.b64decode(body[mask_name])).shape == (64, 64)
+
+    # --------------SageMaker GET /ping tests-------------- #
+    @pytest.mark.unit
+    def test_ping_returns_200_when_model_present(self):
+        with patch('AxonDeepSeg.api.server.MODEL_PATH', self.tmpDir):
+            response = self.client.get('/ping')
+
+        assert response.status_code == 200
+        assert response.json()['status'] == 'ok'
+
+    @pytest.mark.unit
+    def test_ping_returns_503_when_model_missing(self):
+        with patch('AxonDeepSeg.api.server.MODEL_PATH', self.tmpDir / 'nope'):
+            response = self.client.get('/ping')
+
+        assert response.status_code == 503
+
+    # --------------model path resolution tests-------------- #
+    @pytest.mark.unit
+    def test_resolve_model_path_none_is_the_default_model(self):
+        assert server._resolve_model_path(None) == server.MODEL_PATH
+
+    @pytest.mark.unit
+    def test_resolve_model_path_unknown_name_is_400(self):
+        with pytest.raises(HTTPException) as exc:
+            server._resolve_model_path('not-a-real-model')
+
+        assert exc.value.status_code == 400
+
+    @pytest.mark.unit
+    def test_resolve_model_path_known_but_absent_is_503(self):
+        # A model that exists in the registry but was not baked into this image.
+        with patch('AxonDeepSeg.api.server.MODELS_PATH', self.tmpDir):
+            with pytest.raises(HTTPException) as exc:
+                server._resolve_model_path('dedicated-SEM')
+
+        assert exc.value.status_code == 503
+
+    @pytest.mark.unit
+    def test_resolve_model_path_returns_dir_when_present(self):
+        dir_name = get_model_dir_name('dedicated-SEM')
+        (self.tmpDir / dir_name).mkdir()
+        with patch('AxonDeepSeg.api.server.MODELS_PATH', self.tmpDir):
+            result = server._resolve_model_path('dedicated-SEM')
+
+        assert result == self.tmpDir / dir_name
+
+    # --------------SageMaker POST /invocations tests-------------- #
+    def _invoke(self, image=True, **payload):
+        if image:
+            payload.setdefault('image', base64.b64encode(self.uploadBytes).decode('ascii'))
+        return self.client.post('/invocations', json=payload)
+
+    @pytest.mark.unit
+    def test_invocations_segment_returns_the_masks(self):
+        with patch(
+            'AxonDeepSeg.api.server.run_segmentation',
+            return_value=_fake_masks(),
+        ):
+            response = self._invoke()  # mode defaults to 'segment'
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body['meta']['shape'] == [16, 16]
+        for mask_name in ['axon', 'myelin', 'axonmyelin']:
+            assert imageio.imread(base64.b64decode(body[mask_name])).shape == (16, 16)
+
+    @pytest.mark.unit
+    def test_invocations_morphometrics_returns_one_row_per_axon(self):
+        with patch(
+            'AxonDeepSeg.api.server.run_segmentation',
+            return_value=_fake_myelinated_axon(),
+        ):
+            response = self._invoke(mode='morphometrics', pixel_size=0.07)
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body['meta']['n_axons'] == 1
+        assert len(body['morphometrics']) == 1
+        assert body['morphometrics'][0]['axon_diam (um)'] > 0
+
+    @pytest.mark.unit
+    def test_invocations_bad_mode_is_400(self):
+        response = self._invoke(mode='destroy')
+
+        assert response.status_code == 400
+
+    @pytest.mark.unit
+    def test_invocations_missing_image_is_400(self):
+        response = self._invoke(image=False)
+
+        assert response.status_code == 400
+
+    @pytest.mark.unit
+    def test_invocations_invalid_base64_is_400(self):
+        response = self.client.post('/invocations', json={'image': 'not base64!!!'})
+
+        assert response.status_code == 400
+
+    @pytest.mark.unit
+    def test_invocations_unknown_model_is_400(self):
+        response = self._invoke(model='not-a-real-model')
+
+        assert response.status_code == 400
+
+    @pytest.mark.unit
+    def test_invocations_known_but_absent_model_is_503(self):
+        with patch('AxonDeepSeg.api.server.MODELS_PATH', self.tmpDir):
+            response = self._invoke(model='dedicated-SEM')
+
+        assert response.status_code == 503
+
+    @pytest.mark.unit
+    def test_invocations_morphometrics_without_pixel_size_is_400(self):
+        response = self._invoke(mode='morphometrics')
+
+        assert response.status_code == 400
+
+    @pytest.mark.unit
+    def test_invocations_routes_the_selected_model_to_inference(self):
+        dir_name = get_model_dir_name('dedicated-SEM')
+        (self.tmpDir / dir_name).mkdir()
+        with patch('AxonDeepSeg.api.server.MODELS_PATH', self.tmpDir):
+            with patch(
+                'AxonDeepSeg.api.server.run_segmentation',
+                return_value=_fake_masks(),
+            ) as mock_run:
+                response = self._invoke(model='dedicated-SEM')
+
+        assert response.status_code == 200
+        assert mock_run.call_args.kwargs['model_path'] == self.tmpDir / dir_name
+
+    @pytest.mark.unit
+    def test_invocations_echoes_the_friendly_model_name(self):
+        # A compare-all caller needs to match each response to the model it requested,
+        # so meta.model must be the name the client sent, not the on-disk directory.
+        dir_name = get_model_dir_name('dedicated-SEM')
+        (self.tmpDir / dir_name).mkdir()
+        with patch('AxonDeepSeg.api.server.MODELS_PATH', self.tmpDir):
+            with patch(
+                'AxonDeepSeg.api.server.run_segmentation',
+                return_value=_fake_masks(),
+            ):
+                body = self._invoke(model='dedicated-SEM').json()
+
+        assert body['meta']['model'] == 'dedicated-SEM'
+
+    @pytest.mark.unit
+    def test_invocations_default_model_reports_the_directory_name(self):
+        with patch(
+            'AxonDeepSeg.api.server.run_segmentation',
+            return_value=_fake_masks(),
+        ):
+            body = self._invoke().json()  # no model field
+
+        assert body['meta']['model'] == server.MODEL_PATH.name
+
+    @pytest.mark.unit
+    def test_invocations_non_numeric_pixel_size_is_400(self):
+        # Must be a client error (400), not an unhandled float() ValueError (500).
+        with patch(
+            'AxonDeepSeg.api.server.run_segmentation',
+            return_value=_fake_myelinated_axon(),
+        ):
+            response = self._invoke(mode='morphometrics', pixel_size='abc')
+
+        assert response.status_code == 400
+
+    @pytest.mark.unit
+    def test_masks_payload_handles_masks_without_axonmyelin(self):
+        # The 5-class unmyelinated model returns these exact per-class masks and no
+        # 'axonmyelin' (confirmed by running it through run_segmentation). The payload
+        # must not KeyError on the missing 'axonmyelin'.
+        classes = ['axon', 'myelin', 'nuclei', 'process', 'uaxon']
+        masks = {c: np.zeros((8, 8), dtype=np.uint8) for c in classes}
+        body = server._masks_payload(masks, model_name='unmyelinated-TEM')
+
+        assert body['meta']['shape'] == [8, 8]
+        assert set(body) == {'meta', *classes}
+
+    # --------------bind port tests-------------- #
+    @pytest.mark.unit
+    def test_bind_port_defaults_to_8000(self):
+        with patch.dict(os.environ, {}, clear=True):
+            assert server._bind_port() == 8000
+
+    @pytest.mark.unit
+    def test_bind_port_honours_sagemaker_env_var(self):
+        with patch.dict(os.environ, {'SAGEMAKER_BIND_TO_PORT': '8080'}, clear=True):
+            assert server._bind_port() == 8080
+
+    @pytest.mark.unit
+    def test_bind_port_ads_port_override(self):
+        with patch.dict(os.environ, {'ADS_PORT': '9000'}, clear=True):
+            assert server._bind_port() == 9000
 
     # --------------end-to-end tests-------------- #
     @pytest.mark.integration

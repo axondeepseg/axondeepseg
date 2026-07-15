@@ -29,7 +29,7 @@ from typing import Dict, Optional
 import imageio
 import numpy as np
 import torch
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from loguru import logger
 
@@ -39,12 +39,14 @@ from AxonDeepSeg.apply_model import (
     segment_image_array,
 )
 from AxonDeepSeg.ads_utils import get_file_extension, imread
+from AxonDeepSeg.download_model import get_model_cards, get_model_dir_name
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
     get_axon_morphometrics,
     rearrange_column_names_for_saving,
 )
 from AxonDeepSeg.segment import (
     DEFAULT_MODEL_PATH,
+    MODELS_PATH,
     get_model_input_format,
     get_model_type,
 )
@@ -125,8 +127,11 @@ def run_segmentation(
     Returns
     -------
     dict
-        {'axon': ndarray, 'myelin': ndarray, 'axonmyelin': ndarray}, using the ADS
-        intensity encoding (axon=255, myelin=127, background=0).
+        One ndarray mask per class the model emits, using the ADS intensity encoding
+        (foreground=255, background=0). An axon+myelin model additionally gets a merged
+        'axonmyelin' mask (axon=255, myelin=127); a multi-class model (e.g. the 5-class
+        unmyelinated one) returns its per-class masks -- {'axon', 'myelin', 'nuclei',
+        'process', 'uaxon'} -- with no 'axonmyelin'.
     """
     model_path = Path(model_path) if model_path is not None else MODEL_PATH
     if not model_path.exists():
@@ -180,15 +185,18 @@ def _validate_upload(filename: Optional[str]) -> str:
     return suffix
 
 
-async def _segment_upload(file: UploadFile, suffix: str) -> Dict[str, np.ndarray]:
-    """Run inference on an upload, turning any failure into a 500."""
-    image_bytes = await file.read()
+async def _run_segmentation_safe(
+    image_bytes: bytes,
+    suffix: str,
+    model_path: Optional[Path] = None,
+) -> Dict[str, np.ndarray]:
+    """Run inference off the event loop, turning any failure into a 500."""
     gpu_id = resolve_gpu_id()
 
     try:
         # Inference blocks (torch); keep it off the event loop.
         return await asyncio.to_thread(
-            run_segmentation, image_bytes, suffix, gpu_id=gpu_id
+            run_segmentation, image_bytes, suffix, model_path=model_path, gpu_id=gpu_id
         )
     except (Exception, SystemExit) as exc:
         # SystemExit is caught on purpose: several functions down the ADS call chain
@@ -201,12 +209,65 @@ async def _segment_upload(file: UploadFile, suffix: str) -> Dict[str, np.ndarray
         ) from None
 
 
-def _masks_payload(masks: Dict[str, np.ndarray]) -> dict:
+async def _segment_upload(file: UploadFile, suffix: str) -> Dict[str, np.ndarray]:
+    """Run inference on an upload, turning any failure into a 500."""
+    image_bytes = await file.read()
+
+    return await _run_segmentation_safe(image_bytes, suffix)
+
+
+_MODEL_CARDS: Optional[dict] = None
+
+
+def _model_cards() -> dict:
+    """The parsed model registry, read from disk once (it never changes at runtime)."""
+    global _MODEL_CARDS
+    if _MODEL_CARDS is None:
+        _MODEL_CARDS = get_model_cards()
+
+    return _MODEL_CARDS
+
+
+def _resolve_model_path(model_name: Optional[str]) -> Path:
+    """
+    Map a friendly model name (a model_cards.yaml key, e.g. 'dedicated-SEM') to its
+    on-disk model directory.
+
+    None means the default model. An unknown name is a client error (400); a known name
+    whose weights are not present in this image is a server-side gap (503) -- the
+    orchestrator baked in a different set of models.
+    """
+    if model_name is None:
+        return MODEL_PATH
+
+    try:
+        dir_name = get_model_dir_name(model_name, _model_cards())
+    except KeyError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown model '{model_name}'.",
+        ) from None
+
+    model_path = MODELS_PATH / dir_name
+    if not model_path.exists():
+        raise HTTPException(
+            status_code=503,
+            detail=f"Model '{model_name}' is not available on this server.",
+        )
+
+    return model_path
+
+
+def _masks_payload(masks: Dict[str, np.ndarray], model_name: Optional[str] = None) -> dict:
     """The mask half of a response: base64 PNGs plus the image's shape."""
+    # 'axonmyelin' only exists for axon+myelin models; a multi-class model (e.g. the
+    # 5-class unmyelinated one) returns per-class masks without it. Read the shape from any
+    # mask so those models still segment cleanly instead of KeyError-ing into a 500.
+    reference = masks['axonmyelin'] if 'axonmyelin' in masks else next(iter(masks.values()))
     body = {
         'meta': {
-            'model': MODEL_PATH.name,
-            'shape': list(masks['axonmyelin'].shape[:2]),
+            'model': model_name or MODEL_PATH.name,
+            'shape': list(reference.shape[:2]),
         }
     }
     for name, mask in masks.items():
@@ -290,31 +351,38 @@ async def segment(file: UploadFile = File(...)) -> dict:
     return _masks_payload(masks)
 
 
-@app.post('/morphometrics')
-async def morphometrics(
-    file: UploadFile = File(...),
-    pixel_size: float = Form(..., description='Pixel size in micrometres.'),
-    axon_shape: str = Form('circle'),
-) -> dict:
-    """
-    Segment an image and measure every axon in it.
-
-    Returns one row per axon (diameter, g-ratio, myelin thickness, ...) alongside the
-    masks, so a caller that wants both does not have to pay for inference twice.
-
-    pixel_size is required and has no default: it is the only thing turning pixels into
-    micrometres, and a wrong one silently scales every diameter and thickness in the
-    result. The CLI reads it from a pixel_size_in_micrometer.txt beside the image;
-    over HTTP there is no such file, so the caller must say.
-    """
+def _validate_axon_shape(axon_shape: str) -> None:
+    """Reject an unsupported axon shape (before spending a segmentation on it)."""
     if axon_shape not in AXON_SHAPES:
         raise HTTPException(
             status_code=400,
             detail=f"axon_shape must be one of {AXON_SHAPES}, got '{axon_shape}'.",
         )
 
-    suffix = _validate_upload(file.filename)
-    masks = await _segment_upload(file, suffix)
+
+async def _morphometrics_payload(
+    masks: Dict[str, np.ndarray],
+    pixel_size: float,
+    axon_shape: str,
+    model_name: Optional[str] = None,
+) -> dict:
+    """Measure every myelinated axon in a set of masks and fold it into a masks payload.
+
+    This is the myelinated-axon path: get_axon_morphometrics on the axon+myelin masks,
+    the same computation the CLI's default mode runs. A model that emits extra classes
+    alongside axon+myelin (e.g. the 5-class unmyelinated model, which also has uaxon,
+    nuclei, process) is measured on its axon+myelin channels only -- exactly what the CLI
+    does from that model's per-class mask files; the other classes have no morphometrics
+    handling anywhere. Unmyelinated (uaxon) morphometrics is a separate mode (CLI's -u,
+    get_axon_morphometrics with im_myelin=None) not yet wired into /invocations.
+    """
+    # Without both an axon and a myelin mask there is nothing to measure here; fail
+    # clearly rather than KeyError below.
+    if 'axon' not in masks or 'myelin' not in masks:
+        raise HTTPException(
+            status_code=400,
+            detail='Morphometrics requires a model that produces axon and myelin masks.',
+        )
 
     try:
         stats = await asyncio.to_thread(
@@ -335,7 +403,7 @@ async def morphometrics(
     # Same column order and unit-bearing display names the xlsx/csv files use.
     stats = rearrange_column_names_for_saving(stats)
 
-    body = _masks_payload(masks)
+    body = _masks_payload(masks, model_name=model_name)
     body['meta'].update({
         'pixel_size': pixel_size,
         'axon_shape': axon_shape,
@@ -347,10 +415,141 @@ async def morphometrics(
     return body
 
 
+@app.post('/morphometrics')
+async def morphometrics(
+    file: UploadFile = File(...),
+    pixel_size: float = Form(..., description='Pixel size in micrometres.'),
+    axon_shape: str = Form('circle'),
+) -> dict:
+    """
+    Segment an image and measure every axon in it.
+
+    Returns one row per axon (diameter, g-ratio, myelin thickness, ...) alongside the
+    masks, so a caller that wants both does not have to pay for inference twice.
+
+    pixel_size is required and has no default: it is the only thing turning pixels into
+    micrometres, and a wrong one silently scales every diameter and thickness in the
+    result. The CLI reads it from a pixel_size_in_micrometer.txt beside the image;
+    over HTTP there is no such file, so the caller must say.
+    """
+    _validate_axon_shape(axon_shape)
+
+    suffix = _validate_upload(file.filename)
+    masks = await _segment_upload(file, suffix)
+
+    return await _morphometrics_payload(masks, pixel_size, axon_shape)
+
+
+# --- SageMaker container contract -------------------------------------------------
+# A SageMaker endpoint invokes the container on two routes it owns: GET /ping for health
+# and POST /invocations for inference. For an *async* endpoint SageMaker does the S3
+# download/upload itself -- it POSTs the input bytes here and writes our response body
+# back to S3 -- so this is purely request-in/response-out; the container never touches S3.
+# These are additional surface; /segment and /morphometrics stay for direct/local use.
+
+
+@app.get('/ping')
+def ping():
+    """SageMaker health check: 200 once this replica can serve, 503 otherwise."""
+    if not MODEL_PATH.exists():
+        return JSONResponse(status_code=503, content={'status': 'unavailable'})
+
+    return {'status': 'ok'}
+
+
+@app.post('/invocations')
+async def invocations(request: Request) -> dict:
+    """
+    SageMaker inference entry point.
+
+    Body is a JSON envelope:
+        {
+          "mode": "segment" | "morphometrics",   # default "segment"
+          "model": "generalist",                 # optional; default model if omitted
+          "image": "<base64-encoded image>",     # required
+          "pixel_size": 0.07,                     # required for morphometrics
+          "axon_shape": "circle",                # optional; default "circle"
+          "filename": "sample.tif"               # optional; only its extension is used
+        }
+
+    Returns the same JSON shape as /segment (or /morphometrics).
+    """
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail='Body must be valid JSON.') from None
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail='Body must be a JSON object.')
+
+    mode = body.get('mode', 'segment')
+    if mode not in ('segment', 'morphometrics'):
+        raise HTTPException(
+            status_code=400,
+            detail=f"mode must be 'segment' or 'morphometrics', got '{mode}'.",
+        )
+
+    image_b64 = body.get('image')
+    if not image_b64:
+        raise HTTPException(status_code=400, detail="Missing required field 'image'.")
+    try:
+        image_bytes = base64.b64decode(image_b64, validate=True)
+    except Exception:
+        raise HTTPException(
+            status_code=400, detail="'image' is not valid base64."
+        ) from None
+
+    # Validate the cheap, request-shaped things before spending a segmentation.
+    axon_shape = body.get('axon_shape', 'circle')
+    pixel_size = None
+    if mode == 'morphometrics':
+        _validate_axon_shape(axon_shape)
+        if body.get('pixel_size') is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Missing required field 'pixel_size' for morphometrics.",
+            )
+        try:
+            pixel_size = float(body['pixel_size'])
+        except (TypeError, ValueError):
+            raise HTTPException(
+                status_code=400,
+                detail=f"pixel_size must be a number, got '{body['pixel_size']}'.",
+            ) from None
+
+    suffix = _validate_upload(body.get('filename') or 'upload.png')
+    model_name = body.get('model')
+    model_path = _resolve_model_path(model_name)
+
+    masks = await _run_segmentation_safe(image_bytes, suffix, model_path=model_path)
+
+    # Echo the friendly name the client sent so it can match the response to its request
+    # (falling back to the directory name for the default model). A compare-all caller
+    # running several models labels each result by this.
+    model_label = model_name or model_path.name
+
+    if mode == 'segment':
+        return _masks_payload(masks, model_name=model_label)
+
+    return await _morphometrics_payload(
+        masks, pixel_size, axon_shape, model_name=model_label
+    )
+
+
+def _bind_port() -> int:
+    """
+    Port to bind. SageMaker sets SAGEMAKER_BIND_TO_PORT (its container serves on 8080);
+    ADS_PORT is the local override. Default 8000 keeps existing direct/local use.
+    """
+    return int(os.environ.get('SAGEMAKER_BIND_TO_PORT') or os.environ.get('ADS_PORT') or 8000)
+
+
 def main():
     import uvicorn
 
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    # main() ignores argv, so SageMaker's `serve` argument is harmless -- but only because
+    # the Dockerfile uses ENTRYPOINT ["ads_server"], which makes `docker run <image> serve`
+    # resolve to `ads_server serve` rather than trying to exec a `serve` binary.
+    uvicorn.run(app, host='0.0.0.0', port=_bind_port())
 
 
 if __name__ == '__main__':

@@ -34,13 +34,11 @@ def download_model(model_name='generalist', destination=None, overwrite=True):
 
     # default to single_fold model if available (lighter and faster)
     if models[model_name]['weights']['single_fold'] is not None:
-        model_suffix = 'light'
         url_model_destination = models[model_name]['weights']['single_fold']
     elif models[model_name]['weights']['ensemble'] is not None:
-        model_suffix = 'ensemble'
         url_model_destination = models[model_name]['weights']['ensemble']
 
-    full_model_name = f'{models[model_name]["full_name"]}_{model_suffix}'
+    full_model_name = get_model_dir_name(model_name, models)
     if destination is None:
         package_dir = Path(AxonDeepSeg.__file__).parent  # Get AxonDeepSeg installation path
         model_destination = package_dir / "models" / full_model_name
@@ -110,6 +108,25 @@ def get_model_cards(model_list_path=MODEL_CARDS_PATH) -> dict:
     with open(model_list_path, 'r') as f:
         model_dict = yaml.safe_load(f)
     return model_dict
+
+def get_model_dir_name(model_name: str, models: dict = None) -> str:
+    '''
+    On-disk directory name for a model, given its friendly name (a model_cards.yaml key,
+    e.g. 'generalist', 'dedicated-SEM').
+
+    This is the single source of truth for friendly-name -> directory mapping: the folder
+    is the card's ``full_name`` suffixed with ``_light`` when a single_fold weight exists
+    (the lighter/faster default) or ``_ensemble`` otherwise. Directory names are otherwise
+    irregular and cannot be derived from the friendly name alone.
+    '''
+    if models is None:
+        models = get_model_cards(MODEL_CARDS_PATH)
+    if model_name not in models:
+        raise KeyError(model_name)
+
+    suffix = 'light' if models[model_name]['weights']['single_fold'] is not None else 'ensemble'
+    return f'{models[model_name]["full_name"]}_{suffix}'
+
 
 def get_fullnames_of_downloadable_models() -> list:
     '''

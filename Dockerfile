@@ -55,12 +55,16 @@ RUN download_model -m unmyelinated-TEM
 RUN useradd --create-home --uid 1000 ads
 USER ads
 
+# 8000 for direct/local use (ads_server default). A SageMaker deployment instead serves
+# on 8080, which the app binds to when SAGEMAKER_BIND_TO_PORT is set (or ADS_PORT=8080).
 EXPOSE 8000
+EXPOSE 8080
 
 # /ready returns 503 until the model weights are present, so an orchestrator will not
-# route traffic to a replica that cannot actually serve.
+# route traffic to a replica that cannot actually serve. Shell form so the port tracks the
+# bind port -- a SageMaker container serves on 8080, not 8000.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl -fsS http://localhost:8000/ready || exit 1
+    CMD curl -fsS "http://localhost:${SAGEMAKER_BIND_TO_PORT:-${ADS_PORT:-8000}}/ready" || exit 1
 
 # Single process, deliberately. The job store is in-memory and inference is guarded by
 # an in-process lock, so multiple uvicorn workers would hand a client a job id that the
@@ -69,4 +73,8 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 # IMPORTANT: run with --shm-size=1g (or --ipc=host). nnU-Net spawns ~8 worker processes
 # and Docker's default /dev/shm is 64 MB, which surfaces as bus errors / killed workers
 # rather than an obvious out-of-memory message.
-CMD ["ads_server"]
+#
+# ENTRYPOINT, not CMD: SageMaker starts the container as `docker run <image> serve`. With a
+# bare CMD, that `serve` would REPLACE the command and try to exec a nonexistent `serve`
+# binary. As an ENTRYPOINT, `serve` is appended -> `ads_server serve`, and main() ignores it.
+ENTRYPOINT ["ads_server"]
