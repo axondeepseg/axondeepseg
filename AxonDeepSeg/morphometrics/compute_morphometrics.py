@@ -271,7 +271,7 @@ def get_axon_morphometrics(
     else: 
         empty_df = False
 
-    if (not return_index_image) and (not return_instance_seg):
+    if (not return_index_image) and (not return_instance_seg) and (not return_im_axonmyelin_label):
         return stats_dataframe
     else:
         output = (stats_dataframe,)

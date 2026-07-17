@@ -170,6 +170,23 @@ def _encode_png(array: np.ndarray) -> str:
     return base64.b64encode(buffer.getvalue()).decode('ascii')
 
 
+def _pack_labels(label_img: np.ndarray) -> np.ndarray:
+    """Pack a uint16/uint32 instance-label image into an 8-bit RGB image.
+
+    Each axon+myelin fibre has a distinct integer label (1..N, 0 = background). A
+    browser <canvas> truncates a 16-bit greyscale PNG to 8 bits, so we spread the
+    label across the R/G/B channels instead -- lossless, canvas-native, and it lets
+    the web client recover the exact id (id = R + G*256 + B*65536) to map a clicked
+    pixel back to its morphometrics row (row = id - 1).
+    """
+    lab = label_img.astype(np.uint32)
+    rgb = np.zeros((*lab.shape, 3), np.uint8)
+    rgb[..., 0] = lab & 0xFF
+    rgb[..., 1] = (lab >> 8) & 0xFF
+    rgb[..., 2] = (lab >> 16) & 0xFF
+    return rgb
+
+
 def _validate_upload(filename: Optional[str]) -> str:
     """Return the upload's extension, or reject it."""
     suffix = get_file_extension(filename or '')
@@ -385,13 +402,17 @@ async def _morphometrics_payload(
         )
 
     try:
-        stats = await asyncio.to_thread(
+        # return_im_axonmyelin_label gives the instance map: a labelled image where each
+        # axon+myelin fibre has value i+1 for morphometrics row i. The call now returns a
+        # tuple (stats_dataframe, im_axonmyelin_label).
+        stats, im_axonmyelin_label = await asyncio.to_thread(
             get_axon_morphometrics,
             masks['axon'],
             None,
             masks['myelin'],
             pixel_size,
             axon_shape,
+            return_im_axonmyelin_label=True,
         )
     except (Exception, SystemExit) as exc:
         logger.exception('Morphometrics failed.')
@@ -411,6 +432,8 @@ async def _morphometrics_payload(
     })
     # to_json handles NaN (-> null) and numpy scalars, which json.dumps chokes on.
     body['morphometrics'] = json.loads(stats.to_json(orient='records'))
+    # Instance map for click<->row selection: RGB-packed labels, id = row + 1.
+    body['instance_map'] = _encode_png(_pack_labels(im_axonmyelin_label))
 
     return body
 
