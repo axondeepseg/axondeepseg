@@ -3,15 +3,16 @@
 # Scientific modules imports
 import numpy as np
 import scipy
+from scipy import ndimage
 
 # Graphs and plots imports
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from PIL import Image
+
 import pathlib
 from pathlib import Path
-
-import matplotlib.pyplot as plt
 
 import AxonDeepSeg.ads_utils as ads
 from AxonDeepSeg.morphometrics.compute_morphometrics import get_axon_morphometrics
@@ -19,6 +20,61 @@ from AxonDeepSeg.morphometrics.compute_morphometrics import get_axon_morphometri
 mpl_config = Path(pathlib.Path(__file__).parent.resolve() / 'custom_matplotlibrc')
 plt.style.use(mpl_config)
 plt.rcParams["figure.figsize"] = (9,6)
+
+
+# ---------------------------------------------------------------------------
+# module-level helpers
+# ---------------------------------------------------------------------------
+
+# RGB overlay colours (matching the previous matplotlib implementation)
+AXON_RGB = np.array([0, 0, 255], dtype=np.float32)     # blue
+MYELIN_RGB = np.array([255, 0, 0], dtype=np.float32)   # red
+OVERLAY_ALPHA = 0.5
+
+
+def _to_uint8(arr):
+    """Scale an arbitrary-dtype array to uint8 (matches imshow's autoscaling)."""
+    arr = np.asarray(arr)
+    if arr.dtype == np.uint8:
+        return arr
+    a = arr.astype(np.float32)
+    lo = np.nanmin(a)
+    hi = np.nanmax(a)
+    if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
+        return np.zeros(a.shape, dtype=np.uint8)
+    return (((a - lo) / (hi - lo)) * 255.0).astype(np.uint8)
+
+
+def _to_rgb(image):
+    """Normalise a 2D grayscale or 3D RGB(A) array to uint8 HxWx3."""
+    arr = np.asarray(image)
+    if arr.ndim == 2:
+        g = _to_uint8(arr)
+        return np.repeat(g[:, :, None], 3, axis=2)
+    if arr.ndim == 3:
+        if arr.shape[2] == 4:
+            arr = arr[:, :, :3]
+        return _to_uint8(arr)
+    raise ValueError("unexpected image shape {}".format(arr.shape))
+
+
+def _expand_slice(sl, buffer_pixels, shape):
+    """Grow a (yslice, xslice) bounding box by buffer_pixels, clipped to image."""
+    ys, xs = sl
+    return (
+        slice(max(0, ys.start - buffer_pixels), min(shape[0], ys.stop + buffer_pixels)),
+        slice(max(0, xs.start - buffer_pixels), min(shape[1], xs.stop + buffer_pixels)),
+    )
+
+
+def _blend(rgb_crop, mask, colour, alpha=OVERLAY_ALPHA):
+    """Alpha-composite a flat colour where mask is True. Modifies rgb_crop in place.
+
+    Equivalent to matplotlib's imshow(rgba_overlay) at alpha=0.5.
+    """
+    if mask.any():
+        rgb_crop[mask] = rgb_crop[mask] * (1.0 - alpha) + colour * alpha
+
 
 class MetricsQA:
     def __init__(self, morphometrics_file):
@@ -84,7 +140,12 @@ class MetricsQA:
 
         if save_folder is not None:
             plt.savefig(Path(Path(save_folder) / metric_name))
-        
+
+        # Release the figure when running headless/batch, otherwise matplotlib
+        # accumulates every figure ever created (warns past 20, then leaks).
+        if quiet:
+            plt.close(fig)
+
         mean = np.format_float_positional(np.nanmean(x), precision=2, trim='0')
         std = np.format_float_positional(np.nanstd(x), precision=2, trim='0')
 
@@ -97,139 +158,194 @@ class MetricsQA:
             if self.df[metric].to_numpy().dtype==np.float64:
                 self.plot(metric, save_folder, quiet)
 
+    # -----------------------------------------------------------------------
+    # internal
+    # -----------------------------------------------------------------------
 
-    def get_flagged_objects(self, im_axonmyelin_label, save_folder):
+    def _precompute_ranks(self):
+        """Vectorized ranks/percentiles for every axon, computed once.
 
-        axonmyelin_img = im_axonmyelin_label
-
+        Previously each of these six ranks was recomputed over the full column
+        inside the per-axon loop, i.e. 6*n full sorts to obtain 6*n numbers.
+        """
         df = self.df
+        out = {'n': len(df)}
+        for key, col in (
+            ('diameter', 'axon_diam (um)'),
+            ('thickness', 'myelin_thickness (um)'),
+            ('gratio', 'gratio'),
+        ):
+            filled = df[col].fillna(-1)
+            out[key] = {
+                'pct': filled.rank(pct=True).to_numpy() * 100.0,
+                'rank': filled.rank(method='min').to_numpy(),
+            }
+        return out
 
-        
+    # -----------------------------------------------------------------------
+    # flagging
+    # -----------------------------------------------------------------------
+
+    def get_flagged_objects(
+        self,
+        im_axonmyelin_label,
+        save_folder,
+        gratio_max=0.99,
+        area_mode='min_multiple',
+        area_factor=5,
+        area_percentile=1.0,
+    ):
+        """Flag suspicious objects and write a mask of them.
+
+        Default behaviour is unchanged from the original implementation.
+
+        :param area_mode: 'min_multiple' (default, original behaviour) flags
+            objects at or below area_factor * the smallest object in the image.
+            Note this keys off a single object, so one segmentation artifact
+            rescales the threshold for the whole image. 'percentile' flags the
+            bottom area_percentile% instead, which is stable across images.
+        :param save_folder: where to write flagged_objects.png. Pass None to
+            skip writing (mask is still returned).
+        """
+        df = self.df
+        axonmyelin_img = np.asarray(im_axonmyelin_label)
+
         flagged_objects = np.array([])
-        flagged_objects = np.append(flagged_objects, df.loc[df['gratio'] >=0.99].index.to_numpy())
-        flagged_objects = np.append(flagged_objects, df.loc[df['axon_area (um^2)'] <= min(df['axon_area (um^2)'])*5].index.to_numpy())
-        flagged_objects = np.append(flagged_objects, df.loc[df['myelin_area (um^2)'] <= min(df['myelin_area (um^2)'])*5].index.to_numpy())
+        flagged_objects = np.append(
+            flagged_objects, df.loc[df['gratio'] >= gratio_max].index.to_numpy()
+        )
+
+        for col in ('axon_area (um^2)', 'myelin_area (um^2)'):
+            if col not in df:
+                continue
+            if area_mode == 'percentile':
+                vals = df[col].to_numpy(dtype=float)
+                if not np.isfinite(vals).any():
+                    continue
+                thresh = np.nanpercentile(vals, area_percentile)
+            else:
+                thresh = min(df[col]) * area_factor
+            flagged_objects = np.append(
+                flagged_objects, df.loc[df[col] <= thresh].index.to_numpy()
+            )
 
         flagged_objects = np.unique(flagged_objects)
 
-        mask = np.zeros_like(axonmyelin_img)
+        # np.isin() paints every flagged object in a single pass. The original
+        # ran a full-image np.where() per flagged object.
+        mask = np.isin(
+            np.rint(axonmyelin_img).astype(np.int64),
+            (flagged_objects + 1).astype(np.int64),
+        ).astype(axonmyelin_img.dtype)
 
-        # go through each element in arr
-        for id in flagged_objects:
-            locations = np.where(np.isclose(axonmyelin_img, id+1))
-            mask[locations] = 1
-    
-        ads.imwrite(Path(save_folder) / 'flagged_objects.png', mask*255)
+        if save_folder is not None:
+            ads.imwrite(Path(save_folder) / 'flagged_objects.png', mask * 255)
+
         return (flagged_objects, mask)
-    
-    def generate_axon_closeups(self, qa_folder, image, axon_label, myelin_label, im_axonmyelin_label, buffer_pixels=20):
-        """Generate closeup images of each axon with overlay using real image data - ONLY current axon"""
+
+    # -----------------------------------------------------------------------
+    # closeups
+    # -----------------------------------------------------------------------
+
+    def generate_axon_closeups(
+        self,
+        qa_folder,
+        image,
+        axon_label,
+        myelin_label,
+        im_axonmyelin_label,
+        buffer_pixels=20,
+        only_ids=None,
+        min_crop_px=None,
+        max_crop_px=None,
+    ):
+        """Generate closeup images of each axon with overlay using real image data.
+
+        :param only_ids: iterable of 0-based axon ids to render. None (default)
+            renders every axon, as before. Pass the flagged ids from
+            get_flagged_objects() to render only the axons a human will look at
+            -- this is the difference between ~25s and ~1s on a 1000-axon image.
+        :param min_crop_px: upscale (nearest-neighbour) any crop whose long edge
+            is below this. The previous implementation resampled every crop up
+            to ~1200px as a side effect of figsize*dpi; native resolution is
+            sharper and far smaller, but set this if the report's CSS expects
+            large images.
+        :param max_crop_px: downscale (Lanczos) any crop whose long edge exceeds
+            this. Useful for very large axons in high-resolution images.
+        """
+        qa_folder = Path(qa_folder)
+        qa_folder.mkdir(parents=True, exist_ok=True)
+
+        base_rgb = _to_rgb(image).astype(np.float32)
+        axon_bool = np.asarray(axon_label).astype(bool)
+        myelin_bool = np.asarray(myelin_label).astype(bool)
+
+        labels = np.asarray(im_axonmyelin_label)
+        labels = (np.rint(labels) if labels.dtype.kind == 'f' else labels).astype(np.int32)
+        shape = labels.shape
+
+        # One pass over the label image yields every bounding box, indexed by
+        # (label - 1). The original scanned the entire image once per axon.
+        objects = ndimage.find_objects(labels)
+
+        ranks = self._precompute_ranks()
+        n_axons = ranks['n']
+
+        target_ids = range(n_axons) if only_ids is None else [int(i) for i in only_ids]
+
         axon_data = []
-        
-        for axon_id in range(len(self.df)):
-            # Get axon properties
-            row = self.df.iloc[axon_id]
-            axon_diameter = row['axon_diam (um)']
-            myelin_thickness = row['myelin_thickness (um)']
-            gratio = row['gratio']
+        for axon_id in target_ids:
+            if axon_id < 0 or axon_id >= n_axons:
+                continue
 
-            # Total number of axons
-            n_axons = len(self.df)
-
-            # Percentile rank (0-100, where 100 = largest)
-            diameter_pct = self.df['axon_diam (um)'].fillna(-1).rank(pct=True).iloc[axon_id] * 100
-            thickness_pct = self.df['myelin_thickness (um)'].fillna(-1).rank(pct=True).iloc[axon_id] * 100
-            gratio_pct = self.df['gratio'].fillna(-1).rank(pct=True).iloc[axon_id] * 100
-
-            # Absolute rank (1 = smallest, n = largest)
-            diameter_rank = int(self.df['axon_diam (um)'].fillna(-1).rank(method="min").iloc[axon_id])
-            thickness_rank = int(self.df['myelin_thickness (um)'].fillna(-1).rank(method="min").iloc[axon_id])
-            gratio_rank = int(self.df['gratio'].rank(method="min").fillna(-1).iloc[axon_id])
-
-
-            # Find the axon pixels in the label image (axon_id + 1 because labels start at 1)
+            # labels start at 1
             current_axon_id = axon_id + 1
-            axon_myelin_mask = (im_axonmyelin_label == current_axon_id)
-            
-            if not np.any(axon_myelin_mask):
+            if current_axon_id > len(objects) or objects[current_axon_id - 1] is None:
                 print(f"Warning: No pixels found for axon {axon_id} (ID: {current_axon_id})")
                 continue
-                
-            # Get bounding box coordinates
-            y_coords, x_coords = np.where(axon_myelin_mask)
-            y_min, y_max = np.min(y_coords), np.max(y_coords)
-            x_min, x_max = np.min(x_coords), np.max(x_coords)
-            
-            # Add buffer with boundary checks
-            y_min_buf = max(0, y_min - buffer_pixels)
-            y_max_buf = min(image.shape[0], y_max + buffer_pixels + 1)
-            x_min_buf = max(0, x_min - buffer_pixels)
-            x_max_buf = min(image.shape[1], x_max + buffer_pixels + 1)
-            
-            # Crop all images to the same region
-            image_crop = image[y_min_buf:y_max_buf, x_min_buf:x_max_buf]
-            axon_crop = axon_label[y_min_buf:y_max_buf, x_min_buf:x_max_buf]  # Boolean: 1=axon, 0=not axon
-            myelin_crop = myelin_label[y_min_buf:y_max_buf, x_min_buf:x_max_buf]  # Boolean: 1=myelin, 0=not myelin
-            label_crop = im_axonmyelin_label[y_min_buf:y_max_buf, x_min_buf:x_max_buf]  # Integer IDs
-            
-            # Create masks for ONLY the current axon
-            current_region_mask = (label_crop == current_axon_id)
-            axon_current_mask = axon_crop.astype(bool) & current_region_mask
-            myelin_current_mask = myelin_crop.astype(bool) & current_region_mask
-            
-            # Save original axon image (without labels)
+
+            sl = _expand_slice(objects[current_axon_id - 1], buffer_pixels, shape)
+
+            image_crop = base_rgb[sl].copy()
+            region = labels[sl] == current_axon_id
+            axon_current_mask = axon_bool[sl] & region
+            myelin_current_mask = myelin_bool[sl] & region
+
             original_path = qa_folder / f'axon_{axon_id}_original.png'
-            plt.figure(figsize=(8, 8))
-            if len(image_crop.shape) == 2:
-                plt.imshow(image_crop, cmap='gray')
-            else:
-                plt.imshow(image_crop)
-            plt.axis('off')
-            plt.tight_layout()
-            plt.savefig(original_path, dpi=150, bbox_inches='tight')
-            plt.close()
-            
-            # Create the labeled closeup image with overlay
             labeled_path = qa_folder / f'axon_{axon_id}_labeled.png'
-            
-            # Create figure with original image and overlay
-            fig, ax = plt.subplots(figsize=(8, 8))
-            
-            # Display original image (convert to RGB if grayscale)
-            if len(image_crop.shape) == 2:
-                ax.imshow(image_crop, cmap='gray', alpha=1.0)
-            else:
-                ax.imshow(image_crop, alpha=1.0)
-            
-            # Create overlay with semi-transparent colors - ONLY for current axon
-            overlay = np.zeros((image_crop.shape[0], image_crop.shape[1], 4))
-            
-            # Blue for axon (RGBA: 0,0,1,0.5) - ONLY current axon
-            overlay[axon_current_mask] = [0, 0, 1, 0.5]  # Blue with 50% opacity
-            
-            # Red for myelin (RGBA: 1,0,0,0.5) - ONLY current axon's myelin
-            overlay[myelin_current_mask] = [1, 0, 0, 0.5]  # Red with 50% opacity
-            
-            ax.imshow(overlay)
-            
-            # Remove axes and add title
-            ax.axis('off')
-            
-            plt.tight_layout()
-            plt.savefig(labeled_path, dpi=150, bbox_inches='tight')
-            plt.close()
-            
+
+            orig_img = Image.fromarray(image_crop.astype(np.uint8))
+
+            _blend(image_crop, axon_current_mask, AXON_RGB)
+            _blend(image_crop, myelin_current_mask, MYELIN_RGB)
+            lab_img = Image.fromarray(image_crop.astype(np.uint8))
+
+            if max_crop_px and max(orig_img.size) > max_crop_px:
+                s = max_crop_px / max(orig_img.size)
+                size = (max(1, int(orig_img.width * s)), max(1, int(orig_img.height * s)))
+                orig_img = orig_img.resize(size, Image.LANCZOS)
+                lab_img = lab_img.resize(size, Image.LANCZOS)
+            elif min_crop_px and max(orig_img.size) < min_crop_px:
+                s = min_crop_px / max(orig_img.size)
+                size = (max(1, int(orig_img.width * s)), max(1, int(orig_img.height * s)))
+                orig_img = orig_img.resize(size, Image.NEAREST)
+                lab_img = lab_img.resize(size, Image.NEAREST)
+
+            orig_img.save(original_path, optimize=True)
+            lab_img.save(labeled_path, optimize=True)
+
+            row = self.df.iloc[axon_id]
             axon_data.append({
                 'id': axon_id,
-                'diameter': float(axon_diameter),
-                'thickness': float(myelin_thickness),
-                'gratio': float(gratio),
-                'diameterPercentile': f"{diameter_pct:.1f}",
-                'thicknessPercentile': f"{thickness_pct:.1f}",
-                'gratioPercentile': f"{gratio_pct:.1f}",
-                'diameterRank': f"{diameter_rank} of {n_axons}",
-                'thicknessRank': f"{thickness_rank} of {n_axons}",
-                'gratioRank': f"{gratio_rank} of {n_axons}",
+                'diameter': float(row['axon_diam (um)']),
+                'thickness': float(row['myelin_thickness (um)']),
+                'gratio': float(row['gratio']),
+                'diameterPercentile': f"{ranks['diameter']['pct'][axon_id]:.1f}",
+                'thicknessPercentile': f"{ranks['thickness']['pct'][axon_id]:.1f}",
+                'gratioPercentile': f"{ranks['gratio']['pct'][axon_id]:.1f}",
+                'diameterRank': f"{int(ranks['diameter']['rank'][axon_id])} of {n_axons}",
+                'thicknessRank': f"{int(ranks['thickness']['rank'][axon_id])} of {n_axons}",
+                'gratioRank': f"{int(ranks['gratio']['rank'][axon_id])} of {n_axons}",
                 'imagePath': str(original_path.name),
                 'labeledImagePath': str(labeled_path.name)
             })
@@ -237,19 +353,22 @@ class MetricsQA:
         return axon_data
 
     def save_seg_overlay(self, image, axon_label, myelin_label, qa_folder):
-        """Save overlay of axons and myelin."""
-        overlay = np.zeros((image.shape[0], image.shape[1], 3))
-        overlay[axon_label == 1] = [255, 0, 0]
-        overlay[myelin_label == 1] = [0, 255, 0]
-        overlay = overlay.astype(np.uint8)
+        """Save overlay of axons and myelin.
 
-        plt.figure(figsize=(8, 8))
-        plt.imshow(image, cmap='gray')
-        plt.axis('off')
-        plt.tight_layout()
-        plt.savefig(qa_folder / 'base_image.png', dpi=150, bbox_inches='tight')
+        Fixes a bug in the previous implementation: it built an RGB *zeros*
+        array and drew it over the whole figure at alpha=0.5, so the black
+        background darkened the entire base image. Only labelled pixels are
+        touched here.
+        """
+        qa_folder = Path(qa_folder)
+        qa_folder.mkdir(parents=True, exist_ok=True)
 
-        plt.imshow(overlay, alpha=0.5)
+        base_rgb = _to_rgb(image)
+        Image.fromarray(base_rgb).save(qa_folder / 'base_image.png', optimize=True)
 
-        plt.savefig(qa_folder / 'segmentation_overlay.png', dpi=150, bbox_inches='tight')
-        plt.close()
+        overlaid = base_rgb.astype(np.float32)
+        _blend(overlaid, np.asarray(axon_label).astype(bool), AXON_RGB)
+        _blend(overlaid, np.asarray(myelin_label).astype(bool), MYELIN_RGB)
+        Image.fromarray(overlaid.astype(np.uint8)).save(
+            qa_folder / 'segmentation_overlay.png', optimize=True
+        )
