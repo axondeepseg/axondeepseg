@@ -150,10 +150,17 @@ def axon_segmentation(
     # find all available folds
     folds_avail = find_folds(path_model, model_type)
 
+    if torch.cuda.is_available() and gpu_id >= 0:
+        device = torch.device('cuda', gpu_id)
+    elif torch.mps.is_available():
+        logger.info('MPS device detected. Using MPS for inference.')
+        device = torch.device('mps')
+    else:
+        device = torch.device('cpu')
     # instantiate predictor
     predictor = nnUNetPredictor(
-        perform_everything_on_device=True if gpu_id >= 0 else False,
-        device=torch.device('cuda', gpu_id) if gpu_id >= 0 else torch.device('cpu'),
+        perform_everything_on_device=True if device.type != 'cpu' else False,
+        device=device,
     )
     logger.info('Running inference on device: {}'.format(predictor.device))
 
