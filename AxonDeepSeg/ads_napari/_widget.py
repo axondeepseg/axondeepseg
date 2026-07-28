@@ -1428,19 +1428,34 @@ class ApplyModelThread(QtCore.QThread):
 
         _original_tqdm = nnunet_predictor.tqdm
 
-        def _napari_tqdm(iterable=None, *args, **kwargs):
-            kwargs.pop("disable", None)
-            if iterable is not None:
-                items = list(iterable)
-                total = len(items)
-                self.progress_update.emit(0, total, "Applying model")
-                for i, item in enumerate(items):
+        class _NapariTqdmWrapper:
+            def __init__(self, inner):
+                self._inner = inner
+
+            def __iter__(self):
+                total = getattr(self._inner, 'total', None)
+                if total is not None:
+                    self.progress_update.emit(0, total, 'Applying model')
+                for i, item in enumerate(self._inner):
                     if self.cancel_requested:
-                        raise InterruptedError("Segmentation cancelled by user")
+                        raise InterruptedError('Segmentation cancelled by user')
                     yield item
-                    self.progress_update.emit(i + 1, total, "Applying model")
-            else:
-                yield from _original_tqdm(*args, **kwargs)
+                    if total is not None:
+                        self.progress_update.emit(i + 1, total, 'Applying model')
+
+            def __getattr__(self, name):
+                return getattr(self._inner, name)
+
+            def __enter__(self):
+                return self._inner.__enter__()
+
+            def __exit__(self, exc_type, exc, exc_tb):
+                return self._inner.__exit__(exc_type, exc, exc_tb)
+
+        def _napari_tqdm(iterable=None, *args, **kwargs):
+            kwargs.pop('disable', None)
+            inner = _original_tqdm(iterable, *args, **kwargs)
+            return _NapariTqdmWrapper(inner)
 
         nnunet_predictor.tqdm = _napari_tqdm
 
