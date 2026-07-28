@@ -152,7 +152,7 @@ def axon_segmentation(
 
     if torch.cuda.is_available() and gpu_id >= 0:
         device = torch.device('cuda', gpu_id)
-    elif torch.mps.is_available():
+    elif torch.backends.mps.is_available():
         logger.info('MPS device detected. Using MPS for inference.')
         device = torch.device('mps')
     else:
