@@ -81,6 +81,8 @@ class NapariTqdmWrapper:
                 self._emit_progress(i + 1, total)
 
     def update(self, n=1):
+        if self._is_cancel_requested():
+            raise InterruptedError('Segmentation cancelled by user')
         result = self._inner.update(n)
         total = getattr(self._inner, 'total', None)
         current = getattr(self._inner, 'n', None)
