@@ -609,7 +609,7 @@ find "$ADS_DIR/$CONDA_DIR" -type f -exec touch {} +
 # create conda environment
 print info "Creating conda environment..."
 # NB: We use an absolute path (-p) rather than a relative name (-n) to better isolate the conda environment
-"$CONDA_DIR"/bin/conda create -y -p "$ADS_DIR/$CONDA_DIR"/envs/venv_ads python=3.11 pip
+"$CONDA_DIR"/bin/conda create -y -p "$ADS_DIR/$CONDA_DIR"/envs/venv_ads python=3.14 pip
 
 # Reapply the touch fix to avoid `pip` connection issues on WSL
 find "$ADS_DIR/$CONDA_DIR" -type f -exec touch {} +
