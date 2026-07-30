@@ -167,7 +167,7 @@ start /wait "" %TMP_DIR%\miniconda.exe /InstallationType=JustMe /AddToPath=0 /Re
 rem Create and activate miniconda environment to install ADS into
 echo:
 echo ### Using Conda to create virtual environment...
-ads_conda\Scripts\conda create -y -p ads_conda\envs\venv_ads python=3.14 || goto error
+ads_conda\Scripts\conda create -y -p ads_conda\envs\venv_ads python=3.13 || goto error
 CALL ads_conda\Scripts\activate.bat ads_conda\envs\venv_ads || goto error
 echo Virtual environment created and activated successfully!
 
