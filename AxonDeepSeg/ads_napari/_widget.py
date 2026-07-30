@@ -51,6 +51,58 @@ _ALT = 'Alt'
 global NAPARI_VIEWER_OPEN
 NAPARI_VIEWER_OPEN = True  # Whether to fill holes in the axon mask when loading a mask
 
+class NapariTqdmWrapper:
+    """Wrap a tqdm iterator for napari progress and cancellation handling.
+
+    The nnUNet code may use tqdm both as an iterable wrapper and as a
+    context manager. This wrapper delegates all attribute access to the
+    original tqdm object while emitting progress updates through a Qt signal
+    and raising InterruptedError when cancellation is requested.
+    """
+
+    def __init__(self, inner, progress_signal, is_cancel_requested):
+        self._inner = inner
+        self._progress_signal = progress_signal
+        self._is_cancel_requested = is_cancel_requested
+
+    def _emit_progress(self, current, total):
+        if total is not None:
+            self._progress_signal.emit(current, total, 'Applying model')
+
+    def __iter__(self):
+        total = getattr(self._inner, 'total', None)
+        if total is not None:
+            self._emit_progress(0, total)
+        for i, item in enumerate(self._inner):
+            if self._is_cancel_requested():
+                raise InterruptedError('Segmentation cancelled by user')
+            yield item
+            if total is not None:
+                self._emit_progress(i + 1, total)
+
+    def update(self, n=1):
+        if self._is_cancel_requested():
+            raise InterruptedError('Segmentation cancelled by user')
+        result = self._inner.update(n)
+        total = getattr(self._inner, 'total', None)
+        current = getattr(self._inner, 'n', None)
+        if total is not None and current is not None:
+            self._emit_progress(current, total)
+        return result
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+    def __enter__(self):
+        self._inner.__enter__()
+        total = getattr(self._inner, 'total', None)
+        if total is not None:
+            self._emit_progress(0, total)
+        return self
+
+    def __exit__(self, exc_type, exc, exc_tb):
+        return self._inner.__exit__(exc_type, exc, exc_tb)
+
 class ADSsettings:
     """Plugin settings class.
 
@@ -1427,20 +1479,13 @@ class ApplyModelThread(QtCore.QThread):
         self.cancelled = False
 
         _original_tqdm = nnunet_predictor.tqdm
+        progress_signal = self.progress_update
+        is_cancel_requested = lambda: self.cancel_requested
 
         def _napari_tqdm(iterable=None, *args, **kwargs):
-            kwargs.pop("disable", None)
-            if iterable is not None:
-                items = list(iterable)
-                total = len(items)
-                self.progress_update.emit(0, total, "Applying model")
-                for i, item in enumerate(items):
-                    if self.cancel_requested:
-                        raise InterruptedError("Segmentation cancelled by user")
-                    yield item
-                    self.progress_update.emit(i + 1, total, "Applying model")
-            else:
-                yield from _original_tqdm(*args, **kwargs)
+            kwargs.pop('disable', None)
+            inner = _original_tqdm(iterable, *args, **kwargs)
+            return NapariTqdmWrapper(inner, progress_signal, is_cancel_requested)
 
         nnunet_predictor.tqdm = _napari_tqdm
 
