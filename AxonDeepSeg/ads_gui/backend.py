@@ -1,9 +1,9 @@
 """Background worker threads wiring the standalone GUI to the AxonDeepSeg backend.
 
-Kept intentionally simple: everything runs on CPU (no GPU selection exposed),
-one thread per action (segment / morphometrics / download), cancellation is
-cooperative (checked between images), and progress/log updates are emitted as
-Qt signals so the main window can update itself from the GUI thread.
+One thread per action (segment / morphometrics / download). GPU is auto-detected,
+there's no UI toggle for it. Cancellation is cooperative (checked between images),
+and progress/log updates are emitted as Qt signals so the main window can update
+itself from the GUI thread.
 """
 from pathlib import Path
 from typing import List, Optional
@@ -191,9 +191,9 @@ class SegmentThread(QThread):
             if _caught_error:
                 # @logger.catch swallowed an exception; error already forwarded to the log.
                 return
-            # Belt and suspenders: some nnU-Net internals swallow the InterruptedError
-            # raised from _gui_tqdm and return normally, so re-check the flag here
-            # instead of only relying on the exception below.
+            # Some nnU-Net internals swallow the InterruptedError raised from _gui_tqdm
+            # and return normally, so re-check the flag here instead of relying on the
+            # exception below.
             if self.cancel_requested:
                 self.log.emit("Segmentation cancelled.")
                 return
@@ -222,19 +222,23 @@ class SegmentThread(QThread):
         return results
 
     def _run_morphometrics_after(self, image_files: List[Path]):
-        from AxonDeepSeg.morphometrics.launch_morphometrics_computation import (
-            launch_morphometrics_computation,
-        )
-        for img_path in image_files:
-            resolved = resolve_segmented_image_path(img_path)
-            mask_path = resolved.parent / (resolved.stem + str(axonmyelin_suffix))
-            if not mask_path.exists():
-                continue
-            try:
-                launch_morphometrics_computation(resolved, mask_path, axon_shape="circle")
-                self.log.emit(f"Morphometrics computed for {img_path.name}.")
-            except Exception as e:
-                self.log.emit(f"Morphometrics failed for {img_path.name}: {e}")
+        # Reuse MorphometricsThread's per-image logic (suffix-based output names, correct
+        # pixel size resolution, myelin stats) instead of duplicating it here. Calling
+        # .run() directly (not .start()) just runs it in-line on this same thread.
+        targets = [
+            resolved for img_path in image_files
+            if (resolved := resolve_segmented_image_path(img_path)).parent.joinpath(
+                resolved.stem + str(axonmyelin_suffix)
+            ).exists()
+        ]
+        if not targets:
+            return
+        morph_thread = MorphometricsThread()
+        morph_thread.paths = [str(p) for p in targets]
+        morph_thread.mode = "myelinated"
+        morph_thread.axon_shape = "circle"
+        morph_thread.log.connect(self.log.emit)
+        morph_thread.run()
 
 
 class MorphometricsThread(QThread):
@@ -343,10 +347,13 @@ class MorphometricsThread(QThread):
         elif self.mode == "unmyelinated":
             arg1 = self._load_mask(img_path, unmyelinated_suffix)
             arg2 = None
-        else:  # nerve
+        else:  # nerve: first pass computes per-fascicle stats off the nerve mask itself,
+            # axon/myelin masks are only needed later to exclude axons outside the nerve
             pred_nerve = self._load_mask(img_path, nerve_suffix)
-            arg1 = self._load_mask(img_path, axon_suffix)
-            arg2 = self._load_mask(img_path, myelin_suffix)
+            pred_axon = self._load_mask(img_path, axon_suffix)
+            pred_myelin = self._load_mask(img_path, myelin_suffix)
+            arg1 = pred_nerve
+            arg2 = None
 
         morph_output = get_axon_morphometrics(
             im_axon=arg1,
@@ -401,7 +408,7 @@ class MorphometricsThread(QThread):
                 )
 
         if self.mode == "nerve":
-            new_pred_axon, new_pred_myelin = remove_outside_nerve(arg1, arg2, pred_nerve)
+            new_pred_axon, new_pred_myelin = remove_outside_nerve(pred_axon, pred_myelin, pred_nerve)
             morph_output = get_axon_morphometrics(
                 im_axon=new_pred_axon,
                 im_myelin=new_pred_myelin,

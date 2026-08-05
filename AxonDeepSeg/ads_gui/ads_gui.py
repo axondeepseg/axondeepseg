@@ -26,9 +26,7 @@ APP_ICON_FILE = Path(__file__).parent / "app_icon.png"
 HEADER_LOGO_FILE_DARK_THEME = Path(__file__).parent.parent / "logo_ads-alpha_white.png"
 HEADER_LOGO_FILE_LIGHT_THEME = Path(__file__).parent.parent / "logo_ads-alpha.png"
 
-# ──────────────────────────────────────────────────────────────────
 # Model catalogue
-# ──────────────────────────────────────────────────────────────────
 
 def _load_catalogue():
     with open(MODEL_CARDS_FILE) as f:
@@ -82,9 +80,7 @@ def _px_display(px):
     return f"{px} µm/px"
 
 
-# ──────────────────────────────────────────────────────────────────
 # Stylesheets
-# ──────────────────────────────────────────────────────────────────
 
 DARK = """
 QMainWindow, QWidget { background: #1e1e2e; color: #cdd6f4; }
@@ -128,9 +124,7 @@ QScrollArea { border: none; }
 """
 
 
-# ──────────────────────────────────────────────────────────────────
 # Main window
-# ──────────────────────────────────────────────────────────────────
 
 class ADSWindow(QMainWindow):
     def __init__(self):
@@ -164,7 +158,7 @@ class ADSWindow(QMainWindow):
 
         self._apply_theme()
 
-    # ── Segment tab ───────────────────────────────────────────────
+    # Segment tab
 
     def _setup_segment_tab(self):
         self.batch_list.clear()
@@ -278,7 +272,7 @@ class ADSWindow(QMainWindow):
         thread.run_morph_after = self.morpho_after.isChecked()
         self._start_thread(thread)
 
-    # ── Morphometrics tab ─────────────────────────────────────────
+    # Morphometrics tab
 
     def _setup_morphometrics_tab(self):
         self.morph_batch_list.clear()
@@ -367,7 +361,7 @@ class ADSWindow(QMainWindow):
         thread.diameter_overlay = self.opt_diameter.isChecked()
         self._start_thread(thread)
 
-    # ── Models tab ────────────────────────────────────────────────
+    # Models tab
 
     def _setup_models_tab(self):
         self.model_list.currentRowChanged.connect(self._on_model_selected)
@@ -425,15 +419,14 @@ class ADSWindow(QMainWindow):
         thread.variant = entry["variant"]
         self._start_thread(thread)
 
-    # ── Run / Stop dispatch ──────────────────────────────────────
+    # Run / Stop dispatch
 
     def _on_tab_changed(self, index):
         self.run_btn.setText("Download" if index == 2 else "Run")
 
     def _on_run(self):
         if self._active_thread is not None:
-            # Belt and suspenders: run_btn is disabled while a job is active, so this
-            # shouldn't be reachable, but never let two jobs run concurrently regardless.
+            # run_btn is disabled while a job is active, but guard against concurrent runs anyway
             return
         index = self.tabWidget.currentIndex()
         if index == 0:
@@ -527,13 +520,13 @@ class ADSWindow(QMainWindow):
         self._preview_dialog = PreviewDialog(results, parent=self)
         self._preview_dialog.show()
 
-    # ── Helpers ───────────────────────────────────────────────────
+    # Helpers
 
     def _log(self, msg: str):
         self.log.append(msg)
         self.log.ensureCursorVisible()
 
-    # ── Theme ─────────────────────────────────────────────────────
+    # Theme
 
     def _apply_theme(self):
         if self._dark:
@@ -554,7 +547,7 @@ class ADSWindow(QMainWindow):
         self._dark = not self._dark
         self._apply_theme()
 
-    # ── Napari ────────────────────────────────────────────────────
+    # Napari
 
     def _open_napari(self):
         try:
