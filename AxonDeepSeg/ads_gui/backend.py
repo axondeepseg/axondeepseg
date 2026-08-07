@@ -232,6 +232,11 @@ class SegmentThread(QThread):
             ).exists()
         ]
         if not targets:
+            self.log.emit(
+                f"Skipping morphometrics: no {axonmyelin_suffix} mask found. "
+                "This model's output classes aren't exactly axon+myelin, so no "
+                "combined mask was produced."
+            )
             return
         morph_thread = MorphometricsThread()
         morph_thread.paths = [str(p) for p in targets]
