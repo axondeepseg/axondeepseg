@@ -171,6 +171,15 @@ class ADSWindow(QMainWindow):
         self.removeBtn.clicked.connect(self._seg_remove)
         self.customBrowseBtn.clicked.connect(self._seg_browse_custom)
 
+        # Pixel size only matters when morphometrics is actually going to run.
+        self.morpho_after.toggled.connect(self._on_morpho_after_toggled)
+        self._on_morpho_after_toggled(self.morpho_after.isChecked())
+
+    def _on_morpho_after_toggled(self, checked: bool):
+        self.morphoAfterPxLabel.setVisible(checked)
+        self.morpho_after_px_spin.setVisible(checked)
+        self.morphoAfterPxHint.setVisible(checked)
+
     def _populate_segment_model_combo(self):
         current_text = self.model_combo.currentText() if self.model_combo.count() else None
         self.model_combo.clear()
@@ -270,6 +279,7 @@ class ADSWindow(QMainWindow):
         thread.path_model = path_model
         thread.allow_large_images = self.large_check.isChecked()
         thread.run_morph_after = self.morpho_after.isChecked()
+        thread.morph_pixel_size = self.morpho_after_px_spin.value() or None
         self._start_thread(thread)
 
     # Morphometrics tab

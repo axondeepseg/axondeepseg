@@ -123,6 +123,7 @@ class SegmentThread(QThread):
         self.path_model: Optional[Path] = None
         self.allow_large_images = False
         self.run_morph_after = False
+        self.morph_pixel_size: Optional[float] = None  # None => auto-read pixel_size_in_micrometer.txt
         self.cancel_requested = False
         # Populated on success with one entry per segmented image that has at least
         # one output mask: {"image": Path, "axon": Path|None, "myelin": Path|None}.
@@ -250,6 +251,7 @@ class SegmentThread(QThread):
         morph_thread.paths = [str(p) for p in targets]
         morph_thread.mode = "myelinated"
         morph_thread.axon_shape = "circle"
+        morph_thread.pixel_size = self.morph_pixel_size
         morph_thread.log.connect(self.log.emit)
         morph_thread.run()
 

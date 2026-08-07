@@ -265,6 +265,34 @@
                </item>
 
                <item>
+                <layout class="QHBoxLayout" name="morphoAfterPxRow">
+                 <item>
+                  <widget class="QLabel" name="morphoAfterPxLabel">
+                   <property name="text"><string>Pixel size (µm/px)</string></property>
+                   <property name="minimumWidth"><number>110</number></property>
+                   <property name="maximumWidth"><number>110</number></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QDoubleSpinBox" name="morpho_after_px_spin">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch><verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="decimals"><number>5</number></property>
+                   <property name="value"><double>0.000000</double></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="morphoAfterPxHint">
+                   <property name="text"><string>Leave 0 to auto-read from pixel_size_in_micrometer.txt</string></property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+
+               <item>
                 <widget class="QCheckBox" name="preview_check">
                  <property name="text"><string>Preview results when done</string></property>
                 </widget>
