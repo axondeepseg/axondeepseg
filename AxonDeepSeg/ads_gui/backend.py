@@ -13,6 +13,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from AxonDeepSeg import ads_utils as ads
 from AxonDeepSeg import segment, postprocessing
+from AxonDeepSeg.tqdm_utils import TqdmProgressWrapper
 from AxonDeepSeg.params import (
     valid_extensions, generated_file_suffixes,
     axon_suffix, myelin_suffix, axonmyelin_suffix,
@@ -159,17 +160,13 @@ class SegmentThread(QThread):
 
         def _gui_tqdm(iterable=None, *args, **kwargs):
             kwargs.pop("disable", None)
-            if iterable is not None:
-                items = list(iterable)
-                total = len(items)
-                self.progress.emit(0, total, "Segmenting")
-                for i, item in enumerate(items):
-                    if self.cancel_requested:
-                        raise InterruptedError("Segmentation cancelled by user")
-                    yield item
-                    self.progress.emit(i + 1, total, "Segmenting")
-            else:
-                yield from _original_tqdm(*args, **kwargs)
+            inner = _original_tqdm(iterable, *args, **kwargs)
+            return TqdmProgressWrapper(
+                inner,
+                lambda current, total, desc: self.progress.emit(current, total, desc),
+                lambda: self.cancel_requested,
+                "Segmenting",
+            )
 
         nnunet_predictor.tqdm = _gui_tqdm
 
