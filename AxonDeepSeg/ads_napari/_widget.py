@@ -34,6 +34,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
 from AxonDeepSeg.qa.metrics_qa import MetricsQA
+from AxonDeepSeg.tqdm_utils import TqdmProgressWrapper
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
@@ -51,57 +52,20 @@ _ALT = 'Alt'
 global NAPARI_VIEWER_OPEN
 NAPARI_VIEWER_OPEN = True  # Whether to fill holes in the axon mask when loading a mask
 
-class NapariTqdmWrapper:
-    """Wrap a tqdm iterator for napari progress and cancellation handling.
+class NapariTqdmWrapper(TqdmProgressWrapper):
+    """Compatibility wrapper for the napari plugin.
 
-    The nnUNet code may use tqdm both as an iterable wrapper and as a
-    context manager. This wrapper delegates all attribute access to the
-    original tqdm object while emitting progress updates through a Qt signal
-    and raising InterruptedError when cancellation is requested.
+    It preserves the existing Qt-signal based interface while reusing the shared
+    wrapper implementation that supports both iteration and context-manager usage.
     """
 
     def __init__(self, inner, progress_signal, is_cancel_requested):
-        self._inner = inner
-        self._progress_signal = progress_signal
-        self._is_cancel_requested = is_cancel_requested
-
-    def _emit_progress(self, current, total):
-        if total is not None:
-            self._progress_signal.emit(current, total, 'Applying model')
-
-    def __iter__(self):
-        total = getattr(self._inner, 'total', None)
-        if total is not None:
-            self._emit_progress(0, total)
-        for i, item in enumerate(self._inner):
-            if self._is_cancel_requested():
-                raise InterruptedError('Segmentation cancelled by user')
-            yield item
-            if total is not None:
-                self._emit_progress(i + 1, total)
-
-    def update(self, n=1):
-        if self._is_cancel_requested():
-            raise InterruptedError('Segmentation cancelled by user')
-        result = self._inner.update(n)
-        total = getattr(self._inner, 'total', None)
-        current = getattr(self._inner, 'n', None)
-        if total is not None and current is not None:
-            self._emit_progress(current, total)
-        return result
-
-    def __getattr__(self, name):
-        return getattr(self._inner, name)
-
-    def __enter__(self):
-        self._inner.__enter__()
-        total = getattr(self._inner, 'total', None)
-        if total is not None:
-            self._emit_progress(0, total)
-        return self
-
-    def __exit__(self, exc_type, exc, exc_tb):
-        return self._inner.__exit__(exc_type, exc, exc_tb)
+        super().__init__(
+            inner,
+            lambda current, total, desc: progress_signal.emit(current, total, desc),
+            is_cancel_requested,
+            "Applying model",
+        )
 
 class ADSsettings:
     """Plugin settings class.
