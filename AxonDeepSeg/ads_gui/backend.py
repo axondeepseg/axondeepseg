@@ -188,18 +188,26 @@ class SegmentThread(QThread):
                 verbosity_level=0,
                 allow_large_images=self.allow_large_images,
             )
-            if _caught_error:
-                # @logger.catch swallowed an exception; error already forwarded to the log.
-                return
             # Some nnU-Net internals swallow the InterruptedError raised from _gui_tqdm
             # and return normally, so re-check the flag here instead of relying on the
             # exception below.
             if self.cancel_requested:
                 self.log.emit("Segmentation cancelled.")
                 return
-            success = True
-            self.log.emit("Segmentation done.")
+            # A logged error can mean a single image in the batch failed while the
+            # rest went through fine (segment_images processes them independently),
+            # so judge success from which images actually produced masks rather
+            # than bailing out for the whole batch on any error.
             self.segmented_results = self._collect_results(image_files)
+            success = bool(self.segmented_results)
+            if _caught_error:
+                self.log.emit(
+                    f"{len(image_files) - len(self.segmented_results)} of "
+                    f"{len(image_files)} image(s) failed to segment; see errors above."
+                )
+            if not success:
+                return
+            self.log.emit("Segmentation done.")
 
             if self.run_morph_after:
                 self._run_morphometrics_after(image_files)
