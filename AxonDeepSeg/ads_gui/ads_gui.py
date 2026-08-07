@@ -152,6 +152,7 @@ class ADSWindow(QMainWindow):
         self.run_another_btn.clicked.connect(self._on_run_another_clicked)
         self._last_segment_results = []
         self.tabWidget.currentChanged.connect(self._on_tab_changed)
+        self._on_tab_changed(self.tabWidget.currentIndex())
 
         self.theme_btn.clicked.connect(self._toggle_theme)
         self.napari_btn.clicked.connect(self._open_napari)
@@ -442,8 +443,10 @@ class ADSWindow(QMainWindow):
 
     # Run / Stop dispatch
 
+    _RUN_BTN_LABELS = {0: "Run Segmentation", 1: "Run Morphometrics", 2: "Download"}
+
     def _on_tab_changed(self, index):
-        self.run_btn.setText("Download" if index == 2 else "Run")
+        self.run_btn.setText(self._RUN_BTN_LABELS.get(index, "Run"))
 
     def _on_run(self):
         if self._active_thread is not None:
