@@ -11,7 +11,9 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5 import uic
 
-from AxonDeepSeg.ads_gui.backend import SegmentThread, MorphometricsThread, DownloadThread
+from AxonDeepSeg.ads_gui.backend import (
+    SegmentThread, MorphometricsThread, DownloadThread, expand_to_image_files
+)
 from AxonDeepSeg.ads_gui.preview import PreviewDialog
 
 UI_FILE = Path(__file__).parent / "ads_gui.ui"
@@ -230,8 +232,17 @@ class ADSWindow(QMainWindow):
 
     def _seg_add_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Add folder")
-        if folder:
-            self._seg_add_to_list(folder)
+        if not folder:
+            return
+        # Show the actual images that will be segmented rather than the bare
+        # folder path — expand_to_image_files already excludes prior seg outputs
+        # (masks/overlays) so we don't accidentally re-segment them.
+        files = expand_to_image_files([folder])
+        if not files:
+            self._log(f"No segmentable images found in {folder}.")
+            return
+        for f in files:
+            self._seg_add_to_list(str(f))
 
     def _seg_add_to_list(self, path: str):
         existing = {self.batch_list.item(i).text() for i in range(self.batch_list.count())}
