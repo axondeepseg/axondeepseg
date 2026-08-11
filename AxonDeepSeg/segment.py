@@ -182,6 +182,28 @@ def segment_images(
         tile_step_size=tile_step_size,
     )
 
+def list_images_in_folder(path_folder: Path) -> List[Path]:
+    '''
+    List the images to segment in a folder, excluding masks and other files
+    AxonDeepSeg has generated.
+
+    Parameters
+    ----------
+    path_folder : pathlib.Path
+        Path to the folder containing the images to segment.
+
+    Returns
+    -------
+    List[pathlib.Path]
+        Paths of the image files to segment.
+    '''
+    path_folder = convert_path(path_folder)
+    return [
+        file for file in path_folder.iterdir()
+            if (file.suffix.lower() in valid_extensions)
+            and not str(file).endswith(generated_file_suffixes)
+    ]
+
 @logger.catch
 def segment_folder(
         path_folder: Path,
@@ -212,14 +234,7 @@ def segment_folder(
     path_folder = convert_path(path_folder)
     path_model = convert_path(path_model)
 
-    # Update list of images to segment by selecting only image files (not masks)
-    img_files = [
-        file for file in path_folder.iterdir() 
-            if (file.suffix.lower() in valid_extensions)
-            and not str(file).endswith(generated_file_suffixes)
-    ]
-
-    segment_images(img_files, path_model, gpu_id, verbosity_level,
+    segment_images(list_images_in_folder(path_folder), path_model, gpu_id, verbosity_level,
                    allow_large_images=allow_large_images, backend=backend,
                    tile_step_size=tile_step_size)
     logger.info("Folder segmentation done.")
@@ -342,14 +357,18 @@ def main(argv=None):
         else:
             input_dir_list.append(current_path_target)
     
-    # perform segmentation
-    opts = dict(allow_large_images=allow_large_images, backend=backend,
-                tile_step_size=tile_step_size)
+    # Segment everything in a single batch so the model is loaded once, rather
+    # than once per folder.
+    for dir_path in input_dir_list:
+        logger.info(f'Collecting images in "{str(dir_path)}".')
+        input_img_list.extend(list_images_in_folder(dir_path))
+
     if input_img_list:
-        segment_images(input_img_list, path_model, gpu_id, verbosity_level, **opts)
-    if input_dir_list:
-        for dir_path in input_dir_list:
-            segment_folder(dir_path, path_model, gpu_id, verbosity_level, **opts)
+        segment_images(input_img_list, path_model, gpu_id, verbosity_level,
+                       allow_large_images=allow_large_images, backend=backend,
+                       tile_step_size=tile_step_size)
+    else:
+        logger.warning('No images to segment.')
 
     sys.exit(0)
 
