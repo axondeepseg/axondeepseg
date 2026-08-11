@@ -126,6 +126,8 @@ def segment_images(
         gpu_id: int=-1,
         verbosity_level: int=0,
         allow_large_images: bool=False,
+        backend: str='auto',
+        tile_step_size: float=0.5,
     ) -> NoReturn:
     '''
     Segment the image(s) in path_images.
@@ -176,6 +178,8 @@ def segment_images(
         gpu_id=gpu_id,
         verbosity_level=verbosity_level,
         allow_large_images=allow_large_images,
+        backend=backend,
+        tile_step_size=tile_step_size,
     )
 
 @logger.catch
@@ -185,6 +189,8 @@ def segment_folder(
         gpu_id: int=-1,
         verbosity_level: int=0,
         allow_large_images: bool=False,
+        backend: str='auto',
+        tile_step_size: float=0.5,
     ) -> NoReturn:
     '''
     Segments all images in the path_folder directory.
@@ -213,7 +219,9 @@ def segment_folder(
             and not str(file).endswith(generated_file_suffixes)
     ]
 
-    segment_images(img_files, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
+    segment_images(img_files, path_model, gpu_id, verbosity_level,
+                   allow_large_images=allow_large_images, backend=backend,
+                   tile_step_size=tile_step_size)
     logger.info("Folder segmentation done.")
 
 # Main loop
@@ -273,6 +281,27 @@ def main(argv=None):
         help='Allow segmentation of images exceeding PIL\'s default decompression bomb limit '
              f'(~178 Mpx). \nUse this for large microscopy acquisitions.',
     )
+    ap.add_argument(
+        "--backend",
+        required=False,
+        choices=['auto', 'torch', 'torch-fp16', 'coreml'],
+        default='auto',
+        help='Execution backend for the forward pass. \n'
+             'auto (default): fastest available for this machine. \n'
+             'coreml: Apple CoreML, uses the Neural Engine (macOS only, ~3.6x faster). \n'
+             'torch-fp16: half precision through PyTorch (~1.7x faster on MPS). \n'
+             'torch: full precision PyTorch, the historical behaviour. \n'
+             'All backends produce near-identical output.',
+    )
+    ap.add_argument(
+        "--tile-step-size",
+        dest="tile_step_size",
+        required=False,
+        type=float,
+        default=0.5,
+        help='Sliding-window overlap between 0 and 1. Default 0.5 (each pixel covered \n'
+             '~4x). 1.0 means no overlap: faster, slightly coarser.',
+    )
     ap._action_groups.reverse()
 
     # Processing the arguments
@@ -291,6 +320,11 @@ def main(argv=None):
     allow_large_images = args["allow_large_images"]
 
     gpu_id = int(args["gpu_id"])
+    backend = args["backend"]
+    tile_step_size = float(args["tile_step_size"])
+    if not 0 < tile_step_size <= 1:
+        logger.error("--tile-step-size must be in (0, 1].")
+        sys.exit(2)
 
     # Check for available GPU IDs
     if gpu_id >=0:
@@ -309,11 +343,13 @@ def main(argv=None):
             input_dir_list.append(current_path_target)
     
     # perform segmentation
+    opts = dict(allow_large_images=allow_large_images, backend=backend,
+                tile_step_size=tile_step_size)
     if input_img_list:
-        segment_images(input_img_list, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
+        segment_images(input_img_list, path_model, gpu_id, verbosity_level, **opts)
     if input_dir_list:
         for dir_path in input_dir_list:
-            segment_folder(dir_path, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
+            segment_folder(dir_path, path_model, gpu_id, verbosity_level, **opts)
 
     sys.exit(0)
 
