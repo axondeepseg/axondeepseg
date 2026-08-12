@@ -15,7 +15,7 @@ from AxonDeepSeg.params import nnunet_suffix, intensity
 os.environ['nnUNet_raw'] = 'UNDEFINED'
 os.environ['nnUNet_results'] = 'UNDEFINED'
 os.environ['nnUNet_preprocessed'] = 'UNDEFINED'
-from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
+from AxonDeepSeg.fast_predictor import AdsPredictor
 
 def get_checkpoint_name(checkpoint_folder_path: Path) -> str:
     '''
@@ -121,6 +121,8 @@ def axon_segmentation(
                     gpu_id: int=-1,
                     verbosity_level: int=0,
                     allow_large_images: bool=False,
+                    backend: str='auto',
+                    tile_step_size: float=0.5,
                     ) -> NoReturn:
     '''
     Segment images by applying a nnU-Net pretrained model.
@@ -128,7 +130,7 @@ def axon_segmentation(
     Parameters
     ----------
     path_inputs : List[pathlib.Path]
-        List of images to segment. We assume they all exist and are already in 
+        List of images to segment. We assume they all exist and are already in
         the correct format expected by the model (nb of channels, image format).
     path_model : pathlib.Path
         Path to the folder of the nnU-Net pretrained model. We assume it exists.
@@ -138,6 +140,12 @@ def axon_segmentation(
         GPU ID to use for cuda acceleration. -1 to use CPU, by default -1.
     verbosity_level : int, optional
         Level of verbosity, by default 0.
+    backend : str, optional
+        Execution backend for the forward pass: 'auto', 'torch', 'torch-fp16' or
+        'coreml'. By default 'auto', which picks the fastest one available.
+    tile_step_size : float, optional
+        Sliding-window overlap, by default 0.5. Larger means fewer, less
+        overlapping tiles: faster and slightly less accurate.
     '''
     # Raise PIL's pixel limit before nnUNet spawns its workers so that large images
     # can be read during preprocessing. On Linux (fork), workers inherit the parent's
@@ -158,7 +166,9 @@ def axon_segmentation(
     else:
         device = torch.device('cpu')
     # instantiate predictor
-    predictor = nnUNetPredictor(
+    predictor = AdsPredictor(
+        backend=backend,
+        tile_step_size=tile_step_size,
         perform_everything_on_device=True if device.type == 'cuda' else False,
         device=device,
     )
@@ -180,7 +190,13 @@ def axon_segmentation(
     data_format = predictor.dataset_json['file_ending'] # e.g. '.png'
     output_list = [ str(p).replace(data_format, target_suffix) for p in path_inputs ]
 
-    predictor.predict_from_files(
+    # nnU-Net's pooled path spawns 8 export workers plus a 3-worker preprocessing
+    # iterator, and never parallelises the forward pass. Measured on an M5 it lost
+    # at every batch size tried (9, 15 and 64 images) while producing byte-identical
+    # output, so AxonDeepSeg always takes the sequential path.
+    # Note: predict_from_files_sequential is an internal nnunetv2 method; verify it
+    # still exists when bumping the nnunetv2==2.8.1 pin in pyproject.toml.
+    predictor.predict_from_files_sequential(
         list_of_lists_or_source_folder=input_list,
         output_folder_or_list_of_truncated_output_files=output_list,
         save_probabilities=False,
