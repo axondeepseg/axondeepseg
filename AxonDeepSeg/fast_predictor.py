@@ -71,11 +71,15 @@ def _cache_dir() -> Path:
 
 def coreml_available() -> bool:
     '''
-    Whether the CoreML backend is worth using here. Restricted to Apple silicon:
-    the speedup comes from the Neural Engine, which Intel Macs lack.
+    Whether the CoreML backend is worth using here. Restricted to Apple silicon
+    on macOS 14+: the speedup comes from the Neural Engine, which Intel Macs
+    lack, and the converted model requires macOS 14 (minimum_deployment_target).
     '''
     import platform
     if platform.system() != 'Darwin' or platform.machine() != 'arm64':
+        return False
+    mac_ver = tuple(int(x) for x in platform.mac_ver()[0].split('.')[:2])
+    if mac_ver < (14, 0):
         return False
     try:
         import coremltools  # noqa: F401
@@ -169,6 +173,14 @@ class AdsPredictor(nnUNetPredictor):
 
         if self.backend == 'torch-fp16':
             self.network = self.network.half()
+            # Trigger MPS JIT compilation now so the first inference tile isn't slow.
+            if self.device.type == 'mps':
+                patch = tuple(self.configuration_manager.patch_size)
+                n_ch = len(self.dataset_json['channel_names'])
+                with torch.inference_mode():
+                    self.network.to(self.device)(
+                        torch.zeros(1, n_ch, *patch, device=self.device, dtype=torch.float16)
+                    )
 
         logger.info(f'Inference backend: {self.backend} | tile step: {self.tile_step_size}')
 

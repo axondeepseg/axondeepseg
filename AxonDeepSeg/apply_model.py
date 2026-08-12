@@ -194,6 +194,8 @@ def axon_segmentation(
     # iterator, and never parallelises the forward pass. Measured on an M5 it lost
     # at every batch size tried (9, 15 and 64 images) while producing byte-identical
     # output, so AxonDeepSeg always takes the sequential path.
+    # Note: predict_from_files_sequential is an internal nnunetv2 method; verify it
+    # still exists when bumping the nnunetv2==2.8.1 pin in pyproject.toml.
     predictor.predict_from_files_sequential(
         list_of_lists_or_source_folder=input_list,
         output_folder_or_list_of_truncated_output_files=output_list,
