@@ -42,6 +42,17 @@ dedicated-CARS:
     ensemble: https://github.com/axondeepseg/default-CARS-model/releases/download/r20240403/model_seg_rat_axon-myelin_cars_ensemble.zip
     single_fold: https://github.com/axondeepseg/default-CARS-model/releases/download/r20240403/model_seg_rat_axon-myelin_cars_light.zip
 
+multires-TEM:
+  full_name: model_seg_tem-multires
+  task: myelinated-axon-segmentation
+  n_classes: 2
+  pixel_size: 0.00236-0.016
+  model-info: TEM axon/myelin segmentation, multi-resolution training (TEM1+TEM2), nnUNet 2.8.1.
+  training-data: Multi-resolution aggregation of TEM1 and TEM2, available at https://dandiarchive.org/dandiset/001436/0.250512.1625 and https://dandiarchive.org/dandiset/001350/0.250511.1527.
+  weights:
+    ensemble: ~
+    single_fold: https://github.com/axondeepseg/model_seg_tem-multires/releases/download/v1.0/model_seg_tem-multires_light.zip
+
 unmyelinated-TEM:
   full_name: model_seg_unmyelinated_stanford
   task: unmyelinated-axon-segmentation, myelinated-axon-segmentation
