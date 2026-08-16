@@ -35,7 +35,7 @@ from jinja2 import Environment, FileSystemLoader
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
 from AxonDeepSeg.qa.metrics_qa import MetricsQA
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
-from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
+from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix, unmyelinated_suffix
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
 import nnunetv2.inference.predict_from_raw_data as nnunet_predictor
 
@@ -675,6 +675,7 @@ class ADSplugin(QWidget):
             image_name_no_extension += '_grayscale'
             # Update the napari layer name to match the converted file
             selected_layer.name = image_name_no_extension
+
         axon_mask_path = image_directory / (
             image_name_no_extension + str(axon_suffix)
         )
@@ -683,6 +684,16 @@ class ADSplugin(QWidget):
             image_name_no_extension + str(myelin_suffix)
         )
         myelin_mask_name = image_name_no_extension + myelin_suffix.stem
+
+        model_output_classes = ads_utils.get_model_output_classes(
+            self.apply_model_thread.path_model
+        )
+        is_uaxon_predictor = "uaxon" in model_output_classes
+        if is_uaxon_predictor:
+            uaxon_mask_path = image_directory / (
+                image_name_no_extension + str(unmyelinated_suffix)
+            )
+            uaxon_mask_name = image_name_no_extension + unmyelinated_suffix.stem
 
         if not axon_mask_path.exists() or not myelin_mask_path.exists():
             self.show_info_message(
@@ -711,6 +722,18 @@ class ADSplugin(QWidget):
         selected_layer.metadata[
             "associated_myelin_mask_name"
         ] = myelin_mask_name
+
+        if is_uaxon_predictor:
+            uaxon_data = ads_utils.imread(uaxon_mask_path).astype(bool)
+            self.viewer.add_labels(
+                uaxon_data,
+                colormap={None: 'transparent', 1: "yellow"},
+                name=uaxon_mask_name,
+                metadata={"associated_image_name": image_name_no_extension},
+            )
+            selected_layer.metadata[
+                "associated_uaxon_mask_name"
+            ] = uaxon_mask_name
 
     def _on_cancel_button_click(self):
         self.apply_model_thread.cancel_requested = True
@@ -1276,7 +1299,7 @@ class ADSplugin(QWidget):
         """Return the mask layer of the given type associated with the currently selected image layer.
 
         Args:
-            type_of_mask (str): The type of mask to retrieve. Valid values are 'axon' and 'myelin'.
+            type_of_mask (str): The type of mask to retrieve. Valid values are 'axon', 'uaxon' and 'myelin'.
 
         Returns:
             Napari layer or None: The mask layer associated with the selected image layer and the
