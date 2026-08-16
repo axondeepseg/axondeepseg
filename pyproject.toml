@@ -47,6 +47,7 @@ dependencies =[
     "napari[pyqt5,optional-base,bermuda]<0.7.0",
     "acvl_utils!=0.2.1",
     "nnunetv2==2.8.1",
+    "coremltools>=8.0; sys_platform == 'darwin' and platform_machine == 'arm64'",     # Apple silicon only: runs the forward pass on the Neural Engine (~3x faster).
     "loguru",
     "torch",
     "pydicom<3",
