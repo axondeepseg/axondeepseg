@@ -46,9 +46,9 @@ multires-TEM:
   full_name: model_seg_tem-multires
   task: myelinated-axon-segmentation
   n_classes: 2
-  pixel_size: [0.00236, 0.00493]
+  pixel_size: 0.00236-0.016
   model-info: TEM axon/myelin segmentation, multi-resolution training (TEM1+TEM2), nnUNet 2.8.1.
-  training-data: TEM1 (NeuroPoly, 20 subjects) + TEM2 (DANDI:001350, all annotated subjects), trained at multiple pixel sizes for resolution invariance.
+  training-data: Multi-resolution aggregation of TEM1 and TEM2, available at https://dandiarchive.org/dandiset/001436/0.250512.1625 and https://dandiarchive.org/dandiset/001350/0.250511.1527.
   weights:
     ensemble: ~
     single_fold: https://github.com/axondeepseg/model_seg_tem-multires/releases/download/v1.0/model_seg_tem-multires_light.zip
