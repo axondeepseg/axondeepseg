@@ -93,7 +93,12 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
+          set +e
           pytest ./ -v
+          status=$?
+          set -e
+          pkill -f torch_shm_manager 2>/dev/null || true
+          exit $status
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
