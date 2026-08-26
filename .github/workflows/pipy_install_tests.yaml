@@ -106,5 +106,5 @@ jobs:
         with:
           python-version: '3.x'
       - name: Pypi install test finished
-        run: echo "Tests comlete!"
+        run: echo "Tests complete!"
 
