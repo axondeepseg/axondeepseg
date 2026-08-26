@@ -39,7 +39,8 @@ jobs:
 
     # Matrix driven OS
     runs-on: ${{ matrix.os }}
-
+    timeout-minutes: 30
+  
     # Defining matrix for OS and Python
     strategy:
       fail-fast: false
