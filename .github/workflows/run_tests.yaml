@@ -39,6 +39,7 @@ jobs:
 
     # Matrix driven OS
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
 
     # Default shell for ALL subsequent steps.
     defaults:
