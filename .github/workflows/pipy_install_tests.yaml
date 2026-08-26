@@ -83,6 +83,8 @@ jobs:
       - name: Test with pytest
         timeout-minutes: 20
         shell: bash
+        env:
+          PYTHONFAULTHANDLER: '1'
         run: |
           git pull --all
           git checkout "$(git tag --sort=-v:refname | head -1)"
@@ -94,14 +96,14 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
           set +e
-          python - <<'PY'
-          import faulthandler, sys, pytest
-          faulthandler.dump_traceback_later(720, exit=True)
-          sys.exit(pytest.main(["./", "-v"]))
-          PY
+          pytest ./ -v &
+          PYTEST_PID=$!
+          ( sleep 900; kill -ABRT $PYTEST_PID ) >/dev/null 2>&1 &
+          WATCHDOG_PID=$!
+          wait $PYTEST_PID
           status=$?
+          kill $WATCHDOG_PID 2>/dev/null
           set -e
-          pkill -f torch_shm_manager 2>/dev/null || true
           exit $status
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
