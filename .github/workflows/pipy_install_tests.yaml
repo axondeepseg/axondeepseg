@@ -89,6 +89,7 @@ jobs:
           git pull --all
           git checkout "$(git tag --sort=-v:refname | head -1)"
           rm -rf ./AxonDeepSeg/
+          printf 'import multiprocessing.resource_tracker as _rt\nif hasattr(_rt.ResourceTracker, "__del__"):\n    del _rt.ResourceTracker.__del__\n' > conftest.py
 
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
