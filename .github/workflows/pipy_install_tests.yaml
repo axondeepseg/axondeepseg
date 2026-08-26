@@ -96,6 +96,10 @@ jobs:
         shell: cmd
         run: |
 
+          git pull --all
+
+          git checkout $( git tag | tail -1)
+
           rmdir ./AxonDeepSeg/
 
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
