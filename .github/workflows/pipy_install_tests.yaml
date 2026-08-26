@@ -80,14 +80,12 @@ jobs:
           pyvista: false
 
       # Step 3: Full PyTest
-      - name: Test with pytest (Unix)
-        if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest' && matrix.python-version == '3.11') || (matrix.os == 'macos-26-intel' && matrix.python-version == '3.11') }}
+      - name: Test with pytest
+        timeout-minutes: 20
+        shell: bash
         run: |
-
           git pull --all
-
-          git checkout $( git tag | tail -1)
-
+          git checkout "$(git tag --sort=-v:refname | head -1)"
           rm -rf ./AxonDeepSeg/
 
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
@@ -96,29 +94,6 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
           pytest ./ -v
-          echo "All done!"
-          exit 0 
-          
-    
-
-      - name: Test with pytest (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-
-          git pull --all
-
-          git checkout $( git tag | tail -1)
-
-          rmdir ./AxonDeepSeg/
-
-          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
-          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
-          python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
-          python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
-
-          pytest.exe ./ -v
-
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
