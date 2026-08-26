@@ -94,7 +94,11 @@ jobs:
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
           set +e
-          pytest ./ -v
+          python - <<'PY'
+          import faulthandler, sys, pytest
+          faulthandler.dump_traceback_later(720, exit=True)
+          sys.exit(pytest.main(["./", "-v"]))
+          PY
           status=$?
           set -e
           pkill -f torch_shm_manager 2>/dev/null || true
