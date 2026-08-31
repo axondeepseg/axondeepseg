@@ -38,6 +38,7 @@ jobs:
 
     # Matrix driven OS
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
 
     # Default shell for ALL subsequent steps.
     defaults:
@@ -94,6 +95,14 @@ jobs:
             cat ~/.bashrc | grep "export ADS_DIR" | cut -d " " -f 2 >> $GITHUB_ENV
             cat ~/.bashrc | grep "export PATH" | grep -o "/.*" | cut -d ':' -f 1 >> $GITHUB_PATH
           fi
+
+      # Step 2c: Virtual display so Qt/napari GUI tests can run on Linux
+      - name: Set up headless display (Linux)
+        if: runner.os == 'Linux'
+        uses: pyvista/setup-headless-display-action@v4
+        with:
+          qt: true
+          pyvista: false
 
       # Step 3: Full PyTest
       - name: Test with pytest (Unix)
