@@ -1,8 +1,8 @@
-myelinated-rules:
+myelinated:
   - valid-g-ratio-only: True
   - axon-diam-gt: ~
 
-unmyelinated-rules:
+unmyelinated:
   - axon-diam-gt: ~
   - solidity-gt: ~
   - axon-area-lt: ~

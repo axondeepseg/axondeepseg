@@ -34,8 +34,8 @@ def read_config(config_path: Path) -> dict:
     with open(str(config_path), 'r') as f:
         config = yaml.safe_load(f)
 
-    if config.keys() != {'myelinated-rules', 'unmyelinated-rules'}:
-        raise ValueError(f'Configuration file {config_path} must contain "myelinated-rules" and "unmyelinated-rules" keys.')
+    if config.keys() != {'myelinated', 'unmyelinated'}:
+        raise ValueError(f'Configuration file {config_path} must contain "myelinated" and "unmyelinated" keys.')
     
     return config
 
@@ -75,7 +75,7 @@ def process_morphometric_files(morpho_files, rules, axon_type, overwrite, apply_
 
         # artifact from xlsx import, remove the first column title if required
         df = df.rename(columns={'Unnamed: 0': ''})
-        
+
         if overwrite:
             df.to_excel(morpho_file, index=False)
             logger.info(f'Overwrote original file: {morpho_file}')
@@ -125,14 +125,14 @@ def main():
 
     process_morphometric_files(
         axon_morpho_files,
-        rules['myelinated-rules'],
+        rules['myelinated'],
         'myelinated',
         args.overwrite,
         apply_myelinated_rules,
     )
     process_morphometric_files(
         uaxon_morpho_files,
-        rules['unmyelinated-rules'],
+        rules['unmyelinated'],
         'unmyelinated',
         args.overwrite,
         apply_unmyelinated_rules,
