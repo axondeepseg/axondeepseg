@@ -14,7 +14,7 @@ from AxonDeepSeg.ads_utils import imread
 from AxonDeepSeg.params import generated_file_suffixes
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description='Count axons (myelinated and unmyelinated, if applicable).')
     parser.add_argument(
         '-i',
@@ -36,7 +36,7 @@ def main():
         help='Name of the output file.',
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     input_dir = Path(args.input_dir)
     out_name = args.output_name
     mask_mode = args.mask_mode
