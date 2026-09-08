@@ -704,17 +704,17 @@ with the suffix ``_filtered.xlsx``::
    axondeepseg_filter -i folder_with_morphometrics
 
 Use ``--config`` to provide a custom rules file, ``--overwrite`` to replace the original files, or ``--update_masks`` to update the corresponding segmentation masks. 
-A custom ``filter.yaml`` file should contain ``myelinated`` and ``unmyelinated`` rule lists. Supported rules include ``valid-g-ratio-only``, ``axon-diam-gt`` (axon diameter greater than), ``solidity-gt`` (solidity greater than), and ``axon-area-lt`` (axon area less than). Use ``~`` as a threshold to disable that rule. Then, pass your custom rules file to the command line with ``--config``::
+A custom **filter.yaml** file should contain *myelinated* and *unmyelinated* rule lists. Supported rules include ``valid-g-ratio-only``, ``axon-diam-gt`` (axon diameter greater than), ``solidity-gt`` (solidity greater than), and ``axon-area-lt`` (axon area less than). Use ``~`` as a threshold to disable that rule. Then, pass your custom rules file to the command line with ``--config``::
 
    axondeepseg_filter -i folder_with_morphometrics --config my_custom_rules.yaml
 
 Axon counting
 ~~~~~~~~~~~~~
-Use ``axondeepseg_count`` to count axons from morphometric files in a folder. Filtered morphometric files are used when available (result of using the ``axondeepseg_filter`` command), and the result is saved to ``axon_counts.csv`` by default::
+Use ``axondeepseg_count`` to count axons from morphometric files in a folder. Filtered morphometric files are used when available (result of using the ``axondeepseg_filter`` command), and the result is saved to **axon_counts.csv** by default::
 
    axondeepseg_count -i folder_with_morphometrics -o counts.csv
 
-To count connected components directly from segmentation masks, add ``--mask_mode``. The folder must contain the expected ``*_seg-axonmyelin.png`` and ``*_seg-uaxon.png`` mask files.
+To count connected components directly from segmentation masks, add ``--mask_mode``. The folder must contain the mask files suffixed by **_seg-axonmyelin.png** and **_seg-uaxon.png**.
 
 .. _quality-assurance-label:
 
