@@ -198,7 +198,7 @@ def process_morphometric_files(morpho_files, rules, axon_type, overwrite, update
                 overwrite=overwrite,
             )
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "-i", "--input", 
@@ -220,7 +220,7 @@ def main():
         help="Overwrite the original morphometric files (and segmentation masks if -m is set)"
     )
 
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     # input parsing and validation
     input_path = Path(args.input)
