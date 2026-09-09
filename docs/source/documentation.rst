@@ -703,8 +703,20 @@ with the suffix ``_filtered.xlsx``::
 
    axondeepseg_filter -i folder_with_morphometrics
 
-Use ``--config`` to provide a custom rules file, ``--overwrite`` to replace the original files, or ``--update_masks`` to update the corresponding segmentation masks. 
-A custom **filter.yaml** file should contain *myelinated* and *unmyelinated* rule lists. Supported rules include ``valid-g-ratio-only``, ``axon-diam-gt`` (axon diameter greater than), ``solidity-gt`` (solidity greater than), and ``axon-area-lt`` (axon area less than). Use ``~`` as a threshold to disable that rule. Then, pass your custom rules file to the command line with ``--config``::
+By default, this command will only remove myelinated axons with invalid g-ratios. For more control over the filtering, use ``--config`` to provide a custom rules file, ``--overwrite`` to replace the original files, or ``--update_masks`` to update the corresponding segmentation masks. 
+A custom **filter.yaml** file should contain *myelinated* and *unmyelinated* rule lists. Supported rules include ``valid-g-ratio-only``, ``axon-diam-gt`` (axon diameter greater than), ``solidity-gt`` (solidity greater than), and ``axon-area-lt`` (axon area less than). Use ``~`` as a threshold to disable that rule. This is what an example custom rules file looks like:
+
+.. code-block:: yaml
+
+   myelinated:
+     valid-g-ratio-only: True # <-- axons with g-ratios outside of the ]0,1[ range will be removed; should be True or False
+     axon-diam-gt: 0.5        # <-- axons with diameter less or equal to 0.5 um will be filtered out
+   unmyelinated:
+     axon-diam-gt: ~          # <-- this rule is disabled, so it will not be applied
+     solidity-gt: 0.8         # <-- axons with solidity less or equal to 0.8 will be filtered out
+     axon-area-lt: 2          # <-- axons with area greater or equal to 2 um^2 will be filtered out
+
+Then, pass your custom rules file to the command line with ``--config``::
 
    axondeepseg_filter -i folder_with_morphometrics --config my_custom_rules.yaml
 
