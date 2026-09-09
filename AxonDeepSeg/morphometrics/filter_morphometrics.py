@@ -51,8 +51,9 @@ def apply_myelinated_rules(df, rules):
             case {'valid-g-ratio-only': True}:
                 df = df[(df['gratio'] > 0) & (df['gratio'] < 1)]
                 df = df.dropna(subset=['gratio'])
-            case {'axon-diam-gt': threshold} if threshold is not None:
-                df = df[df['axon_diam (um)'] > threshold]
+            case {'axon-diam-gt': threshold}:
+                if threshold:
+                    df = df[df['axon_diam (um)'] > threshold]
             case _:
                 logger.warning(f'Unknown rule: {rule}')
     return df
@@ -60,12 +61,15 @@ def apply_myelinated_rules(df, rules):
 def apply_unmyelinated_rules(df, rules):
     for rule in rules:
         match rule:
-            case {'axon-diam-gt': threshold} if threshold is not None:
-                df = df[df['axon_diam (um)'] > threshold]
-            case {'solidity-gt': threshold} if threshold is not None:
-                df = df[df['solidity'] > threshold]
-            case {'axon-area-lt': threshold} if threshold is not None:
-                df = df[df['axon_area (um^2)'] < threshold]
+            case {'axon-diam-gt': threshold}:
+                if threshold:
+                    df = df[df['axon_diam (um)'] > threshold]
+            case {'solidity-gt': threshold}:
+                if threshold:
+                    df = df[df['solidity'] > threshold]
+            case {'axon-area-lt': threshold}:
+                if threshold:
+                    df = df[df['axon_area (um^2)'] < threshold]
             case _:
                 logger.warning(f'Unknown rule: {rule}')
     return df
