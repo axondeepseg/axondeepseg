@@ -9,7 +9,7 @@ from matplotlib import font_manager
 from loguru import logger
 
 from AxonDeepSeg import params
-from AxonDeepSeg.ads_utils import convert_path, imwrite
+from AxonDeepSeg.ads_utils import convert_path, imwrite, _LARGE_IMAGE_PIXEL_LIMIT
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 
 def get_centroids(mask):
@@ -127,7 +127,7 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size, 
 
     return image_array.astype(np.uint8)
 
-def generate_and_save_colored_image_with_index_numbers(filename, axonmyelin_image_path, index_image_array):
+def generate_and_save_colored_image_with_index_numbers(filename, axonmyelin_image_path, index_image_array, allow_large_images=False):
     """
     This function generates an RGB image with the axons in blue and myelin in red with the axon indexes overlayed on
     top of the image.
@@ -137,15 +137,23 @@ def generate_and_save_colored_image_with_index_numbers(filename, axonmyelin_imag
     :type axonmyelin_image_path: String or Path
     :param index_image_array: The array containing the index image
     :type index_image_array: 2D Numpy array
+    :param allow_large_images: bool: if True, allow processing images exceeding PIL's default
+        decompression bomb pixel limit.
     """
-    seg = Image.open(axonmyelin_image_path)
-    index_image = Image.fromarray(index_image_array)
-    colored_image = ImageOps.colorize(seg, black="black", white="blue", mid="red",
-                                      blackpoint=params.intensity["background"],
-                                      whitepoint=params.intensity["axon"],
-                                      midpoint=params.intensity["myelin"])
-    colored_image.paste(index_image, mask=index_image)
-    colored_image.save(filename)
+    old_limit = Image.MAX_IMAGE_PIXELS
+    if allow_large_images:
+        Image.MAX_IMAGE_PIXELS = _LARGE_IMAGE_PIXEL_LIMIT
+    try:
+        seg = Image.open(axonmyelin_image_path)
+        index_image = Image.fromarray(index_image_array)
+        colored_image = ImageOps.colorize(seg, black="black", white="blue", mid="red",
+                                          blackpoint=params.intensity["background"],
+                                          whitepoint=params.intensity["axon"],
+                                          midpoint=params.intensity["myelin"])
+        colored_image.paste(index_image, mask=index_image)
+        colored_image.save(filename)
+    finally:
+        Image.MAX_IMAGE_PIXELS = old_limit
 
 def remove_axons_at_coordinates(im_axon, im_myelin, x0s, y0s):
     """

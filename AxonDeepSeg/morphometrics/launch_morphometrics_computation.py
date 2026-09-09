@@ -40,7 +40,7 @@ from AxonDeepSeg.params import (
 )
 
 
-def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle"):
+def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circle", allow_large_images=False):
     """
     This function is equivalent to the morphometrics_extraction notebook of AxonDeepSeg.
     It automatically performs all steps (computations, savings, displays,...) of the
@@ -50,6 +50,8 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
     :param axon_shape: str: shape of the axon, can either be either be circle or an ellipse.
                             if shape of axon = 'circle', equivalent diameter is the diameter of the axon.
                             if shape of axon = 'ellipse', ellipse minor axis is the diameter of the axon.
+    :param allow_large_images: bool: if True, allow reading images exceeding PIL's default
+                            decompression bomb pixel limit.
     :return: none.
     """
 
@@ -59,10 +61,10 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
 
     try:
         # Read image
-        img = ads.imread(path_img)
+        img = ads.imread(path_img, allow_large_images=allow_large_images)
 
         # Read prediction
-        pred = ads.imread(path_prediction)
+        pred = ads.imread(path_prediction, allow_large_images=allow_large_images)
     except (IOError, OSError) as e:
         print(("launch_morphometrics_computation: " + str(e)))
         raise
@@ -90,19 +92,21 @@ def launch_morphometrics_computation(path_img, path_prediction, axon_shape="circ
         write_aggregate_morphometrics(path_folder, aggregate_metrics)
 
 
-def load_mask(current_path_target: Path, semantic_class: str, suffix: str):
+def load_mask(current_path_target: Path, semantic_class: str, suffix: str, allow_large_images: bool = False):
     """
-    This function loads a mask based on the provided suffix. Will stop execution 
+    This function loads a mask based on the provided suffix. Will stop execution
     with exit code 3 if the mask is not found.
 
     :param current_path_target: Path of the target image
     :param semantic_class: Semantic class of the mask to load ('axon', 'myelin' or 'unmyelinated axon')
     :param suffix: Suffix to determine which mask to load
+    :param allow_large_images: bool: if True, allow reading masks exceeding PIL's default
+                            decompression bomb pixel limit.
     :return: Loaded mask image
     """
     mask_path = Path(str(current_path_target.with_suffix("")) + str(suffix))
     if mask_path.exists():
-        return ads.imread(str(mask_path))
+        return ads.imread(str(mask_path), allow_large_images=allow_large_images)
     else:
         msg = f"ERROR: Segmented {semantic_class} mask for image: `{str(current_path_target)}` " \
             f"is not present in the image folder. Please check that the {semantic_class} mask is " \
@@ -171,6 +175,15 @@ def main(argv=None):
             +'Works for myelinated axons with axon_shape="circle" or axon_shape="ellipse". \n'
             +'Skipped for unmyelinated and nerve modes.'
     )
+    ap.add_argument(
+        "--allow-large-images",
+        dest="allow_large_images",
+        required=False,
+        action='store_true',
+        default=False,
+        help='Allow morphometrics computation on images exceeding PIL\'s default decompression bomb limit '
+             f'(~178 Mpx). \nUse this for large microscopy acquisitions.',
+    )
 
     # Processing the arguments
     args = vars(ap.parse_args(argv))
@@ -181,6 +194,7 @@ def main(argv=None):
     unmyelinated_mode = args["unmyelinated"]
     nerve_mode = args["nerve"]
     diameter_overlay_flag = args["diameter_overlay"]
+    allow_large_images = args["allow_large_images"]
     if nerve_mode:
         morphometrics_mode = 'nerve'
         target_suffix = nerve_suffix
@@ -251,17 +265,17 @@ def main(argv=None):
             match morphometrics_mode:
                 case 'myelinated':
                     # load the axon and myelin masks
-                    pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
-                    pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+                    pred_axon = load_mask(current_path_target, 'axon', axon_suffix, allow_large_images=allow_large_images)
+                    pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix, allow_large_images=allow_large_images)
                 case 'unmyelinated':
                     # load the unmyelinated axon mask
-                    pred_uaxon = load_mask(current_path_target, 'unmyelinated axon', unmyelinated_suffix)
+                    pred_uaxon = load_mask(current_path_target, 'unmyelinated axon', unmyelinated_suffix, allow_large_images=allow_large_images)
                 case 'nerve':
                     # load the nerve mask
-                    pred_nerve = load_mask(current_path_target, 'nerve', nerve_suffix)
+                    pred_nerve = load_mask(current_path_target, 'nerve', nerve_suffix, allow_large_images=allow_large_images)
                     # also load axon and myelin masks for removal process
-                    pred_axon = load_mask(current_path_target, 'axon', axon_suffix)
-                    pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix)
+                    pred_axon = load_mask(current_path_target, 'axon', axon_suffix, allow_large_images=allow_large_images)
+                    pred_myelin = load_mask(current_path_target, 'myelin', myelin_suffix, allow_large_images=allow_large_images)
 
 
             if args["sizepixel"] is not None:
@@ -339,7 +353,8 @@ def main(argv=None):
                 postprocessing.generate_and_save_colored_image_with_index_numbers(
                     filename=index_overlay_fname,
                     axonmyelin_image_path=bg_image_path,
-                    index_image_array=index_image_array
+                    index_image_array=index_image_array,
+                    allow_large_images=allow_large_images,
                 )
                 
                 if colorization_flag:

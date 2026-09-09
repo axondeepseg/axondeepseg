@@ -106,6 +106,41 @@ class TestCore(object):
         with pytest.raises((IOError, OSError)):
             launch_morphometrics_computation(str(nonExistingFile), str(pathPrediction))
 
+    # --------------load_mask tests-------------- #
+    @pytest.mark.unit
+    def test_load_mask_forwards_allow_large_images_true_to_imread(self, monkeypatch):
+        pathImg = self.dataPath / 'image.png'
+
+        captured = {}
+        original_imread = ads.imread
+        def fake_imread(filename, *args, **kwargs):
+            captured['allow_large_images'] = kwargs.get('allow_large_images')
+            return original_imread(filename)
+        monkeypatch.setattr(ads, 'imread', fake_imread)
+
+        AxonDeepSeg.morphometrics.launch_morphometrics_computation.load_mask(
+            pathImg, 'axon', axon_suffix, allow_large_images=True
+        )
+
+        assert captured['allow_large_images'] is True
+
+    @pytest.mark.unit
+    def test_load_mask_defaults_to_disallowing_large_images(self, monkeypatch):
+        pathImg = self.dataPath / 'image.png'
+
+        captured = {}
+        original_imread = ads.imread
+        def fake_imread(filename, *args, **kwargs):
+            captured['allow_large_images'] = kwargs.get('allow_large_images')
+            return original_imread(filename)
+        monkeypatch.setattr(ads, 'imread', fake_imread)
+
+        AxonDeepSeg.morphometrics.launch_morphometrics_computation.load_mask(
+            pathImg, 'axon', axon_suffix
+        )
+
+        assert captured['allow_large_images'] is False
+
     # --------------main (cli) tests-------------- #
     @pytest.mark.unit
     def test_main_cli_runs_successfully_with_valid_inputs(self):
