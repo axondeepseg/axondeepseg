@@ -111,14 +111,14 @@ class TestCore(object):
 
     @pytest.mark.unit
     def test_generate_and_save_colored_image_with_index_numbers_raises_for_huge_image_by_default(self, tmp_path):
-        # 14000x14000 pixels exceeds PIL's decompression bomb error threshold
-        # (2x its default MAX_IMAGE_PIXELS), so this must be rejected by default.
+        # 10000x10000 pixels exceeds PIL's default MAX_IMAGE_PIXELS (~89 million),
+        # so this must be rejected by default via ads_utils.imread's explicit check.
         large_image_path = tmp_path / "huge_axonmyelin.png"
         output_image_path = tmp_path / "huge_output.png"
-        imageio.imwrite(large_image_path, np.zeros((14000, 14000), dtype=np.uint8))
-        index_array = np.zeros((14000, 14000), dtype=np.uint8)
+        imageio.imwrite(large_image_path, np.zeros((10000, 10000), dtype=np.uint8))
+        index_array = np.zeros((10000, 10000), dtype=np.uint8)
 
-        with pytest.raises(Image.DecompressionBombError):
+        with pytest.raises(IOError):
             postprocessing.generate_and_save_colored_image_with_index_numbers(
                 filename=output_image_path,
                 axonmyelin_image_path=large_image_path,
@@ -129,8 +129,8 @@ class TestCore(object):
     def test_generate_and_save_colored_image_with_index_numbers_succeeds_for_huge_image_when_allow_large_images_is_true(self, tmp_path):
         large_image_path = tmp_path / "huge_axonmyelin.png"
         output_image_path = tmp_path / "huge_output.png"
-        imageio.imwrite(large_image_path, np.zeros((14000, 14000), dtype=np.uint8))
-        index_array = np.zeros((14000, 14000), dtype=np.uint8)
+        imageio.imwrite(large_image_path, np.zeros((10000, 10000), dtype=np.uint8))
+        index_array = np.zeros((10000, 10000), dtype=np.uint8)
 
         postprocessing.generate_and_save_colored_image_with_index_numbers(
             filename=output_image_path,
