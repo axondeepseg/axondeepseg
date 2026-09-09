@@ -37,10 +37,10 @@ def main(argv=None):
     )
 
     args = parser.parse_args(argv)
-    input_dir = Path(args.input_dir)
+    input_path = Path(args.input_dir)
     out_name = args.output_name
     mask_mode = args.mask_mode
-    assert input_dir.exists(), f'Directory {input_dir} does not exist.'
+    assert input_path.exists(), f'Input path {input_path} does not exist.'
 
     # find images except for the masks
     additional_suffixes = [
@@ -50,7 +50,10 @@ def main(argv=None):
     ]
     ignore_suffixes = [str(s) for s in generated_file_suffixes if str(s).endswith('.png')] + additional_suffixes
     ignore_suffixes = tuple(ignore_suffixes)
-    inputs = [f for f in input_dir.glob('*.png') if not f.name.endswith(ignore_suffixes)]
+    if input_path.is_file():
+        inputs = [input_path] if not input_path.name.endswith(ignore_suffixes) else []
+    else:
+        inputs = [f for f in input_path.glob('*.png') if not f.name.endswith(ignore_suffixes)]
 
     counts = {'image': [], 'axon_count': [], 'uaxon_count': []}
     axon_morph_suffix = '_axon_morphometrics.xlsx'

@@ -49,6 +49,31 @@ class TestCore(object):
         }]
 
     @pytest.mark.integration
+    def test_main_counts_single_input_file(self, tmp_path):
+        image_path = tmp_path / 'sample.png'
+        image_path.touch()
+
+        pd.DataFrame({'axon_diam (um)': [1]}).to_excel(
+            tmp_path / 'sample_axon_morphometrics.xlsx',
+            index=False,
+        )
+        pd.DataFrame({'axon_diam (um)': [1, 2]}).to_excel(
+            tmp_path / 'sample_uaxon_morphometrics.xlsx',
+            index=False,
+        )
+
+        output_path = tmp_path / 'counts.csv'
+        main(['-i', str(image_path), '-o', str(output_path)])
+
+        result = pd.read_csv(output_path)
+
+        assert result.to_dict('records') == [{
+            'image': 'sample',
+            'axon_count': 1,
+            'uaxon_count': 2,
+        }]
+
+    @pytest.mark.integration
     def test_main_counts_connected_components_and_prefers_filtered_masks(self, tmp_path):
         image = np.zeros((10, 10), dtype=np.uint8)
         axonmyelin = np.zeros((10, 10), dtype=np.uint8)
