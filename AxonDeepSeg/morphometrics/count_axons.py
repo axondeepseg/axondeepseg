@@ -20,7 +20,7 @@ def main(argv=None):
         '-i',
         dest='input_dir',
         type=str,
-        help='Path to the folder containing all morphometric files.'
+        help='Path to the folder containing all morphometric files (or the folder containing all segmentations if mask mode is enabled).'
     )
     parser.add_argument(
         '-m', '--mask_mode',
