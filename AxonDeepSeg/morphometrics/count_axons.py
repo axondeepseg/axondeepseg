@@ -11,7 +11,7 @@ import pandas as pd
 from skimage import measure
 
 from AxonDeepSeg.ads_utils import imread
-from AxonDeepSeg.params import generated_file_suffixes
+from AxonDeepSeg.params import generated_file_suffixes, valid_extensions
 
 
 def main(argv=None):
@@ -50,10 +50,14 @@ def main(argv=None):
     ]
     ignore_suffixes = [str(s) for s in generated_file_suffixes if str(s).endswith('.png')] + additional_suffixes
     ignore_suffixes = tuple(ignore_suffixes)
+    is_valid_input = lambda path: (
+        path.suffix.lower() in valid_extensions
+        and not path.name.endswith(ignore_suffixes)
+    )
     if input_path.is_file():
-        inputs = [input_path] if not input_path.name.endswith(ignore_suffixes) else []
+        inputs = [input_path] if is_valid_input(input_path) else []
     else:
-        inputs = [f for f in input_path.glob('*.png') if not f.name.endswith(ignore_suffixes)]
+        inputs = [path for path in input_path.glob('*') if is_valid_input(path)]
 
     counts = {'image': [], 'axon_count': [], 'uaxon_count': []}
     axon_morph_suffix = '_axon_morphometrics.xlsx'
