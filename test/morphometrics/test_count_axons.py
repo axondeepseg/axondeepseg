@@ -74,6 +74,29 @@ class TestCore(object):
         }]
 
     @pytest.mark.integration
+    def test_main_counts_zero_uaxons_when_uaxon_morphometrics_are_missing(
+        self, tmp_path
+    ):
+        image_path = tmp_path / 'sample.png'
+        image_path.touch()
+
+        pd.DataFrame({'axon_diam (um)': [1]}).to_excel(
+            tmp_path / 'sample_axon_morphometrics.xlsx',
+            index=False,
+        )
+
+        output_path = tmp_path / 'counts.csv'
+        main(['-i', str(image_path), '-o', str(output_path)])
+
+        result = pd.read_csv(output_path)
+
+        assert result.to_dict('records') == [{
+            'image': 'sample',
+            'axon_count': 1,
+            'uaxon_count': 0,
+        }]
+
+    @pytest.mark.integration
     def test_main_counts_connected_components_and_prefers_filtered_masks(self, tmp_path):
         image = np.zeros((10, 10), dtype=np.uint8)
         axonmyelin = np.zeros((10, 10), dtype=np.uint8)
@@ -103,6 +126,26 @@ class TestCore(object):
             'image': 'sample',
             'axon_count': 1,
             'uaxon_count': 1,
+        }]
+
+    @pytest.mark.integration
+    def test_main_counts_zero_uaxons_when_uaxon_mask_is_missing(self, tmp_path):
+        image = np.zeros((10, 10), dtype=np.uint8)
+        axonmyelin = np.zeros((10, 10), dtype=np.uint8)
+        axonmyelin[1:3, 1:3] = 255
+
+        imwrite(tmp_path / 'sample.png', image)
+        imwrite(tmp_path / 'sample_seg-axonmyelin.png', axonmyelin)
+
+        output_path = tmp_path / 'counts.csv'
+        main(['-i', str(tmp_path), '--mask_mode', '-o', str(output_path)])
+
+        result = pd.read_csv(output_path)
+
+        assert result.to_dict('records') == [{
+            'image': 'sample',
+            'axon_count': 1,
+            'uaxon_count': 0,
         }]
 
     @pytest.mark.integration

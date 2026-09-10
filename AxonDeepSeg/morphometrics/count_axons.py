@@ -76,7 +76,11 @@ def main(argv=None):
                 target_uaxon_file = filtered_uaxon_file
 
             axon_count = len(pd.read_excel(target_axon_file))
-            uaxon_count = len(pd.read_excel(target_uaxon_file))
+            if Path(target_uaxon_file).exists():
+                uaxon_count = len(pd.read_excel(target_uaxon_file))
+            else:
+                logger.info(f'No unmyelinated morphometrics file found for {img.stem}. Setting uaxon_count to 0.')
+                uaxon_count = 0
         else:
             target_axonmyelin_mask = str(img.with_suffix('')) + '_seg-axonmyelin.png'
             target_uaxon_mask = str(img.with_suffix('')) + '_seg-uaxon.png'
@@ -88,14 +92,17 @@ def main(argv=None):
                 target_uaxon_mask = filtered_uaxon_mask
 
             axonmyelin = imread(target_axonmyelin_mask) > 200
-            uaxon = imread(target_uaxon_mask) > 200
             total_size += axonmyelin.shape[0] * axonmyelin.shape[1]
-
-            # count axons
             axon_objects = measure.regionprops(measure.label(axonmyelin))
-            uaxon_objects = measure.regionprops(measure.label(uaxon))
             axon_count = len(axon_objects)
-            uaxon_count = len(uaxon_objects)
+
+            if Path(target_uaxon_mask).exists():
+                uaxon = imread(target_uaxon_mask) > 200
+                uaxon_objects = measure.regionprops(measure.label(uaxon))
+                uaxon_count = len(uaxon_objects)
+            else:
+                logger.info(f'No unmyelinated mask found for {img.stem}. Setting uaxon_count to 0.')
+                uaxon_count = 0
 
         # add data
         counts['image'].append(img.stem)
