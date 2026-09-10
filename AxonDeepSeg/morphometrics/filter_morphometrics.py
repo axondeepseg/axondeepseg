@@ -74,7 +74,7 @@ def apply_unmyelinated_rules(df, rules):
                 logger.warning(f'Unknown rule: {rule}')
     return df
 
-def mask_updater(morpho_file, axon_type, filtered_df, overwrite):
+def mask_updater(morpho_file, axon_type, filtered_df, overwrite, allow_large_images=False):
     """
     Update the segmentation masks to reflect the filtered morphometrics.
 
@@ -88,6 +88,8 @@ def mask_updater(morpho_file, axon_type, filtered_df, overwrite):
         DataFrame containing the filtered morphometrics.
     overwrite : bool
         Whether to overwrite the original segmentation mask or save the updated mask to a new file.
+    allow_large_images : bool
+        Allow reading masks exceeding PIL's default decompression bomb pixel limit.
     """
 
     # first, obtain the instance segmentation
@@ -96,7 +98,7 @@ def mask_updater(morpho_file, axon_type, filtered_df, overwrite):
         if not target_mask_file.exists():
             logger.warning(f'Unmyelinated axon segmentation mask {target_mask_file} was not found. Skipping mask update.')
             return
-        uaxon_pred = imread(target_mask_file)
+        uaxon_pred = imread(target_mask_file, allow_large_images=allow_large_images)
         instance_map = measure.label(uaxon_pred, connectivity=1)
 
     elif axon_type == 'myelinated':
@@ -107,12 +109,12 @@ def mask_updater(morpho_file, axon_type, filtered_df, overwrite):
         if not all(f.exists() for f in axon_myelin_paths):
             logger.warning(f'The axon and myelin segmentation masks were not found. Skipping mask update.')
             return
-        im_axon = imread(axon_myelin_paths[0])
-        im_myelin = imread(axon_myelin_paths[1])
+        im_axon = imread(axon_myelin_paths[0], allow_large_images=allow_large_images)
+        im_myelin = imread(axon_myelin_paths[1], allow_large_images=allow_large_images)
 
         target_instance_map = morpho_file.with_name(morpho_file.name.replace('_axon_morphometrics.xlsx', '_instance-map.png'))
         if target_instance_map.exists():
-            instance_map = imread(target_instance_map, use_16bit=True)
+            instance_map = imread(target_instance_map, use_16bit=True, allow_large_images=allow_large_images)
         else:
             logger.warning(f'Myelinated axon instance map {target_instance_map} was not found. Computing instance map from original segmentation masks instead.')
 
@@ -157,7 +159,7 @@ def mask_updater(morpho_file, axon_type, filtered_df, overwrite):
         # also update the axonmyelin mask
         merge_masks(*target_mask_paths)
 
-def process_morphometric_files(morpho_files, rules, axon_type, overwrite, update_masks):
+def process_morphometric_files(morpho_files, rules, axon_type, overwrite, update_masks, allow_large_images=False):
     """
     Process a list of morphometric files by applying the given filtering rules.
 
@@ -173,6 +175,8 @@ def process_morphometric_files(morpho_files, rules, axon_type, overwrite, update
         Whether to overwrite the original files or save the filtered results to new files.
     update_masks : bool
         Whether to update the segmentation masks to reflect the filtered morphometrics.
+    allow_large_images : bool
+        Allow reading masks exceeding PIL's default decompression bomb pixel limit.
     """
     logger.info(f'Filtering {axon_type} axons using rules: {rules}')
     for morpho_file in morpho_files:
@@ -200,6 +204,7 @@ def process_morphometric_files(morpho_files, rules, axon_type, overwrite, update
                 axon_type=axon_type,
                 filtered_df=df,
                 overwrite=overwrite,
+                allow_large_images=allow_large_images,
             )
 
 def main(argv=None):
@@ -222,6 +227,15 @@ def main(argv=None):
         "-o", "--overwrite",
         action="store_true",
         help="Overwrite the original morphometric files (and segmentation masks if -m is set)"
+    )
+    ap.add_argument(
+        "--allow-large-images",
+        dest="allow_large_images",
+        required=False,
+        action='store_true',
+        default=False,
+        help='Allow reading masks exceeding PIL\'s default decompression bomb limit '
+             f'(~89 Mpx). \nUse this for large microscopy acquisitions.',
     )
 
     args = ap.parse_args(argv)
@@ -247,6 +261,7 @@ def main(argv=None):
         'myelinated',
         args.overwrite,
         args.update_masks,
+        allow_large_images=args.allow_large_images,
     )
     process_morphometric_files(
         uaxon_morpho_files,
@@ -254,6 +269,7 @@ def main(argv=None):
         'unmyelinated',
         args.overwrite,
         args.update_masks,
+        allow_large_images=args.allow_large_images,
     )
 
 

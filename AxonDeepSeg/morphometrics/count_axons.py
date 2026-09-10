@@ -35,11 +35,21 @@ def main(argv=None):
         default='axon_counts.csv',
         help='Name of the output file.',
     )
+    parser.add_argument(
+        "--allow-large-images",
+        dest="allow_large_images",
+        required=False,
+        action='store_true',
+        default=False,
+        help='Allow counting axons on masks exceeding PIL\'s default decompression bomb limit '
+             f'(~89 Mpx). \nUse this for large microscopy acquisitions.',
+    )
 
     args = parser.parse_args(argv)
     input_path = Path(args.input_dir)
     out_name = args.output_name
     mask_mode = args.mask_mode
+    allow_large_images = args.allow_large_images
     assert input_path.exists(), f'Input path {input_path} does not exist.'
 
     # find images except for the masks
@@ -95,13 +105,13 @@ def main(argv=None):
             if Path(filtered_uaxon_mask).exists():
                 target_uaxon_mask = filtered_uaxon_mask
 
-            axonmyelin = imread(target_axonmyelin_mask) > 200
+            axonmyelin = imread(target_axonmyelin_mask, allow_large_images=allow_large_images) > 200
             total_size += axonmyelin.shape[0] * axonmyelin.shape[1]
             axon_objects = measure.regionprops(measure.label(axonmyelin))
             axon_count = len(axon_objects)
 
             if Path(target_uaxon_mask).exists():
-                uaxon = imread(target_uaxon_mask) > 200
+                uaxon = imread(target_uaxon_mask, allow_large_images=allow_large_images) > 200
                 uaxon_objects = measure.regionprops(measure.label(uaxon))
                 uaxon_count = len(uaxon_objects)
             else:
