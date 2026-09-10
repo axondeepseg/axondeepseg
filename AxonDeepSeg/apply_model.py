@@ -209,7 +209,7 @@ def axon_segmentation(
     output_structure = predictor.dataset_json['labels']
     output_classes = sorted(list(output_structure.keys()))
     output_classes.remove('background')
-    is_axonmyelin_seg = ['axon', 'myelin'] == output_classes
+    has_axonmyelin_seg = {'axon', 'myelin'} <= set(output_classes)
 
     # nnUNet outputs a single file will all classes mapped to consecutive ints
     for pred_path in output_list:
@@ -223,7 +223,7 @@ def axon_segmentation(
             new_masks.append(new_fname)
         logger.info(f'Successfully saved masks for classes: {output_classes}.')
 
-        if is_axonmyelin_seg:
+        if has_axonmyelin_seg:
             merge_masks(new_masks[0], new_masks[1])
 
         Path(fname).unlink()
