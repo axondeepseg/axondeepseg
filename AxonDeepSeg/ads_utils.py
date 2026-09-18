@@ -5,6 +5,7 @@ AxonDeepSeg utilities module.
 import os
 import sys
 from pathlib import Path
+import shutil
 import tempfile
 import zipfile
 import requests
@@ -62,7 +63,18 @@ def download_data(url_data):
             print("Unzip...")
             try:
                 with zipfile.ZipFile(str(tmp_path)) as zf:
-                    zf.extractall(".")
+                    # Some archives (e.g. built on Windows) store entries with
+                    # backslash separators, which zipfile.extractall() writes as
+                    # literal filenames instead of subdirectories on POSIX systems.
+                    for member in zf.infolist():
+                        normalized_name = member.filename.replace("\\", "/")
+                        target_path = Path(".") / normalized_name
+                        if normalized_name.endswith("/"):
+                            target_path.mkdir(parents=True, exist_ok=True)
+                            continue
+                        target_path.parent.mkdir(parents=True, exist_ok=True)
+                        with zf.open(member) as source, open(target_path, "wb") as dest:
+                            shutil.copyfileobj(source, dest)
             except (zipfile.BadZipfile):
                 print('ERROR: ZIP package corrupted. Please try downloading again.')
                 return 1
