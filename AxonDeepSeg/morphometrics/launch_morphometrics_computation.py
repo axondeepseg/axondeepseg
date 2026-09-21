@@ -405,7 +405,12 @@ def main(argv=None):
                 # count the number of axons in the axon_morphometrics.xlsx file, print density
                 nerve_morph_fname = current_path_target.parent / morph_filename
                 nerve_seg_fname = current_path_target.parent / (current_path_target.stem + str(nerve_suffix))
-                compute_axon_density(cleaned_axon_morph_fname, nerve_morph_fname, nerve_seg_fname)
+                compute_axon_density(
+                    cleaned_axon_morph_fname,
+                    nerve_morph_fname,
+                    nerve_seg_fname,
+                    allow_large_images=allow_large_images
+                )
 
         else:
             logger.warning("The path(s) specified is/are not image(s). Please update the input path(s) and try again.")
