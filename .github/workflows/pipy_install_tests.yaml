@@ -39,7 +39,8 @@ jobs:
 
     # Matrix driven OS
     runs-on: ${{ matrix.os }}
-
+    timeout-minutes: 30
+  
     # Defining matrix for OS and Python
     strategy:
       fail-fast: false
@@ -55,56 +56,55 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Step 2: Install environment.
+      # Step 2a: Install environment.
       - name: Install Latest pypi version of AxonDeepSeg
         run: |
           pip install --upgrade pip
           pip install axondeepseg==5.5.0 --no-cache-dir
 
 
-      # Step 2a: Modify MKL_THREADING_LAYER (Ubuntu only)
+      # Step 2b: Modify MKL_THREADING_LAYER (Ubuntu only)
       # See https://github.com/pytorch/pytorch/issues/37377#issuecomment-629530272
       - name: Set MKL_THREADING_LAYER
         if: matrix.os == 'ubuntu-latest'
         run: |
           echo "MKL_THREADING_LAYER=GNU" >> $GITHUB_ENV
 
+      # Step 2c: Virtual display so Qt/napari GUI tests can run on Linux
+      - name: Set up headless display (Linux)
+        if: runner.os == 'Linux'
+        uses: pyvista/setup-headless-display-action@v4
+        with:
+          qt: true
+          pyvista: false
+
       # Step 3: Full PyTest
-      - name: Test with pytest (Unix)
-        if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest' && matrix.python-version == '3.11') || (matrix.os == 'macos-26-intel' && matrix.python-version == '3.11') }}
+      - name: Test with pytest
+        timeout-minutes: 20
+        shell: bash
+        env:
+          PYTHONFAULTHANDLER: '1'
         run: |
-
           git pull --all
-
-          git checkout $( git tag | tail -1)
-
+          git checkout "$(git tag --sort=-v:refname | head -1)"
           rm -rf ./AxonDeepSeg/
+          printf 'import multiprocessing.resource_tracker as _rt\nif hasattr(_rt.ResourceTracker, "__del__"):\n    del _rt.ResourceTracker.__del__\n' > conftest.py
 
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
           python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
           python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
 
-          pytest ./ -v
-          echo "All done!"
-          exit 0 
-          
-    
-
-      - name: Test with pytest (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-
-          rmdir ./AxonDeepSeg/
-
-          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main()"
-          python -c "import AxonDeepSeg.download_tests as download_tests; download_tests.main(['-d', './test/'])"
-          python -c "import AxonDeepSeg.download_model as download_model; download_model.main()"
-          python -c "import AxonDeepSeg.download_model as download_model; download_model.main(['-d', './AxonDeepSeg/models'])"
-
-          pytest.exe ./ -v
-
+          set +e
+          pytest ./ -v &
+          PYTEST_PID=$!
+          ( sleep 900; kill -ABRT $PYTEST_PID ) >/dev/null 2>&1 &
+          WATCHDOG_PID=$!
+          wait $PYTEST_PID
+          status=$?
+          kill $WATCHDOG_PID 2>/dev/null
+          set -e
+          exit $status
 
   # This step is MANDATORY and used to indicate matrix completion to coveralls.io
   # See here: https://coveralls-python.readthedocs.io/en/latest/usage/configuration.html#github-actions-support
@@ -117,5 +117,5 @@ jobs:
         with:
           python-version: '3.x'
       - name: Pypi install test finished
-        run: echo "Tests comlete!"
+        run: echo "Tests complete!"
 
