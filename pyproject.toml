@@ -70,14 +70,24 @@ AxonDeepSeg = "AxonDeepSeg.ads_napari:napari.yaml"
 "User Support" = "https://github.com/axondeepseg/axondeepseg/issues"
 
 [project.scripts]
+# Legacy commands (will eventually be deprecated)
+axondeepseg = "AxonDeepSeg.cli_deprecated:axondeepseg"
+axondeepseg_test = "AxonDeepSeg.cli_deprecated:axondeepseg_test"
+axondeepseg_morphometrics = "AxonDeepSeg.cli_deprecated:axondeepseg_morphometrics"
+axondeepseg_aggregate = "AxonDeepSeg.cli_deprecated:axondeepseg_aggregate"
+axondeepseg_filter = "AxonDeepSeg.cli_deprecated:axondeepseg_filter"
+axondeepseg_count = "AxonDeepSeg.cli_deprecated:axondeepseg_count"
+# New entry points
+ads_segment = "AxonDeepSeg.segment:main"
+ads_test = "AxonDeepSeg.integrity_test:main"
+ads_morphometrics = "AxonDeepSeg.morphometrics.launch_morphometrics_computation:main"
+ads_aggregate = "AxonDeepSeg.morphometrics.aggregate:main"
+ads_filter = "AxonDeepSeg.morphometrics.filter_morphometrics:main"
+ads_count = "AxonDeepSeg.morphometrics.count_axons:main"
+# Other tools
 download_model = "AxonDeepSeg.download_model:main"
 download_tests = "AxonDeepSeg.download_tests:main"
-axondeepseg = "AxonDeepSeg.segment:main"
-axondeepseg_test = "AxonDeepSeg.integrity_test:main"
-axondeepseg_morphometrics = "AxonDeepSeg.morphometrics.launch_morphometrics_computation:main"
-axondeepseg_aggregate = "AxonDeepSeg.morphometrics.aggregate:main"
-axondeepseg_filter = "AxonDeepSeg.morphometrics.filter_morphometrics:main"
-axondeepseg_count = "AxonDeepSeg.morphometrics.count_axons:main"
+
 
 [tool.setuptools]
 packages = ["AxonDeepSeg"]
