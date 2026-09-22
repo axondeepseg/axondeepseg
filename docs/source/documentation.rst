@@ -289,7 +289,7 @@ Segmentation
 Syntax
 ~~~~~~
 
-The script to launch is called **axondeepseg**. It takes several arguments:
+The script to launch is called ``ads_segment`` (formerly ``axondeepseg``). It takes several arguments:
 
 
 **Required arguments:**
@@ -313,17 +313,17 @@ The script to launch is called **axondeepseg**. It takes several arguments:
 --allow-large-images
                     Allow processing images that exceed PIL's default decompression bomb pixel limit (~89 million pixels). Use this flag when segmenting very large microscopy images that would otherwise be rejected.
 
-.. NOTE :: You can get the detailed description of all the arguments of the **axondeepseg** command at any time by using the **-h** argument:
+.. NOTE :: You can get the detailed description of all the arguments of the ``ads_segment`` command at any time by using the ``-h`` argument:
    ::
 
-        axondeepseg -h
+        ads_segment -h
 
 Segment a single image
 ^^^^^^^^^^^^^^^^^^^^^^
 
 To segment a single microscopy image, specify the path to the image to segment in the **-i** argument. For instance, to segment the demo image used in our software tests (**'test/__test_files__/__test_demo_files__/image.png'**), use the following command::
 
-    axondeepseg -i test/__test_files__/__test_demo_files__/image.png
+    ads_segment -i test/__test_files__/__test_demo_files__/image.png
 
 The segmented acquisition will be saved in the same folder as the acquisition image, with the suffix **'_seg-axonmyelin.png'**, in *png* format, along with the binary axon and myelin segmentation masks (with the suffixes **'_seg-axon.png'** and **'_seg-myelin.png'**). In our example, the following output files will be generated: **image_seg-axonmyelin.png'**, **'image_seg-axon.png'** and **'image_seg-myelin.png'**.
 
@@ -332,16 +332,16 @@ Segment multiple images of the same resolution
 
 To segment multiple microscopy images of the same resolution that are located in the same folder, specify the path to the folder in the **-i** argument. For instance, to segment the images in folder **'test_sem_image/image1_sem/'**, use the following command::
 
-    axondeepseg -i test_segmentation/test_sem_image/image1_sem/
+    ads_segment -i test_segmentation/test_sem_image/image1_sem/
 
-Please note that when using ``axondeepseg``, a file called *axondeepseg.log* will be saved in the current working directory. The console output will be saved in this file so you can review it later (useful to process large folders).
+Please note that when using ``ads_segment``, a file called *axondeepseg.log* will be saved in the current working directory. The console output will be saved in this file so you can review it later (useful to process large folders).
 
 Segment images from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To segment images that are located in different folders, specify the path to the folders in the **-i** argument, one after the other. For instance, to segment all the images of folders **'test_sem_image/image1_sem/'** and **'test_sem_image/image2_sem/'** of the test dataset, use the following command::
 
-    axondeepseg -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
+    ads_segment -i test_segmentation/test_sem_image/image1_sem/ test_segmentation/test_sem_image/image2_sem/
 
 Morphometrics
 -------------
@@ -351,7 +351,7 @@ You can generate morphometrics using AxonDeepSeg via the command line interface.
 Syntax
 ~~~~~~
 
-The script to launch is called **axondeepseg_morphometrics**. It has several arguments.
+The script to launch is called ``ads_morphometrics`` (formerly ``axondeepseg_morphometrics``). It has several arguments.
 
 **Required arguments:**
 
@@ -383,7 +383,7 @@ Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::
 
-    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a circle -f axon_morphometrics 
+    ads_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a circle -f axon_morphometrics 
 
 This generates a **'image_axon_morphometrics.xlsx'** file in the image directory::
 
@@ -409,7 +409,7 @@ Morphometrics of specific images from multiple folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To generate morphometrics of images which are located in different folders, specify the path of the image folders using the **-i** argument of the CLI separated by space. For instance, to compute morphometrics of the image **'image.png'** and **'image_2.png'** present in the folders **'test/__test_files__/__test_demo_files__/'** and **'test/__test_files__/__test_segment_files__/'** respectively of the test dataset, use the following command::
 
-    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png test/__test_files__/__test_segment_files__/image_2.png
+    ads_morphometrics -i test/__test_files__/__test_demo_files__/image.png test/__test_files__/__test_segment_files__/image_2.png
 
 This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morphometrics.xlsx'** files in the **'__test_demo_files__'** and **'__test_segment_files__'** folders:: 
 
@@ -435,7 +435,7 @@ Morphometrics of all the images present in folder(s)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To compute the morphometrics of batches of images present in folder(s), input the path of the directories using the **-i** argument separated by space. For example, the morphometrics files of the images present in the directory  **test/__test_files__/__test_segment_files__/** is computed using the following CLI command::
 
-    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__
+    ads_morphometrics -i test/__test_files__/__test_demo_files__
  
 This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morphometrics.xlsx'** morphometrics files in the **'test/__test_files__/__test_demo_files__'** directory:: 
 
@@ -453,15 +453,15 @@ This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morph
     ---- image_2_axon_morphometrics.xlsx
 
 
-Please note that when using the ``axondeepseg_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
+Please note that when using the ``ads_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
 
 Morphometrics for Nerve Sections
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can compute morphometrics specific to **nerve sections** using the ``-n`` option
-in the ``axondeepseg_morphometrics`` command-line interface. This enables analysis of axons
+in the ``ads_morphometrics`` command-line interface. This enables analysis of axons
 within nerve fascicle boundaries, based on a segmentation mask with the suffix ``_seg-nerve.png``.
-Currently, ``axondeepseg`` does not produce this mask, so you will need to supply it manually.
+Currently, ``ads_segment`` does not produce this mask, so you will need to supply it manually.
 This is useful because the total nerve area allows for the calculation of axon density.
 
 When used, the ``-n`` option performs:
@@ -472,7 +472,7 @@ When used, the ``-n`` option performs:
 
 .. code-block:: bash
 
-   axondeepseg_morphometrics -i <IMAGE_PATH> -n
+   ads_morphometrics -i <IMAGE_PATH> -n
 
 The image folder must contain:
 
@@ -526,11 +526,11 @@ Using the ``-d`` flag generates a grayscale PNG image (``_diameter_overlay.png``
 
 .. code-block:: bash
 
-   axondeepseg_morphometrics -i <IMAGE_PATH> -d
+   ads_morphometrics -i <IMAGE_PATH> -d
 
 .. code-block:: bash
 
-   axondeepseg_morphometrics -i <IMAGE_PATH> -a ellipse -d
+   ads_morphometrics -i <IMAGE_PATH> -a ellipse -d
 
 **Implementation note:** The outlines are *not* fits to the actual mask perimeters. They are ellipses (or circles) reconstructed from the second-moment (inertia-tensor) statistics of each region, as computed by ``skimage.measure.regionprops`` (centroid, eccentricity, orientation).
 
@@ -549,7 +549,7 @@ Circle
 ^^^^^^
 **Usage** ::
 
-    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a circle
+    ads_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a circle
 
 **Studies using Circle as axon shape:**
 
@@ -560,7 +560,7 @@ Ellipse
 ^^^^^^^
 **Usage** ::
 
-    axondeepseg_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a ellipse
+    ads_morphometrics -i test/__test_files__/__test_demo_files__/image.png -a ellipse
 
 **Studies using Ellipse as axon shape:**
 
@@ -631,7 +631,7 @@ By default for axon shape, that is, `circle`, the equivalent diameter is used. F
 Colorization & Instance Segmentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-During the morphometrics computation, ``axondeepseg`` internally converts the semantic segmentation (output of the deep learning model) into an instance segmentation. This step is essential to take measurements on individual axons when the axon density is high, because if two or more elements have their myelin touching, the software needs to know which axon it is attached to. Using the ``-c`` flag, you can obtain the colorized instance segmentation to take a look at this internal representation. The image below illustrates what a typical instance segmentation looks like. This option will also save the raw instance segmentation in 16-bit format (with value 0 for background, 1 for the first axon, 2 for the second axon, etc.) in the same folder as the input image, with the suffix ``_seg-instance-map.png``.
+During the morphometrics computation, AxonDeepSeg internally converts the semantic segmentation (output of the deep learning model) into an instance segmentation. This step is essential to take measurements on individual axons when the axon density is high, because if two or more elements have their myelin touching, the software needs to know which axon it is attached to. Using the ``-c`` flag, you can obtain the colorized instance segmentation to take a look at this internal representation. The image below illustrates what a typical instance segmentation looks like. This option will also save the raw instance segmentation in 16-bit format (with value 0 for background, 1 for the first axon, 2 for the second axon, etc.) in the same folder as the input image, with the suffix ``_seg-instance-map.png``.
 
 .. image:: https://raw.githubusercontent.com/axondeepseg/doc-figures/main/introduction/instance_seg_example.png
 
@@ -675,8 +675,8 @@ This feature aggregates morphometrics per subject. It is useful when you have mu
 
 To use this feature, you need to have done the following:
 
-1. Segment all the images of interest with AxonDeepSeg using the **axondeepseg** command.
-2. Compute the morphometrics of all the images using the **axondeepseg_morphometrics** command. Make sure that the morphometrics files are named with the same prefix as the image name (e.g. **image_axon_morphometrics.xlsx** for **image.png**).
+1. Segment all the images of interest with AxonDeepSeg using the ``ads_segment`` command.
+2. Compute the morphometrics of all the images using the ``ads_morphometrics`` command. Make sure that the morphometrics files are named with the same prefix as the image name (e.g. **image_axon_morphometrics.xlsx** for **image.png**).
 3. Have the following folder structure::
 
     folder_with_all_subjects/
@@ -692,16 +692,16 @@ To use this feature, you need to have done the following:
 
 To aggregate the morphometrics per subject, use the following command::
 
-    axondeepseg_aggregate -i folder_with_all_subjects
+    ads_aggregate -i folder_with_all_subjects
 
 This will generate a folder called **morphometrics_agg** in the input folder, containing the aggregated morphometrics per subject. It will also contain a short summary file named **statistics_per_axon_caliber.xlsx** which contains basic statistics for axon diameter, myelin thickness and g-ratio. These statistics are computed per axon diameter range.
 
 Morphometrics filtering
 ~~~~~~~~~~~~~~~~~~~~~~~
-Use ``axondeepseg_filter`` to remove invalid morphometric measurements from one file or from all morphometric files in a folder. By default, the rules in ``AxonDeepSeg/morphometrics/filter.yaml`` are used and filtered files are saved
+Use ``ads_filter`` to remove invalid morphometric measurements from one file or from all morphometric files in a folder. By default, the rules in ``AxonDeepSeg/morphometrics/filter.yaml`` are used and filtered files are saved
 with the suffix ``_filtered.xlsx``::
 
-   axondeepseg_filter -i folder_with_morphometrics
+   ads_filter -i folder_with_morphometrics
 
 By default, this command will only remove myelinated axons with invalid g-ratios. For more control over the filtering, use ``--config`` to provide a custom rules file, ``--overwrite`` to replace the original files, or ``--update_masks`` to update the corresponding segmentation masks. 
 A custom **filter.yaml** file should contain *myelinated* and *unmyelinated* rule lists. Supported rules include ``valid-g-ratio-only``, ``axon-diam-gt`` (axon diameter greater than), ``solidity-gt`` (solidity greater than), and ``axon-area-lt`` (axon area less than). Use ``~`` as a threshold to disable that rule. This is what an example custom rules file looks like:
@@ -718,13 +718,13 @@ A custom **filter.yaml** file should contain *myelinated* and *unmyelinated* rul
 
 Then, pass your custom rules file to the command line with ``--config``::
 
-   axondeepseg_filter -i folder_with_morphometrics --config my_custom_rules.yaml
+   ads_filter -i folder_with_morphometrics --config my_custom_rules.yaml
 
 Axon counting
 ~~~~~~~~~~~~~
-Use ``axondeepseg_count`` to count axons from morphometric files in a folder. Filtered morphometric files are used when available (result of using the ``axondeepseg_filter`` command), and the result is saved to **axon_counts.csv** by default::
+Use ``ads_count`` to count axons from morphometric files in a folder. Filtered morphometric files are used when available (result of using the ``ads_filter`` command), and the result is saved to **axon_counts.csv** by default::
 
-   axondeepseg_count -i folder_with_morphometrics -o counts.csv
+   ads_count -i folder_with_morphometrics -o counts.csv
 
 To count connected components directly from segmentation masks, add ``--mask_mode``. The folder must contain the mask files suffixed by **_seg-axonmyelin.png** and **_seg-uaxon.png**.
 
