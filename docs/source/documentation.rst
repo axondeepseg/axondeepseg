@@ -413,23 +413,23 @@ To generate morphometrics of images which are located in different folders, spec
 
 This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morphometrics.xlsx'** files in the **'__test_demo_files__'** and **'__test_segment_files__'** folders:: 
 
-    --__test_demo_files__/
-    ---- image.png
-    ---- image_seg-axon.png
-    ---- image_seg-axonmyelin.png
-    ---- image_seg-myelin.png
-    ---- image_axon_morphometrics.xlsx
-    ---- pixel_size_in_micrometer.txt
+    __test_demo_files__/
+    ├── image.png
+    ├── image_seg-axon.png
+    ├── image_seg-axonmyelin.png
+    ├── image_seg-myelin.png
+    ├── image_axon_morphometrics.xlsx     <-----------
+    └── pixel_size_in_micrometer.txt
 
     ...
 
-    --__test_segment_files__/
-    ---- image_2.png
-    ---- image_2_seg-axon.png
-    ---- image_2_seg-axonmyelin.png
-    ---- image_2_seg-myelin.png
-    ---- image_2_axon_morphometrics.xlsx
-    ---- pixel_size_in_micrometer.txt
+    __test_segment_files__/
+    ├── image_2.png
+    ├── image_2_seg-axon.png
+    ├── image_2_seg-axonmyelin.png
+    ├── image_2_seg-myelin.png
+    ├── image_2_axon_morphometrics.xlsx   <----------- 
+    └── pixel_size_in_micrometer.txt
 
 Morphometrics of all the images present in folder(s)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -439,19 +439,19 @@ To compute the morphometrics of batches of images present in folder(s), input th
  
 This will generate **'image_axon_morphometrics.xlsx'** and **'image_2_axon_morphometrics.xlsx'** morphometrics files in the **'test/__test_files__/__test_demo_files__'** directory:: 
 
-    --__test_demo_files__/
-    ---- image.png
-    ---- image_seg-axon.png
-    ---- image_seg-axonmyelin.png
-    ---- image_seg-myelin.png
-    ---- image_axon_morphometrics.xlsx
-
-    ---- image_2.png
-    ---- image_2_seg-axon.png
-    ---- image_2_seg-axonmyelin.png
-    ---- image_2_seg-myelin.png
-    ---- image_2_axon_morphometrics.xlsx
-
+    __test_demo_files__/
+    ├── image.png
+    ├── image_seg-axon.png
+    ├── image_seg-axonmyelin.png
+    ├── image_seg-myelin.png
+    ├── image_axon_morphometrics.xlsx     <----------- 
+    ├── ...
+    ├── image_2.png
+    ├── image_2_seg-axon.png
+    ├── image_2_seg-axonmyelin.png
+    ├── image_2_seg-myelin.png
+    ├── image_2_axon_morphometrics.xlsx   <----------- 
+    └── pixel_size_in_micrometer.txt
 
 Please note that when using the ``ads_morphometrics`` command, the console output will be logged in a file called *axondeepseg.log* in the current working directory.
 
