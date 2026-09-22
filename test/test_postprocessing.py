@@ -4,6 +4,7 @@ import pytest
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import imageio
 from PIL import Image
 
 from skimage.measure import regionprops, label
@@ -107,6 +108,38 @@ class TestCore(object):
         # Load the created image and compare it to the expected image
         output_image = np.asarray(Image.open(output_image_path))
         assert np.array_equal(output_image, expected_image)
+
+    @pytest.mark.unit
+    def test_generate_and_save_colored_image_with_index_numbers_raises_for_huge_image_by_default(self, tmp_path):
+        # 10000x10000 pixels exceeds PIL's default MAX_IMAGE_PIXELS (~89 million),
+        # so this must be rejected by default via ads_utils.imread's explicit check.
+        large_image_path = tmp_path / "huge_axonmyelin.png"
+        output_image_path = tmp_path / "huge_output.png"
+        imageio.imwrite(large_image_path, np.zeros((10000, 10000), dtype=np.uint8))
+        index_array = np.zeros((10000, 10000), dtype=np.uint8)
+
+        with pytest.raises(IOError):
+            postprocessing.generate_and_save_colored_image_with_index_numbers(
+                filename=output_image_path,
+                axonmyelin_image_path=large_image_path,
+                index_image_array=index_array,
+            )
+
+    @pytest.mark.unit
+    def test_generate_and_save_colored_image_with_index_numbers_succeeds_for_huge_image_when_allow_large_images_is_true(self, tmp_path):
+        large_image_path = tmp_path / "huge_axonmyelin.png"
+        output_image_path = tmp_path / "huge_output.png"
+        imageio.imwrite(large_image_path, np.zeros((10000, 10000), dtype=np.uint8))
+        index_array = np.zeros((10000, 10000), dtype=np.uint8)
+
+        postprocessing.generate_and_save_colored_image_with_index_numbers(
+            filename=output_image_path,
+            axonmyelin_image_path=large_image_path,
+            index_image_array=index_array,
+            allow_large_images=True,
+        )
+
+        assert output_image_path.exists()
 
     @pytest.mark.unit
     def test_generate_rotated_ellipse_points_returns_requested_number_of_points(self):

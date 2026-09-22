@@ -669,7 +669,7 @@ def compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask):
     return fascicle_densities, total_axons
 
 
-def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path, nerve_mask_path):
+def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path, nerve_mask_path, allow_large_images=False):
     """
     Computes axon density per fascicle and total axon density.
     """
@@ -682,7 +682,7 @@ def compute_axon_density(axon_morphometrics_path, nerve_morphometrics_path, nerv
         raise KeyError("total_area not found in nerve_morphometrics JSON")
     total_nerve_area = nerve_data["total_area"]["value"]
 
-    nerve_mask = imread(nerve_mask_path)
+    nerve_mask = imread(nerve_mask_path, allow_large_images=allow_large_images)
     fascicle_densities, total_axons = compute_fascicle_axon_density(axon_df, nerve_data, nerve_mask)
 
     total_density = round(total_axons / total_nerve_area, 5) if total_nerve_area > 0 else 0
