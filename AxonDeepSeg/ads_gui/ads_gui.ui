@@ -673,6 +673,14 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="morph_results_btn">
+        <property name="text"><string>Run morphometrics</string></property>
+        <property name="toolTip"><string>Compute morphometrics on the images that were just segmented, using the settings from the Morphometrics tab.</string></property>
+        <property name="minimumHeight"><number>42</number></property>
+        <property name="visible"><bool>false</bool></property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="run_another_btn">
         <property name="text"><string>Run another batch</string></property>
         <property name="minimumHeight"><number>42</number></property>

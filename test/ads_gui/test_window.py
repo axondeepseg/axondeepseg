@@ -217,7 +217,50 @@ class TestPostSegmentState:
         assert window.run_btn.isEnabled()
         assert not window.stop_btn.isHidden()
         assert window.visualize_btn.isHidden()
+        assert window.morph_results_btn.isHidden()
         assert window.run_another_btn.isHidden()
+
+    @pytest.mark.integration
+    def test_results_offer_morphometrics_alongside_visualize_and_run_another(self, window):
+        window._enter_post_segment_state()
+
+        assert not window.morph_results_btn.isHidden()
+
+    @pytest.mark.integration
+    @pytest.mark.parametrize("tab", [MORPHOMETRICS_TAB, MODELS_TAB])
+    def test_other_tabs_keep_their_run_button_after_a_segmentation(self, window, tab):
+        window._enter_post_segment_state()
+        window.tabWidget.setCurrentIndex(tab)
+
+        assert not window.run_btn.isHidden()
+        assert not window.stop_btn.isHidden()
+        assert window.visualize_btn.isHidden()
+        assert window.morph_results_btn.isHidden()
+        assert window.run_another_btn.isHidden()
+
+    @pytest.mark.integration
+    def test_results_buttons_come_back_on_the_segment_tab(self, window):
+        window._enter_post_segment_state()
+        window.tabWidget.setCurrentIndex(MORPHOMETRICS_TAB)
+        window.tabWidget.setCurrentIndex(SEGMENT_TAB)
+
+        assert window.run_btn.isHidden()
+        assert not window.visualize_btn.isHidden()
+
+    @pytest.mark.integration
+    def test_run_morphometrics_queues_the_segmented_images(self, window, tmp_path):
+        images = [tmp_path / "a.png", tmp_path / "b.png"]
+        window.morph_batch_list.addItem("stale.png")
+        window._last_segment_results = [{"image": p} for p in images]
+        window._enter_post_segment_state()
+
+        with patch.object(window, "_run_morphometrics") as run:
+            window._on_morph_results_clicked()
+
+        queued = [window.morph_batch_list.item(i).text() for i in range(window.morph_batch_list.count())]
+        assert queued == [str(p) for p in images]
+        assert window.tabWidget.currentIndex() == MORPHOMETRICS_TAB
+        run.assert_called_once()
 
     @pytest.mark.integration
     def test_preview_with_no_results_reports_instead_of_opening_a_dialog(self, window):

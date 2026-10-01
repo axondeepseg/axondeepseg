@@ -150,7 +150,9 @@ class ADSWindow(QMainWindow):
         self.stop_btn.clicked.connect(self._on_stop)
         self.visualize_btn.clicked.connect(self._on_visualize_clicked)
         self.run_another_btn.clicked.connect(self._on_run_another_clicked)
+        self.morph_results_btn.clicked.connect(self._on_morph_results_clicked)
         self._last_segment_results = []
+        self._post_segment = False
         self.tabWidget.currentChanged.connect(self._on_tab_changed)
         self._on_tab_changed(self.tabWidget.currentIndex())
 
@@ -447,6 +449,17 @@ class ADSWindow(QMainWindow):
 
     def _on_tab_changed(self, index):
         self.run_btn.setText(self._RUN_BTN_LABELS.get(index, "Run"))
+        self._update_run_row()
+
+    def _update_run_row(self):
+        # The post-segmentation buttons belong to the Segment tab only, the other
+        # tabs always keep their own Run button.
+        show_results = self._post_segment and self.tabWidget.currentIndex() == 0
+        self.run_btn.setVisible(not show_results)
+        self.stop_btn.setVisible(not show_results)
+        self.visualize_btn.setVisible(show_results)
+        self.morph_results_btn.setVisible(show_results)
+        self.run_another_btn.setVisible(show_results)
 
     def _on_run(self):
         if self._active_thread is not None:
@@ -519,16 +532,12 @@ class ADSWindow(QMainWindow):
     def _enter_post_segment_state(self):
         """After a segmentation run with results, swap Run/Stop for a more visible
         way to see the results than the easy-to-miss 'Preview results' checkbox."""
-        self.run_btn.setVisible(False)
-        self.stop_btn.setVisible(False)
-        self.visualize_btn.setVisible(True)
-        self.run_another_btn.setVisible(True)
+        self._post_segment = True
+        self._update_run_row()
 
     def _exit_post_segment_state(self):
-        self.visualize_btn.setVisible(False)
-        self.run_another_btn.setVisible(False)
-        self.run_btn.setVisible(True)
-        self.stop_btn.setVisible(True)
+        self._post_segment = False
+        self._update_run_row()
         self.run_btn.setEnabled(True)
 
     def _on_visualize_clicked(self):
@@ -536,6 +545,15 @@ class ADSWindow(QMainWindow):
 
     def _on_run_another_clicked(self):
         self._exit_post_segment_state()
+
+    def _on_morph_results_clicked(self):
+        """Queue the images that were just segmented in the Morphometrics tab and run
+        it from there, so its settings (mode, pixel size, ...) apply and stay visible."""
+        self.morph_batch_list.clear()
+        for result in self._last_segment_results:
+            self._morph_add_to_list(str(result["image"]))
+        self.tabWidget.setCurrentIndex(1)
+        self._run_morphometrics()
 
     def _open_preview(self, results):
         if not results:
