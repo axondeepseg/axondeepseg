@@ -581,12 +581,6 @@
            <layout class="QHBoxLayout" name="modelMetaLayout">
             <item>
              <layout class="QVBoxLayout">
-              <item><widget class="QLabel" name="modalitiesHeader"><property name="text"><string>Modalities</string></property></widget></item>
-              <item><widget class="QLabel" name="mod_label"><property name="text"><string>TEM · SEM · BF · CARS</string></property></widget></item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QVBoxLayout">
               <item><widget class="QLabel" name="pixelSizeHeader"><property name="text"><string>Pixel size</string></property></widget></item>
               <item><widget class="QLabel" name="px_label"><property name="text"><string>0.00236 – 0.226 µm/px</string></property></widget></item>
              </layout>
