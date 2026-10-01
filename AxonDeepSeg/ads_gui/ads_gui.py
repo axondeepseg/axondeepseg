@@ -582,8 +582,12 @@ class ADSWindow(QMainWindow):
     def _apply_header_logo(self):
         logo_file = HEADER_LOGO_FILE_DARK_THEME if self._dark else HEADER_LOGO_FILE_LIGHT_THEME
         if logo_file.exists():
-            pix = QPixmap(str(logo_file))
-            self.titleLabel.setPixmap(pix.scaledToHeight(64, Qt.SmoothTransformation))
+            # Scale to the screen's physical pixels, not logical ones, otherwise
+            # HiDPI/Retina screens upscale a 64px bitmap and the text gets jagged.
+            dpr = self.devicePixelRatioF()
+            pix = QPixmap(str(logo_file)).scaledToHeight(round(64 * dpr), Qt.SmoothTransformation)
+            pix.setDevicePixelRatio(dpr)
+            self.titleLabel.setPixmap(pix)
 
     def _toggle_theme(self):
         self._dark = not self._dark
