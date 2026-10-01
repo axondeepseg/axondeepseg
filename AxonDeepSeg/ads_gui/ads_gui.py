@@ -613,6 +613,17 @@ def main():
         except Exception:
             pass
 
+    # Qt5 doesn't scale with the OS display setting by default, which clips button
+    # text and blurs images on 125%/150% or Retina screens. Must be set before the
+    # QApplication exists.
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    if hasattr(Qt, "HighDpiScaleFactorRoundingPolicy"):
+        # Keep fractional factors (1.25, 1.5) instead of rounding them to 1 or 2.
+        QApplication.setHighDpiScaleFactorRoundingPolicy(
+            Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+        )
+
     app = QApplication(sys.argv)
     if APP_ICON_FILE.exists():
         app.setWindowIcon(QIcon(str(APP_ICON_FILE)))

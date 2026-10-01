@@ -40,13 +40,13 @@
       <item>
        <widget class="QPushButton" name="napari_btn">
         <property name="text"><string>Open in napari</string></property>
-        <property name="maximumWidth"><number>120</number></property>
+        <property name="sizePolicy"><sizepolicy hsizetype="Fixed" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="theme_btn">
         <property name="text"><string>☀  Light</string></property>
-        <property name="maximumWidth"><number>90</number></property>
+        <property name="sizePolicy"><sizepolicy hsizetype="Fixed" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
        </widget>
       </item>
      </layout>
@@ -111,7 +111,7 @@
                  <item>
                   <widget class="QPushButton" name="inputBrowseBtn">
                    <property name="text"><string>Browse</string></property>
-                   <property name="maximumWidth"><number>80</number></property>
+                   <property name="sizePolicy"><sizepolicy hsizetype="Fixed" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
                   </widget>
                  </item>
                 </layout>
@@ -167,7 +167,6 @@
                   <widget class="QLabel" name="modelLabel">
                    <property name="text"><string>Model</string></property>
                    <property name="minimumWidth"><number>110</number></property>
-                   <property name="maximumWidth"><number>110</number></property>
                   </widget>
                  </item>
                  <item>
@@ -202,7 +201,6 @@
                   <widget class="QLabel" name="customModelLabel">
                    <property name="text"><string>Custom model</string></property>
                    <property name="minimumWidth"><number>110</number></property>
-                   <property name="maximumWidth"><number>110</number></property>
                   </widget>
                  </item>
                  <item>
@@ -213,7 +211,7 @@
                  <item>
                   <widget class="QPushButton" name="customBrowseBtn">
                    <property name="text"><string>Browse</string></property>
-                   <property name="maximumWidth"><number>80</number></property>
+                   <property name="sizePolicy"><sizepolicy hsizetype="Fixed" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
                   </widget>
                  </item>
                 </layout>
@@ -237,7 +235,6 @@
                   <widget class="QLabel" name="saveToLabel">
                    <property name="text"><string>Save to</string></property>
                    <property name="minimumWidth"><number>110</number></property>
-                   <property name="maximumWidth"><number>110</number></property>
                   </widget>
                  </item>
                  <item>
@@ -251,7 +248,7 @@
                   <widget class="QPushButton" name="outBrowseBtn">
                    <property name="enabled"><bool>false</bool></property>
                    <property name="text"><string>Browse</string></property>
-                   <property name="maximumWidth"><number>80</number></property>
+                   <property name="sizePolicy"><sizepolicy hsizetype="Fixed" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
                    <property name="toolTip"><string>Outputs are always saved next to the input images for now.</string></property>
                   </widget>
                  </item>
@@ -270,7 +267,6 @@
                   <widget class="QLabel" name="morphoAfterPxLabel">
                    <property name="text"><string>Pixel size (µm/px)</string></property>
                    <property name="minimumWidth"><number>110</number></property>
-                   <property name="maximumWidth"><number>110</number></property>
                   </widget>
                  </item>
                  <item>
@@ -351,7 +347,7 @@
                  <item>
                   <widget class="QPushButton" name="morphBrowseBtn">
                    <property name="text"><string>Browse</string></property>
-                   <property name="maximumWidth"><number>80</number></property>
+                   <property name="sizePolicy"><sizepolicy hsizetype="Fixed" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
                   </widget>
                  </item>
                 </layout>
@@ -401,7 +397,6 @@
                   <widget class="QLabel" name="pixelSizeLabel">
                    <property name="text"><string>Pixel size (µm/px)</string></property>
                    <property name="minimumWidth"><number>110</number></property>
-                   <property name="maximumWidth"><number>110</number></property>
                   </widget>
                  </item>
                  <item>
@@ -429,7 +424,6 @@
                   <widget class="QLabel" name="shapeLabel">
                    <property name="text"><string>Axon shape</string></property>
                    <property name="minimumWidth"><number>110</number></property>
-                   <property name="maximumWidth"><number>110</number></property>
                   </widget>
                  </item>
                  <item>
@@ -452,7 +446,6 @@
                   <widget class="QLabel" name="outNameLabel">
                    <property name="text"><string>Output filename</string></property>
                    <property name="minimumWidth"><number>110</number></property>
-                   <property name="maximumWidth"><number>110</number></property>
                   </widget>
                  </item>
                  <item>
@@ -660,7 +653,7 @@
       <item>
        <widget class="QPushButton" name="stop_btn">
         <property name="text"><string>Stop</string></property>
-        <property name="maximumWidth"><number>90</number></property>
+        <property name="sizePolicy"><sizepolicy hsizetype="Fixed" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
         <property name="minimumHeight"><number>42</number></property>
        </widget>
       </item>
