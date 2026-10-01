@@ -140,6 +140,7 @@ rem Clean old install setup in bin/ if existing
 if exist %ADS_DIR%\bin\ (
   echo ### Removing axondeepseg softlink inside the ADS directory...
   del %ADS_DIR%\bin\axondeepseg_* || goto error
+  if exist %ADS_DIR%\bin\ads_* del %ADS_DIR%\bin\ads_* || goto error
   del %ADS_DIR%\bin\download_* || goto error
 )
 rem Remove old python folder
@@ -186,13 +187,15 @@ ads_conda\envs\venv_ads\Scripts\download_tests
 rem Copying ADS scripts to an isolated folder (so we can add scripts to the PATH without adding the entire venv_ads)
 echo:
 echo ### Copying ADS's CLI scripts to %CD%\bin\
+xcopy %CD%\ads_conda\envs\venv_ads\Scripts\ads_*.* %CD%\bin\ /v /y /q /i || goto error
+rem Legacy axondeepseg_* commands, kept until they're removed in v6
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
 echo cmd /k %CD%\ads_conda\Scripts\activate.bat venv_ads> %CD%\bin\ads_activate.bat
 echo cmd /k %CD%\ads_conda\envs\venv_ads\Scripts\napari.exe> %CD%\bin\ads_napari.bat
 
 echo ### Checking installation...
-ads_conda\envs\venv_ads\Scripts\axondeepseg_test
+ads_conda\envs\venv_ads\Scripts\ads_test
 
 rem Give further instructions that the user add the Scripts directory to their PATH
 echo:

@@ -962,7 +962,7 @@ Developers are encouraged to run the testing suite in the terminal, and develop 
 
 To run the testing suite, run the following command within the AxonDeepSeg directory::
 
-    axondeepseg_test --full
+    ads_test --full
 
 Alternatively, `pytest` commands can be run directly from the terminal for more control over the testing suite. For example, to run all tests, use::
 
