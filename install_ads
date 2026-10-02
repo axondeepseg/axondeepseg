@@ -680,16 +680,16 @@ mkdir -p "$ADS_DIR/$BIN_DIR"
 for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/ads_*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
-# Legacy axondeepseg_* commands, kept until they're removed in v6
+# Legacy axondeepseg_* and download_* commands, kept until they're removed in v6
 for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*axondeepseg*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
-for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*download*; do
+for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/download_*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
 cp "$ADS_DIR/$CONDA_DIR/envs/venv_ads/bin/napari" "$ADS_DIR/$BIN_DIR/ads_napari" || die "Problem creating launchers!"
 
-# Activate the launchers, particularly download_model, download_tests, and ads_test
+# Activate the launchers, particularly ads_download_model, ads_download_tests, and ads_test
 export PATH="$ADS_DIR/$BIN_DIR:$PATH"
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -702,8 +702,8 @@ if [[ -n "$NO_DATA_INSTALL" ]]; then
 else
   # Download data
   print info "Installing data..."
-  download_model -d AxonDeepSeg/models
-  download_tests
+  ads_download_model -d AxonDeepSeg/models
+  ads_download_tests
 fi
 
 # ----------------------------------------------------------------------------------------------------------------------

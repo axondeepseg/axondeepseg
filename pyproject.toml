@@ -77,6 +77,8 @@ axondeepseg_morphometrics = "AxonDeepSeg.cli_deprecated:axondeepseg_morphometric
 axondeepseg_aggregate = "AxonDeepSeg.cli_deprecated:axondeepseg_aggregate"
 axondeepseg_filter = "AxonDeepSeg.cli_deprecated:axondeepseg_filter"
 axondeepseg_count = "AxonDeepSeg.cli_deprecated:axondeepseg_count"
+download_model = "AxonDeepSeg.cli_deprecated:download_model"
+download_tests = "AxonDeepSeg.cli_deprecated:download_tests"
 # New entry points
 ads_segment = "AxonDeepSeg.segment:main"
 ads_test = "AxonDeepSeg.integrity_test:main"
@@ -84,9 +86,8 @@ ads_morphometrics = "AxonDeepSeg.morphometrics.launch_morphometrics_computation:
 ads_aggregate = "AxonDeepSeg.morphometrics.aggregate:main"
 ads_filter = "AxonDeepSeg.morphometrics.filter_morphometrics:main"
 ads_count = "AxonDeepSeg.morphometrics.count_axons:main"
-# Other tools
-download_model = "AxonDeepSeg.download_model:main"
-download_tests = "AxonDeepSeg.download_tests:main"
+ads_download_model = "AxonDeepSeg.download_model:main"
+ads_download_tests = "AxonDeepSeg.download_tests:main"
 
 
 [tool.setuptools]

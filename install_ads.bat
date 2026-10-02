@@ -181,14 +181,14 @@ ads_conda\envs\venv_ads\Scripts\pip install -e . --use-pep517 || goto error
 rem Install external dependencies
 echo:
 echo ### Downloading model files and test data...
-ads_conda\envs\venv_ads\Scripts\download_model -d AxonDeepSeg/models/ || goto error
-ads_conda\envs\venv_ads\Scripts\download_tests
+ads_conda\envs\venv_ads\Scripts\ads_download_model -d AxonDeepSeg/models/ || goto error
+ads_conda\envs\venv_ads\Scripts\ads_download_tests
 
 rem Copying ADS scripts to an isolated folder (so we can add scripts to the PATH without adding the entire venv_ads)
 echo:
 echo ### Copying ADS's CLI scripts to %CD%\bin\
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\ads_*.* %CD%\bin\ /v /y /q /i || goto error
-rem Legacy axondeepseg_* commands, kept until they're removed in v6
+rem Legacy axondeepseg_* and download_* commands, kept until they're removed in v6
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\axondeepseg_*.* %CD%\bin\ /v /y /q /i || goto error
 xcopy %CD%\ads_conda\envs\venv_ads\Scripts\download_*.* %CD%\bin\ /v /y /q /i || goto error
 echo cmd /k %CD%\ads_conda\Scripts\activate.bat venv_ads> %CD%\bin\ads_activate.bat

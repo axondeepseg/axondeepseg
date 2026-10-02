@@ -269,11 +269,11 @@ Here are the details of all the models currently supported by AxonDeepSeg:
 
 To download these models, you must first have AxonDeepSeg installed. Afterwards, use the following command to list available models::
 
-    download_model --list
+    ads_download_model --list
 
 Then, use the following to download a specific model::
 
-    download_model -m <model name>
+    ads_download_model -m <model name>
 
 Using AxonDeepSeg
 =================
