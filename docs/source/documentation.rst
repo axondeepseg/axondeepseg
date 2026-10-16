@@ -720,6 +720,12 @@ Then, pass your custom rules file to the command line with ``--config``::
 
    axondeepseg_filter -i folder_with_morphometrics --config my_custom_rules.yaml
 
+You can also remove the axons you flagged in the :ref:`QA report <quality-assurance-label>`. Export the flags from the Single Axon Viewer, then pass them with ``--qa-flags`` together with the morphometrics file the report was made from (``.xlsx`` or ``.csv``)::
+
+   axondeepseg_filter -i image_axon_morphometrics.xlsx --qa-flags image_qa_flags.csv
+
+By default, every axon except those marked for deletion is kept. Use ``--qa-keep good-only`` to keep only the axons flagged as good segmentations. The flags are applied before the rules, and ``--update_masks`` also removes the deleted axons from the segmentation masks. The command stops with an error if the flags do not match the morphometrics file (for example, flags exported from a report made on different masks).
+
 Axon counting
 ~~~~~~~~~~~~~
 Use ``axondeepseg_count`` to count axons from morphometric files in a folder. Filtered morphometric files are used when available (result of using the ``axondeepseg_filter`` command), and the result is saved to **axon_counts.csv** by default::
@@ -786,12 +792,19 @@ Single Axon Viewer
 - **Individual Axon Inspection**: Navigate through each axon with detailed closeup views
 - **Dual Image Display**: Toggle between original and labeled views for each axon
 - **Metric Rankings**: Percentile rankings and absolute ranks for diameter, thickness, and g-ratio
+- **Axon ID**: the row index of the morphometrics file, which is also the number shown for the axon in the napari plugin
 - **Flagging System**: Manually flag axons as:
 
   - **Good Segmentation** (Green) - Press '1'
-  - **Needs Correction** (Yellow) - Press '2' 
+  - **Needs Correction** (Yellow) - Press '2'
   - **Marked for Deletion** (Red) - Press '3'
   - **Clear Flag** - Press '0'
+
+- **Order by / Show**: sort the axons by g-ratio, diameter or myelin thickness to reach outliers quickly, and show only unflagged axons or axons with a given flag
+- **Go to next axon after flagging**: optional, to flag a whole image with the keyboard only
+- **Mark all unflagged as good**: flags every remaining axon as a good segmentation, so you only need to flag the bad ones by hand
+- **Statistics with your flags**: g-ratio, diameter and myelin thickness recomputed live for all axons, without the axons marked for deletion, and for good segmentations only
+- **Saved as you go**: flags are kept in the browser, so refreshing or reopening the report does not lose them (some browsers block this for local files; the report says so, and you should export before closing)
 
 Keyboard Shortcuts
 ~~~~~~~~~~~~~~~~~~
@@ -819,7 +832,9 @@ Keyboard Shortcuts
 Export Features
 ~~~~~~~~~~~~~~~
 
-- **Export Flagged Axons** button: Export a CSV file containing all flagged axons with their IDs, status, diameter, and g-ratio.
+- **Export flags (CSV)** button: saves ``<image>_qa_flags_<date>.csv`` with one row per flagged axon: ``Axon index``, ``Flag`` (``good``, ``needs_correction`` or ``delete``), diameter, myelin thickness and g-ratio. Use it with ``axondeepseg_filter --qa-flags`` to remove the flagged axons from the morphometrics (see `Morphometrics filtering`_).
+- **Import flags (CSV)** button: loads a previous export back into the report, for example to continue flagging on another computer.
+- **Clear all flags** button.
 
 Technical Details
 -----------------
