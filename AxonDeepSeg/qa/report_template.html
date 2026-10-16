@@ -667,6 +667,63 @@
         font-style: italic;
       }
 
+      .axon-controls select {
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+      }
+
+      .axon-controls label {
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .axon-controls button.secondary-btn {
+        background: var(--secondary);
+      }
+
+      .axon-controls button.secondary-btn:hover {
+        background: var(--primary);
+      }
+
+      .flag-summary {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .live-stats-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      .live-stats-table th,
+      .live-stats-table td {
+        padding: 8px 12px;
+        text-align: right;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .live-stats-table th:first-child,
+      .live-stats-table td:first-child {
+        text-align: left;
+      }
+
+      .live-stats-table th {
+        background-color: var(--light-bg);
+        font-weight: 500;
+      }
+
+      .storage-note {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-top: 8px;
+      }
+
 
     </style>
   </head>
@@ -784,24 +841,58 @@
       <div class="alert info">
         Use this tool to examine individual axons in detail. Navigate using the
         controls or keyboard shortcuts. Press and hold 'T' to temporarily view
-        the original axon image.
+        the original axon image. The axon ID is the row index of the
+        morphometrics file, the same number shown by the napari plugin. Flags
+        are saved in this browser as you go; export them to keep a copy or to
+        filter the morphometrics with <code>axondeepseg_filter --qa-flags</code>.
       </div>
 
-      <!-- Replace the existing axon-viewer section with this code -->
       <div class="axon-viewer">
         <div class="axon-controls">
           <button onclick="previousAxon()">Previous</button>
           <input type="number" id="axonIdInput" placeholder="Axon ID" min="0" />
           <button onclick="goToAxon()">Go</button>
           <button onclick="nextAxon()">Next</button>
+          <label>Order by
+            <select id="sortSelect" onchange="rebuildView()">
+              <option value="id">Axon ID</option>
+              <option value="gratio-desc">g-ratio, high to low</option>
+              <option value="gratio-asc">g-ratio, low to high</option>
+              <option value="diameter-asc">Diameter, small to large</option>
+              <option value="diameter-desc">Diameter, large to small</option>
+              <option value="thickness-asc">Myelin thickness, thin to thick</option>
+              <option value="thickness-desc">Myelin thickness, thick to thin</option>
+            </select>
+          </label>
+          <label>Show
+            <select id="filterSelect" onchange="rebuildView()">
+              <option value="all">All axons</option>
+              <option value="unflagged">Unflagged only</option>
+              <option value="good">Good segmentation</option>
+              <option value="warning">Needs correction</option>
+              <option value="bad">Marked for deletion</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="autoAdvance" style="width: auto" />
+            Go to next axon after flagging</label>
           <span class="axon-counter"
             >Axon <span id="currentAxon">0</span> of
             <span id="totalAxons">0</span></span
           >
-
-          <!-- Moved export button to controls -->
+        </div>
+        <div class="axon-controls">
+          <button class="secondary-btn" onclick="markUnflaggedAsGood()">
+            Mark all unflagged as good
+          </button>
           <button class="export-btn" onclick="exportFlaggedAxons()">
-            Export Flagged Axons
+            Export flags (CSV)
+          </button>
+          <button class="secondary-btn" onclick="document.getElementById('importFlagsInput').click()">
+            Import flags (CSV)
+          </button>
+          <input type="file" id="importFlagsInput" accept=".csv" style="display: none" onchange="importFlags(this.files[0]); this.value = '';" />
+          <button class="secondary-btn" onclick="clearAllFlags()">
+            Clear all flags
           </button>
         </div>
 
@@ -875,7 +966,27 @@
           </div>
         </div>
 
-        <!-- Flags table - export button removed from here -->
+        <div class="card">
+          <div class="card-header">Statistics with your flags</div>
+          <div class="card-body">
+            <div class="flag-summary" id="flagSummary"></div>
+            <table class="live-stats-table">
+              <thead>
+                <tr>
+                  <th>Axons included</th>
+                  <th>n</th>
+                  <th>g-ratio (mean ± SD)</th>
+                  <th>g-ratio (median)</th>
+                  <th>Diameter, µm (mean ± SD)</th>
+                  <th>Myelin thickness, µm (mean ± SD)</th>
+                </tr>
+              </thead>
+              <tbody id="liveStatsBody"></tbody>
+            </table>
+            <div class="storage-note" id="storageNote"></div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">Flagged Axons</div>
           <div class="card-body">
@@ -899,170 +1010,211 @@
     </div>
     </div>
     <script>
-      function exportFlaggedAxons() {
-        // Create CSV content
-        let csvContent = "Axon ID,Flag Status,Diameter (µm),g-ratio\n";
-
-        // Add each flagged axon to the CSV
-        Object.entries(axonFlags).forEach(([axonId, flag]) => {
-          const axon = axonData[parseInt(axonId)];
-          if (axon) {
-            csvContent += `${parseInt(axonId) + 1},${getFlagLabel(
-              flag
-            )},${axon.diameter.toFixed(2)},${axon.gratio.toFixed(2)}\n`;
-          }
-        });
-
-        // Create a Blob and download link
-        const blob = new Blob([csvContent], {
-          type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
-
-        // Create a temporary download link
-        const link = document.createElement("a");
-        const date = new Date().toISOString().slice(0, 10);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `flagged_axons_${date}.csv`);
-        link.style.visibility = "hidden";
-
-        // Add to document, trigger click, and remove
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-      function initHistogramViewer() {
-        const viewers = document.querySelectorAll(".histogram-viewer");
-
-        viewers.forEach((viewer) => {
-          const options = viewer.querySelectorAll(".histogram-option");
-          const display = viewer.querySelector(".histogram-display");
-
-          options.forEach((option) => {
-            option.addEventListener("click", function () {
-              // Update active state
-              options.forEach((opt) => opt.classList.remove("active"));
-              this.classList.add("active");
-
-              // Update displayed image
-              const imgSrc = this.getAttribute("data-src");
-              display.innerHTML = `<img src="${imgSrc}" alt="${this.textContent}">`;
-            });
-          });
-
-          // Activate the first option by default
-          if (options.length > 0) {
-            options[0].click();
-          }
-        });
-      }
-    </script>
-    <script>
-      // Pass axon data from template to global variable
+      // Data passed from the template. Each entry has `id`, the row index of
+      // the morphometrics file (also the axon number shown in napari). All
+      // flags and exports are keyed by this id, never by the position of the
+      // axon in the list, because axons without pixels are skipped when the
+      // close-ups are generated.
       window.axonData = {{ axon_data|tojson }};
-    </script>
+      const IMAGE_NAME = {{ (image_name or sample_id)|tojson }};
+      const REPORT_KEY =
+        "ads-qa-flags|" + IMAGE_NAME + "|" + {{ report_date|tojson }} + "|" + window.axonData.length;
 
-    <script>
-      function openTab(evt, tabId) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-          tabcontent[i].classList.remove("active");
-        }
-        tablinks = document.getElementsByClassName("tab");
-        for (i = 0; i < tablinks.length; i++) {
-          tablinks[i].classList.remove("active");
-        }
-        document.getElementById(tabId).classList.add("active");
-        evt.currentTarget.classList.add("active");
+      const FLAG_CODES = { good: "good", warning: "needs_correction", bad: "delete" };
+      const FLAG_FROM_CODE = { good: "good", needs_correction: "warning", delete: "bad" };
 
-        // Load axon viewer if that tab was selected
-        if (tabId === "Single_Axon_Viewer") {
-          setTimeout(loadAxonViewer, 100);
-        }
-      }
-
-      // Axon viewer state
-      let currentAxonId = 0;
-      let totalAxons = 0;
       let axonData = [];
+      let axonById = {};
+      let viewIds = [];
+      let viewPos = 0;
+      let axonFlags = {}; // id -> "good" | "warning" | "bad"
       let tKeyPressed = false;
+      let viewerReady = false;
+      let storageOk = true;
 
+      function currentId() {
+        return viewIds.length ? viewIds[viewPos] : null;
+      }
+
+      // ---------- persistence ----------
+      function saveFlags() {
+        try {
+          localStorage.setItem(REPORT_KEY, JSON.stringify(axonFlags));
+          storageOk = true;
+        } catch (e) {
+          storageOk = false;
+        }
+        updateStorageNote();
+      }
+
+      function loadFlags() {
+        try {
+          const raw = localStorage.getItem(REPORT_KEY);
+          axonFlags = raw ? JSON.parse(raw) : {};
+        } catch (e) {
+          storageOk = false;
+          axonFlags = {};
+        }
+      }
+
+      function updateStorageNote() {
+        const note = document.getElementById("storageNote");
+        if (!note) return;
+        note.textContent = storageOk
+          ? "Flags are saved in this browser automatically. Export them to keep a copy or to use them on another computer."
+          : "This browser does not allow saving flags for local files. Export your flags before closing the page.";
+      }
+
+      // ---------- viewer ----------
       function loadAxonViewer() {
+        if (viewerReady) return;
         axonData = window.axonData || [];
-        totalAxons = axonData.length;
-
-        if (totalAxons > 0) {
-          showAxon(0);
-        }
+        axonById = {};
+        axonData.forEach((a) => (axonById[a.id] = a));
+        loadFlags();
+        viewerReady = true;
+        rebuildView();
+        updateFlagsTable();
+        updateLiveStats();
+        updateStorageNote();
       }
 
-      let axonFlags = {};
-      function showAxon(axonId) {
-        if (axonId < 0 || axonId >= totalAxons) return;
-
-        currentAxonId = axonId;
-        const axon = axonData[axonId];
-
-        if (axon) {
-          // Update image - use labeled image by default
-          if (axon.labeledImagePath) {
-            document.getElementById("axonImage").src = axon.labeledImagePath;
-          }
-
-          // Update stats
-          document.getElementById("stat-id").textContent = axonId;
-          document.getElementById("stat-diameter").textContent =
-            axon.diameter.toFixed(2);
-          document.getElementById("stat-thickness").textContent =
-            axon.thickness.toFixed(2);
-          document.getElementById("stat-gratio").textContent =
-            axon.gratio.toFixed(2);
-
-          document.getElementById(
-            "stat-diameter-pct"
-          ).textContent = `${axon.diameterPercentile}th percentile (${axon.diameterRank})`;
-
-          document.getElementById(
-            "stat-thickness-pct"
-          ).textContent = `${axon.thicknessPercentile}th percentile (${axon.thicknessRank})`;
-
-          document.getElementById(
-            "stat-gratio-pct"
-          ).textContent = `${axon.gratioPercentile}th percentile (${axon.gratioRank})`;
-
-          // Update counter
-          document.getElementById("currentAxon").textContent = axonId + 1;
-          document.getElementById("totalAxons").textContent = totalAxons;
-
-          // Update input field
-          document.getElementById("axonIdInput").value = axonId;
-        }
-        updateFlagDisplay(axonId);
+      function sortValue(axon, key) {
+        const v = axon[key];
+        return Number.isFinite(v) ? v : null;
       }
 
-      function updateFlagDisplay(axonId) {
-        const flagIndicator = document.getElementById("flagIndicator");
-        const flagStat = document.getElementById("stat-flag");
-        const flag = axonFlags[axonId];
+      function rebuildView() {
+        if (!viewerReady) return;
+        const keep = currentId();
+        const filter = document.getElementById("filterSelect").value;
+        const sort = document.getElementById("sortSelect").value;
 
-        if (flag) {
-          flagIndicator.style.display = "block";
-          flagStat.textContent = getFlagLabel(flag);
+        let ids = axonData.map((a) => a.id).filter((id) => {
+          const flag = axonFlags[id];
+          if (filter === "all") return true;
+          if (filter === "unflagged") return !flag;
+          return flag === filter;
+        });
 
-          // Set appropriate color
-          flagIndicator.className = "flag-indicator";
-          if (flag === "good") flagIndicator.classList.add("flag-good");
-          else if (flag === "warning")
-            flagIndicator.classList.add("flag-warning");
-          else if (flag === "bad") flagIndicator.classList.add("flag-bad");
+        if (sort !== "id") {
+          const [key, dir] = sort.split("-");
+          const field = { gratio: "gratio", diameter: "diameter", thickness: "thickness" }[key];
+          const sign = dir === "asc" ? 1 : -1;
+          ids.sort((a, b) => {
+            const va = sortValue(axonById[a], field);
+            const vb = sortValue(axonById[b], field);
+            if (va === null && vb === null) return a - b;
+            if (va === null) return 1; // missing values last
+            if (vb === null) return -1;
+            return sign * (va - vb) || a - b;
+          });
         } else {
-          flagIndicator.style.display = "none";
-          flagStat.textContent = "None";
+          ids.sort((a, b) => a - b);
+        }
+
+        viewIds = ids;
+        const idx = keep === null ? -1 : viewIds.indexOf(keep);
+        viewPos = idx >= 0 ? idx : 0;
+        render();
+      }
+
+      function render() {
+        const id = currentId();
+        const total = viewIds.length;
+        document.getElementById("totalAxons").textContent = total;
+        document.getElementById("currentAxon").textContent = total ? viewPos + 1 : 0;
+
+        if (id === null) {
+          document.getElementById("axonImage").src = "";
+          ["stat-id", "stat-diameter", "stat-thickness", "stat-gratio"].forEach(
+            (s) => (document.getElementById(s).textContent = "-")
+          );
+          updateFlagDisplay(null);
+          return;
+        }
+
+        const axon = axonById[id];
+        updateAxonImage();
+        const fmt = (v) => (Number.isFinite(v) ? v.toFixed(2) : "NaN");
+        document.getElementById("stat-id").textContent = id;
+        document.getElementById("stat-diameter").textContent = fmt(axon.diameter);
+        document.getElementById("stat-thickness").textContent = fmt(axon.thickness);
+        document.getElementById("stat-gratio").textContent = fmt(axon.gratio);
+        document.getElementById("stat-diameter-pct").textContent =
+          `${axon.diameterPercentile}th percentile (${axon.diameterRank})`;
+        document.getElementById("stat-thickness-pct").textContent =
+          `${axon.thicknessPercentile}th percentile (${axon.thicknessRank})`;
+        document.getElementById("stat-gratio-pct").textContent =
+          `${axon.gratioPercentile}th percentile (${axon.gratioRank})`;
+        document.getElementById("axonIdInput").value = id;
+        updateFlagDisplay(id);
+      }
+
+      function showAxonById(id) {
+        if (!(id in axonById)) return;
+        let idx = viewIds.indexOf(id);
+        if (idx < 0) {
+          // the requested axon is hidden by the current filter: show all axons
+          document.getElementById("filterSelect").value = "all";
+          rebuildView();
+          idx = viewIds.indexOf(id);
+        }
+        viewPos = idx;
+        render();
+      }
+
+      function previousAxon() {
+        if (viewPos > 0) {
+          viewPos -= 1;
+          render();
         }
       }
 
+      function nextAxon() {
+        if (viewPos < viewIds.length - 1) {
+          viewPos += 1;
+          render();
+        }
+      }
+
+      function goToAxon() {
+        const id = parseInt(document.getElementById("axonIdInput").value);
+        if (isNaN(id)) return;
+        if (id in axonById) {
+          showAxonById(id);
+        } else {
+          alert(`Axon ${id} is not in this report (it may have no pixels in the segmentation).`);
+        }
+      }
+
+      function goToFlaggedAxon(id) {
+        showAxonById(parseInt(id));
+      }
+
+      function updateAxonImage() {
+        const id = currentId();
+        if (id === null) return;
+        const axon = axonById[id];
+        const img = document.getElementById("axonImage");
+        if (tKeyPressed && axon.imagePath) {
+          img.src = axon.imagePath;
+        } else if (axon.labeledImagePath) {
+          img.src = axon.labeledImagePath;
+        }
+      }
+
+      function updateToggleImages() {
+        document.querySelectorAll(".toggle-image").forEach((img) => {
+          if (tKeyPressed) {
+            if (img.dataset.original) img.src = img.dataset.original;
+          } else if (img.dataset.labeled) {
+            img.src = img.dataset.labeled;
+          }
+        });
+      }
+
+      // ---------- flags ----------
       function getFlagLabel(flag) {
         switch (flag) {
           case "good":
@@ -1076,139 +1228,234 @@
         }
       }
 
-      function flagAxon(axonId, flagType) {
-        if (flagType === "none") {
-          delete axonFlags[axonId];
+      function updateFlagDisplay(id) {
+        const indicator = document.getElementById("flagIndicator");
+        const stat = document.getElementById("stat-flag");
+        const flag = id === null ? null : axonFlags[id];
+        if (flag) {
+          indicator.style.display = "block";
+          indicator.className = "flag-indicator flag-" + flag;
+          stat.textContent = getFlagLabel(flag);
         } else {
-          axonFlags[axonId] = flagType;
+          indicator.style.display = "none";
+          stat.textContent = "None";
         }
+      }
 
-        updateFlagDisplay(axonId);
+      function onFlagsChanged() {
+        saveFlags();
+        updateFlagDisplay(currentId());
         updateFlagsTable();
+        updateLiveStats();
+      }
+
+      function flagAxon(id, flagType) {
+        if (id === null) return;
+        if (flagType === "none") {
+          delete axonFlags[id];
+        } else {
+          axonFlags[id] = flagType;
+        }
+        onFlagsChanged();
+        if (flagType !== "none" && document.getElementById("autoAdvance").checked) {
+          nextAxon();
+        }
+      }
+
+      function markUnflaggedAsGood() {
+        const unflagged = axonData.filter((a) => !axonFlags[a.id]);
+        if (!unflagged.length) {
+          alert("All axons are already flagged.");
+          return;
+        }
+        if (!confirm(`Mark the ${unflagged.length} unflagged axons as "Good Segmentation"?`)) return;
+        unflagged.forEach((a) => (axonFlags[a.id] = "good"));
+        onFlagsChanged();
+      }
+
+      function clearAllFlags() {
+        const n = Object.keys(axonFlags).length;
+        if (!n) return;
+        if (!confirm(`Remove all ${n} flags? Export them first if you want to keep a copy.`)) return;
+        axonFlags = {};
+        onFlagsChanged();
       }
 
       function updateFlagsTable() {
-        const tableBody = document.getElementById("flagsTableBody");
-        tableBody.innerHTML = "";
+        const body = document.getElementById("flagsTableBody");
+        body.innerHTML = "";
+        Object.keys(axonFlags)
+          .map(Number)
+          .sort((a, b) => a - b)
+          .forEach((id) => {
+            const axon = axonById[id];
+            if (!axon) return;
+            const flag = axonFlags[id];
+            const fmt = (v) => (Number.isFinite(v) ? v.toFixed(2) : "NaN");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${id}</td>
+              <td><span class="flag-status flag-${flag}"></span>${getFlagLabel(flag)}</td>
+              <td>${fmt(axon.diameter)}</td>
+              <td>${fmt(axon.gratio)}</td>
+              <td><button onclick="goToFlaggedAxon(${id})">View</button></td>`;
+            body.appendChild(row);
+          });
+      }
 
-        Object.entries(axonFlags).forEach(([axonId, flag]) => {
-          const axon = axonData[parseInt(axonId)];
-          if (!axon) return;
+      // ---------- live statistics ----------
+      function describe(values) {
+        const v = values.filter(Number.isFinite).sort((a, b) => a - b);
+        const n = v.length;
+        if (!n) return { n: 0 };
+        const mean = v.reduce((s, x) => s + x, 0) / n;
+        const sd = n > 1 ? Math.sqrt(v.reduce((s, x) => s + (x - mean) ** 2, 0) / (n - 1)) : 0;
+        const median = n % 2 ? v[(n - 1) / 2] : (v[n / 2 - 1] + v[n / 2]) / 2;
+        return { n, mean, sd, median };
+      }
 
+      function updateLiveStats() {
+        const counts = { good: 0, warning: 0, bad: 0 };
+        Object.values(axonFlags).forEach((f) => (counts[f] = (counts[f] || 0) + 1));
+        const unflagged = axonData.length - counts.good - counts.warning - counts.bad;
+        document.getElementById("flagSummary").textContent =
+          `${axonData.length} axons: ${counts.good} good, ${counts.warning} need correction, ` +
+          `${counts.bad} marked for deletion, ${unflagged} unflagged.`;
+
+        const groups = [
+          ["All axons", axonData],
+          ["Without axons marked for deletion", axonData.filter((a) => axonFlags[a.id] !== "bad")],
+          ["Good segmentation only", axonData.filter((a) => axonFlags[a.id] === "good")],
+        ];
+        const body = document.getElementById("liveStatsBody");
+        body.innerHTML = "";
+        groups.forEach(([label, axons]) => {
+          const g = describe(axons.map((a) => a.gratio));
+          const d = describe(axons.map((a) => a.diameter));
+          const t = describe(axons.map((a) => a.thickness));
+          const ms = (s) => (s.n ? `${s.mean.toFixed(3)} ± ${s.sd.toFixed(3)}` : "-");
           const row = document.createElement("tr");
-
           row.innerHTML = `
-            <td>${parseInt(axonId) + 1}</td>
-            <td><span class="flag-status ${
-              "flag-" + flag
-            }"></span>${getFlagLabel(flag)}</td>
-            <td>${axon.diameter.toFixed(2)}</td>
-            <td>${axon.gratio.toFixed(2)}</td>
-            <td><button onclick="goToFlaggedAxon(${axonId})">View</button></td>
-            `;
-
-          tableBody.appendChild(row);
+            <td>${label}</td>
+            <td>${axons.length}</td>
+            <td>${ms(g)}</td>
+            <td>${g.n ? g.median.toFixed(3) : "-"}</td>
+            <td>${ms(d)}</td>
+            <td>${ms(t)}</td>`;
+          body.appendChild(row);
         });
       }
 
-      function goToFlaggedAxon(axonId) {
-        showAxon(parseInt(axonId));
-      }
-
-      function previousAxon() {
-        showAxon(currentAxonId - 1);
-      }
-
-      function nextAxon() {
-        showAxon(currentAxonId + 1);
-      }
-
-      function goToAxon() {
-        const input = document.getElementById("axonIdInput");
-        const axonId = parseInt(input.value);
-        if (!isNaN(axonId) && axonId >= 0 && axonId < totalAxons) {
-          showAxon(axonId);
+      // ---------- export / import ----------
+      function exportFlaggedAxons() {
+        const ids = Object.keys(axonFlags).map(Number).sort((a, b) => a - b);
+        if (!ids.length) {
+          alert("No axons are flagged yet.");
+          return;
         }
-      }
-
-      function updateAxonImage() {
-        if (!axonData || axonData.length === 0) return;
-
-        const axon = axonData[currentAxonId];
-        if (axon) {
-          const imageElement = document.getElementById("axonImage");
-          if (tKeyPressed && axon.imagePath) {
-            imageElement.src = axon.imagePath;
-          } else if (axon.labeledImagePath) {
-            imageElement.src = axon.labeledImagePath;
-          }
-        }
-      }
-
-      function updateToggleImages() {
-        document.querySelectorAll(".toggle-image").forEach((img) => {
-          if (tKeyPressed) {
-            if (img.dataset.original) {
-              img.src = img.dataset.original;
-            }
-          } else {
-            if (img.dataset.labeled) {
-              img.src = img.dataset.labeled;
-            }
-          }
+        const fmt = (v) => (Number.isFinite(v) ? v.toFixed(4) : "NaN");
+        let csv = "Axon index,Flag,Diameter (um),Myelin thickness (um),g-ratio\n";
+        ids.forEach((id) => {
+          const a = axonById[id];
+          if (!a) return;
+          csv += `${id},${FLAG_CODES[axonFlags[id]]},${fmt(a.diameter)},${fmt(a.thickness)},${fmt(a.gratio)}\n`;
         });
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const date = new Date().toISOString().slice(0, 10);
+        const safeName = String(IMAGE_NAME).replace(/[^A-Za-z0-9._-]+/g, "_");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${safeName}_qa_flags_${date}.csv`;
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
 
-      // Initialize when DOM is loaded
-      document.addEventListener("DOMContentLoaded", function () {
-        // Set up axon ID input listener
-        document
-          .getElementById("axonIdInput")
-          .addEventListener("keyup", function (event) {
-            if (event.key === "Enter") {
-              goToAxon();
+      function importFlags(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const lines = reader.result.split(/\r?\n/).filter((l) => l.trim());
+          const header = lines.shift().split(",").map((h) => h.trim());
+          const iId = header.indexOf("Axon index");
+          const iFlag = header.indexOf("Flag");
+          if (iId < 0 || iFlag < 0) {
+            alert('This file is not a flags export from this report (expected "Axon index" and "Flag" columns).');
+            return;
+          }
+          let added = 0, skipped = 0;
+          lines.forEach((line) => {
+            const cols = line.split(",");
+            const id = parseInt(cols[iId]);
+            const flag = FLAG_FROM_CODE[(cols[iFlag] || "").trim()];
+            if (id in axonById && flag) {
+              axonFlags[id] = flag;
+              added += 1;
+            } else {
+              skipped += 1;
             }
           });
+          onFlagsChanged();
+          rebuildView();
+          alert(`Imported ${added} flags` + (skipped ? `, skipped ${skipped} rows that do not match this report.` : "."));
+        };
+        reader.readAsText(file);
+      }
 
-        // Set up global keyboard listeners
+      // ---------- page setup ----------
+      function initHistogramViewer() {
+        document.querySelectorAll(".histogram-viewer").forEach((viewer) => {
+          const options = viewer.querySelectorAll(".histogram-option");
+          const display = viewer.querySelector(".histogram-display");
+          options.forEach((option) => {
+            option.addEventListener("click", function () {
+              options.forEach((opt) => opt.classList.remove("active"));
+              this.classList.add("active");
+              const imgSrc = this.getAttribute("data-src");
+              display.innerHTML = `<img src="${imgSrc}" alt="${this.textContent}">`;
+            });
+          });
+          if (options.length > 0) options[0].click();
+        });
+      }
+
+      function openTab(evt, tabId) {
+        document.querySelectorAll(".tab-content").forEach((el) => el.classList.remove("active"));
+        document.querySelectorAll(".tab").forEach((el) => el.classList.remove("active"));
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+        if (tabId === "Single_Axon_Viewer") setTimeout(loadAxonViewer, 100);
+      }
+
+      function viewerActive() {
+        return document.getElementById("Single_Axon_Viewer").classList.contains("active");
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("axonIdInput").addEventListener("keyup", function (event) {
+          if (event.key === "Enter") goToAxon();
+        });
+
         document.addEventListener("keydown", function (e) {
-          if (e.key === "ArrowLeft") {
-            if (
-              document
-                .getElementById("Single_Axon_Viewer")
-                .classList.contains("active")
-            ) {
-              previousAxon();
-            }
-          } else if (e.key === "ArrowRight") {
-            if (
-              document
-                .getElementById("Single_Axon_Viewer")
-                .classList.contains("active")
-            ) {
-              nextAxon();
-            }
-          } else if (e.key === "t" || e.key === "T") {
+          // don't hijack typing in the ID box or the selects
+          const tag = (e.target.tagName || "").toLowerCase();
+          const typing = tag === "input" || tag === "select" || tag === "textarea";
+
+          if (e.key === "t" || e.key === "T") {
+            if (typing) return;
             tKeyPressed = true;
             updateAxonImage();
             updateToggleImages();
+            return;
           }
-          // Add flagging keys
-          if (
-            document
-              .getElementById("Single_Axon_Viewer")
-              .classList.contains("active")
-          ) {
-            if (e.key === "1") {
-              flagAxon(currentAxonId, "good");
-            } else if (e.key === "2") {
-              flagAxon(currentAxonId, "warning");
-            } else if (e.key === "3") {
-              flagAxon(currentAxonId, "bad");
-            } else if (e.key === "0") {
-              flagAxon(currentAxonId, "none");
-            }
-          }
+          if (!viewerActive() || typing) return;
+          if (e.key === "ArrowLeft") previousAxon();
+          else if (e.key === "ArrowRight") nextAxon();
+          else if (e.key === "1") flagAxon(currentId(), "good");
+          else if (e.key === "2") flagAxon(currentId(), "warning");
+          else if (e.key === "3") flagAxon(currentId(), "bad");
+          else if (e.key === "0") flagAxon(currentId(), "none");
         });
 
         document.addEventListener("keyup", function (e) {
@@ -1219,17 +1466,7 @@
           }
         });
 
-        // Load axon viewer if we're on that tab initially
-        if (
-          document
-            .getElementById("Single_Axon_Viewer")
-            .classList.contains("active")
-        ) {
-          loadAxonViewer();
-        }
-
-        updateFlagsTable();
-
+        if (viewerActive()) loadAxonViewer();
         initHistogramViewer();
       });
     </script>

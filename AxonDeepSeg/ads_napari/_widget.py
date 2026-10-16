@@ -999,6 +999,7 @@ class ADSplugin(QWidget):
             sections=sections, 
             axon_data=axon_data,
             sample_id=Path(self.file_name).stem,
+            image_name=Path(self.image_path).stem if getattr(self, "image_path", None) else None,
             report_date=pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
             software_version=AxonDeepSeg.__version__,
             axon_mask_data=axon_mask_base64,
