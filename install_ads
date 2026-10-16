@@ -691,6 +691,10 @@ export PATH="$ADS_DIR/$BIN_DIR:$PATH"
 # Download data
 # ----------------------------------------------------------------------------------------------------------------------
 
+# White-text logo for the GUI's dark theme (kept in the doc-figures repo rather than in this one)
+print info "Downloading GUI assets..."
+download AxonDeepSeg/logo_ads-alpha_white_hires.png https://raw.githubusercontent.com/axondeepseg/doc-figures/refs/heads/main/logo/logo_ads-alpha_white_hires.png
+
 # Install data
 if [[ -n "$NO_DATA_INSTALL" ]]; then
   print warning "WARNING: data files will not be (re)-installed"
