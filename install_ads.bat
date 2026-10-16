@@ -177,6 +177,11 @@ rem Skip pip==21.2 to avoid dependency resolver issue (https://github.com/spinal
 ads_conda\envs\venv_ads\python -m pip install -U "pip^!=21.2.*" || goto error
 ads_conda\envs\venv_ads\Scripts\pip install -e . --use-pep517 || goto error
 
+rem White-text logo for the GUI's dark theme (kept in the doc-figures repo rather than in this one)
+echo:
+echo ### Downloading GUI assets...
+curl -fsSL -o AxonDeepSeg\logo_ads-alpha_white_hires.png https://raw.githubusercontent.com/axondeepseg/doc-figures/refs/heads/main/logo/logo_ads-alpha_white_hires.png || goto error
+
 rem Install external dependencies
 echo:
 echo ### Downloading model files and test data...

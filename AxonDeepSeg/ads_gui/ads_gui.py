@@ -24,8 +24,9 @@ MODELS_DIR = Path(__file__).parent.parent / "models"
 APP_ICON_FILE = Path(__file__).parent / "app_icon.png"
 # Full "AxonDeepSeg" wordmark, already used elsewhere in the app (ads_napari plugin
 # panel) — shown in the main window header instead of a plain text title. Dark text
-# on dark theme is unreadable, so there's a white-text variant for that case.
-HEADER_LOGO_FILE_DARK_THEME = Path(__file__).parent.parent / "logo_ads-alpha_white.png"
+# on dark theme is unreadable, so there's a white-text variant for that case; it is
+# fetched from the doc-figures repo by install_ads / install_ads.bat.
+HEADER_LOGO_FILE_DARK_THEME = Path(__file__).parent.parent / "logo_ads-alpha_white_hires.png"
 HEADER_LOGO_FILE_LIGHT_THEME = Path(__file__).parent.parent / "logo_ads-alpha.png"
 
 # Model catalogue
