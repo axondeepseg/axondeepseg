@@ -1047,7 +1047,7 @@
               <button class="secondary-btn" onclick="resetView()">Reset view</button>
               <label><input type="checkbox" id="showOthers" style="width: auto" checked onchange="drawCanvas()" />
                 show the segmentation of the other axons</label>
-              <span class="canvas-hint">Drag to move, scroll to zoom, click an axon to open it. Yellow outline = current axon.</span>
+              <span class="canvas-hint">Drag to move, scroll to zoom, click an axon to open it. The current axon is the brightest one.</span>
             </div>
           </div>
           <div class="axon-list-wrap">
@@ -1119,14 +1119,14 @@
       const IMAGE_SIZE = {{ image_size|tojson }};
       const DEFAULT_FILTERS = {{ default_filters|tojson }};
       const IMAGE_NAME = {{ (image_name or sample_id)|tojson }};
-      const REPORT_KEY =
-        "ads-qa|" + IMAGE_NAME + "|" + {{ report_date|tojson }} + "|" + window.axonData.length;
+      // Saved flags are tied to the segmentation (fingerprint of the label map and morphometrics), so a
+      // report regenerated from the same masks keeps them, and a report from other masks starts empty.
+      const REPORT_KEY = "ads-qa|" + IMAGE_NAME + "|" + {{ report_id|tojson }};
 
       const FLAG_CODES = { good: "good", warning: "needs_correction", bad: "delete" };
       const FLAG_FROM_CODE = { good: "good", needs_correction: "warning", delete: "bad" };
       const AXON_RGB = [231, 76, 60];
       const MYELIN_RGB = [52, 120, 219];
-      const OUTLINE_RGB = [255, 214, 0];
       const MAX_SOURCE = 1600; // largest image area (px) drawn at once, limits zooming out
 
       let axonData = [];
@@ -1594,24 +1594,12 @@
             const i = (y * ow + x) * 4;
             const l = labelOf(i);
             const cls = lab[i + 2];
+            if (cls === 0) continue;
             const isCur = l === curLabel && l > 0;
-            if (isCur) {
-              // 2-pixel outline: any pixel within 2 px (4-neighbourhood) belonging to something else
-              let edge = false;
-              for (let r = 1; r <= 2 && !edge; r++) {
-                edge =
-                  (x >= r && labelOf(i - 4 * r) !== l) || (x < ow - r && labelOf(i + 4 * r) !== l) ||
-                  (y >= r && labelOf(i - ow * 4 * r) !== l) || (y < oh - r && labelOf(i + ow * 4 * r) !== l);
-              }
-              if (edge) {
-                o[i] = OUTLINE_RGB[0]; o[i + 1] = OUTLINE_RGB[1]; o[i + 2] = OUTLINE_RGB[2]; o[i + 3] = 255;
-                continue;
-              }
-            }
-            if (cls === 0 || (!isCur && !showOthers)) continue;
+            if (!isCur && !showOthers) continue;
             const rgb = cls === 1 ? AXON_RGB : MYELIN_RGB;
             o[i] = rgb[0]; o[i + 1] = rgb[1]; o[i + 2] = rgb[2];
-            o[i + 3] = isCur ? 125 : 45;
+            o[i + 3] = isCur ? 185 : 105;
           }
         }
         octx.putImageData(out, 0, 0);

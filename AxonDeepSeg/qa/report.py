@@ -8,6 +8,7 @@ moved or shared as one file.
 """
 
 import base64
+import hashlib
 from io import BytesIO
 from pathlib import Path
 
@@ -181,12 +182,17 @@ def generate_qa_report(
         "Histograms": [{"type": "histogram_viewer", "histograms": histograms}],
     }
 
+    label_src = encode_label_map(im_axonmyelin_label, axon_mask, myelin_mask)
+    # fingerprint of the segmentation: flags saved in the browser are tied to it
+    report_id = hashlib.sha1(label_src.encode("ascii") + qa.df.to_csv(index=False).encode("utf-8")).hexdigest()[:16]
+
     env = Environment(loader=FileSystemLoader(str((Path(AxonDeepSeg.__file__).parent / "qa").resolve())))
     html = env.get_template("report_template.html").render(
         sections=sections,
         axon_data=build_axon_data(qa.df, im_axonmyelin_label),
         image_src=_data_uri(Image.fromarray(image), "JPEG", quality=image_quality),
-        label_src=encode_label_map(im_axonmyelin_label, axon_mask, myelin_mask),
+        label_src=label_src,
+        report_id=report_id,
         image_size=[int(image.shape[1]), int(image.shape[0])],
         default_filters=default_filters or {},
         sample_id=Path(morphometrics_file).stem,

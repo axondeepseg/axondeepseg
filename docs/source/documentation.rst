@@ -785,7 +785,7 @@ Single Axon Viewer
 ~~~~~~~~~~~~~~~~~~
 
 - **Individual Axon Inspection**: Navigate through each axon with the arrow keys, the list of axons, or by clicking an axon in the image
-- **Interactive close-up**: the current axon is outlined in yellow and its neighbours are shown more faintly. Drag to move around, scroll to zoom, "Reset view" to come back to the current axon, and hold 'T' to see the image without the segmentation
+- **Interactive close-up**: the current axon is highlighted and its neighbours are shown more faintly. Drag to move around, scroll to zoom, "Reset view" to come back to the current axon, and hold 'T' to see the image without the segmentation
 - **Axon filters**: hide the axons outside a diameter or g-ratio range, or touching the image border, from the viewer, the list and the statistics
 - **Axon list**: every axon kept by the filters, with its diameter, g-ratio and flag; click a row to open the axon, and pin axons (star or 'P') to come back to them ("Show: Pinned")
 - **Metric Rankings**: Percentile rankings and absolute ranks for diameter, thickness, and g-ratio
@@ -801,7 +801,7 @@ Single Axon Viewer
 - **Go to next axon after flagging**: optional, to flag a whole image with the keyboard only
 - **Mark all unflagged as good**: flags every remaining axon as a good segmentation, so you only need to flag the bad ones by hand
 - **Statistics with your flags**: g-ratio, diameter and myelin thickness recomputed live for all axons, without the axons marked for deletion, and for good segmentations only
-- **Saved as you go**: flags are kept in the browser, so refreshing or reopening the report does not lose them (some browsers block this for local files; the report says so, and you should export before closing)
+- **Saved as you go**: flags are kept in the browser, so refreshing or reopening the report does not lose them, and a report regenerated from the same segmentation finds them again (some browsers block this for local files; the report says so, and you should export before closing)
 
 Keyboard Shortcuts
 ~~~~~~~~~~~~~~~~~~
