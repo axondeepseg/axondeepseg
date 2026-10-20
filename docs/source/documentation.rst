@@ -760,12 +760,7 @@ The QA report can be generated directly from the AxonDeepSeg Napari plugin:
 5. **Click the "QA Report" button** in the plugin interface  
 6. **The report will automatically generate** and open in your default web browser
 
-The report is saved in a ``QA`` folder within your morphometrics directory, containing:
-
-- Interactive HTML report (``AxonDeepSeg_QA_Report.html``)
-- Individual metric histograms
-- Segmentation overlays  
-- Individual axon closeup images
+The report is saved as ``AxonDeepSeg_QA_Report.html`` in a ``QA`` folder within your morphometrics directory (the histograms are also saved there as PNG). The report is a single, self-contained file: the image, the segmentation, the overview and the histograms are embedded in it, so it can be moved or shared on its own and opened in any web browser, without AxonDeepSeg.
 
 Report Features
 ---------------
@@ -776,7 +771,7 @@ Summary Section
 ~~~~~~~~~~~~~~~
 
 - **Key Statistics**: Mean ± standard deviation for axon diameter, myelin thickness, and g-ratio
-- **Segmentation Visualization**: Overlay of axon (blue) and myelin (red) masks on the original image
+- **Segmentation Visualization**: Overlay of axon (red) and myelin (blue) masks on the original image
 - **Interactive Toggle**: Press and hold 'T' to temporarily view the original image without segmentation overlays
 
 Histograms Section
@@ -789,8 +784,10 @@ Histograms Section
 Single Axon Viewer
 ~~~~~~~~~~~~~~~~~~
 
-- **Individual Axon Inspection**: Navigate through each axon with detailed closeup views
-- **Dual Image Display**: Toggle between original and labeled views for each axon
+- **Individual Axon Inspection**: Navigate through each axon with the arrow keys, the list of axons, or by clicking an axon in the image
+- **Interactive close-up**: the current axon is outlined in yellow and its neighbours are shown more faintly. Drag to move around, scroll to zoom, "Reset view" to come back to the current axon, and hold 'T' to see the image without the segmentation
+- **Axon filters**: hide the axons outside a diameter or g-ratio range, or touching the image border, from the viewer, the list and the statistics
+- **Axon list**: every axon kept by the filters, with its diameter, g-ratio and flag; click a row to open the axon, and pin axons (star or 'P') to come back to them ("Show: Pinned")
 - **Metric Rankings**: Percentile rankings and absolute ranks for diameter, thickness, and g-ratio
 - **Axon ID**: the row index of the morphometrics file, which is also the number shown for the axon in the napari plugin
 - **Flagging System**: Manually flag axons as:
@@ -828,6 +825,8 @@ Keyboard Shortcuts
      - 3 key
    * - Clear flag
      - 0 key
+   * - Pin / unpin
+     - P key
 
 Export Features
 ~~~~~~~~~~~~~~~
@@ -842,7 +841,7 @@ Technical Details
 The QA report generation process:
 
 1. **Morphometrics Analysis**: Uses the existing morphometrics computation pipeline
-2. **Image Processing**: Generates individual axon closeups with buffer regions around each axon
+2. **Image Processing**: Embeds the image and a label map of the axons in the report; the close-ups are drawn by the browser
 3. **Statistical Analysis**: Computes comprehensive statistics for all morphometric parameters  
 4. **Interactive Visualization**: Creates an HTML-based report with JavaScript-powered interactivity
 
