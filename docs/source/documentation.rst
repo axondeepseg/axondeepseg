@@ -785,7 +785,7 @@ Single Axon Viewer
 ~~~~~~~~~~~~~~~~~~
 
 - **Individual Axon Inspection**: Navigate through each axon with the arrow keys, the list of axons, or by clicking an axon in the image
-- **Interactive close-up**: the current axon is highlighted and its neighbours are shown more faintly. Drag to move around, scroll to zoom, "Reset view" to come back to the current axon, and hold 'T' to see the image without the segmentation
+- **Interactive close-up**: the current axon is shown in full colour and its neighbours in faint grey tones. The highlighted myelin is the part attributed to the axon by the morphometrics (where the myelin of two axons touches, it is split between them). Drag to move around, scroll to zoom, "Reset view" to come back to the current axon, and hold 'T' to see the image without the segmentation
 - **Axon filters**: hide the axons outside a diameter or g-ratio range, or touching the image border, from the viewer, the list and the statistics
 - **Axon list**: every axon kept by the filters, with its diameter, g-ratio and flag; click a row to open the axon, and pin axons (star or 'P') to come back to them ("Show: Pinned")
 - **Metric Rankings**: Percentile rankings and absolute ranks for diameter, thickness, and g-ratio

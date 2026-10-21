@@ -1047,7 +1047,7 @@
               <button class="secondary-btn" onclick="resetView()">Reset view</button>
               <label><input type="checkbox" id="showOthers" style="width: auto" checked onchange="drawCanvas()" />
                 show the segmentation of the other axons</label>
-              <span class="canvas-hint">Drag to move, scroll to zoom, click an axon to open it. The current axon is the brightest one.</span>
+              <span class="canvas-hint">Drag to move, scroll to zoom, click an axon to open it. The current axon is in full colour; its myelin is the part ADS attributes to it (where two axons' myelin touch, ADS splits it between them, so a sharp cut there is expected).</span>
             </div>
           </div>
           <div class="axon-list-wrap">
@@ -1127,6 +1127,8 @@
       const FLAG_FROM_CODE = { good: "good", needs_correction: "warning", delete: "bad" };
       const AXON_RGB = [231, 76, 60];
       const MYELIN_RGB = [52, 120, 219];
+      const AXON_DIM_RGB = [196, 150, 146];
+      const MYELIN_DIM_RGB = [140, 158, 186];
       const MAX_SOURCE = 1600; // largest image area (px) drawn at once, limits zooming out
 
       let axonData = [];
@@ -1597,9 +1599,10 @@
             if (cls === 0) continue;
             const isCur = l === curLabel && l > 0;
             if (!isCur && !showOthers) continue;
-            const rgb = cls === 1 ? AXON_RGB : MYELIN_RGB;
+            // current axon: full colours; neighbours: greyed and faint, so the selection stands out
+            const rgb = isCur ? (cls === 1 ? AXON_RGB : MYELIN_RGB) : (cls === 1 ? AXON_DIM_RGB : MYELIN_DIM_RGB);
             o[i] = rgb[0]; o[i + 1] = rgb[1]; o[i + 2] = rgb[2];
-            o[i + 3] = isCur ? 185 : 105;
+            o[i + 3] = isCur ? 205 : 70;
           }
         }
         octx.putImageData(out, 0, 0);
