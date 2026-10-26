@@ -271,6 +271,13 @@ To download these models, you must first have AxonDeepSeg installed. Afterwards,
 
     download_model --list
 
+The list includes each model's training modalities: ``TEM`` (transmission electron
+microscopy), ``SEM`` (scanning electron microscopy), ``BF`` (bright-field microscopy),
+and/or ``CARS`` (coherent anti-Stokes Raman scattering). These are stored as a
+``modalities`` list in ``AxonDeepSeg/model_cards.yaml`` so other interfaces can reuse
+the same metadata. Model cards without this field display ``N/A`` rather than
+assuming that a model was trained on every modality.
+
 Then, use the following to download a specific model::
 
     download_model -m <model name>
