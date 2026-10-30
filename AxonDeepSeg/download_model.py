@@ -92,8 +92,11 @@ def print_available_models(model_dict: dict):
     for model in model_dict:
         pixel_size = model_dict[model].get('pixel_size')
         pixel_size_str = format_pixel_size(pixel_size) if pixel_size is not None else 'N/A'
+        modalities = model_dict[model].get('modalities')
+        modalities_str = ', '.join(modalities) if modalities else 'N/A'
         to_print = [
             ["Model name", model],
+            ["Modalities", modalities_str],
             ["Nb of classes", model_dict[model]['n_classes']],
             ["Pixel size", pixel_size_str],
             ["Model info", model_dict[model]['model-info']],
