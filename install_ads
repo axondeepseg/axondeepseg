@@ -529,6 +529,7 @@ fi
 if [[ -x "$ADS_DIR/$BIN_DIR" ]]; then
   print info "Removing ADS softlink from $ADS_DIR/$BIN_DIR"
   find "$ADS_DIR/$BIN_DIR" -type l -name 'axondeepseg_*' -exec rm {} \;
+  find "$ADS_DIR/$BIN_DIR" -type l -name 'ads_*' -exec rm {} \;
   find "$ADS_DIR/$BIN_DIR" -type l -name 'download_*' -exec rm {} \;
 fi
 # Remove old conda folder
@@ -559,7 +560,7 @@ add_to_path=""
 while [[ ! "$add_to_path" =~ ^([Yy](es)?|[Nn]o?)$ ]]; do
   add_to_path="yes"
   if [ -z "$NONINTERACTIVE" ]; then
-    print question "Do you want to add the axondeepseg_* scripts to your PATH environment? [y]es/[n]o: "
+    print question "Do you want to add the ads_* scripts to your PATH environment? [y]es/[n]o: "
     read -r add_to_path
   fi
 done
@@ -676,15 +677,19 @@ print info "All requirements installed!"
 ## Create launchers for Python scripts
 print info "Creating launchers for Python scripts..."
 mkdir -p "$ADS_DIR/$BIN_DIR"
+for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/ads_*; do
+  cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
+done
+# Legacy axondeepseg_* and download_* commands, kept until they're removed in v6
 for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*axondeepseg*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
-for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/*download*; do
+for file in "$ADS_DIR/$CONDA_DIR"/envs/venv_ads/bin/download_*; do
   cp "$file" "$ADS_DIR/$BIN_DIR/" || die "Problem creating launchers!"
 done
 cp "$ADS_DIR/$CONDA_DIR/envs/venv_ads/bin/napari" "$ADS_DIR/$BIN_DIR/ads_napari" || die "Problem creating launchers!"
 
-# Activate the launchers, particularly download_model, download_tests, and axondeepseg_test
+# Activate the launchers, particularly ads_download_model, ads_download_tests, and ads_test
 export PATH="$ADS_DIR/$BIN_DIR:$PATH"
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -697,8 +702,8 @@ if [[ -n "$NO_DATA_INSTALL" ]]; then
 else
   # Download data
   print info "Installing data..."
-  download_model -d AxonDeepSeg/models
-  download_tests
+  ads_download_model -d AxonDeepSeg/models
+  ads_download_tests
 fi
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -719,11 +724,11 @@ fi
 if [[ -n "$NO_INSTALL_VALIDATION" ]]; then
     print warning "WARNING: no checks will be run (installation will not be validated)"
 else
-  # run axondeepseg_test
+  # run ads_test
   print info "Validate installation..."
-  # We run the axondeepseg_test in the TMP_DIR so the tmp.XXX output
+  # We run the ads_test in the TMP_DIR so the tmp.XXX output
   # it creates is cleaned properly
-  if axondeepseg_test; then
+  if ads_test; then
     if [[ "$add_to_path" =~ ^[Nn] ]]; then
       print info "To use ADS, please update your environment by running:
   $DISPLAY_UPDATE_PATH"
