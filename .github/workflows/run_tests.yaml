@@ -38,6 +38,7 @@ jobs:
 
     # Matrix driven OS
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
 
     # Default shell for ALL subsequent steps.
     defaults:
@@ -48,8 +49,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ "ubuntu-latest", "macos-latest", "macos-26-intel", "windows-latest"]
-        python-version: [ ">=3.11" ]
+        os: [ "ubuntu-latest", "macos-latest", "windows-latest"]
+        python-version: [ "3.11", "3.12" ]
 
     # Main steps for the test to be reproduced across OS x Python
     steps:
@@ -95,6 +96,14 @@ jobs:
             cat ~/.bashrc | grep "export PATH" | grep -o "/.*" | cut -d ':' -f 1 >> $GITHUB_PATH
           fi
 
+      # Step 2c: Virtual display so Qt/napari GUI tests can run on Linux
+      - name: Set up headless display (Linux)
+        if: runner.os == 'Linux'
+        uses: pyvista/setup-headless-display-action@v4
+        with:
+          qt: true
+          pyvista: false
+
       # Step 3: Full PyTest
       - name: Test with pytest (Unix)
         if: runner.os != 'Windows'
@@ -111,6 +120,10 @@ jobs:
       # Skipped on macos-26-intel: the action installs the reporter via Homebrew on
       # macOS, which is currently broken there (Crystal 1.20 vs coveralls formula),
       # and upstream ships no prebuilt darwin binary as a fallback.
+      - name: Trust coveralls Homebrew tap (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew trust --formula coverallsapp/coveralls/coveralls || true
       - name: Submit to coveralls
         if: matrix.os != 'macos-26-intel'
         uses: coverallsapp/github-action@v2

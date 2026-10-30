@@ -126,6 +126,8 @@ def segment_images(
         gpu_id: int=-1,
         verbosity_level: int=0,
         allow_large_images: bool=False,
+        backend: str='auto',
+        tile_step_size: float=0.5,
     ) -> NoReturn:
     '''
     Segment the image(s) in path_images.
@@ -176,7 +178,31 @@ def segment_images(
         gpu_id=gpu_id,
         verbosity_level=verbosity_level,
         allow_large_images=allow_large_images,
+        backend=backend,
+        tile_step_size=tile_step_size,
     )
+
+def list_images_in_folder(path_folder: Path) -> List[Path]:
+    '''
+    List the images to segment in a folder, excluding masks and other files
+    AxonDeepSeg has generated.
+
+    Parameters
+    ----------
+    path_folder : pathlib.Path
+        Path to the folder containing the images to segment.
+
+    Returns
+    -------
+    List[pathlib.Path]
+        Paths of the image files to segment.
+    '''
+    path_folder = convert_path(path_folder)
+    return [
+        file for file in path_folder.iterdir()
+            if (file.suffix.lower() in valid_extensions)
+            and not str(file).endswith(generated_file_suffixes)
+    ]
 
 @logger.catch
 def segment_folder(
@@ -185,6 +211,8 @@ def segment_folder(
         gpu_id: int=-1,
         verbosity_level: int=0,
         allow_large_images: bool=False,
+        backend: str='auto',
+        tile_step_size: float=0.5,
     ) -> NoReturn:
     '''
     Segments all images in the path_folder directory.
@@ -206,14 +234,9 @@ def segment_folder(
     path_folder = convert_path(path_folder)
     path_model = convert_path(path_model)
 
-    # Update list of images to segment by selecting only image files (not masks)
-    img_files = [
-        file for file in path_folder.iterdir() 
-            if (file.suffix.lower() in valid_extensions)
-            and not str(file).endswith(generated_file_suffixes)
-    ]
-
-    segment_images(img_files, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
+    segment_images(list_images_in_folder(path_folder), path_model, gpu_id, verbosity_level,
+                   allow_large_images=allow_large_images, backend=backend,
+                   tile_step_size=tile_step_size)
     logger.info("Folder segmentation done.")
 
 # Main loop
@@ -273,6 +296,27 @@ def main(argv=None):
         help='Allow segmentation of images exceeding PIL\'s default decompression bomb limit '
              f'(~178 Mpx). \nUse this for large microscopy acquisitions.',
     )
+    ap.add_argument(
+        "--backend",
+        required=False,
+        choices=['auto', 'torch', 'torch-fp16', 'coreml'],
+        default='auto',
+        help='Execution backend for the forward pass. \n'
+             'auto (default): fastest available for this machine. \n'
+             'coreml: Apple CoreML, uses the Neural Engine (macOS only, ~3.6x faster). \n'
+             'torch-fp16: half precision through PyTorch (~1.7x faster on MPS). \n'
+             'torch: full precision PyTorch, the historical behaviour. \n'
+             'All backends produce near-identical output.',
+    )
+    ap.add_argument(
+        "--tile-step-size",
+        dest="tile_step_size",
+        required=False,
+        type=float,
+        default=0.5,
+        help='Sliding-window overlap between 0 and 1. Default 0.5 (each pixel covered \n'
+             '~4x). 1.0 means no overlap: faster, slightly coarser.',
+    )
     ap._action_groups.reverse()
 
     # Processing the arguments
@@ -291,6 +335,11 @@ def main(argv=None):
     allow_large_images = args["allow_large_images"]
 
     gpu_id = int(args["gpu_id"])
+    backend = args["backend"]
+    tile_step_size = float(args["tile_step_size"])
+    if not 0 < tile_step_size <= 1:
+        logger.error("--tile-step-size must be in (0, 1].")
+        sys.exit(2)
 
     # Check for available GPU IDs
     if gpu_id >=0:
@@ -308,12 +357,18 @@ def main(argv=None):
         else:
             input_dir_list.append(current_path_target)
     
-    # perform segmentation
+    # Segment everything in a single batch so the model is loaded once, rather
+    # than once per folder.
+    for dir_path in input_dir_list:
+        logger.info(f'Collecting images in "{str(dir_path)}".')
+        input_img_list.extend(list_images_in_folder(dir_path))
+
     if input_img_list:
-        segment_images(input_img_list, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
-    if input_dir_list:
-        for dir_path in input_dir_list:
-            segment_folder(dir_path, path_model, gpu_id, verbosity_level, allow_large_images=allow_large_images)
+        segment_images(input_img_list, path_model, gpu_id, verbosity_level,
+                       allow_large_images=allow_large_images, backend=backend,
+                       tile_step_size=tile_step_size)
+    else:
+        logger.warning('No images to segment.')
 
     sys.exit(0)
 

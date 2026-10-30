@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from AxonDeepSeg.apply_model import (
+    axon_segmentation,
     get_checkpoint_name, 
     extract_from_nnunet_prediction,
     find_folds
@@ -154,3 +155,60 @@ class TestCore(object):
         expected_folds_avail = ['0', '1', '2', '3', '4']
 
         assert folds_avail == expected_folds_avail
+
+    @pytest.mark.unit
+    def test_axon_segmentation_creates_axonmyelin_for_three_classes(
+        self, tmp_path, monkeypatch
+    ):
+        input_path = tmp_path / 'image.png'
+        input_path.touch()
+
+        class FakePredictor:
+            device = 'cpu'
+            dataset_json = {
+                'file_ending': '.png',
+                'labels': {
+                    'background': 0,
+                    'axon': 1,
+                    'other': 2,
+                    'myelin': 3,
+                },
+            }
+
+            def initialize_from_trained_model_folder(
+                self,
+                model_training_output_dir,
+                use_folds,
+                checkpoint_name,
+            ):
+                pass
+
+            def predict_from_files_sequential(
+                self,
+                list_of_lists_or_source_folder,
+                output_folder_or_list_of_truncated_output_files,
+                **kwargs,
+            ):
+                output_path = (
+                    Path(output_folder_or_list_of_truncated_output_files[0])
+                    .with_suffix('.png')
+                )
+                ads_utils.imwrite(output_path, np.array([[0, 1, 2, 3]], dtype=np.uint8))
+
+        monkeypatch.setattr(
+            'AxonDeepSeg.apply_model.AdsPredictor',
+            lambda **kwargs: FakePredictor(),
+        )
+        monkeypatch.setattr(
+            'AxonDeepSeg.apply_model.get_checkpoint_name',
+            lambda path: 'checkpoint_best.pth',
+        )
+
+        axon_segmentation(
+            [input_path],
+            tmp_path,
+            model_type='light',
+            backend='torch',
+        )
+
+        assert (tmp_path / 'image_seg-axonmyelin.png').is_file()
