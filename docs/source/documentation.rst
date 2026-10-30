@@ -379,6 +379,9 @@ The script to launch is called **axondeepseg_morphometrics**. It has several arg
 
 -d                  Generate a diameter overlay image showing concentric circle or ellipse outlines for each myelinated axon (inner ring = axon boundary, outer ring = fiber boundary). Only available in myelinated mode (not compatible with ``-u`` or ``-n``). The axon shape used for the overlay matches the ``-a`` argument. Output is saved with the suffix ``_diameter_overlay.png``.
 
+--allow-large-images
+                    Allow morphometrics computation on images that exceed PIL's default decompression bomb pixel limit (~89 million pixels). Use this flag when processing very large microscopy images that would otherwise be rejected.
+
 Morphometrics of a single image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Before computing the morphometrics of an image, make sure it has been segmented using AxonDeepSeg ::

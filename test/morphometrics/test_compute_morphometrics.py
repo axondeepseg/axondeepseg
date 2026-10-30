@@ -15,6 +15,7 @@ import json
 
 # AxonDeepSeg imports
 from AxonDeepSeg.visualization.simulate_axons import SimulateAxons, calc_myelin_thickness
+from AxonDeepSeg.morphometrics import compute_morphometrics
 from AxonDeepSeg.morphometrics.compute_morphometrics import (
                                                                 get_pixelsize,
                                                                 get_axon_morphometrics,
@@ -1097,6 +1098,32 @@ class TestCore(object):
             nerve_morph = json.load(f)
         assert 'total_axon_density' in nerve_morph.keys()
         assert 'axon_density' in nerve_morph['fascicle_areas']['0'].keys()
+
+    @pytest.mark.unit
+    def test_compute_axon_density_forwards_allow_large_images_to_imread(self, monkeypatch):
+        img_path = self.nerve_test_file
+        nerve_mask_path = self.nerve_mask_test_file
+        nerve_mask = ads.imread(nerve_mask_path)
+
+        nerve_morph = get_axon_morphometrics(im_axon=nerve_mask, pixel_size=0.0236)
+        nerve_morph_fname = self.tmpDir / 'test_nerve_morpho_large_images.json'
+        save_nerve_morphometrics_to_json(nerve_morph, nerve_morph_fname)
+
+        captured = {}
+        original_imread = compute_morphometrics.imread
+        def fake_imread(filename, *args, **kwargs):
+            captured['allow_large_images'] = kwargs.get('allow_large_images')
+            return original_imread(filename)
+        monkeypatch.setattr(compute_morphometrics, 'imread', fake_imread)
+
+        compute_axon_density(
+            str(img_path).replace('.png', '_axon_morphometrics.xlsx'),
+            nerve_morph_fname,
+            nerve_mask_path,
+            allow_large_images=True
+        )
+
+        assert captured['allow_large_images'] is True
 
     # --------------circle vs ellipse mode equivalence tests-------------- #
     @pytest.mark.unit
