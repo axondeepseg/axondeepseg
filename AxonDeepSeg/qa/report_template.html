@@ -667,7 +667,187 @@
         font-style: italic;
       }
 
+      .axon-controls select {
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+      }
 
+      .axon-controls label {
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .axon-controls button.secondary-btn {
+        background: var(--secondary);
+      }
+
+      .axon-controls button.secondary-btn:hover {
+        background: var(--primary);
+      }
+
+      .flag-summary {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .live-stats-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      .live-stats-table th,
+      .live-stats-table td {
+        padding: 8px 12px;
+        text-align: right;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .live-stats-table th:first-child,
+      .live-stats-table td:first-child {
+        text-align: left;
+      }
+
+      .live-stats-table th {
+        background-color: var(--light-bg);
+        font-weight: 500;
+      }
+
+      .storage-note {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-top: 8px;
+      }
+
+
+
+      .how-to ol {
+        margin: 8px 0 8px 22px;
+      }
+
+      .how-to li {
+        margin-bottom: 4px;
+      }
+
+      .filter-bar input[type="number"] {
+        width: 70px;
+      }
+
+      .viewer-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .axon-canvas-wrap {
+        position: relative;
+        width: 100%;
+        height: 600px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        background: #111;
+        cursor: grab;
+      }
+
+      .axon-canvas-wrap.dragging {
+        cursor: grabbing;
+      }
+
+      #axonCanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .canvas-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+      }
+
+      .canvas-tools {
+        margin-top: 10px;
+      }
+
+      .canvas-hint {
+        font-size: 12px;
+        color: #7f8c8d;
+      }
+
+      .axon-list-wrap {
+        height: 650px;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+      }
+
+      .axon-list {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .axon-list th {
+        position: sticky;
+        top: 0;
+        background: var(--light-bg);
+        font-weight: 500;
+        z-index: 1;
+      }
+
+      .axon-list th,
+      .axon-list td {
+        padding: 5px 8px;
+        text-align: right;
+        border-bottom: 1px solid #ecf0f1;
+      }
+
+      .axon-list th:first-child,
+      .axon-list td:first-child,
+      .axon-list th:last-child,
+      .axon-list td:last-child {
+        text-align: left;
+      }
+
+      .axon-list tbody tr {
+        cursor: pointer;
+      }
+
+      .axon-list tbody tr:hover {
+        background: rgba(52, 152, 219, 0.08);
+      }
+
+      .axon-list tbody tr.current {
+        background: rgba(52, 152, 219, 0.2);
+      }
+
+      .pin-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+        color: #bdc3c7;
+        padding: 0;
+      }
+
+      .stat-label .unit {
+        text-transform: none;
+      }
+
+      .pin-btn.pinned {
+        color: var(--warning);
+      }
     </style>
   </head>
   <body>
@@ -781,71 +961,102 @@
     <div id="Single_Axon_Viewer" class="tab-content">
       <h2 class="section-title">Single Axon Inspection</h2>
 
-      <div class="alert info">
-        Use this tool to examine individual axons in detail. Navigate using the
-        controls or keyboard shortcuts. Press and hold 'T' to temporarily view
-        the original axon image.
+      <div class="alert info how-to">
+        <strong>How to use</strong>
+        <ol>
+          <li>Set the filters below to hide the objects you don't want to review (for example very small objects).</li>
+          <li>Go through the axons with the arrow keys, the list on the right, or by clicking an axon in the image.
+            Drag the image to look around, scroll to zoom, hold <span class="shortcut-key">T</span> to see the image without the segmentation.</li>
+          <li>Flag each axon you look at: <span class="shortcut-key">1</span> good,
+            <span class="shortcut-key">2</span> needs correction, <span class="shortcut-key">3</span> delete,
+            <span class="shortcut-key">0</span> clear. <span class="shortcut-key">P</span> pins an axon to come back to it later.</li>
+          <li>Click <em>Export flags (CSV)</em> when you are done and send the file. Flags are also saved in this browser as you go.</li>
+        </ol>
+        The axon ID is the row index of the morphometrics file, the same number shown by the napari plugin.
+        Exported flags can be applied to the morphometrics with <code>axondeepseg_filter --qa-flags</code>.
       </div>
 
-      <!-- Replace the existing axon-viewer section with this code -->
       <div class="axon-viewer">
+        <div class="axon-controls filter-bar">
+          <strong>Axons in the report:</strong>
+          <label>diameter ≥ <input type="number" id="fMinDiam" step="0.05" min="0" placeholder="-" onchange="onFiltersChanged()" /> µm</label>
+          <label>diameter &lt; <input type="number" id="fMaxDiam" step="0.1" min="0" placeholder="-" onchange="onFiltersChanged()" /> µm</label>
+          <label>g-ratio &lt; <input type="number" id="fMaxG" step="0.01" min="0" max="1" placeholder="-" onchange="onFiltersChanged()" /></label>
+          <label><input type="checkbox" id="fBorder" style="width: auto" onchange="onFiltersChanged()" /> hide axons touching the image border</label>
+          <span class="axon-counter" id="filterCount"></span>
+        </div>
+
         <div class="axon-controls">
           <button onclick="previousAxon()">Previous</button>
           <input type="number" id="axonIdInput" placeholder="Axon ID" min="0" />
           <button onclick="goToAxon()">Go</button>
           <button onclick="nextAxon()">Next</button>
+          <label>Order by
+            <select id="sortSelect" onchange="rebuildView()">
+              <option value="id">Axon ID</option>
+              <option value="gratio-desc">g-ratio, high to low</option>
+              <option value="gratio-asc">g-ratio, low to high</option>
+              <option value="diameter-asc">Diameter, small to large</option>
+              <option value="diameter-desc">Diameter, large to small</option>
+              <option value="thickness-asc">Myelin thickness, thin to thick</option>
+              <option value="thickness-desc">Myelin thickness, thick to thin</option>
+            </select>
+          </label>
+          <label>Show
+            <select id="filterSelect" onchange="rebuildView()">
+              <option value="all">All axons</option>
+              <option value="unflagged">Unflagged only</option>
+              <option value="good">Good segmentation</option>
+              <option value="warning">Needs correction</option>
+              <option value="bad">Marked for deletion</option>
+              <option value="pinned">Pinned</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="autoAdvance" style="width: auto" />
+            Go to next axon after flagging</label>
           <span class="axon-counter"
             >Axon <span id="currentAxon">0</span> of
             <span id="totalAxons">0</span></span
           >
-
-          <!-- Moved export button to controls -->
+        </div>
+        <div class="axon-controls">
+          <button class="secondary-btn" onclick="togglePin(currentId())">Pin / unpin (P)</button>
+          <button class="secondary-btn" onclick="markUnflaggedAsGood()">
+            Mark all unflagged as good
+          </button>
           <button class="export-btn" onclick="exportFlaggedAxons()">
-            Export Flagged Axons
+            Export flags (CSV)
+          </button>
+          <button class="secondary-btn" onclick="document.getElementById('importFlagsInput').click()">
+            Import flags (CSV)
+          </button>
+          <input type="file" id="importFlagsInput" accept=".csv" style="display: none" onchange="importFlags(this.files[0]); this.value = '';" />
+          <button class="secondary-btn" onclick="clearAllFlags()">
+            Clear all flags
           </button>
         </div>
 
-        <div class="axon-content-container">
-          <div class="axon-image-container">
-            <img id="axonImage" src="" alt="Segmented axon view" />
-            <div
-              id="flagIndicator"
-              class="flag-indicator"
-              style="display: none"
-            ></div>
+        <div class="viewer-layout">
+          <div>
+            <div class="axon-canvas-wrap" id="canvasWrap">
+              <canvas id="axonCanvas"></canvas>
+              <div id="flagIndicator" class="flag-indicator" style="display: none"></div>
+              <div class="canvas-loading" id="canvasLoading">Loading image...</div>
+            </div>
+            <div class="axon-controls canvas-tools">
+              <button class="secondary-btn" onclick="resetView()">Reset view</button>
+              <label><input type="checkbox" id="showOthers" style="width: auto" checked onchange="drawCanvas()" />
+                show the segmentation of the other axons</label>
+              <span class="canvas-hint">Drag to move, scroll to zoom, click an axon to open it. The current axon is in full colour; its myelin is the part ADS attributes to it (where two axons' myelin touch, ADS splits it between them, so a sharp cut there is expected).</span>
+            </div>
           </div>
-
-          <!-- Keyboard shortcuts moved to right of image -->
-          <div class="keyboard-shortcuts">
-            <h4>Keyboard Shortcuts</h4>
-            <div class="shortcut-item">
-              <span>Previous Axon</span>
-              <span class="shortcut-key">←</span>
-            </div>
-            <div class="shortcut-item">
-              <span>Next Axon</span>
-              <span class="shortcut-key">→</span>
-            </div>
-            <div class="shortcut-item">
-              <span>Show Original (hold)</span>
-              <span class="shortcut-key">T</span>
-            </div>
-            <div class="shortcut-item">
-              <span>Mark as Good (Green)</span>
-              <span class="shortcut-key">1</span>
-            </div>
-            <div class="shortcut-item">
-              <span>Needs Correction (Yellow)</span>
-              <span class="shortcut-key">2</span>
-            </div>
-            <div class="shortcut-item">
-              <span>Mark for Deletion (Red)</span>
-              <span class="shortcut-key">3</span>
-            </div>
-            <div class="shortcut-item">
-              <span>Clear Flag</span>
-              <span class="shortcut-key">0</span>
-            </div>
+          <div class="axon-list-wrap">
+            <table class="axon-list">
+              <thead>
+                <tr><th title="Pinned">★</th><th>ID</th><th>Diam. (µm)</th><th>g-ratio</th><th>Flag</th></tr>
+              </thead>
+              <tbody id="axonListBody"></tbody>
+            </table>
           </div>
         </div>
 
@@ -875,194 +1086,541 @@
           </div>
         </div>
 
-        <!-- Flags table - export button removed from here -->
         <div class="card">
-          <div class="card-header">Flagged Axons</div>
+          <div class="card-header">Statistics with your flags</div>
           <div class="card-body">
-            <table class="flags-table">
+            <div class="flag-summary" id="flagSummary"></div>
+            <table class="live-stats-table">
               <thead>
                 <tr>
-                  <th>Axon ID</th>
-                  <th>Status</th>
-                  <th>Diameter (µm)</th>
-                  <th>g-ratio</th>
-                  <th>Actions</th>
+                  <th>Axons included</th>
+                  <th>n</th>
+                  <th>g-ratio (mean ± SD)</th>
+                  <th>g-ratio (median)</th>
+                  <th>Diameter, µm (mean ± SD)</th>
+                  <th>Myelin thickness, µm (mean ± SD)</th>
                 </tr>
               </thead>
-              <tbody id="flagsTableBody">
-                <!-- Will be populated dynamically -->
-              </tbody>
+              <tbody id="liveStatsBody"></tbody>
             </table>
+            <div class="storage-note" id="storageNote"></div>
           </div>
         </div>
       </div>
     </div>
     </div>
     <script>
-      function exportFlaggedAxons() {
-        // Create CSV content
-        let csvContent = "Axon ID,Flag Status,Diameter (µm),g-ratio\n";
-
-        // Add each flagged axon to the CSV
-        Object.entries(axonFlags).forEach(([axonId, flag]) => {
-          const axon = axonData[parseInt(axonId)];
-          if (axon) {
-            csvContent += `${parseInt(axonId) + 1},${getFlagLabel(
-              flag
-            )},${axon.diameter.toFixed(2)},${axon.gratio.toFixed(2)}\n`;
-          }
-        });
-
-        // Create a Blob and download link
-        const blob = new Blob([csvContent], {
-          type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
-
-        // Create a temporary download link
-        const link = document.createElement("a");
-        const date = new Date().toISOString().slice(0, 10);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `flagged_axons_${date}.csv`);
-        link.style.visibility = "hidden";
-
-        // Add to document, trigger click, and remove
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-      function initHistogramViewer() {
-        const viewers = document.querySelectorAll(".histogram-viewer");
-
-        viewers.forEach((viewer) => {
-          const options = viewer.querySelectorAll(".histogram-option");
-          const display = viewer.querySelector(".histogram-display");
-
-          options.forEach((option) => {
-            option.addEventListener("click", function () {
-              // Update active state
-              options.forEach((opt) => opt.classList.remove("active"));
-              this.classList.add("active");
-
-              // Update displayed image
-              const imgSrc = this.getAttribute("data-src");
-              display.innerHTML = `<img src="${imgSrc}" alt="${this.textContent}">`;
-            });
-          });
-
-          // Activate the first option by default
-          if (options.length > 0) {
-            options[0].click();
-          }
-        });
-      }
-    </script>
-    <script>
-      // Pass axon data from template to global variable
+      // ---------- data from the template ----------
+      // Each axon has `id`, the row index of the morphometrics file (also the axon number shown
+      // in napari). All flags and exports are keyed by this id.
       window.axonData = {{ axon_data|tojson }};
-    </script>
+      const IMAGE_SRC = {{ image_src|tojson }};
+      const LABEL_SRC = {{ label_src|tojson }};
+      const IMAGE_SIZE = {{ image_size|tojson }};
+      const DEFAULT_FILTERS = {{ default_filters|tojson }};
+      const IMAGE_NAME = {{ (image_name or sample_id)|tojson }};
+      // Saved flags are tied to the segmentation (fingerprint of the label map and morphometrics), so a
+      // report regenerated from the same masks keeps them, and a report from other masks starts empty.
+      const REPORT_KEY = "ads-qa|" + IMAGE_NAME + "|" + {{ report_id|tojson }};
 
-    <script>
-      function openTab(evt, tabId) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-          tabcontent[i].classList.remove("active");
-        }
-        tablinks = document.getElementsByClassName("tab");
-        for (i = 0; i < tablinks.length; i++) {
-          tablinks[i].classList.remove("active");
-        }
-        document.getElementById(tabId).classList.add("active");
-        evt.currentTarget.classList.add("active");
+      const FLAG_CODES = { good: "good", warning: "needs_correction", bad: "delete" };
+      const FLAG_FROM_CODE = { good: "good", needs_correction: "warning", delete: "bad" };
+      const AXON_RGB = [231, 76, 60];
+      const MYELIN_RGB = [52, 120, 219];
+      const AXON_DIM_RGB = [196, 150, 146];
+      const MYELIN_DIM_RGB = [140, 158, 186];
+      const MAX_SOURCE = 1600; // largest image area (px) drawn at once, limits zooming out
 
-        // Load axon viewer if that tab was selected
-        if (tabId === "Single_Axon_Viewer") {
-          setTimeout(loadAxonViewer, 100);
-        }
-      }
-
-      // Axon viewer state
-      let currentAxonId = 0;
-      let totalAxons = 0;
       let axonData = [];
+      let axonById = {};
+      let viewIds = [];
+      let viewPos = 0;
+      let axonFlags = {}; // id -> "good" | "warning" | "bad"
+      let pinned = new Set();
+      let filters = {};
       let tKeyPressed = false;
+      let viewerReady = false;
+      let storageOk = true;
 
+      // close-up state (image coordinates)
+      const view = { cx: 0, cy: 0, scale: 1 };
+      let baseImg = null;
+      let labelImg = null;
+      let imagesReady = false;
+      let drawPending = false;
+
+      function currentId() {
+        return viewIds.length ? viewIds[viewPos] : null;
+      }
+
+      // ---------- persistence ----------
+      function storageGet(suffix) {
+        try {
+          return localStorage.getItem(REPORT_KEY + suffix);
+        } catch (e) {
+          storageOk = false;
+          return null;
+        }
+      }
+
+      function storageSet(suffix, value) {
+        try {
+          localStorage.setItem(REPORT_KEY + suffix, value);
+          storageOk = true;
+        } catch (e) {
+          storageOk = false;
+        }
+        updateStorageNote();
+      }
+
+      function saveFlags() {
+        storageSet("|flags", JSON.stringify(axonFlags));
+      }
+
+      function loadState() {
+        try {
+          axonFlags = JSON.parse(storageGet("|flags") || "{}");
+          pinned = new Set(JSON.parse(storageGet("|pins") || "[]"));
+          const saved = storageGet("|filters");
+          filters = saved ? JSON.parse(saved) : Object.assign({}, DEFAULT_FILTERS);
+        } catch (e) {
+          axonFlags = {};
+          pinned = new Set();
+          filters = Object.assign({}, DEFAULT_FILTERS);
+        }
+      }
+
+      function updateStorageNote() {
+        const note = document.getElementById("storageNote");
+        if (!note) return;
+        note.textContent = storageOk
+          ? "Flags, pins and filters are saved in this browser automatically. Export the flags to keep a copy or to use them on another computer."
+          : "This browser does not allow saving for local files. Export your flags before closing the page.";
+      }
+
+      // ---------- filters ----------
+      function numOrNull(id) {
+        const v = parseFloat(document.getElementById(id).value);
+        return Number.isFinite(v) ? v : null;
+      }
+
+      function filtersToInputs() {
+        const set = (id, v) => (document.getElementById(id).value = v === null || v === undefined ? "" : v);
+        set("fMinDiam", filters.min_diameter);
+        set("fMaxDiam", filters.max_diameter);
+        set("fMaxG", filters.max_gratio);
+        document.getElementById("fBorder").checked = !!filters.exclude_border;
+      }
+
+      function onFiltersChanged() {
+        filters = {
+          min_diameter: numOrNull("fMinDiam"),
+          max_diameter: numOrNull("fMaxDiam"),
+          max_gratio: numOrNull("fMaxG"),
+          exclude_border: document.getElementById("fBorder").checked,
+        };
+        storageSet("|filters", JSON.stringify(filters));
+        rebuildView();
+        updateLiveStats();
+      }
+
+      function passesFilters(a) {
+        if (!a.bbox) return false; // no pixels: nothing to look at
+        if (filters.min_diameter != null && !(a.diameter >= filters.min_diameter)) return false;
+        if (filters.max_diameter != null && !(a.diameter < filters.max_diameter)) return false;
+        if (filters.max_gratio != null && !(a.gratio < filters.max_gratio)) return false;
+        if (filters.exclude_border && a.border) return false;
+        return true;
+      }
+
+      function includedAxons() {
+        return axonData.filter(passesFilters);
+      }
+
+      // ---------- viewer ----------
       function loadAxonViewer() {
+        if (viewerReady) return;
         axonData = window.axonData || [];
-        totalAxons = axonData.length;
-
-        if (totalAxons > 0) {
-          showAxon(0);
-        }
+        axonById = {};
+        axonData.forEach((a) => (axonById[a.id] = a));
+        loadState();
+        filtersToInputs();
+        viewerReady = true;
+        setupCanvas();
+        rebuildView();
+        updateLiveStats();
+        updateStorageNote();
       }
 
-      let axonFlags = {};
-      function showAxon(axonId) {
-        if (axonId < 0 || axonId >= totalAxons) return;
-
-        currentAxonId = axonId;
-        const axon = axonData[axonId];
-
-        if (axon) {
-          // Update image - use labeled image by default
-          if (axon.labeledImagePath) {
-            document.getElementById("axonImage").src = axon.labeledImagePath;
-          }
-
-          // Update stats
-          document.getElementById("stat-id").textContent = axonId;
-          document.getElementById("stat-diameter").textContent =
-            axon.diameter.toFixed(2);
-          document.getElementById("stat-thickness").textContent =
-            axon.thickness.toFixed(2);
-          document.getElementById("stat-gratio").textContent =
-            axon.gratio.toFixed(2);
-
-          document.getElementById(
-            "stat-diameter-pct"
-          ).textContent = `${axon.diameterPercentile}th percentile (${axon.diameterRank})`;
-
-          document.getElementById(
-            "stat-thickness-pct"
-          ).textContent = `${axon.thicknessPercentile}th percentile (${axon.thicknessRank})`;
-
-          document.getElementById(
-            "stat-gratio-pct"
-          ).textContent = `${axon.gratioPercentile}th percentile (${axon.gratioRank})`;
-
-          // Update counter
-          document.getElementById("currentAxon").textContent = axonId + 1;
-          document.getElementById("totalAxons").textContent = totalAxons;
-
-          // Update input field
-          document.getElementById("axonIdInput").value = axonId;
-        }
-        updateFlagDisplay(axonId);
+      function sortValue(axon, key) {
+        const v = axon[key];
+        return Number.isFinite(v) ? v : null;
       }
 
-      function updateFlagDisplay(axonId) {
-        const flagIndicator = document.getElementById("flagIndicator");
-        const flagStat = document.getElementById("stat-flag");
-        const flag = axonFlags[axonId];
+      function rebuildView() {
+        if (!viewerReady) return;
+        const keep = currentId();
+        const show = document.getElementById("filterSelect").value;
+        const sort = document.getElementById("sortSelect").value;
 
-        if (flag) {
-          flagIndicator.style.display = "block";
-          flagStat.textContent = getFlagLabel(flag);
+        let ids = includedAxons().map((a) => a.id).filter((id) => {
+          const flag = axonFlags[id];
+          if (show === "all") return true;
+          if (show === "unflagged") return !flag;
+          if (show === "pinned") return pinned.has(id);
+          return flag === show;
+        });
 
-          // Set appropriate color
-          flagIndicator.className = "flag-indicator";
-          if (flag === "good") flagIndicator.classList.add("flag-good");
-          else if (flag === "warning")
-            flagIndicator.classList.add("flag-warning");
-          else if (flag === "bad") flagIndicator.classList.add("flag-bad");
+        if (sort !== "id") {
+          const [key, dir] = sort.split("-");
+          const field = { gratio: "gratio", diameter: "diameter", thickness: "thickness" }[key];
+          const sign = dir === "asc" ? 1 : -1;
+          ids.sort((a, b) => {
+            const va = sortValue(axonById[a], field);
+            const vb = sortValue(axonById[b], field);
+            if (va === null && vb === null) return a - b;
+            if (va === null) return 1;
+            if (vb === null) return -1;
+            return sign * (va - vb) || a - b;
+          });
         } else {
-          flagIndicator.style.display = "none";
-          flagStat.textContent = "None";
+          ids.sort((a, b) => a - b);
+        }
+
+        viewIds = ids;
+        const idx = keep === null ? -1 : viewIds.indexOf(keep);
+        viewPos = idx >= 0 ? idx : 0;
+        const nIncluded = includedAxons().length;
+        document.getElementById("filterCount").textContent =
+          `${nIncluded} of ${axonData.length} axons kept by these filters`;
+        renderList();
+        render(true);
+      }
+
+      function fmt2(v) {
+        return Number.isFinite(v) ? v.toFixed(2) : "NaN";
+      }
+
+      function render(recenter) {
+        const id = currentId();
+        const total = viewIds.length;
+        document.getElementById("totalAxons").textContent = total;
+        document.getElementById("currentAxon").textContent = total ? viewPos + 1 : 0;
+
+        if (id === null) {
+          ["stat-id", "stat-diameter", "stat-thickness", "stat-gratio"].forEach(
+            (s) => (document.getElementById(s).textContent = "-")
+          );
+          updateFlagDisplay(null);
+          drawCanvas();
+          return;
+        }
+
+        const axon = axonById[id];
+        document.getElementById("stat-id").textContent = id + (pinned.has(id) ? "  ★" : "");
+        document.getElementById("stat-diameter").textContent = fmt2(axon.diameter);
+        document.getElementById("stat-thickness").textContent = fmt2(axon.thickness);
+        document.getElementById("stat-gratio").textContent = fmt2(axon.gratio);
+        document.getElementById("stat-diameter-pct").textContent =
+          `${axon.diameterPercentile}th percentile (${axon.diameterRank})`;
+        document.getElementById("stat-thickness-pct").textContent =
+          `${axon.thicknessPercentile}th percentile (${axon.thicknessRank})`;
+        document.getElementById("stat-gratio-pct").textContent =
+          `${axon.gratioPercentile}th percentile (${axon.gratioRank})`;
+        document.getElementById("axonIdInput").value = id;
+        updateFlagDisplay(id);
+        highlightListRow(id);
+        if (recenter) resetView();
+        else drawCanvas();
+      }
+
+      function showAxonById(id) {
+        if (!(id in axonById)) return;
+        let idx = viewIds.indexOf(id);
+        if (idx < 0) {
+          // hidden by the "Show" selection: show all axons kept by the filters
+          document.getElementById("filterSelect").value = "all";
+          rebuildView();
+          idx = viewIds.indexOf(id);
+        }
+        if (idx < 0) {
+          alert(`Axon ${id} is hidden by the filters at the top of the page.`);
+          return;
+        }
+        viewPos = idx;
+        render(true);
+      }
+
+      function previousAxon() {
+        if (viewPos > 0) {
+          viewPos -= 1;
+          render(true);
         }
       }
 
+      function nextAxon() {
+        if (viewPos < viewIds.length - 1) {
+          viewPos += 1;
+          render(true);
+        }
+      }
+
+      function goToAxon() {
+        const id = parseInt(document.getElementById("axonIdInput").value);
+        if (isNaN(id)) return;
+        if (!(id in axonById)) {
+          alert(`There is no axon ${id} in this report.`);
+        } else if (!axonById[id].bbox) {
+          alert(`Axon ${id} has no pixels in the segmentation, there is nothing to show.`);
+        } else {
+          showAxonById(id);
+        }
+      }
+
+      // ---------- axon list ----------
+      const FLAG_SHORT = { good: "good", warning: "fix", bad: "delete" };
+      function flagBadge(flag) {
+        return flag ? `<span class="flag-status flag-${flag}"></span>${FLAG_SHORT[flag]}` : "";
+      }
+
+      function renderList() {
+        const body = document.getElementById("axonListBody");
+        const rows = viewIds.map((id) => {
+          const a = axonById[id];
+          const pin = pinned.has(id);
+          return `<tr data-id="${id}" onclick="showAxonById(${id})">` +
+            `<td><button class="pin-btn${pin ? " pinned" : ""}" title="Pin / unpin" onclick="event.stopPropagation(); togglePin(${id})">${pin ? "★" : "☆"}</button></td>` +
+            `<td>${id}</td><td>${fmt2(a.diameter)}</td><td>${fmt2(a.gratio)}</td><td>${flagBadge(axonFlags[id])}</td></tr>`;
+        });
+        body.innerHTML = rows.join("");
+        highlightListRow(currentId());
+      }
+
+      function updateListRow(id) {
+        const row = document.querySelector(`#axonListBody tr[data-id="${id}"]`);
+        if (!row) return;
+        const pin = pinned.has(id);
+        row.children[0].innerHTML = `<button class="pin-btn${pin ? " pinned" : ""}" title="Pin / unpin" onclick="event.stopPropagation(); togglePin(${id})">${pin ? "★" : "☆"}</button>`;
+        row.children[4].innerHTML = flagBadge(axonFlags[id]);
+      }
+
+      function highlightListRow(id) {
+        document.querySelectorAll("#axonListBody tr.current").forEach((r) => r.classList.remove("current"));
+        if (id === null) return;
+        const row = document.querySelector(`#axonListBody tr[data-id="${id}"]`);
+        if (row) {
+          row.classList.add("current");
+          if (row.scrollIntoView) row.scrollIntoView({ block: "nearest" });
+        }
+      }
+
+      // ---------- close-up canvas ----------
+      function setupCanvas() {
+        const wrap = document.getElementById("canvasWrap");
+        const canvas = document.getElementById("axonCanvas");
+        baseImg = new Image();
+        labelImg = new Image();
+        let loaded = 0;
+        const onLoad = () => {
+          loaded += 1;
+          if (loaded === 2) {
+            imagesReady = true;
+            document.getElementById("canvasLoading").style.display = "none";
+            resetView();
+          }
+        };
+        baseImg.onload = onLoad;
+        labelImg.onload = onLoad;
+        baseImg.src = IMAGE_SRC;
+        labelImg.src = LABEL_SRC;
+
+        let drag = null;
+        canvas.addEventListener("mousedown", (e) => {
+          drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy, moved: false };
+          wrap.classList.add("dragging");
+        });
+        window.addEventListener("mousemove", (e) => {
+          if (!drag) return;
+          const dx = e.clientX - drag.x;
+          const dy = e.clientY - drag.y;
+          if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+          view.cx = drag.cx - dx / view.scale;
+          view.cy = drag.cy - dy / view.scale;
+          scheduleDraw();
+        });
+        window.addEventListener("mouseup", (e) => {
+          if (!drag) return;
+          const wasClick = !drag.moved;
+          drag = null;
+          wrap.classList.remove("dragging");
+          if (wasClick && e.target === canvas) openAxonAt(e);
+        });
+        canvas.addEventListener(
+          "wheel",
+          (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const before = screenToImage(mx, my, rect);
+            const factor = e.deltaY < 0 ? 1.2 : 1 / 1.2;
+            view.scale = clampScale(view.scale * factor, rect);
+            const after = screenToImage(mx, my, rect);
+            view.cx += before.x - after.x;
+            view.cy += before.y - after.y;
+            scheduleDraw();
+          },
+          { passive: false }
+        );
+        window.addEventListener("resize", scheduleDraw);
+      }
+
+      function clampScale(scale, rect) {
+        const minScale = Math.max(rect.width, rect.height) / MAX_SOURCE;
+        return Math.min(Math.max(scale, minScale), 40);
+      }
+
+      function screenToImage(mx, my, rect) {
+        return {
+          x: view.cx + (mx - rect.width / 2) / view.scale,
+          y: view.cy + (my - rect.height / 2) / view.scale,
+        };
+      }
+
+      function resetView() {
+        const id = currentId();
+        const canvas = document.getElementById("axonCanvas");
+        const rect = canvas.getBoundingClientRect();
+        if (id === null || !axonById[id].bbox || !rect.width) {
+          drawCanvas();
+          return;
+        }
+        const [x0, y0, x1, y1] = axonById[id].bbox;
+        const w = x1 - x0;
+        const h = y1 - y0;
+        view.cx = (x0 + x1) / 2;
+        view.cy = (y0 + y1) / 2;
+        // fit the axon with room around it to see its neighbours
+        const field = Math.max(Math.max(w, h) * 2.5, 120);
+        view.scale = clampScale(Math.min(rect.width, rect.height) / field, rect);
+        drawCanvas();
+      }
+
+      function scheduleDraw() {
+        if (drawPending) return;
+        drawPending = true;
+        requestAnimationFrame(() => {
+          drawPending = false;
+          drawCanvas();
+        });
+      }
+
+      function labelAt(x, y) {
+        // label and class of one image pixel, read from the embedded label map
+        const c = document.createElement("canvas");
+        c.width = 1;
+        c.height = 1;
+        const ctx = c.getContext("2d");
+        ctx.drawImage(labelImg, Math.floor(x), Math.floor(y), 1, 1, 0, 0, 1, 1);
+        const d = ctx.getImageData(0, 0, 1, 1).data;
+        return { id: d[0] + 256 * d[1] - 1, cls: d[2] };
+      }
+
+      function openAxonAt(e) {
+        if (!imagesReady) return;
+        const canvas = document.getElementById("axonCanvas");
+        const rect = canvas.getBoundingClientRect();
+        const p = screenToImage(e.clientX - rect.left, e.clientY - rect.top, rect);
+        if (p.x < 0 || p.y < 0 || p.x >= IMAGE_SIZE[0] || p.y >= IMAGE_SIZE[1]) return;
+        const hit = labelAt(p.x, p.y);
+        if (hit.id < 0 || hit.id === currentId() || !(hit.id in axonById)) return;
+        if (!passesFilters(axonById[hit.id])) {
+          alert(`Axon ${hit.id} is hidden by the filters at the top of the page.`);
+          return;
+        }
+        showAxonById(hit.id);
+      }
+
+      function drawCanvas() {
+        const canvas = document.getElementById("axonCanvas");
+        if (!canvas || !imagesReady) return;
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const W = Math.max(1, Math.round(rect.width * dpr));
+        const H = Math.max(1, Math.round(rect.height * dpr));
+        if (canvas.width !== W || canvas.height !== H) {
+          canvas.width = W;
+          canvas.height = H;
+        }
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#111";
+        ctx.fillRect(0, 0, W, H);
+
+        // visible part of the image, in whole image pixels
+        const sw = rect.width / view.scale;
+        const sh = rect.height / view.scale;
+        const sx0 = Math.max(0, Math.floor(view.cx - sw / 2));
+        const sy0 = Math.max(0, Math.floor(view.cy - sh / 2));
+        const sx1 = Math.min(IMAGE_SIZE[0], Math.ceil(view.cx + sw / 2));
+        const sy1 = Math.min(IMAGE_SIZE[1], Math.ceil(view.cy + sh / 2));
+        if (sx1 <= sx0 || sy1 <= sy0) return;
+        const k = view.scale * dpr;
+        const dx = (sx0 - (view.cx - sw / 2)) * k;
+        const dy = (sy0 - (view.cy - sh / 2)) * k;
+        const dw = (sx1 - sx0) * k;
+        const dh = (sy1 - sy0) * k;
+
+        ctx.imageSmoothingEnabled = view.scale < 2;
+        ctx.drawImage(baseImg, sx0, sy0, sx1 - sx0, sy1 - sy0, dx, dy, dw, dh);
+        if (tKeyPressed) return;
+
+        // overlay built from the label map at image resolution, then scaled up
+        const ow = sx1 - sx0;
+        const oh = sy1 - sy0;
+        const off = document.createElement("canvas");
+        off.width = ow;
+        off.height = oh;
+        const octx = off.getContext("2d");
+        octx.drawImage(labelImg, sx0, sy0, ow, oh, 0, 0, ow, oh);
+        const src = octx.getImageData(0, 0, ow, oh);
+        const lab = src.data;
+        const out = octx.createImageData(ow, oh);
+        const o = out.data;
+        const cur = currentId();
+        const curLabel = cur === null ? -1 : cur + 1;
+        const showOthers = document.getElementById("showOthers").checked;
+        const labelOf = (i) => lab[i] + 256 * lab[i + 1];
+
+        for (let y = 0; y < oh; y++) {
+          for (let x = 0; x < ow; x++) {
+            const i = (y * ow + x) * 4;
+            const l = labelOf(i);
+            const cls = lab[i + 2];
+            if (cls === 0) continue;
+            const isCur = l === curLabel && l > 0;
+            if (!isCur && !showOthers) continue;
+            // current axon: full colours; neighbours: greyed and faint, so the selection stands out
+            const rgb = isCur ? (cls === 1 ? AXON_RGB : MYELIN_RGB) : (cls === 1 ? AXON_DIM_RGB : MYELIN_DIM_RGB);
+            o[i] = rgb[0]; o[i + 1] = rgb[1]; o[i + 2] = rgb[2];
+            o[i + 3] = isCur ? 205 : 70;
+          }
+        }
+        octx.putImageData(out, 0, 0);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(off, 0, 0, ow, oh, dx, dy, dw, dh);
+      }
+
+      function updateToggleImages() {
+        document.querySelectorAll(".toggle-image").forEach((img) => {
+          if (tKeyPressed) {
+            if (img.dataset.original) img.src = img.dataset.original;
+          } else if (img.dataset.labeled) {
+            img.src = img.dataset.labeled;
+          }
+        });
+      }
+
+      // ---------- flags and pins ----------
       function getFlagLabel(flag) {
         switch (flag) {
           case "good":
@@ -1076,160 +1634,241 @@
         }
       }
 
-      function flagAxon(axonId, flagType) {
-        if (flagType === "none") {
-          delete axonFlags[axonId];
+      function updateFlagDisplay(id) {
+        const indicator = document.getElementById("flagIndicator");
+        const stat = document.getElementById("stat-flag");
+        const flag = id === null ? null : axonFlags[id];
+        if (flag) {
+          indicator.style.display = "block";
+          indicator.className = "flag-indicator flag-" + flag;
+          stat.textContent = getFlagLabel(flag);
         } else {
-          axonFlags[axonId] = flagType;
+          indicator.style.display = "none";
+          stat.textContent = "None";
         }
-
-        updateFlagDisplay(axonId);
-        updateFlagsTable();
       }
 
-      function updateFlagsTable() {
-        const tableBody = document.getElementById("flagsTableBody");
-        tableBody.innerHTML = "";
+      function onFlagsChanged(changedId) {
+        saveFlags();
+        updateFlagDisplay(currentId());
+        if (changedId === undefined) renderList();
+        else updateListRow(changedId);
+        updateLiveStats();
+      }
 
-        Object.entries(axonFlags).forEach(([axonId, flag]) => {
-          const axon = axonData[parseInt(axonId)];
-          if (!axon) return;
+      function flagAxon(id, flagType) {
+        if (id === null) return;
+        if (flagType === "none") delete axonFlags[id];
+        else axonFlags[id] = flagType;
+        onFlagsChanged(id);
+        if (flagType !== "none" && document.getElementById("autoAdvance").checked) nextAxon();
+      }
 
+      function togglePin(id) {
+        if (id === null || id === undefined) return;
+        if (pinned.has(id)) pinned.delete(id);
+        else pinned.add(id);
+        storageSet("|pins", JSON.stringify([...pinned]));
+        updateListRow(id);
+        if (id === currentId()) document.getElementById("stat-id").textContent = id + (pinned.has(id) ? "  ★" : "");
+      }
+
+      function markUnflaggedAsGood() {
+        const unflagged = includedAxons().filter((a) => !axonFlags[a.id]);
+        if (!unflagged.length) {
+          alert("All axons kept by the filters are already flagged.");
+          return;
+        }
+        if (!confirm(`Mark the ${unflagged.length} unflagged axons (kept by the filters) as "Good Segmentation"?`)) return;
+        unflagged.forEach((a) => (axonFlags[a.id] = "good"));
+        onFlagsChanged();
+      }
+
+      function clearAllFlags() {
+        const n = Object.keys(axonFlags).length;
+        if (!n) return;
+        if (!confirm(`Remove all ${n} flags? Export them first if you want to keep a copy.`)) return;
+        axonFlags = {};
+        onFlagsChanged();
+      }
+
+      // ---------- live statistics ----------
+      function describe(values) {
+        const v = values.filter(Number.isFinite).sort((a, b) => a - b);
+        const n = v.length;
+        if (!n) return { n: 0 };
+        const mean = v.reduce((s, x) => s + x, 0) / n;
+        const sd = n > 1 ? Math.sqrt(v.reduce((s, x) => s + (x - mean) ** 2, 0) / (n - 1)) : 0;
+        const median = n % 2 ? v[(n - 1) / 2] : (v[n / 2 - 1] + v[n / 2]) / 2;
+        return { n, mean, sd, median };
+      }
+
+      function updateLiveStats() {
+        const kept = includedAxons();
+        const counts = { good: 0, warning: 0, bad: 0 };
+        kept.forEach((a) => {
+          const f = axonFlags[a.id];
+          if (f) counts[f] += 1;
+        });
+        const unflagged = kept.length - counts.good - counts.warning - counts.bad;
+        document.getElementById("flagSummary").textContent =
+          `${kept.length} axons kept by the filters: ${counts.good} good, ${counts.warning} need correction, ` +
+          `${counts.bad} marked for deletion, ${unflagged} unflagged.`;
+
+        const groups = [
+          ["All axons kept by the filters", kept],
+          ["Without axons marked for deletion", kept.filter((a) => axonFlags[a.id] !== "bad")],
+          ["Good segmentation only", kept.filter((a) => axonFlags[a.id] === "good")],
+        ];
+        const body = document.getElementById("liveStatsBody");
+        body.innerHTML = "";
+        groups.forEach(([label, axons]) => {
+          const g = describe(axons.map((a) => a.gratio));
+          const d = describe(axons.map((a) => a.diameter));
+          const t = describe(axons.map((a) => a.thickness));
+          const ms = (s) => (s.n ? `${s.mean.toFixed(3)} ± ${s.sd.toFixed(3)}` : "-");
           const row = document.createElement("tr");
-
           row.innerHTML = `
-            <td>${parseInt(axonId) + 1}</td>
-            <td><span class="flag-status ${
-              "flag-" + flag
-            }"></span>${getFlagLabel(flag)}</td>
-            <td>${axon.diameter.toFixed(2)}</td>
-            <td>${axon.gratio.toFixed(2)}</td>
-            <td><button onclick="goToFlaggedAxon(${axonId})">View</button></td>
-            `;
-
-          tableBody.appendChild(row);
+            <td>${label}</td>
+            <td>${axons.length}</td>
+            <td>${ms(g)}</td>
+            <td>${g.n ? g.median.toFixed(3) : "-"}</td>
+            <td>${ms(d)}</td>
+            <td>${ms(t)}</td>`;
+          body.appendChild(row);
         });
       }
 
-      function goToFlaggedAxon(axonId) {
-        showAxon(parseInt(axonId));
-      }
-
-      function previousAxon() {
-        showAxon(currentAxonId - 1);
-      }
-
-      function nextAxon() {
-        showAxon(currentAxonId + 1);
-      }
-
-      function goToAxon() {
-        const input = document.getElementById("axonIdInput");
-        const axonId = parseInt(input.value);
-        if (!isNaN(axonId) && axonId >= 0 && axonId < totalAxons) {
-          showAxon(axonId);
+      // ---------- export / import ----------
+      function exportFlaggedAxons() {
+        const ids = Object.keys(axonFlags).map(Number).sort((a, b) => a - b);
+        if (!ids.length) {
+          alert("No axons are flagged yet.");
+          return;
         }
-      }
-
-      function updateAxonImage() {
-        if (!axonData || axonData.length === 0) return;
-
-        const axon = axonData[currentAxonId];
-        if (axon) {
-          const imageElement = document.getElementById("axonImage");
-          if (tKeyPressed && axon.imagePath) {
-            imageElement.src = axon.imagePath;
-          } else if (axon.labeledImagePath) {
-            imageElement.src = axon.labeledImagePath;
-          }
-        }
-      }
-
-      function updateToggleImages() {
-        document.querySelectorAll(".toggle-image").forEach((img) => {
-          if (tKeyPressed) {
-            if (img.dataset.original) {
-              img.src = img.dataset.original;
-            }
-          } else {
-            if (img.dataset.labeled) {
-              img.src = img.dataset.labeled;
-            }
-          }
+        const fmt = (v) => (Number.isFinite(v) ? v.toFixed(4) : "NaN");
+        let csv = "Axon index,Flag,Diameter (um),Myelin thickness (um),g-ratio\n";
+        ids.forEach((id) => {
+          const a = axonById[id];
+          if (!a) return;
+          csv += `${id},${FLAG_CODES[axonFlags[id]]},${fmt(a.diameter)},${fmt(a.thickness)},${fmt(a.gratio)}\n`;
         });
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const date = new Date().toISOString().slice(0, 10);
+        const safeName = String(IMAGE_NAME).replace(/[^A-Za-z0-9._-]+/g, "_");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${safeName}_qa_flags_${date}.csv`;
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
 
-      // Initialize when DOM is loaded
-      document.addEventListener("DOMContentLoaded", function () {
-        // Set up axon ID input listener
-        document
-          .getElementById("axonIdInput")
-          .addEventListener("keyup", function (event) {
-            if (event.key === "Enter") {
-              goToAxon();
+      function importFlags(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const lines = reader.result.split(/\r?\n/).filter((l) => l.trim());
+          const header = lines.shift().split(",").map((h) => h.trim());
+          const iId = header.indexOf("Axon index");
+          const iFlag = header.indexOf("Flag");
+          if (iId < 0 || iFlag < 0) {
+            alert('This file is not a flags export from this report (expected "Axon index" and "Flag" columns).');
+            return;
+          }
+          let added = 0, skipped = 0;
+          lines.forEach((line) => {
+            const cols = line.split(",");
+            const id = parseInt(cols[iId]);
+            const flag = FLAG_FROM_CODE[(cols[iFlag] || "").trim()];
+            if (id in axonById && flag) {
+              axonFlags[id] = flag;
+              added += 1;
+            } else {
+              skipped += 1;
             }
           });
+          onFlagsChanged();
+          rebuildView();
+          alert(`Imported ${added} flags` + (skipped ? `, skipped ${skipped} rows that do not match this report.` : "."));
+        };
+        reader.readAsText(file);
+      }
 
-        // Set up global keyboard listeners
+      // ---------- page setup ----------
+      function initHistogramViewer() {
+        document.querySelectorAll(".histogram-viewer").forEach((viewer) => {
+          const options = viewer.querySelectorAll(".histogram-option");
+          const display = viewer.querySelector(".histogram-display");
+          options.forEach((option) => {
+            option.addEventListener("click", function () {
+              options.forEach((opt) => opt.classList.remove("active"));
+              this.classList.add("active");
+              const imgSrc = this.getAttribute("data-src");
+              display.innerHTML = `<img src="${imgSrc}" alt="${this.textContent}">`;
+            });
+          });
+          if (options.length > 0) options[0].click();
+        });
+      }
+
+      function openTab(evt, tabId) {
+        document.querySelectorAll(".tab-content").forEach((el) => el.classList.remove("active"));
+        document.querySelectorAll(".tab").forEach((el) => el.classList.remove("active"));
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+        if (tabId === "Single_Axon_Viewer") {
+          setTimeout(() => {
+            loadAxonViewer();
+            resetView();
+          }, 100);
+        }
+      }
+
+      function viewerActive() {
+        return document.getElementById("Single_Axon_Viewer").classList.contains("active");
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("axonIdInput").addEventListener("keyup", function (event) {
+          if (event.key === "Enter") goToAxon();
+        });
+
         document.addEventListener("keydown", function (e) {
-          if (e.key === "ArrowLeft") {
-            if (
-              document
-                .getElementById("Single_Axon_Viewer")
-                .classList.contains("active")
-            ) {
-              previousAxon();
+          const tag = (e.target.tagName || "").toLowerCase();
+          const typing = tag === "input" || tag === "select" || tag === "textarea";
+          if (typing) return;
+
+          if (e.key === "t" || e.key === "T") {
+            if (!tKeyPressed) {
+              tKeyPressed = true;
+              drawCanvas();
+              updateToggleImages();
             }
-          } else if (e.key === "ArrowRight") {
-            if (
-              document
-                .getElementById("Single_Axon_Viewer")
-                .classList.contains("active")
-            ) {
-              nextAxon();
-            }
-          } else if (e.key === "t" || e.key === "T") {
-            tKeyPressed = true;
-            updateAxonImage();
-            updateToggleImages();
+            return;
           }
-          // Add flagging keys
-          if (
-            document
-              .getElementById("Single_Axon_Viewer")
-              .classList.contains("active")
-          ) {
-            if (e.key === "1") {
-              flagAxon(currentAxonId, "good");
-            } else if (e.key === "2") {
-              flagAxon(currentAxonId, "warning");
-            } else if (e.key === "3") {
-              flagAxon(currentAxonId, "bad");
-            } else if (e.key === "0") {
-              flagAxon(currentAxonId, "none");
-            }
-          }
+          if (!viewerActive()) return;
+          if (e.key === "ArrowLeft") previousAxon();
+          else if (e.key === "ArrowRight") nextAxon();
+          else if (e.key === "1") flagAxon(currentId(), "good");
+          else if (e.key === "2") flagAxon(currentId(), "warning");
+          else if (e.key === "3") flagAxon(currentId(), "bad");
+          else if (e.key === "0") flagAxon(currentId(), "none");
+          else if (e.key === "p" || e.key === "P") togglePin(currentId());
+          else return;
+          e.preventDefault();
         });
 
         document.addEventListener("keyup", function (e) {
           if (e.key === "t" || e.key === "T") {
             tKeyPressed = false;
-            updateAxonImage();
+            drawCanvas();
             updateToggleImages();
           }
         });
 
-        // Load axon viewer if we're on that tab initially
-        if (
-          document
-            .getElementById("Single_Axon_Viewer")
-            .classList.contains("active")
-        ) {
-          loadAxonViewer();
-        }
-
-        updateFlagsTable();
-
+        if (viewerActive()) loadAxonViewer();
         initHistogramViewer();
       });
     </script>

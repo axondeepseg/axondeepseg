@@ -30,10 +30,9 @@ from qtpy.QtGui import QPixmap
 
 from skimage import measure
 import pandas as pd 
-from jinja2 import Environment, FileSystemLoader
 
 from AxonDeepSeg import ads_utils, segment, postprocessing, params
-from AxonDeepSeg.qa.metrics_qa import MetricsQA
+from AxonDeepSeg.qa.report import generate_qa_report
 import AxonDeepSeg.morphometrics.compute_morphometrics as compute_morphs
 from AxonDeepSeg.params import axonmyelin_suffix, axon_suffix, myelin_suffix
 from AxonDeepSeg.visualization.colorization import colorize_instance_segmentation
@@ -926,114 +925,24 @@ class ADSplugin(QWidget):
         return False
 
     def _on_qa_report_button(self):
-        """Quick MVP QA Report"""
-        morphometrics_folder = Path(self.file_name).parents[0]
-        qa_folder = Path(morphometrics_folder / 'QA')
-        
-        if not os.path.exists(qa_folder):
-            os.makedirs(qa_folder)
-        
-        qa = MetricsQA(self.file_name)
-        qa.plot_all(qa_folder, quiet=True)
+        """Generate the QA report (one self-contained HTML file) and open it in the browser."""
+        if getattr(self, "im_axonmyelin_label", None) is None or getattr(self, "file_name", None) is None:
+            self.show_info_message("Compute the morphometrics first, then generate the QA report.")
+            return
 
-        # Get basic stats
-        axon_stats = qa.plot("axon_diam (um)", quiet=True)
-        myelin_stats = qa.plot("myelin_thickness (um)", quiet=True)
-        gratio_stats = qa.plot("gratio", quiet=True)
-
-        # --- Create overlay image for QA ---
-        qa.save_seg_overlay(self.image, self.axon_label, self.myelin_label, qa_folder)
-        base_image_path = qa_folder / 'base_image.png'
-        overlay_path = qa_folder / 'segmentation_overlay.png'
-
-        # Generate axon closeups
-        axon_data = qa.generate_axon_closeups(qa_folder, self.image, self.axon_label, self.myelin_label, self.im_axonmyelin_label, buffer_pixels=20)
-
-        # Prepare sections with better visuals
-        sections = {
-            "Summary": [
-                {
-                    "type": "stats", 
-                    "stats": [
-                        {"label": "Axon Diameter (µm)", "value": f"{axon_stats[0]} ± {axon_stats[1]}"},
-                        {"label": "Myelin Thickness (µm)", "value": f"{myelin_stats[0]} ± {myelin_stats[1]}"},
-                        {"label": "g-ratio", "value": f"{gratio_stats[0]} ± {gratio_stats[1]}"},
-                    ]
-                },
-                {
-                    "type": "text", 
-                    "content": "<h3>Quality Assessment</h3><p>This report shows automated quality control metrics for axon segmentation.</p>"
-                },
-                {
-                    "type": "segmented", 
-                    "labeled_src": str(overlay_path),
-                    "original_src": str(base_image_path)
-                }
-            ],
-            "Histograms": [
-                {
-                    "type": "histogram_viewer",
-                    "histograms": [
-                        {"name": "Axon Diameter", "src": str(qa_folder / "axon_diam (um).png")},
-                        {"name": "Myelin Thickness", "src": str(qa_folder / "myelin_thickness (um).png")},
-                        {"name": "g-ratio", "src": str(qa_folder / "gratio.png")},
-                        {"name": "Axon Area", "src": str(qa_folder / "axon_area (um^2).png")},
-                        {"name": "Myelin Area", "src": str(qa_folder / "myelin_area (um^2).png")}
-                    ]
-                }
-            ],
-        }
-
-        # Render and open
-        package_dir = Path(AxonDeepSeg.__file__).parent
-        env = Environment(loader=FileSystemLoader((package_dir / "qa").resolve()))
-        template = env.get_template("report_template.html")
-
-        # In your _on_qa_report_button method, add this before rendering the template:
-        axon_mask_base64 = self._image_to_base64(self.axon_label * 255)  # Convert to 0-255
-        myelin_mask_base64 = self._image_to_base64(self.myelin_label * 255)
-        index_mask_base64 = self._image_to_base64(self.im_axonmyelin_label)
-
-        # Pass these to the template
-        html_out = template.render(
-            sections=sections, 
-            axon_data=axon_data,
-            sample_id=Path(self.file_name).stem,
-            report_date=pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
-            software_version=AxonDeepSeg.__version__,
-            axon_mask_data=axon_mask_base64,
-            myelin_mask_data=myelin_mask_base64,
-            index_mask_data=index_mask_base64
+        qa_folder = Path(self.file_name).parents[0] / "QA"
+        image_name = Path(self.image_path).stem if getattr(self, "image_path", None) else None
+        report_path = generate_qa_report(
+            image=self.image,
+            axon_mask=self.axon_label,
+            myelin_mask=self.myelin_label,
+            im_axonmyelin_label=self.im_axonmyelin_label,
+            morphometrics_file=self.file_name,
+            qa_folder=qa_folder,
+            image_name=image_name,
         )
-
-        # Write the HTML file
-        with open(qa_folder / "AxonDeepSeg_QA_Report.html", "w") as f:
-            f.write(html_out)
-        
-        # Open in the default browser but with a custom handler
-        html_file = qa_folder / "AxonDeepSeg_QA_Report.html"
-        file_url = html_file.resolve().as_uri()
-        webbrowser.open(file_url)
-
-        print("✅ QA Report Generated!")
-    
-
-    def _image_to_base64(self, image_array):
-        """Convert numpy array to base64 PNG"""
-        import base64
-        from io import BytesIO
-        from PIL import Image
-            
-        # Convert to PIL Image
-        if image_array.dtype != np.uint8:
-            image_array = image_array.astype(np.uint8)
-        pil_img = Image.fromarray(image_array)
-            
-        # Convert to base64
-        buffered = BytesIO()
-        pil_img.save(buffered, format="PNG")
-        return base64.b64encode(buffered.getvalue()).decode('utf-8')
-                
+        webbrowser.open(report_path.resolve().as_uri())
+        self.show_info_message(f"QA report saved to {report_path}")
 
     def _on_fill_axons_click(self):
         """Handles the click event of the 'Fill Axons' button.

@@ -720,6 +720,12 @@ Then, pass your custom rules file to the command line with ``--config``::
 
    axondeepseg_filter -i folder_with_morphometrics --config my_custom_rules.yaml
 
+You can also remove the axons you flagged in the :ref:`QA report <quality-assurance-label>`. Export the flags from the Single Axon Viewer, then pass them with ``--qa-flags`` together with the morphometrics file the report was made from (``.xlsx`` or ``.csv``)::
+
+   axondeepseg_filter -i image_axon_morphometrics.xlsx --qa-flags image_qa_flags.csv
+
+By default, every axon except those marked for deletion is kept. Use ``--qa-keep good-only`` to keep only the axons flagged as good segmentations. The flags are applied before the rules, and ``--update_masks`` also removes the deleted axons from the segmentation masks. The command stops with an error if the flags do not match the morphometrics file (for example, flags exported from a report made on different masks).
+
 Axon counting
 ~~~~~~~~~~~~~
 Use ``axondeepseg_count`` to count axons from morphometric files in a folder. Filtered morphometric files are used when available (result of using the ``axondeepseg_filter`` command), and the result is saved to **axon_counts.csv** by default::
@@ -754,12 +760,7 @@ The QA report can be generated directly from the AxonDeepSeg Napari plugin:
 5. **Click the "QA Report" button** in the plugin interface  
 6. **The report will automatically generate** and open in your default web browser
 
-The report is saved in a ``QA`` folder within your morphometrics directory, containing:
-
-- Interactive HTML report (``AxonDeepSeg_QA_Report.html``)
-- Individual metric histograms
-- Segmentation overlays  
-- Individual axon closeup images
+The report is saved as ``AxonDeepSeg_QA_Report.html`` in a ``QA`` folder within your morphometrics directory (the histograms are also saved there as PNG). The report is a single, self-contained file: the image, the segmentation, the overview and the histograms are embedded in it, so it can be moved or shared on its own and opened in any web browser, without AxonDeepSeg.
 
 Report Features
 ---------------
@@ -770,7 +771,7 @@ Summary Section
 ~~~~~~~~~~~~~~~
 
 - **Key Statistics**: Mean ± standard deviation for axon diameter, myelin thickness, and g-ratio
-- **Segmentation Visualization**: Overlay of axon (blue) and myelin (red) masks on the original image
+- **Segmentation Visualization**: Overlay of axon (red) and myelin (blue) masks on the original image
 - **Interactive Toggle**: Press and hold 'T' to temporarily view the original image without segmentation overlays
 
 Histograms Section
@@ -783,15 +784,24 @@ Histograms Section
 Single Axon Viewer
 ~~~~~~~~~~~~~~~~~~
 
-- **Individual Axon Inspection**: Navigate through each axon with detailed closeup views
-- **Dual Image Display**: Toggle between original and labeled views for each axon
+- **Individual Axon Inspection**: Navigate through each axon with the arrow keys, the list of axons, or by clicking an axon in the image
+- **Interactive close-up**: the current axon is shown in full colour and its neighbours in faint grey tones. The highlighted myelin is the part attributed to the axon by the morphometrics (where the myelin of two axons touches, it is split between them). Drag to move around, scroll to zoom, "Reset view" to come back to the current axon, and hold 'T' to see the image without the segmentation
+- **Axon filters**: hide the axons outside a diameter or g-ratio range, or touching the image border, from the viewer, the list and the statistics
+- **Axon list**: every axon kept by the filters, with its diameter, g-ratio and flag; click a row to open the axon, and pin axons (star or 'P') to come back to them ("Show: Pinned")
 - **Metric Rankings**: Percentile rankings and absolute ranks for diameter, thickness, and g-ratio
+- **Axon ID**: the row index of the morphometrics file, which is also the number shown for the axon in the napari plugin
 - **Flagging System**: Manually flag axons as:
 
   - **Good Segmentation** (Green) - Press '1'
-  - **Needs Correction** (Yellow) - Press '2' 
+  - **Needs Correction** (Yellow) - Press '2'
   - **Marked for Deletion** (Red) - Press '3'
   - **Clear Flag** - Press '0'
+
+- **Order by / Show**: sort the axons by g-ratio, diameter or myelin thickness to reach outliers quickly, and show only unflagged axons or axons with a given flag
+- **Go to next axon after flagging**: optional, to flag a whole image with the keyboard only
+- **Mark all unflagged as good**: flags every remaining axon as a good segmentation, so you only need to flag the bad ones by hand
+- **Statistics with your flags**: g-ratio, diameter and myelin thickness recomputed live for all axons, without the axons marked for deletion, and for good segmentations only
+- **Saved as you go**: flags are kept in the browser, so refreshing or reopening the report does not lose them, and a report regenerated from the same segmentation finds them again (some browsers block this for local files; the report says so, and you should export before closing)
 
 Keyboard Shortcuts
 ~~~~~~~~~~~~~~~~~~
@@ -815,11 +825,15 @@ Keyboard Shortcuts
      - 3 key
    * - Clear flag
      - 0 key
+   * - Pin / unpin
+     - P key
 
 Export Features
 ~~~~~~~~~~~~~~~
 
-- **Export Flagged Axons** button: Export a CSV file containing all flagged axons with their IDs, status, diameter, and g-ratio.
+- **Export flags (CSV)** button: saves ``<image>_qa_flags_<date>.csv`` with one row per flagged axon: ``Axon index``, ``Flag`` (``good``, ``needs_correction`` or ``delete``), diameter, myelin thickness and g-ratio. Use it with ``axondeepseg_filter --qa-flags`` to remove the flagged axons from the morphometrics (see `Morphometrics filtering`_).
+- **Import flags (CSV)** button: loads a previous export back into the report, for example to continue flagging on another computer.
+- **Clear all flags** button.
 
 Technical Details
 -----------------
@@ -827,7 +841,7 @@ Technical Details
 The QA report generation process:
 
 1. **Morphometrics Analysis**: Uses the existing morphometrics computation pipeline
-2. **Image Processing**: Generates individual axon closeups with buffer regions around each axon
+2. **Image Processing**: Embeds the image and a label map of the axons in the report; the close-ups are drawn by the browser
 3. **Statistical Analysis**: Computes comprehensive statistics for all morphometric parameters  
 4. **Interactive Visualization**: Creates an HTML-based report with JavaScript-powered interactivity
 
