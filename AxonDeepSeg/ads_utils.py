@@ -2,6 +2,7 @@
 AxonDeepSeg utilities module.
 """
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -249,6 +250,25 @@ def get_existing_models_list():
     if "__pycache__" in models_list:
         models_list.remove("__pycache__")
     return models_list
+
+def get_model_output_classes(path_model: str):
+    """
+    This method returns the output classes of a model located under AxonDeepSeg/models
+    :param path_model: path to the model folder
+    :return: list containing the output classes of the model
+    :rtype: list of strings
+    """
+    dataset_json_path = Path(path_model) / "dataset.json"
+    if not dataset_json_path.exists():
+        raise FileNotFoundError(f"dataset.json not found in {path_model}. Please make sure the model is valid.")
+
+    with open(dataset_json_path, 'r') as f:
+        dataset_json = json.load(f)
+
+    output_structure = dataset_json['labels']
+    output_classes = list(output_structure.keys())
+    output_classes.remove('background')
+    return output_classes
 
 def get_file_extension(filename):
     """ Get file extension if it is supported
