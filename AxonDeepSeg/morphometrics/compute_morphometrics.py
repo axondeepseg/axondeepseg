@@ -91,8 +91,14 @@ def get_watershed_segmentation(im_axon, im_myelin, seed_points=None, im_axon_lab
     seeded_parts = np.unique(axon_parts[im_centroid > 0])
     unseeded_parts = np.setdiff1d(np.arange(1, axon_parts.max() + 1), seeded_parts)
     if unseeded_parts.size > 0:
-        for y, x in ndi.maximum_position(distance, axon_parts, unseeded_parts):
-            im_centroid[int(y), int(x)] = im_axon_label[int(y), int(x)]
+        # Search each part's bounding box only (ndi.maximum_position scans the whole image for every part)
+        part_slices = ndi.find_objects(axon_parts)
+        for part in unseeded_parts:
+            sl = part_slices[part - 1]
+            local_distance = np.where(axon_parts[sl] == part, distance[sl], -np.inf)
+            y, x = np.unravel_index(np.argmax(local_distance), local_distance.shape)
+            y, x = y + sl[0].start, x + sl[1].start
+            im_centroid[y, x] = im_axon_label[y, x]
 
     ## Verify if call is coming from plugin
     # Get the current frame
