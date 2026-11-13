@@ -15,30 +15,44 @@ DOWNLOAD_ERROR_CODE = 2
 
 MODEL_CARDS_PATH = Path(__file__).parent / 'model_cards.yaml'
 
-def download_model(model_name='generalist', destination=None, overwrite=True):
+def download_model(model_name='generalist', destination=None, overwrite=True, variant=None):
     '''
     Download a model for AxonDeepSeg.
     Parameters
     ----------
     model_name : str, optional
-        Name of the model, by default 'generalist'. 
-    model_type :  Literal['light', 'ensemble'], optional
-        Type of model, by default 'light'. 
+        Name of the model, by default 'generalist'.
     destination : str, optional
         Directory to download the model to. Default: None.
+    variant : Literal['light', 'ensemble'], optional
+        Which variant to download. Default: None, which picks the single_fold
+        ('light') model if available, falling back to the ensemble.
     '''
     models = get_model_cards(Path(__file__).parent / 'model_cards.yaml')
     if model_name not in models.keys():
         logger.error('Model not found.')
         sys.exit(MODEL_NOT_FOUND_CODE)
 
-    # default to single_fold model if available (lighter and faster)
-    if models[model_name]['weights']['single_fold'] is not None:
-        model_suffix = 'light'
-        url_model_destination = models[model_name]['weights']['single_fold']
-    elif models[model_name]['weights']['ensemble'] is not None:
+    weights = models[model_name]['weights']
+    if variant == 'ensemble':
+        if weights['ensemble'] is None:
+            logger.error(f"No ensemble weights available for '{model_name}'.")
+            sys.exit(MODEL_NOT_FOUND_CODE)
         model_suffix = 'ensemble'
-        url_model_destination = models[model_name]['weights']['ensemble']
+        url_model_destination = weights['ensemble']
+    elif variant == 'light':
+        if weights['single_fold'] is None:
+            logger.error(f"No light weights available for '{model_name}'.")
+            sys.exit(MODEL_NOT_FOUND_CODE)
+        model_suffix = 'light'
+        url_model_destination = weights['single_fold']
+    # default (variant=None): prefer single_fold model if available (lighter and faster)
+    elif weights['single_fold'] is not None:
+        model_suffix = 'light'
+        url_model_destination = weights['single_fold']
+    elif weights['ensemble'] is not None:
+        model_suffix = 'ensemble'
+        url_model_destination = weights['ensemble']
 
     full_model_name = f'{models[model_name]["full_name"]}_{model_suffix}'
     if destination is None:
