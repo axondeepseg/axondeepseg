@@ -47,19 +47,22 @@ def get_pixelsize(path_pixelsize_file):
     else:
         return pixelsize
 
-def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
+def get_watershed_segmentation(im_axon, im_myelin, seed_points=None, im_axon_label=None):
     """
-    Segments the different axonmyelin objects using a watershed algorithm. Seeds points can be passed if they are 
-    already known/computed to save time.
+    Segments the different axonmyelin objects using a watershed algorithm. Seeds points can be passed if they are
+    already known/computed to save time. A seed that falls outside of its own axon (e.g. C or U shaped axons, see
+    #933) is replaced by the deepest point of the axon in the distance map.
     :param im_axon: Array: axon binary mask
     :param im_myelin: Array: myelin binary mask
     :param seed_points: (optional) Array of tuples: Seed points for the watershed algorithm. If none are provided,
     centroids of axon objects will be used. If the centroids have been computed before, it is suggested to pass them as
     seed points in order to reduce computation time.
+    :param im_axon_label: (optional) Array: labelled axon mask (skimage.measure.label with connectivity=2). Computed
+    if not provided. Label i+1 corresponds to the i-th axon object, same order as regionprops.
     :return: Array containing the watershed segmentation of the axonmyelin mask
     """
-    # Seed points (usually centroids) can take a while to compute, hence why there's the option to pass them directly if
-    # they are computed elsewhere. If they aren't passed, we can compute them here
+    if im_axon_label is None:
+        im_axon_label = measure.label(im_axon, connectivity=2)
     if seed_points is None:
         seed_points = postprocessing.get_centroids(im_axon)
 
@@ -73,11 +76,29 @@ def get_watershed_segmentation(im_axon, im_myelin, seed_points=None):
     # more useful for the watershed algorithm.
 
     # Create an image with axon centroids, which value corresponds to the value of the axon object
-    im_centroid = np.zeros_like(im_axon, dtype='uint16')
+    markers_dtype = np.uint16 if len(seed_points[0]) <= np.iinfo(np.uint16).max else np.uint32
+    im_centroid = np.zeros_like(im_axon, dtype=markers_dtype)
     for i in range(len(seed_points[0])):
         # Note: The value "i" corresponds to the label number of im_axon_label
-        im_centroid[seed_points[0][i], seed_points[1][i]] = i + 1
-    
+        # A centroid can fall outside of its own axon (e.g. C or U shaped axons, see #933). These seeds are not used,
+        # otherwise the axon is split between its neighbours. A seed inside the axon is added below instead.
+        if im_axon_label[seed_points[0][i], seed_points[1][i]] == i + 1:
+            im_centroid[seed_points[0][i], seed_points[1][i]] = i + 1
+
+    # The watershed connects pixels with connectivity 1, so every part of an axon (axon object with connectivity 2)
+    # that doesn't contain a seed gets a seed at its deepest point, with the label of its axon object
+    axon_parts = measure.label(im_axon_label > 0, connectivity=1)
+    seeded_parts = np.unique(axon_parts[im_centroid > 0])
+    unseeded_parts = np.setdiff1d(np.arange(1, axon_parts.max() + 1), seeded_parts)
+    if unseeded_parts.size > 0:
+        # Search each part's bounding box only (ndi.maximum_position scans the whole image for every part)
+        part_slices = ndi.find_objects(axon_parts)
+        for part in unseeded_parts:
+            sl = part_slices[part - 1]
+            local_distance = np.where(axon_parts[sl] == part, distance[sl], -np.inf)
+            y, x = np.unravel_index(np.argmax(local_distance), local_distance.shape)
+            y, x = y + sl[0].start, x + sl[1].start
+            im_centroid[y, x] = im_axon_label[y, x]
 
     ## Verify if call is coming from plugin
     # Get the current frame
@@ -152,7 +173,7 @@ def get_axon_morphometrics(
         ind_centroid = ([int(props.centroid[0]) for props in axon_objects],
                         [int(props.centroid[1]) for props in axon_objects])
 
-        im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid)
+        im_axonmyelin_label = get_watershed_segmentation(im_axon, im_myelin, ind_centroid, im_axon_label=im_axon_label)
 
         if return_instance_seg:
             im_instance_seg = colorize_instance_segmentation(im_axonmyelin_label)
@@ -212,8 +233,9 @@ def get_axon_morphometrics(
             }
             stats.update(myelin_stats)
 
-            # Find label of axonmyelin corresponding to axon centroid
-            label_axonmyelin = im_axonmyelin_label[int(y0), int(x0)]
+            # The axonmyelin object has the same label as the axon object (the centroid can fall
+            # outside of the axon for C or U shaped axons, so it can't be used to find it)
+            label_axonmyelin = prop_axon.label
 
             if label_axonmyelin:
                 idx = axonmyelin_labels_list.index(label_axonmyelin)
