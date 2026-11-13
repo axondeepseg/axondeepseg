@@ -58,6 +58,110 @@ def apply_myelinated_rules(df, rules):
                 logger.warning(f'Unknown rule: {rule}')
     return df
 
+QA_FLAG_CODES = ('good', 'needs_correction', 'delete')
+QA_KEEP_OPTIONS = ('not-deleted', 'good-only')
+
+
+def read_qa_flags(flags_path):
+    '''
+    Read the flags exported from the "Single Axon Viewer" tab of the QA report.
+
+    Parameters
+    ----------
+    flags_path : pathlib.Path
+        Path to the CSV file exported by the QA report ("Export flags (CSV)").
+
+    Returns
+    -------
+    pandas.DataFrame
+        One row per flagged axon, with at least the columns "Axon index" (row
+        index in the morphometrics file) and "Flag" (good, needs_correction or delete).
+    '''
+    flags_path = Path(flags_path)
+    if not flags_path.exists():
+        raise FileNotFoundError(f'QA flags file {flags_path} does not exist.')
+
+    flags = pd.read_csv(flags_path)
+    if not {'Axon index', 'Flag'}.issubset(flags.columns):
+        raise ValueError(
+            f'{flags_path} is not a QA flags export (expected "Axon index" and "Flag" columns). '
+            'Files exported by older QA reports ("Axon ID" column) are not supported because their '
+            'IDs can be shifted; export the flags again from a regenerated report.'
+        )
+
+    flags['Flag'] = flags['Flag'].astype(str).str.strip()
+    unknown = set(flags['Flag']) - set(QA_FLAG_CODES)
+    if unknown:
+        raise ValueError(f'Unknown flag value(s) in {flags_path}: {sorted(unknown)}. Expected one of {QA_FLAG_CODES}.')
+
+    flags['Axon index'] = flags['Axon index'].astype(int)
+    if flags['Axon index'].duplicated().any():
+        raise ValueError(f'{flags_path} contains the same axon more than once.')
+
+    return flags
+
+
+def apply_qa_flags(df, flags, keep='not-deleted'):
+    '''
+    Remove axons from a morphometrics dataframe according to QA report flags.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Morphometrics of one image. Its first column must hold the axon index
+        (the row index written by axondeepseg_morphometrics).
+    flags : pandas.DataFrame
+        Flags returned by read_qa_flags.
+    keep : str
+        'not-deleted' keeps every axon except those flagged "delete";
+        'good-only' keeps only the axons flagged "good".
+
+    Returns
+    -------
+    pandas.DataFrame
+        The filtered morphometrics.
+    '''
+    if keep not in QA_KEEP_OPTIONS:
+        raise ValueError(f'keep must be one of {QA_KEEP_OPTIONS}, got {keep!r}.')
+
+    ids = df.iloc[:, 0].astype(int)
+    flagged = flags.set_index('Axon index')
+
+    unknown_ids = sorted(set(flagged.index) - set(ids))
+    if unknown_ids:
+        raise ValueError(
+            f'{len(unknown_ids)} flagged axon(s) are not in the morphometrics file (e.g. {unknown_ids[:5]}). '
+            'The flags were probably exported from a report made on different masks.'
+        )
+
+    # The export also stores the g-ratio of each axon: use it to check that the
+    # flags refer to the same axons as this morphometrics file.
+    if 'g-ratio' in flagged.columns and 'gratio' in df.columns:
+        current = pd.Series(df['gratio'].to_numpy(), index=ids.to_numpy()).loc[flagged.index]
+        exported = pd.to_numeric(flagged['g-ratio'], errors='coerce')
+        both_nan = current.isna().to_numpy() & exported.isna().to_numpy()
+        close = np.isclose(current.to_numpy(), exported.to_numpy(), atol=1e-3)
+        n_mismatch = int((~(close | both_nan)).sum())
+        if n_mismatch:
+            raise ValueError(
+                f'The g-ratio of {n_mismatch} flagged axon(s) does not match the morphometrics file. '
+                'The flags were probably exported from a report made on different masks.'
+            )
+
+    flag_of = ids.map(flagged['Flag']).fillna('')
+    if keep == 'not-deleted':
+        kept = flag_of != 'delete'
+    else:
+        kept = flag_of == 'good'
+
+    counts = flagged['Flag'].value_counts().to_dict()
+    logger.info(
+        f'QA flags: {counts.get("good", 0)} good, {counts.get("needs_correction", 0)} needs correction, '
+        f'{counts.get("delete", 0)} delete. Keeping {int(kept.sum())} of {len(df)} axons ({keep}).'
+    )
+    return df[kept.to_numpy()]
+
+
 def apply_unmyelinated_rules(df, rules):
     for rule in rules:
         match rule:
@@ -102,6 +206,12 @@ def mask_updater(morpho_file, axon_type, filtered_df, overwrite, allow_large_ima
         instance_map = measure.label(uaxon_pred, connectivity=1)
 
     elif axon_type == 'myelinated':
+        if not morpho_file.name.endswith('_axon_morphometrics.xlsx'):
+            logger.warning(
+                f'{morpho_file.name} does not follow the "<image>_axon_morphometrics.xlsx" naming, so the '
+                'matching segmentation masks cannot be found. Skipping mask update.'
+            )
+            return
         axon_myelin_paths = [
             morpho_file.with_name(morpho_file.name.replace('_axon_morphometrics.xlsx', '_seg-axon.png')),
             morpho_file.with_name(morpho_file.name.replace('_axon_morphometrics.xlsx', '_seg-myelin.png')),
@@ -159,14 +269,30 @@ def mask_updater(morpho_file, axon_type, filtered_df, overwrite, allow_large_ima
         # also update the axonmyelin mask
         merge_masks(*target_mask_paths)
 
-def process_morphometric_files(morpho_files, rules, axon_type, overwrite, update_masks, allow_large_images=False):
+def read_morphometrics(morpho_file):
+    morpho_file = Path(morpho_file)
+    if morpho_file.suffix.lower() == '.csv':
+        return pd.read_csv(morpho_file)
+    return pd.read_excel(morpho_file)
+
+def write_morphometrics(df, morpho_file):
+    morpho_file = Path(morpho_file)
+    if morpho_file.suffix.lower() == '.csv':
+        df.to_csv(morpho_file, index=False, na_rep='NaN')
+    else:
+        df.to_excel(morpho_file, index=False, na_rep='NaN')
+
+def process_morphometric_files(
+    morpho_files, rules, axon_type, overwrite, update_masks, allow_large_images=False,
+    qa_flags=None, qa_keep='not-deleted',
+):
     """
     Process a list of morphometric files by applying the given filtering rules.
 
     Parameters
     ----------
     morpho_files : tuple of pathlib.Path
-        List of morphometric files to process.
+        List of morphometric files to process (.xlsx or .csv).
     rules : list of dict
         List of filtering rules to apply.
     axon_type : str
@@ -177,11 +303,18 @@ def process_morphometric_files(morpho_files, rules, axon_type, overwrite, update
         Whether to update the segmentation masks to reflect the filtered morphometrics.
     allow_large_images : bool
         Allow reading masks exceeding PIL's default decompression bomb pixel limit.
+    qa_flags : pandas.DataFrame, optional
+        Flags exported from the QA report (see read_qa_flags), applied before the rules.
+        Only valid for a single myelinated morphometrics file.
+    qa_keep : str
+        Which axons to keep given the QA flags: 'not-deleted' or 'good-only'.
     """
     logger.info(f'Filtering {axon_type} axons using rules: {rules}')
     for morpho_file in morpho_files:
-        df = pd.read_excel(morpho_file)
+        df = read_morphometrics(morpho_file)
         original_count = len(df)
+        if qa_flags is not None:
+            df = apply_qa_flags(df, qa_flags, keep=qa_keep)
         apply_rules_fn = apply_myelinated_rules if axon_type == 'myelinated' else apply_unmyelinated_rules
         df = apply_rules_fn(df, rules)
         filtered_count = len(df)
@@ -191,11 +324,11 @@ def process_morphometric_files(morpho_files, rules, axon_type, overwrite, update
         df = df.rename(columns={'Unnamed: 0': ''})
 
         if overwrite:
-            df.to_excel(morpho_file, index=False)
+            write_morphometrics(df, morpho_file)
             logger.info(f'Overwrote original file: {morpho_file}')
         else:
-            new_file = morpho_file.with_name(morpho_file.stem + '_filtered.xlsx')
-            df.to_excel(new_file, index=False)
+            new_file = morpho_file.with_name(morpho_file.stem + '_filtered' + morpho_file.suffix)
+            write_morphometrics(df, new_file)
             logger.info(f'Saved filtered {axon_type} axons to: {new_file}')
 
         if update_masks:
@@ -229,6 +362,20 @@ def main(argv=None):
         help="Overwrite the original morphometric files (and segmentation masks if -m is set)"
     )
     ap.add_argument(
+        "--qa-flags",
+        dest="qa_flags",
+        help="CSV of axon flags exported from the QA report (Single Axon Viewer > Export flags). "
+             "Applied to a single myelinated morphometrics file (-i must be a file), before the rules."
+    )
+    ap.add_argument(
+        "--qa-keep",
+        dest="qa_keep",
+        choices=QA_KEEP_OPTIONS,
+        default='not-deleted',
+        help="With --qa-flags: keep every axon except those flagged for deletion (not-deleted, default), "
+             "or only the axons flagged as good (good-only)."
+    )
+    ap.add_argument(
         "--allow-large-images",
         dest="allow_large_images",
         required=False,
@@ -246,8 +393,17 @@ def main(argv=None):
     logger.info(f'Found {len(axon_morpho_files)} myelinated axon morphometric files to process.')
 
     uaxon_morpho_files = tuple(Path(str(p).replace('_axon_', '_uaxon_')) for p in axon_morpho_files)
-    uaxon_morpho_files = tuple(p for p in uaxon_morpho_files if p.exists())
+    # files without "_axon_" in their name map onto themselves: they are not unmyelinated files
+    uaxon_morpho_files = tuple(
+        p for p, src in zip(uaxon_morpho_files, axon_morpho_files) if p != src and p.exists()
+    )
     logger.info(f'Found {len(uaxon_morpho_files)} unmyelinated axon morphometric files to process.')
+
+    qa_flags = None
+    if args.qa_flags:
+        if len(axon_morpho_files) != 1 or not input_path.is_file():
+            ap.error('--qa-flags applies to one image: -i must be a single morphometrics file.')
+        qa_flags = read_qa_flags(args.qa_flags)
 
     if args.config:
         config_path = Path(args.config)
@@ -262,6 +418,8 @@ def main(argv=None):
         args.overwrite,
         args.update_masks,
         allow_large_images=args.allow_large_images,
+        qa_flags=qa_flags,
+        qa_keep=args.qa_keep,
     )
     process_morphometric_files(
         uaxon_morpho_files,
