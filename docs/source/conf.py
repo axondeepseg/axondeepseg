@@ -100,7 +100,7 @@ html_theme_options = {
     'version_selector': False,
     'navigation_depth': 4,
 }
-html_logo = '_static/logo_ads-alpha.png'
+html_logo = 'https://raw.githubusercontent.com/axondeepseg/doc-figures/main/logo/logo_ads-alpha.png'
 
 html_context = {
     "display_github": True,
