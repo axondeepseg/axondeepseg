@@ -239,6 +239,27 @@ class TestPostSegmentState:
         assert window.run_another_btn.isHidden()
 
     @pytest.mark.integration
+    @pytest.mark.parametrize("tab", [MORPHOMETRICS_TAB, MODELS_TAB])
+    def test_other_tabs_run_button_is_clickable_after_a_real_segmentation_finishes(
+        self, window, tmp_path, tab
+    ):
+        """Goes through the actual job-finished path rather than calling
+        _enter_post_segment_state() directly: _start_thread disables Run, and the
+        results branch of _on_thread_finished used to only swap visibility, which
+        left Run Morphometrics / Download greyed out on the other tabs."""
+        thread = ads_gui_module.SegmentThread()
+        thread.segmented_results = [{"image": tmp_path / "a.png"}]
+        window._active_thread = thread
+        window.run_btn.setEnabled(False)  # what _start_thread does
+        window.preview_check.setChecked(False)
+
+        window._on_thread_finished(True)
+        window.tabWidget.setCurrentIndex(tab)
+
+        assert not window.run_btn.isHidden()
+        assert window.run_btn.isEnabled()
+
+    @pytest.mark.integration
     def test_results_buttons_come_back_on_the_segment_tab(self, window):
         window._enter_post_segment_state()
         window.tabWidget.setCurrentIndex(MORPHOMETRICS_TAB)

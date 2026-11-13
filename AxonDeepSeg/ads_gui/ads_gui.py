@@ -509,6 +509,9 @@ class ADSWindow(QMainWindow):
 
     def _on_thread_finished(self, success):
         self.stop_btn.setEnabled(False)
+        # Always re-enable Run: on the Segment tab it's hidden behind the results
+        # buttons anyway, but the other tabs show it and need it clickable.
+        self.run_btn.setEnabled(True)
         self.tabWidget.setEnabled(True)
         self.progress.setRange(0, 1)
         self.progress.setValue(1 if success else 0)
@@ -523,8 +526,6 @@ class ADSWindow(QMainWindow):
             if self.preview_check.isChecked():
                 self._open_preview(self._last_segment_results)
             self._enter_post_segment_state()
-        else:
-            self.run_btn.setEnabled(True)
 
         self._active_thread = None
         # Models/installed status may have changed (download, or a model auto-installed).
