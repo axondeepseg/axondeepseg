@@ -451,11 +451,19 @@ class DownloadThread(QThread):
         self.variant: str = "light"  # light | ensemble
 
     def run(self):
+        # Must stay as broad as it is: the main window only unlocks its tabs and Run
+        # button once finished_ok fires, so every exit path has to emit it.
         try:
             self.log.emit(f"Downloading {self.model_key} ({self.variant})...")
             download_model(self.model_key, destination=None, overwrite=True, variant=self.variant)
             self.log.emit(f"{self.model_key} ({self.variant}) downloaded.")
             self.finished_ok.emit(True)
+        except SystemExit:
+            # download_model() is shared with the CLI and calls sys.exit() on failure
+            # (e.g. no network). SystemExit isn't an Exception, and letting it escape
+            # a QThread takes the whole app down, so turn it into a normal failure.
+            self.log.emit("Download failed, check your internet connection and try again.")
+            self.finished_ok.emit(False)
         except Exception as e:
             self.log.emit(f"Download failed: {e}")
             self.finished_ok.emit(False)

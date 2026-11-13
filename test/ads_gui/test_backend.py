@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 
 from AxonDeepSeg.ads_gui.backend import (
+    DownloadThread,
     MorphometricsThread,
     SegmentThread,
     compose_overlay,
@@ -309,3 +310,41 @@ class TestMorphometricsThreadPixelSize:
 
         with pytest.raises(ValueError, match="No pixel size"):
             thread._resolve_pixel_size(tmp_path / "image.png")
+
+
+class TestDownloadThreadFailures:
+    """The main window only unlocks itself when finished_ok fires, so a failed
+    download must always end with finished_ok(False), never a dead thread."""
+
+    @staticmethod
+    def _run(monkeypatch, fake_download):
+        monkeypatch.setattr("AxonDeepSeg.ads_gui.backend.download_model", fake_download)
+        thread = DownloadThread()
+        thread.model_key = "generalist"
+        logs, results = [], []
+        thread.log.connect(logs.append)
+        thread.finished_ok.connect(results.append)
+        thread.run()  # in-line on this thread, so the signals are delivered directly
+        return logs, results
+
+    @pytest.mark.unit
+    def test_sys_exit_from_download_model_is_reported_not_propagated(self, qapp, monkeypatch):
+        """download_model() calls sys.exit() on a network failure; SystemExit isn't
+        an Exception, and escaping a QThread it would kill the app."""
+        def _network_down(*args, **kwargs):
+            raise SystemExit(2)
+
+        logs, results = self._run(monkeypatch, _network_down)
+
+        assert results == [False]
+        assert "Download failed" in logs[-1]
+
+    @pytest.mark.unit
+    def test_regular_exception_is_reported(self, qapp, monkeypatch):
+        def _boom(*args, **kwargs):
+            raise OSError("disk full")
+
+        logs, results = self._run(monkeypatch, _boom)
+
+        assert results == [False]
+        assert "disk full" in logs[-1]
